@@ -37,11 +37,11 @@ Cuando `make up` corre dentro de `tools`, habla con el Docker de tu ordenador a 
 
 | Objetivo | Estado |
 |---|---|
-| `up`, `down`, `smoke` | ✅ `smoke` probado. `up` y `down` sin probar en esta sesión |
+| `up`, `down`, `smoke` | ✅ `down` y `smoke` probados. ⚠️ `up` puede terminar con error por `connect-init` ([ver operación](../04-operacion.md#connect-init-termina-con-404)) |
 | `test-board` | ✅ probado |
-| `test` | Sin probar: la rama actual no compila |
+| `test` | ✅ probado |
 | `download-data` | Sin probar: requiere credenciales de Kaggle |
-| `seed` | Sin probar: requiere el CSV real, y hoy no compila |
+| `seed` | Sin probar: requiere el CSV real y T-013 |
 | `evals`, `chaos`, `bench`, `demo` | ⬜ responden `not implemented yet` |
 
 ## Cómo probarlo tú mismo

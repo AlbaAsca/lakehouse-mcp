@@ -103,13 +103,21 @@ docker compose exec -T seaweedfs curl -s -o /dev/null -w '%{http_code}\n' -X DEL
 204
 ```
 
-### La rama no compila
+### El conector sale `FAILED`
 
-**Síntoma:** `./mk test` o `mvn` en una copia limpia de `develop` da `package EventReplay does not exist`.
+**Síntoma:** `curl localhost:8083/connectors/iceberg-sink/status` muestra el conector `RUNNING` y la tarea `FAILED`, con `NoClassDefFoundError: org/apache/kafka/common/utils/AppInfoParser`. El número de versión del conector es `1.13.0-SNAPSHOT`, no `1.12.0`.
 
-**Causa:** [el código de T-011 no se ha subido](componentes/productor.md), aunque la tarjeta está cerrada y otros ficheros subidos dependen de él.
+**Causa:** sin confirmar; se investiga en T-072. La tarea falla al arrancar, antes de leer ningún evento.
 
-**Remedio:** subir `EventReplay.java`, `EventSource.java` y `SessionSampler.java`, con sus cambios en `CsvEventReader.java`. Es trabajo del equipo de desarrollo, no de quien usa el proyecto.
+**Remedio:** ninguno todavía. Hasta entonces no entran datos en Iceberg. Las tablas creadas a mano con DuckDB funcionan.
+
+### `connect-init` termina con 404
+
+**Síntoma:** `./mk up` acaba con `container lakehouse-mcp-connect-init-1 exited (1)` y el log dice `iceberg-sink: 404`.
+
+**Causa:** con el worker recién arrancado, Connect puede responder 404, y [`register.sh`](../../connect/register.sh) solo reintenta con 409 y 5xx. Visto una vez; se corrige en T-072.
+
+**Remedio:** `docker compose up connect-init`. La segunda vez devolvió 201.
 
 ### `connect-init` no aparece
 
@@ -117,7 +125,7 @@ docker compose exec -T seaweedfs curl -s -o /dev/null -w '%{http_code}\n' -X DEL
 
 **Causa:** contenedores levantados antes de T-012. Es el caso del stack comprobado para esta wiki.
 
-**Remedio (sin probar):** `./mk up`, que los actualiza. T-012 sigue bloqueada, así que el resultado no está verificado.
+**Remedio:** `./mk up`, que los actualiza y registra el conector.
 
 ### Falta memoria
 

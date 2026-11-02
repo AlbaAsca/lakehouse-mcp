@@ -1,6 +1,6 @@
 # Kafka Connect y el sink de Iceberg
 
-**Estado:** 🚧 El worker y el plugin funcionan ✅. El conector `iceberg-sink` está configurado en el repo, pero **T-012 está bloqueada** y en el stack comprobado para esta wiki no había ningún conector registrado. Nadie ha visto pasar datos todavía (T-015).
+**Estado:** ⚠️ El worker y el plugin funcionan y el conector `iceberg-sink` se registra, pero la tarea sale `FAILED` con `NoClassDefFoundError: org/apache/kafka/common/utils/AppInfoParser` (T-072). **Hoy no entran datos en Iceberg.**
 
 [Portada](../README.md) · [Glosario](../01-conceptos.md)
 
@@ -92,13 +92,13 @@ curl -s localhost:8083/connectors
 []
 ```
 
-**Sin probar:** con un stack levantado desde T-012, deberías ver `["iceberg-sink"]`. Su estado se consulta en `/connectors/iceberg-sink/status`. El desarrollador anotó que la configuración es válida contra un worker real (`IcebergSinkConfigIT`), y el estado `RUNNING` con datos queda para T-015.
+Con el stack actual verás `["iceberg-sink"]`. Su estado se consulta en `/connectors/iceberg-sink/status`: hoy el conector sale `RUNNING` y su tarea, `FAILED`.
 
 ## Qué puede fallar
 
 - **`connect-init` termina con error.** Si falta una variable de `.env`, [`register.sh`](../../../connect/register.sh) para. Mira `docker compose logs connect-init`.
 - **El primer `up` tarda varios minutos.** Compila Iceberg entero, y requiere acceso a GitHub.
-- **La tarea pasa a `FAILED`.** Se ve en `/connectors/iceberg-sink/status`. Sin probar.
+- **La tarea pasa a `FAILED`.** Es el estado actual (T-072). El motivo está en el campo `trace` de `/connectors/iceberg-sink/status`.
 - **Cambias el esquema y deja de escribir.** Es lo buscado, con la evolución apagada.
 - **`up` sigue sin registrar el conector.** Contenedores anteriores a T-012: `./mk up` debe crear `connect-init`.
 

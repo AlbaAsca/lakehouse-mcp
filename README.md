@@ -61,16 +61,21 @@ descubre leyendo un dashboard. Este proyecto pone al agente delante de esos prob
 | DuckDB | 2.0.0 | Motor de consulta (extensión `iceberg`) |
 | Java · Spring Boot · Spring AI | 25 · 4.1.2 · 2.0.2 | Productor, servidor MCP y agente |
 
+## La wiki
+
+¿No sabes qué es un lakehouse? ¿O quieres ver exactamente lo que hay montado? [**La wiki**](docs/wiki/README.md) sirve para las dos cosas: conceptos desde cero, el viaje de un evento,
+una página por cada pieza (qué es, cómo se conecta, cómo está configurada y cómo probarla), [un tutorial paso a paso](docs/wiki/03-probarlo.md) y [guía de diagnóstico](docs/wiki/04-operacion.md).
+
 ## Qué hay y qué falta
 
 | | Pieza | Estado |
 |---|---|---|
 | ✅ | Stack en Docker Compose, con healthchecks | Arranca con un comando |
 | ✅ | Ida y vuelta DuckDB → Polaris → SeaweedFS | Lo comprueba `./mk smoke` |
-| ✅ | Plugin del conector de Iceberg cargado en Connect | Lo comprueba `./mk smoke`; sin conector registrado todavía |
+| ⚠️ | Conector de Iceberg | Se registra, pero su tarea falla al arrancar (T-072): **aún no entran datos** |
 | ✅ | Herramientas en una imagen (`tools`) | JDK, Maven, make, DuckDB y Kaggle, sin instalar nada |
-| 🚧 | Persistencia del catálogo de Polaris | En curso: hoy se pierde al reiniciar Polaris |
-| ⬜ | Productor e ingesta del mes real | Planificado |
+| ✅ | Persistencia del catálogo de Polaris | En Postgres: sobrevive a un reinicio |
+| 🚧 | Productor e ingesta del mes real | Lectura, muestreo y orden hechos; falta el envío y la ingesta |
 | ⬜ | Servidor MCP: `list_tables`, `describe_table`, `run_query`, `get_metric`, `pipeline_health`, `data_quality_check`, `time_travel`, `propose_fix`, `apply_fix` | Planificado |
 | ⬜ | Capa semántica y agente | Planificado |
 | ⬜ | Self-healing con `make chaos` | Planificado |

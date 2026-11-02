@@ -1,6 +1,6 @@
 # Productor
 
-**Estado:** 🚧 en curso. El lector de CSV y el esquema están en la rama. **La rama no compila**: `EventReplay`, `SessionSampler` y `EventSource` no se han subido a ninguna rama, aunque T-011 figura como hecha. El envío a Kafka y `seed` (T-013) están a medias, porque la tarjeta se cortó por el límite de uso.
+**Estado:** 🚧 en curso. El lector de CSV, el esquema, el muestreo por sesión, la reordenación y la aceleración están en la rama, con sus tests en verde (T-008, T-011). El envío a Kafka y `seed` (T-013) están pendientes de terminar y de probar con el conector.
 
 [Portada](../README.md) · [Glosario](../01-conceptos.md)
 
@@ -30,7 +30,7 @@ Convierte un fichero estático en un flujo en directo, para que todo lo demás s
 
 Los precios a cero o negativos y los duplicados pasan tal cual, a propósito: son los casos de calidad de la demo.
 
-**Diseño previsto (T-011), cuyo código no está en la rama:** muestreo por sesión completa, ventana de reordenación acotada, aceleración y reescritura de la hora. Se explica en la [decisión 14](../../architecture.md#decisiones).
+**Implementado (T-011):** muestreo por sesión completa, ventana de reordenación acotada, aceleración y reescritura de la hora. Se explica en la [decisión 14](../../architecture.md#decisiones).
 
 ## Cómo está configurado aquí
 
@@ -51,23 +51,18 @@ python -c "import gzip,csv; r=csv.reader(gzip.open('testdata/synthetic-events.cs
 50000
 ```
 
-Comprobado: compilar una copia limpia del commit `129dee6` falla. En una copia que tenga esos ficheros sin subir, no fallará por esto.
+Comprueba que compila y que sus tests pasan (forma parte de la suite completa):
 
 ```bash
-docker compose run --rm tools mvn -B -q -pl producer -am -DskipTests package
-```
-```text
-[ERROR] .../producer/KafkaEventSink.java:[33,57] package EventReplay does not exist
-[ERROR] .../producer/SeedCommand.java:[61,43] package EventReplay does not exist
-[ERROR] .../producer/SeedCommand.java:[140,17] cannot find symbol
-...
+./mk test
 ```
 
-**Sin probar:** `./mk test`, `./mk seed` y el envío a Kafka. `seed` necesita el CSV real, y hoy tampoco compilaría.
+No imprime nada si todo va bien y termina con código 0.
+
+**Sin probar:** `./mk seed` y el envío a Kafka de principio a fin. `seed` necesita el CSV real y T-013, y el conector aún falla (T-072).
 
 ## Qué puede fallar
 
-- **`package EventReplay does not exist`.** El caso de hoy. Hay que subir esas clases.
 - **`Unexpected CSV header`.** El fichero no tiene las columnas esperadas.
 - **Avisos `Skipping unreadable row`.** Normal en datos sucios: mira el total en `Skipped ... unreadable rows`.
 - **Muestra vacía con `max-rows`.** Anotado por el tester en T-013: si el límite es menor que la primera cubeta con filas, sale vacía sin error.

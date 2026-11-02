@@ -59,6 +59,6 @@ Diferencias entre documentos y realidad, comprobadas el 2 de noviembre de 2026 e
 | [`architecture.md`](../architecture.md#riesgos-abiertos) | Riesgo: el bootstrap repetido podría fallar | Sale bien: `already bootstrapped; skipping` |
 | `architecture.md` | Time travel con `snapshot_from_id` | Funciona, y también `AT (VERSION => id)`. T-014 debe fijarlo |
 | [`architecture.svg`](../img/architecture.svg) | No muestra Postgres ni Trino | Postgres está en el stack; Trino, declarado |
-| Panel | T-011 `done` | Sus clases no están en ninguna rama, y la rama no compila |
+| Panel | T-012 parece casi hecha | El conector se registra, pero su tarea falla al arrancar (T-072) |
 | [`smoke.sh`](../../infra/smoke.sh) | «every service answers» | Comprueba Registry y Connect por HTTP, y DuckDB, Polaris y SeaweedFS de punta a punta. Kafka solo por su healthcheck. Además, deja ficheros y el namespace `smoke` |
 | [`brief.md`](../brief.md) | README en inglés con Mermaid | Hoy en español y con SVG. Pendiente en T-055 |
