@@ -1,0 +1,84 @@
+# DuckDB
+
+**Estado:** ✅ funciona como línea de comandos en [`tools`](imagen-tools.md). ⬜ Embebido en el servidor MCP: T-016.
+
+[Portada](../README.md) · [Glosario](../01-conceptos.md)
+
+## Qué es, en cristiano
+
+Una base de datos que cabe en un programa, como una calculadora muy potente. No es un servidor que haya que mantener encendido: se abre, lee las tablas de donde estén y responde.
+
+## Para qué está aquí y qué pasaría sin él
+
+Es el [motor de consulta](../01-conceptos.md#motor-de-consulta). Convertirá las preguntas del agente en respuestas. La alternativa, [Trino](trino.md), necesita varios GB encendidos siempre. Compararlos es [el benchmark](trino.md), todavía sin medir.
+
+## Cómo se conecta
+
+| Dirección | Quién | Puerto |
+|---|---|---|
+| Salida | [Polaris](polaris.md): dónde está cada tabla | 8181, `POLARIS_CLIENT_ID`, `POLARIS_CLIENT_SECRET` |
+| Salida | [SeaweedFS](seaweedfs.md): los ficheros | 8333, `S3_ACCESS_KEY`, `S3_SECRET_KEY` |
+| Entrada prevista | [Servidor MCP](servidor-mcp.md), en el mismo proceso | ⬜ JDBC |
+
+No publica puerto alguno.
+
+## Cómo funciona por dentro
+
+La extensión `iceberg` permite hacer `ATTACH` de un catálogo REST y tratar sus tablas como propias, escritura incluida ([documentación](https://duckdb.org/docs/2.0/core_extensions/iceberg/overview)). `httpfs` aporta la lectura de S3.
+
+Para conectarse necesita dos secretos: uno de tipo `iceberg` para Polaris y otro de tipo `s3` para el almacén. La opción clave es `ACCESS_DELEGATION_MODE`, cuyos [valores](https://duckdb.org/docs/2.0/core_extensions/iceberg/iceberg_options) son `vended_credentials` (por defecto) y `none`.
+
+## Cómo está configurado aquí
+
+- **CLI:** `v2.0.0 (Cyanoptera)`, descargada en [`infra/tools/Dockerfile`](../../../infra/tools/Dockerfile).
+- **JDBC:** `duckdb_jdbc` `2.0.0.1` en [`pom.xml`](../../../pom.xml), usada hoy por `testkit`.
+- **Extensiones observadas:** `iceberg` `4c0c0874c4`, `httpfs` `77392a7207`, `avro` `345c3f4e82`, instaladas desde el repositorio de DuckDB.
+- **Conexión:** la misma en [`infra/smoke.sh`](../../../infra/smoke.sh), [`LakehouseStack`](../../../testkit/src/main/java/io/github/albaasca/lakehouse/testkit/LakehouseStack.java) y el script de la wiki [`lh.sh`](../ejemplos/lh.sh).
+
+| Opción | Valor | Por qué |
+|---|---|---|
+| `ACCESS_DELEGATION_MODE` | `'none'` | [Sin STS, el valor por defecto da error 400](../04-operacion.md#error-400-de-credential-vending) |
+| `ENDPOINT` | `seaweedfs:8333` | Dentro de la red de Compose |
+| `URL_STYLE` | `'path'` | SeaweedFS sin direcciones por bucket |
+| `USE_SSL` | `false` | HTTP en red local |
+| `OAUTH2_SCOPE` | `'PRINCIPAL_ROLE:ALL'` | Para que el token lleve los roles del usuario raíz |
+
+## Cómo probarlo tú mismo
+
+El tutorial lo hace paso a paso: [crear una tabla](../03-probarlo.md#paso-5-crea-una-tabla). Una comprobación rápida:
+
+```bash
+docker compose run --rm -T tools sh docs/wiki/ejemplos/lh.sh "SELECT library_version FROM pragma_version();"
+```
+```text
+┌─────────────────┐
+│ library_version │
+│     varchar     │
+├─────────────────┤
+│ v2.0.0          │
+└─────────────────┘
+```
+
+Lo comprobado para esta wiki sobre una tabla de prueba:
+
+| Qué | Sintaxis | Resultado |
+|---|---|---|
+| Listar snapshots | `iceberg_snapshots('lh.ns.tabla')` | ✅ |
+| Ver ficheros | `iceberg_metadata('lh.ns.tabla')` | ✅ |
+| Time travel | `... AT (VERSION => id)` | ✅ |
+| Time travel | `iceberg_scan('lh.ns.tabla', snapshot_from_id=id)` | ✅ |
+
+**Sin comprobar:** borrado en tablas particionadas, `ATTACH` de solo lectura y validación con `json_serialize_sql`. Son las preguntas abiertas de **T-014**.
+
+## Qué puede fallar
+
+- **Cada ejecución tarda unos segundos de más.** `tools` se crea desde cero, y `INSTALL` vuelve a descargar las extensiones. Necesita internet.
+- **`Deprecated implicit conversion of unbound identifiers`.** Pasa el nombre como texto: `iceberg_snapshots('lh.ns.tabla')`, no `iceberg_snapshots(lh.ns.tabla)`.
+- **Error 400 al crear una tabla.** Falta `ACCESS_DELEGATION_MODE 'none'`.
+- **Fallos al leer ficheros.** Sin probar en este stack. Revisa primero el secreto S3 y el endpoint.
+
+## Para saber más
+
+- [Iceberg en DuckDB 2.0](https://duckdb.org/docs/2.0/core_extensions/iceberg/overview)
+- [Catálogos REST](https://duckdb.org/docs/2.0/core_extensions/iceberg/catalogs)
+- [Opciones](https://duckdb.org/docs/2.0/core_extensions/iceberg/iceberg_options)
