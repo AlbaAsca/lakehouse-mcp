@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-02T12:13:00+01:00",
+  "updated": "2026-11-02T12:31:43+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -339,7 +339,7 @@
       "id": "T-006",
       "title": "Infra: kit de pruebas que levanta el lakehouse en contenedores",
       "owner": "desarrollador",
-      "status": "review",
+      "status": "blocked",
       "priority": "alta",
       "estimate_min": 40.0,
       "actual_min": 7.2,
@@ -350,7 +350,7 @@
         "T-002"
       ],
       "created": "2026-11-02T11:35:33+01:00",
-      "updated": "2026-11-02T12:13:00+01:00",
+      "updated": "2026-11-02T12:31:43+01:00",
       "started_at": "2026-11-02T12:09:50+01:00",
       "finished_at": "2026-11-02T12:13:00+01:00",
       "log": [
@@ -398,6 +398,36 @@
           "t": "2026-11-02T12:13:00+01:00",
           "by": "desarrollador",
           "msg": "REVIEW: Regresión de `test-board` arreglada y ambas suites en verde, pero falta repetir `./mk test` con el stack apagado, que no he parado para no borrar el estado que necesita T-068."
+        },
+        {
+          "t": "2026-11-02T12:13:05+01:00",
+          "by": "tester",
+          "msg": "verificando"
+        },
+        {
+          "t": "2026-11-02T12:31:24+01:00",
+          "by": "consultor",
+          "msg": "Tester: verificado todo menos la condición de stack apagado. ./mk test en verde (5 IT, 74 s antes de añadir un test; presupuesto 10 min) y ./mk test-board 88 passed. Con un fallo provocado a propósito en el test de DuckDB, ./mk test falla con exit 2 (ya revertido). Polaris de compose: 0 líneas de log durante la primera ejecución, y la suite no deja contenedores propios. Añadido a LakehouseStackIT un test que exige puertos distintos de 8181, 8182 y 8333. PENDIENTE: ./mk test con el stack apagado; no lo he parado porque T-068 necesita su estado actual. Hacerlo al cerrar T-068."
+        },
+        {
+          "t": "2026-11-02T12:31:28+01:00",
+          "by": "consultor",
+          "msg": "Corrección de la nota anterior: la ejecución de 74 s tenía 4 IT, no 5. Con el test nuevo son 5 IT, también en verde, y esa ejecución no la cronometré."
+        },
+        {
+          "t": "2026-11-02T12:31:43+01:00",
+          "by": "tester",
+          "msg": "BLOCKED: Suites en verde y kit verificado, pero falta `./mk test` con el stack apagado, pendiente de T-068 y de permiso para `./mk down`."
+        },
+        {
+          "t": "2026-11-02T12:31:43+01:00",
+          "by": "tester",
+          "msg": "⚠ 1 comandos denegados: ./mk test > \"C:/Users/albaa/AppData/Local/Temp/claude/C--Users-albaa-Documents-2"
+        },
+        {
+          "t": "2026-11-02T12:31:43+01:00",
+          "by": "runner",
+          "msg": "✗ «./mk test > \"C:/Users/albaa/AppData/Local/Temp/claude/C--Users-albaa-Documents-2026-lakeho»: varios comandos, tuberías, redirecciones o heredoc: lanza cada comando por separado y crea ficheros con Write/Edit"
         }
       ],
       "runs": [
@@ -430,9 +460,19 @@
           "tokens": 204932,
           "cost_usd": 0.3999464,
           "verdict": "review"
+        },
+        {
+          "agent": "tester",
+          "mode": "verify",
+          "at": "2026-11-02T12:31:43+01:00",
+          "min": 18.6,
+          "turns": 38,
+          "tokens": 569262,
+          "cost_usd": 0.7033685999999999,
+          "verdict": "blocked"
         }
       ],
-      "verify_started": "2026-11-02T12:06:30+01:00"
+      "verify_started": "2026-11-02T12:13:05+01:00"
     },
     {
       "id": "T-007",
@@ -2206,13 +2246,13 @@
     "measure": {
       "state": "working",
       "current": "T-006",
-      "message": "desarrollador con T-006",
+      "message": "tester con T-006",
       "pid": 25568,
-      "heartbeat": "2026-11-02T12:09:50+01:00",
+      "heartbeat": "2026-11-02T12:13:06+01:00",
       "enabled": true,
-      "agent": "desarrollador",
-      "started": "2026-11-02T12:09:50+01:00",
-      "live": "live-T-006-desarrollador-20261102-120950.jsonl"
+      "agent": "tester",
+      "started": "2026-11-02T12:13:06+01:00",
+      "live": "live-T-006-tester-20261102-121306.jsonl"
     }
   }
 }

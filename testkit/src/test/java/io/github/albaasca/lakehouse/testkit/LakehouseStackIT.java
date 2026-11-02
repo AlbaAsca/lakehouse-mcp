@@ -2,6 +2,7 @@ package io.github.albaasca.lakehouse.testkit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.net.URI;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -35,6 +36,18 @@ class LakehouseStackIT {
                 assertThat(rows.next()).isFalse();
             }
         }
+    }
+
+    /** The ports published by compose.yaml: reaching any of them would mean depending on `./mk up`. */
+    @Test
+    void usesItsOwnMappedPortsAndNotThoseOfTheComposeStack() {
+        LakehouseStack stack = LakehouseStack.shared();
+
+        int polarisPort = URI.create(stack.polarisUrl()).getPort();
+        int s3Port = Integer.parseInt(stack.s3Endpoint().substring(stack.s3Endpoint().lastIndexOf(':') + 1));
+
+        assertThat(polarisPort).isNotIn(8181, 8182, 8333);
+        assertThat(s3Port).isNotIn(8181, 8182, 8333);
     }
 
     @Test
