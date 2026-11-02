@@ -1,6 +1,6 @@
 # Servidor MCP
 
-**Estado:** ⬜ planificado. Solo existe [`mcp-server/pom.xml`](../../../mcp-server/pom.xml): no hay código, comandos ni salida que enseñar. Tarjetas T-020 a T-028.
+**Estado:** ⬜ planificado. Solo existe la [conexión con DuckDB](duckdb.md#dentro-del-servidor-mcp), probada por sus tests: todavía no hay aplicación, herramientas ni comandos que enseñar. Tarjetas T-020 a T-028.
 
 [Portada](../README.md) · [Glosario](../01-conceptos.md)
 

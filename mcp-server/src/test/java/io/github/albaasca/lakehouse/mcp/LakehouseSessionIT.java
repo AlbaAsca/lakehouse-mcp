@@ -277,6 +277,11 @@ class LakehouseSessionIT {
 
         try (LakehouseSession offline = new LakehouseSession(settings().withExtensions(preloaded, false))) {
             assertThat(strings(offline, "SELECT count(*) FROM " + TABLE)).containsExactly("50000");
+            // Features that DuckDB could fetch on first use: dates over timestamptz, and the parser behind the validator.
+            assertThat(strings(offline, "SELECT count(*) FROM " + TABLE + " WHERE brand = 'synth-nimbora' "
+                    + "AND event_type = 'purchase' AND event_time::DATE = DATE '2024-03-10'")).containsExactly("10");
+            assertThat(strings(offline, "SELECT json_extract(json_serialize_sql('SELECT 1'), '$.error')"))
+                    .containsExactly("false");
         }
 
         // The same setting with nothing to load fails, so the session above did not download them.

@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-02T18:17:20+01:00",
+  "updated": "2026-11-02T18:26:47+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -61,8 +61,8 @@
       "name": "Desarrollador",
       "role": "Implementa las tareas",
       "color": "#7aa2f7",
-      "status": "working",
-      "current": "T-016"
+      "status": "idle",
+      "current": null
     },
     {
       "id": "tester",
@@ -800,7 +800,7 @@
       "id": "T-012",
       "title": "Ingesta: configurar y registrar el conector hacia Iceberg",
       "owner": "desarrollador",
-      "status": "blocked",
+      "status": "review",
       "priority": "alta",
       "estimate_min": 35.0,
       "actual_min": 14.5,
@@ -811,7 +811,7 @@
         "T-002"
       ],
       "created": "2026-11-02T11:35:58+01:00",
-      "updated": "2026-11-02T13:15:21+01:00",
+      "updated": "2026-11-02T18:18:43+01:00",
       "started_at": "2026-11-02T13:00:28+01:00",
       "finished_at": "2026-11-02T13:14:56+01:00",
       "log": [
@@ -864,6 +864,11 @@
           "t": "2026-11-02T17:37:20+01:00",
           "by": "arquitecto",
           "msg": "Recorrido mínimo: T-015 necesita esta tarjeta en Hecho y sigue bloqueada. En cuanto T-072 quede verificada, pasarla a Revisión."
+        },
+        {
+          "t": "2026-11-02T18:18:43+01:00",
+          "by": "consultor",
+          "msg": "El bloqueo era un corte del tester (T-084), y T-072 ya arregló el conector. Verifícala de nuevo: sin esto no avanza T-015."
         }
       ],
       "runs": [
@@ -1151,10 +1156,10 @@
       "id": "T-016",
       "title": "Consulta: conexión a DuckDB y carga rápida de datos de prueba",
       "owner": "desarrollador",
-      "status": "doing",
+      "status": "review",
       "priority": "alta",
       "estimate_min": 35.0,
-      "actual_min": null,
+      "actual_min": 18.4,
       "auto": true,
       "manual": null,
       "desc": "El servidor MCP necesita una forma fiable de hablar con Iceberg a través de DuckDB, con sus límites de tiempo. Los tests de consulta tampoco deberían pasar por Kafka cada vez, así que se añade una carga directa de la muestra.\nCómo sabremos si funciona: un test carga la muestra sin Kafka y lee las filas exactas a través de la conexión del servidor; una consulta que excede el tiempo se corta.\n\n## Técnico\n- mcp-server: LakehouseSession (pool pequeño de conexiones DuckDB, LOAD iceberg/httpfs, secretos, ATTACH con ACCESS_DELEGATION_MODE none, timeout y memory_limit). Extensiones: comprobar que la instalación funciona sin internet o precargarlas en la imagen.\n- testkit: SyntheticLoader (crea tabla particionada e inserta desde testdata/synthetic-events.csv.gz según lo que diga docs/spike-duckdb-iceberg.md).\n- Verificación: ./mk test.",
@@ -1162,9 +1167,9 @@
         "T-014"
       ],
       "created": "2026-11-02T11:36:36+01:00",
-      "updated": "2026-11-02T18:08:24+01:00",
+      "updated": "2026-11-02T18:26:45+01:00",
       "started_at": "2026-11-02T18:08:24+01:00",
-      "finished_at": null,
+      "finished_at": "2026-11-02T18:26:45+01:00",
       "log": [
         {
           "t": "2026-11-02T11:36:36+01:00",
@@ -1190,6 +1195,23 @@
           "t": "2026-11-02T18:14:44+01:00",
           "by": "consultor",
           "msg": "T-101: la decisión 20 pide dos instancias de DuckDB. Esta tarjeta sigue igual; la separación va en T-106. Conviene que LakehouseSession reciba el modo de ATTACH como parámetro y use un Statement nuevo por consulta."
+        },
+        {
+          "t": "2026-11-02T18:26:45+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: LakehouseSession y SyntheticLoader listos con 11 tests de integración y `./mk test` en verde; falta precargar las extensiones en la imagen (anotado en T-093)."
+        }
+      ],
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-02T18:26:45+01:00",
+          "min": 18.3,
+          "turns": 5,
+          "tokens": 189577,
+          "cost_usd": 1.6533728,
+          "verdict": "review"
         }
       ]
     },
@@ -1263,6 +1285,11 @@
           "t": "2026-11-02T17:37:22+01:00",
           "by": "arquitecto",
           "msg": "Ya no bloquea la primera demo, que usa la muestra sintética. Sigue haciendo falta para la demo completa y el benchmark."
+        },
+        {
+          "t": "2026-11-02T18:22:57+01:00",
+          "by": "consultor",
+          "msg": "Con datos reales no enviar respuestas a la capa gratuita de Gemini (Google puede usarlas): usar una cuenta de pago."
         }
       ]
     },
@@ -1703,7 +1730,7 @@
       "id": "T-032",
       "title": "Agente: poner ANTHROPIC_API_KEY en .env",
       "owner": "consultor",
-      "status": "backlog",
+      "status": "done",
       "priority": "media",
       "estimate_min": 5.0,
       "actual_min": null,
@@ -1712,7 +1739,7 @@
       "desc": "El agente y las evals llaman a la API de Anthropic, que gasta cuota, y la clave solo la puede poner el responsable. Conviene una clave propia con límite de gasto mensual, para que un error en bucle no sea caro.\nCómo sabremos si funciona: la prueba real del agente responde en lugar de dar error 401.\n\n## Técnico\n.env ya está en .gitignore. Las tarjetas del agente se prueban con modelo simulado y no dependen de esta; solo la necesitan las ejecuciones reales. Atención: una vez puesta, ./mk evals (que los agentes sí pueden ejecutar) gastará cuota.",
       "deps": [],
       "created": "2026-11-02T11:38:00+01:00",
-      "updated": "2026-11-02T11:38:00+01:00",
+      "updated": "2026-11-02T18:26:19+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -1720,6 +1747,21 @@
           "t": "2026-11-02T11:38:00+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T18:22:56+01:00",
+          "by": "consultor",
+          "msg": "Cambio: ahora es GEMINI_API_KEY en .env, creada en Google AI Studio (https://aistudio.google.com/apikey). No hace falta tarjeta para la capa gratuita. Solo datos sintéticos: Google puede usar lo que se envíe. La clave de Anthropic pasa a ser opcional."
+        },
+        {
+          "t": "2026-11-02T18:22:56+01:00",
+          "by": "consultor",
+          "msg": "Pon GEMINI_API_KEY en .env: se necesita para la prueba real (T-097)"
+        },
+        {
+          "t": "2026-11-02T18:26:19+01:00",
+          "by": "consultor",
+          "msg": "GEMINI_API_KEY en .env; la API la acepta"
         }
       ]
     },
@@ -2055,7 +2097,7 @@
       "id": "T-044",
       "title": "Mantenimiento: Trino leyendo el catálogo, solo a demanda",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "done",
       "priority": "media",
       "estimate_min": 40.0,
       "actual_min": null,
@@ -2066,7 +2108,7 @@
         "T-016"
       ],
       "created": "2026-11-02T11:39:12+01:00",
-      "updated": "2026-11-02T18:15:12+01:00",
+      "updated": "2026-11-02T18:18:07+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -2079,6 +2121,11 @@
           "t": "2026-11-02T18:15:12+01:00",
           "by": "consultor",
           "msg": "descripción reescrita"
+        },
+        {
+          "t": "2026-11-02T18:18:07+01:00",
+          "by": "consultor",
+          "msg": "Descartada: la responsable decidió quitar el benchmark con Trino (T-087). No se ha hecho."
         }
       ]
     },
@@ -2213,7 +2260,7 @@
       "id": "T-049",
       "title": "Benchmark: mismas consultas en DuckDB y Trino, tabla reproducible",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "done",
       "priority": "media",
       "estimate_min": 35.0,
       "actual_min": null,
@@ -2224,7 +2271,7 @@
         "T-044"
       ],
       "created": "2026-11-02T11:39:42+01:00",
-      "updated": "2026-11-02T11:39:42+01:00",
+      "updated": "2026-11-02T18:18:07+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -2232,6 +2279,11 @@
           "t": "2026-11-02T11:39:42+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T18:18:07+01:00",
+          "by": "consultor",
+          "msg": "Descartada: la responsable decidió quitar el benchmark con Trino (T-087). No se ha hecho."
         }
       ]
     },
@@ -2292,7 +2344,7 @@
       "id": "T-052",
       "title": "Benchmark: medir con los datos reales y publicar la tabla",
       "owner": "consultor",
-      "status": "backlog",
+      "status": "done",
       "priority": "media",
       "estimate_min": 20.0,
       "actual_min": null,
@@ -2304,7 +2356,7 @@
         "T-018"
       ],
       "created": "2026-11-02T11:40:08+01:00",
-      "updated": "2026-11-02T11:40:08+01:00",
+      "updated": "2026-11-02T18:18:08+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -2312,6 +2364,11 @@
           "t": "2026-11-02T11:40:08+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T18:18:08+01:00",
+          "by": "consultor",
+          "msg": "Descartada: la responsable decidió quitar el benchmark con Trino (T-087). No se ha hecho."
         }
       ]
     },
@@ -2406,6 +2463,11 @@
           "t": "2026-11-02T11:44:45+01:00",
           "by": "consultor",
           "msg": "Cambio del responsable: el README sigue el formato de sus repos públicos (portada SVG, insignias, español con bloque 🇬🇧 In English, tabla de decisiones, limitaciones). Ya hay una versión con estado real: actualizarla, no reescribirla en inglés."
+        },
+        {
+          "t": "2026-11-02T18:18:09+01:00",
+          "by": "consultor",
+          "msg": "Sin benchmark con Trino: no lo menciones."
         }
       ]
     },
@@ -2550,6 +2612,11 @@
           "t": "2026-11-02T11:40:47+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T18:22:56+01:00",
+          "by": "consultor",
+          "msg": "El agente usa Gemini por defecto, configurable (T-094): secret GEMINI_API_KEY. Un límite de cuota no cuenta como pregunta fallada: repórtalo aparte, y anota qué modelo da la nota. Revisar si 25-30 preguntas caben en el cupo diario; si no, repartirlas o usar una cuenta de pago."
         }
       ]
     },
@@ -2577,6 +2644,11 @@
           "t": "2026-11-02T11:40:48+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T18:22:56+01:00",
+          "by": "consultor",
+          "msg": "El agente usa Gemini por defecto, configurable (T-094): secret GEMINI_API_KEY. Un límite de cuota no cuenta como pregunta fallada: repórtalo aparte, y anota qué modelo da la nota. Revisar si 25-30 preguntas caben en el cupo diario; si no, repartirlas o usar una cuenta de pago."
         }
       ]
     },
@@ -2629,6 +2701,11 @@
           "t": "2026-11-02T11:41:00+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T18:22:56+01:00",
+          "by": "consultor",
+          "msg": "El agente usa Gemini por defecto, configurable (T-094): secret GEMINI_API_KEY. Un límite de cuota no cuenta como pregunta fallada: repórtalo aparte, y anota qué modelo da la nota. Revisar si 25-30 preguntas caben en el cupo diario; si no, repartirlas o usar una cuenta de pago."
         }
       ]
     },
@@ -2667,6 +2744,11 @@
           "t": "2026-11-02T11:44:46+01:00",
           "by": "consultor",
           "msg": "Mantener el formato actual del README y marcar en 'Qué hay y qué falta' lo que se complete."
+        },
+        {
+          "t": "2026-11-02T18:18:09+01:00",
+          "by": "consultor",
+          "msg": "Sin benchmark: el README publica evals y demo; no incluir tabla de rendimiento frente a Trino."
         }
       ]
     },
@@ -3469,7 +3551,7 @@
       "id": "T-087",
       "title": "Decidir si se quita el benchmark con Trino",
       "owner": "consultor",
-      "status": "human",
+      "status": "done",
       "priority": "baja",
       "estimate_min": 5.0,
       "actual_min": null,
@@ -3478,7 +3560,7 @@
       "desc": "El benchmark con Trino consume mucha memoria y aporta menos que el self-healing o las evals. Se plantea quitarlo si falta cupo. Es una decisión de alcance, así que la toma la responsable. Cómo sabremos si funciona: el panel y el brief reflejan la decisión.",
       "deps": [],
       "created": "2026-11-02T17:30:58+01:00",
-      "updated": "2026-11-02T17:30:59+01:00",
+      "updated": "2026-11-02T18:18:08+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -3496,6 +3578,11 @@
           "t": "2026-11-02T18:15:27+01:00",
           "by": "consultor",
           "msg": "T-101: compactar ya no depende de Trino. Lo que cambia con esta decisión es expirar snapshots (T-105): si Trino se queda, unos 15 min sobre T-044; si se va, se ahorra T-044 (40 min) y T-105 pasa a un proceso de un solo uso con la API Java de Iceberg (unos 40 min). También se puede sacar la expiración del alcance, aunque el brief la pide."
+        },
+        {
+          "t": "2026-11-02T18:18:08+01:00",
+          "by": "consultor",
+          "msg": "La responsable decide quitar el benchmark con Trino"
         }
       ]
     },
@@ -3715,6 +3802,11 @@
           "t": "2026-11-02T17:36:48+01:00",
           "by": "arquitecto",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T18:19:41+01:00",
+          "by": "consultor",
+          "msg": "De T-016: la imagen del servidor debe llevar httpfs, avro e iceberg ya instaladas en un directorio y arrancar con installExtensions=false (LakehouseSessionIT demuestra que así no descarga nada). Sin probar: precargarlas desde la imagen; el directorio del test lo llena el propio driver JDBC 2.0.0.1."
         }
       ]
     },
@@ -3728,12 +3820,12 @@
       "actual_min": null,
       "auto": true,
       "manual": null,
-      "desc": "El agente esperaba a que estuvieran hechas todas las métricas de negocio, un rodeo largo para enseñar lo esencial. Se propone una primera versión que conteste usando la consulta validada, y añadir las métricas después. Lleva desde el principio un tope de vueltas, para que un bucle no gaste sin control.\nCómo sabremos si funciona: con un modelo simulado que pide una consulta, el agente la lanza de verdad por MCP y la cifra devuelta llega a la respuesta; un modelo que nunca acaba se corta en el tope.\n\n## Técnico\nSale de T-034, que queda para la preferencia por get_metric. agent: ChatClient de Spring AI 2.0.2 con spring-ai-starter-model-anthropic y cliente MCP (comprobar la API en la doc oficial). Entrada: ask pregunta. AGENT_MODEL por configuración, sin nombre fijo en código. System prompt en recursos: no inventar cifras y citar la herramienta usada. Tope de iteraciones de herramientas por configuración, con mensaje claro; tokens y gasto siguen en T-035. Test con ChatModel simulado con guion y servidor MCP real, sin clave de API, en ./mk test. Crear docs/wiki/componentes/agente.md o actualizarla, y el estado en docs/wiki/README.md.",
+      "desc": "El agente esperaba a que estuvieran hechas todas las métricas de negocio, un rodeo largo para enseñar lo esencial. Se propone una primera versión que conteste usando la consulta validada, y añadir las métricas después. Lleva desde el principio un tope de vueltas, para que un bucle no gaste sin control.\nCómo sabremos si funciona: con un modelo simulado que pide una consulta, el agente la lanza de verdad por MCP y la cifra devuelta llega a la respuesta; un modelo que nunca acaba se corta en el tope.\n\n## Técnico\nSale de T-034, que queda para la preferencia por get_metric. agent: ChatClient de Spring AI 2.0.2 con spring-ai-starter-model-anthropic y cliente MCP (comprobar la API en la doc oficial). Entrada: ask pregunta. AGENT_MODEL por configuración, sin nombre fijo en código. System prompt en recursos: no inventar cifras y citar la herramienta usada. Tope de iteraciones de herramientas por configuración, con mensaje claro; tokens y gasto siguen en T-035. Test con ChatModel simulado con guion y servidor MCP real, sin clave de API, en ./mk test. Crear docs/wiki/componentes/agente.md o actualizarla, y el estado en docs/wiki/README.md.\n\nCambio de la responsable (2-nov): el proveedor por defecto es Gemini por su capa gratuita, y se elige por configuración para poder usar Claude sin tocar el código.\n\nTécnico añadido: agent/pom.xml con spring-ai-starter-model-google-genai (2.0.2) y, sin activar por defecto, el de Anthropic. Propiedad spring.ai.model.chat para elegirlo; clave en GEMINI_API_KEY, también en .env.example. Usa ChatClient: en Spring AI 2 el ChatModel ya no ejecuta herramientas solo. Modelo de la capa gratuita y configurable: compruébalo en la documentación actual, y si es Gemini 3 revisa thought signatures. Un error 429 de cuota se informa como cuota, nunca como respuesta fallida. Actualiza docs/brief.md, docs/architecture.md, README y docs/wiki/componentes/agente.md.",
       "deps": [
         "T-021"
       ],
       "created": "2026-11-02T17:36:54+01:00",
-      "updated": "2026-11-02T17:36:54+01:00",
+      "updated": "2026-11-02T18:22:55+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -3741,6 +3833,11 @@
           "t": "2026-11-02T17:36:54+01:00",
           "by": "arquitecto",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T18:22:55+01:00",
+          "by": "consultor",
+          "msg": "descripción reescrita"
         }
       ]
     },
@@ -3823,6 +3920,11 @@
           "t": "2026-11-02T17:37:29+01:00",
           "by": "arquitecto",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T18:22:56+01:00",
+          "by": "consultor",
+          "msg": "Con Gemini y datos sintéticos. Anotar el modelo usado y las llamadas de la prueba."
         }
       ]
     },
@@ -4075,7 +4177,7 @@
       "id": "T-105",
       "title": "Mantenimiento: expirar snapshots viejos",
       "owner": "desarrollador",
-      "status": "blocked",
+      "status": "next",
       "priority": "media",
       "estimate_min": 40.0,
       "actual_min": null,
@@ -4086,7 +4188,7 @@
         "T-087"
       ],
       "created": "2026-11-02T18:14:35+01:00",
-      "updated": "2026-11-02T18:14:35+01:00",
+      "updated": "2026-11-02T18:18:08+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -4094,6 +4196,16 @@
           "t": "2026-11-02T18:14:35+01:00",
           "by": "arquitecto",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T18:18:08+01:00",
+          "by": "consultor",
+          "msg": "T-087 decidida: sin Trino"
+        },
+        {
+          "t": "2026-11-02T18:18:08+01:00",
+          "by": "consultor",
+          "msg": "Sin Trino: hazlo con un proceso de un solo uso con la API Java de Iceberg, como propuso T-101 (unos 40 min)."
         }
       ]
     },
@@ -4146,16 +4258,74 @@
           "msg": "creada"
         }
       ]
+    },
+    {
+      "id": "T-108",
+      "title": "Retirar Trino y el benchmark del proyecto",
+      "owner": "desarrollador",
+      "status": "next",
+      "priority": "media",
+      "estimate_min": 25.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "La responsable decidió quitar el benchmark con Trino para ahorrar memoria y tarjetas. Hay que eliminar lo que queda para que nadie crea que existe. Cómo sabremos si funciona: el stack y la suite siguen en verde, y una búsqueda de Trino y bench solo encuentra la explicación de esta decisión.\n\n## Técnico\nQuitar: servicio trino y perfil bench de compose.yaml; módulo bench de pom.xml y carpeta bench/; objetivo bench de Makefile; docs/wiki/componentes/trino.md y sus enlaces. Actualizar: README.md, docs/brief.md (funcionalidad 7, módulos, Makefile), CLAUDE.md (línea de Código), docs/architecture.md (decisión con fecha y motivo), docs/wiki (README, 01, 02, 04, 05, duckdb, iceberg, imagen-tools). Conservar en 05-decisiones.md por qué se descartó. Pasar ./mk test y ./mk test-board.",
+      "deps": [],
+      "created": "2026-11-02T18:18:09+01:00",
+      "updated": "2026-11-02T18:18:09+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T18:18:09+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T18:18:09+01:00",
+          "by": "consultor",
+          "msg": "Limpieza tras T-087"
+        }
+      ]
+    },
+    {
+      "id": "T-109",
+      "title": "Panel: el guardado automático se lleva cambios de otra tarjeta en curso",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "media",
+      "estimate_min": 20.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Mientras T-016 estaba en marcha, el guardado automático de T-101, una tarjeta del otro carril que trabajaba a la vez, incluyó código de T-016. El historial atribuye ese código a una tarjeta que no lo hizo, y podría guardarse trabajo a medias de otra. Se propone mirar cómo decide el ejecutor qué ficheros son de cada carril y separarlos bien.\nCómo sabremos si funciona: con dos tarjetas a la vez, cada guardado contiene solo los ficheros de su propia tarjeta.\n## Técnico\nCaso real: commit b8b67ab (chore(runner): T-101 blocked by arquitecto) añade mcp-server/src/main/java/io/github/albaasca/lakehouse/mcp/LakehouseSession.java, escrito por T-016. CLAUDE.md dice que cada carril hace commit solo de los ficheros que cambió. Revisar board/runner.py y añadir un test con dos carriles simultáneos.",
+      "deps": [],
+      "created": "2026-11-02T18:19:59+01:00",
+      "updated": "2026-11-02T18:20:05+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T18:19:59+01:00",
+          "by": "desarrollador",
+          "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T18:20:05+01:00",
+          "by": "consultor",
+          "msg": "descripción reescrita"
+        }
+      ]
     }
   ],
   "runners": {
     "think": {
-      "state": "working",
-      "current": "T-088",
-      "message": "arquitecto con T-088",
+      "state": "paused",
+      "current": null,
+      "message": "En pausa",
       "pid": 21744,
-      "heartbeat": "2026-11-02T18:16:36+01:00",
-      "enabled": true,
+      "heartbeat": "2026-11-02T18:26:47+01:00",
+      "enabled": false,
       "agent": "arquitecto",
       "started": "2026-11-02T18:16:36+01:00",
       "live": "live-T-088-arquitecto-20261102-181636.jsonl",

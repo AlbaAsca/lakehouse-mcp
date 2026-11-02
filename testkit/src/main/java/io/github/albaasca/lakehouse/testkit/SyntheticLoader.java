@@ -15,7 +15,7 @@ import java.sql.Statement;
  */
 public final class SyntheticLoader {
 
-    private static final String COLUMNS = "event_time TIMESTAMPTZ, event_type VARCHAR NOT NULL, product_id BIGINT, "
+    private static final String COLUMNS = "event_time TIMESTAMPTZ, event_type VARCHAR, product_id BIGINT, "
             + "category_id BIGINT, category_code VARCHAR, brand VARCHAR, price DOUBLE, user_id BIGINT, user_session VARCHAR";
     private static final String CSV_COLUMNS = "{'event_time': 'TIMESTAMPTZ', 'event_type': 'VARCHAR', "
             + "'product_id': 'BIGINT', 'category_id': 'BIGINT', 'category_code': 'VARCHAR', 'brand': 'VARCHAR', "
