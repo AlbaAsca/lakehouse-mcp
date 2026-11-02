@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-03T00:16:14+01:00",
+  "updated": "2026-11-03T00:24:58+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -3555,6 +3555,11 @@
           "t": "2026-11-02T23:40:17+01:00",
           "by": "runner",
           "msg": "? permiso solicitado: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\board\\runner.py * (T-130); la tarjeta espera la decisión"
+        },
+        {
+          "t": "2026-11-03T00:21:30+01:00",
+          "by": "tú",
+          "msg": "✓ permiso concedido: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\board\\runner.py *"
         }
       ],
       "runs": [
@@ -3751,6 +3756,21 @@
           "t": "2026-11-02T23:36:00+01:00",
           "by": "runner",
           "msg": "? permiso solicitado: ./mk.cmd * (T-126); la tarjeta espera la decisión"
+        },
+        {
+          "t": "2026-11-03T00:21:35+01:00",
+          "by": "tú",
+          "msg": "✓ permiso concedido: ./mk.cmd *"
+        },
+        {
+          "t": "2026-11-03T00:21:41+01:00",
+          "by": "tú",
+          "msg": "✓ permiso concedido: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\.claude\\agents\\tester.md *"
+        },
+        {
+          "t": "2026-11-03T00:21:47+01:00",
+          "by": "tú",
+          "msg": "✓ permiso concedido: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\.claude\\agents\\desarrollador.md *"
         }
       ],
       "runs": [
@@ -3822,7 +3842,7 @@
       "id": "T-080",
       "title": "Reutilizar contenedores para acortar la suite de tests",
       "owner": "desarrollador",
-      "status": "review",
+      "status": "done",
       "priority": "alta",
       "estimate_min": 40.0,
       "actual_min": 23.5,
@@ -3831,7 +3851,7 @@
       "desc": "La suite completa pasa de 15 minutos porque varios tests levantan sus propios contenedores. Se propone compartir un único stack durante cada ejecución, sin que los tests se pisen entre ellos. Cómo sabremos si funciona: la suite tarda bastante menos, medido antes y después en el mismo equipo, y sigue en verde al ejecutarla dos veces seguidas.\n\n## Técnico\ntestkit/src/main/java/.../LakehouseStack.java: arrancar una sola vez por JVM (patrón singleton de Testcontainers, cerrado por Ryuk) y hacer que IcebergSinkConfigIT, IcebergSinkFlowIT, LakehouseStackIT y ProducerIT lo reutilicen; aislar con nombres únicos de topic, namespace y conector. Revisar forkCount de surefire/failsafe y si cada módulo necesita su propia JVM. No activar testcontainers.reuse.enable, para que CI parta siempre de limpio. Anotar tiempos en la tarjeta. Coordinar con T-077.",
       "deps": [],
       "created": "2026-11-02T17:30:26+01:00",
-      "updated": "2026-11-03T00:16:14+01:00",
+      "updated": "2026-11-03T00:24:58+01:00",
       "started_at": "2026-11-03T00:14:22+01:00",
       "finished_at": "2026-11-03T00:16:14+01:00",
       "log": [
@@ -3889,6 +3909,16 @@
           "t": "2026-11-03T00:16:14+01:00",
           "by": "desarrollador",
           "msg": "REVIEW: Corregida la comprobación de `tests/test_connect_config.py` que dejaba `board-and-scripts` en rojo, con los tests del panel en verde en local (141 pasados, 1 omitido), pendiente de confirmar en CI."
+        },
+        {
+          "t": "2026-11-03T00:16:18+01:00",
+          "by": "tester",
+          "msg": "verificando"
+        },
+        {
+          "t": "2026-11-03T00:24:58+01:00",
+          "by": "tester",
+          "msg": "DONE: Stack y worker compartidos por JVM y `testkit` y `tests/` en verde sobre HEAD, con mejora medida del 14-24 % y la confirmación de CI del arreglo aún pendiente."
         }
       ],
       "runs": [
@@ -3921,9 +3951,19 @@
           "tokens": 51459,
           "cost_usd": 0.1374684,
           "verdict": "review"
+        },
+        {
+          "agent": "tester",
+          "mode": "verify",
+          "at": "2026-11-03T00:24:58+01:00",
+          "min": 8.7,
+          "turns": 27,
+          "tokens": 508730,
+          "cost_usd": 0.6109424,
+          "verdict": "done"
         }
       ],
-      "verify_started": "2026-11-03T00:01:58+01:00"
+      "verify_started": "2026-11-03T00:16:18+01:00"
     },
     {
       "id": "T-081",
@@ -5413,7 +5453,7 @@
       "id": "T-124",
       "title": "Solicitud de permiso: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\.claude\\agents\\desarrollador.md *",
       "owner": "consultor",
-      "status": "human",
+      "status": "done",
       "priority": "media",
       "estimate_min": 2,
       "actual_min": null,
@@ -5422,7 +5462,7 @@
       "desc": "El agente «desarrollador» necesitaba un comando que no está en su lista de permitidos y se lo bloquearon mientras hacía T-077. No es de solo lectura ni está prohibido, así que lo tiene que validar una persona.\n\nPara qué lo quería: (no lo explicó)\n\nCómo decidir: concede si es seguro repetirlo sin supervisión dentro del proyecto; deniega si escribe fuera, publica, borra o usa la red.\n\n## Técnico\n- Comando: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\.claude\\agents\\desarrollador.md\n- Patrón que se concedería: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\.claude\\agents\\desarrollador.md *\n- Tarjeta: T-077",
       "deps": [],
       "created": "2026-11-02T23:36:00+01:00",
-      "updated": "2026-11-02T23:36:00+01:00",
+      "updated": "2026-11-03T00:21:47+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -5430,6 +5470,11 @@
           "t": "2026-11-02T23:36:00+01:00",
           "by": "runner",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-03T00:21:47+01:00",
+          "by": "tú",
+          "msg": "✓ Concedido: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\.claude\\agents\\desarrollador.md *"
         }
       ],
       "kind": "permiso",
@@ -5445,7 +5490,7 @@
       "id": "T-125",
       "title": "Solicitud de permiso: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\.claude\\agents\\tester.md *",
       "owner": "consultor",
-      "status": "human",
+      "status": "done",
       "priority": "media",
       "estimate_min": 2,
       "actual_min": null,
@@ -5454,7 +5499,7 @@
       "desc": "El agente «desarrollador» necesitaba un comando que no está en su lista de permitidos y se lo bloquearon mientras hacía T-077. No es de solo lectura ni está prohibido, así que lo tiene que validar una persona.\n\nPara qué lo quería: (no lo explicó)\n\nCómo decidir: concede si es seguro repetirlo sin supervisión dentro del proyecto; deniega si escribe fuera, publica, borra o usa la red.\n\n## Técnico\n- Comando: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\.claude\\agents\\tester.md\n- Patrón que se concedería: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\.claude\\agents\\tester.md *\n- Tarjeta: T-077",
       "deps": [],
       "created": "2026-11-02T23:36:00+01:00",
-      "updated": "2026-11-02T23:36:00+01:00",
+      "updated": "2026-11-03T00:21:40+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -5462,6 +5507,11 @@
           "t": "2026-11-02T23:36:00+01:00",
           "by": "runner",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-03T00:21:41+01:00",
+          "by": "tú",
+          "msg": "✓ Concedido: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\.claude\\agents\\tester.md *"
         }
       ],
       "kind": "permiso",
@@ -5477,7 +5527,7 @@
       "id": "T-126",
       "title": "Solicitud de permiso: ./mk.cmd *",
       "owner": "consultor",
-      "status": "human",
+      "status": "done",
       "priority": "media",
       "estimate_min": 2,
       "actual_min": null,
@@ -5486,7 +5536,7 @@
       "desc": "El agente «desarrollador» necesitaba un comando que no está en su lista de permitidos y se lo bloquearon mientras hacía T-077. No es de solo lectura ni está prohibido, así que lo tiene que validar una persona.\n\nPara qué lo quería: comprobar que `mk.cmd` pasa el argumento y devuelve el error\n\nCómo decidir: concede si es seguro repetirlo sin supervisión dentro del proyecto; deniega si escribe fuera, publica, borra o usa la red.\n\n## Técnico\n- Comando: ./mk.cmd test MODULE=noexiste\n- Patrón que se concedería: ./mk.cmd *\n- Tarjeta: T-077",
       "deps": [],
       "created": "2026-11-02T23:36:00+01:00",
-      "updated": "2026-11-02T23:36:00+01:00",
+      "updated": "2026-11-03T00:21:35+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -5494,6 +5544,11 @@
           "t": "2026-11-02T23:36:00+01:00",
           "by": "runner",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-03T00:21:35+01:00",
+          "by": "tú",
+          "msg": "✓ Concedido: ./mk.cmd *"
         }
       ],
       "kind": "permiso",
@@ -5581,7 +5636,7 @@
       "id": "T-130",
       "title": "Solicitud de permiso: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\board\\runner.py *",
       "owner": "consultor",
-      "status": "human",
+      "status": "done",
       "priority": "media",
       "estimate_min": 2,
       "actual_min": null,
@@ -5590,7 +5645,7 @@
       "desc": "El agente «tester» necesitaba un comando que no está en su lista de permitidos y se lo bloquearon mientras hacía T-073. No es de solo lectura ni está prohibido, así que lo tiene que validar una persona.\n\nPara qué lo quería: (no lo explicó)\n\nCómo decidir: concede si es seguro repetirlo sin supervisión dentro del proyecto; deniega si escribe fuera, publica, borra o usa la red.\n\n## Técnico\n- Comando: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\board\\runner.py\n- Patrón que se concedería: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\board\\runner.py *\n- Tarjeta: T-073",
       "deps": [],
       "created": "2026-11-02T23:40:17+01:00",
-      "updated": "2026-11-02T23:40:17+01:00",
+      "updated": "2026-11-03T00:21:30+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -5598,6 +5653,11 @@
           "t": "2026-11-02T23:40:17+01:00",
           "by": "runner",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-03T00:21:30+01:00",
+          "by": "tú",
+          "msg": "✓ Concedido: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\board\\runner.py *"
         }
       ],
       "kind": "permiso",
@@ -5654,6 +5714,11 @@
           "t": "2026-11-03T00:13:59+01:00",
           "by": "tester",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-03T00:24:44+01:00",
+          "by": "consultor",
+          "msg": "Tester (T-080): el único fallo de board-and-scripts en la CI 41542155817 era este test, corregido en 8577fe0. En local, tests/ queda con 141 pasados y 1 omitido. La CI de ese commit (41544116515) sigue pendiente: si sale verde, esta tarjeta se puede cerrar sin más trabajo."
         }
       ]
     }
@@ -5675,13 +5740,13 @@
     "measure": {
       "state": "working",
       "current": "T-080",
-      "message": "desarrollador con T-080",
+      "message": "tester con T-080",
       "pid": 25284,
-      "heartbeat": "2026-11-03T00:14:23+01:00",
+      "heartbeat": "2026-11-03T00:16:18+01:00",
       "enabled": true,
-      "agent": "desarrollador",
-      "started": "2026-11-03T00:14:23+01:00",
-      "live": "live-T-080-desarrollador-20261103-001423.jsonl"
+      "agent": "tester",
+      "started": "2026-11-03T00:16:18+01:00",
+      "live": "live-T-080-tester-20261103-001618.jsonl"
     }
   }
 }

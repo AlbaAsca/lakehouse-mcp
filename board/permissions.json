@@ -65,6 +65,24 @@
       "why": "concedido por el responsable desde el panel",
       "by": "responsable",
       "at": "2026-11-02T23:21:45+01:00"
+    },
+    {
+      "pattern": "./mk.cmd *",
+      "why": "concedido por el responsable desde el panel",
+      "by": "responsable",
+      "at": "2026-11-03T00:21:35+01:00"
+    },
+    {
+      "pattern": "C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\.claude\\agents\\tester.md *",
+      "why": "concedido por el responsable desde el panel",
+      "by": "responsable",
+      "at": "2026-11-03T00:21:40+01:00"
+    },
+    {
+      "pattern": "C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\.claude\\agents\\desarrollador.md *",
+      "why": "concedido por el responsable desde el panel",
+      "by": "responsable",
+      "at": "2026-11-03T00:21:47+01:00"
     }
   ],
   "denied": []
