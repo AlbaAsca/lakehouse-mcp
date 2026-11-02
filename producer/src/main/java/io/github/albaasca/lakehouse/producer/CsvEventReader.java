@@ -35,7 +35,7 @@ import org.slf4j.LoggerFactory;
  * gzip) does stop the read, because carrying on would present a broken file as a complete one. Bytes that are not valid
  * UTF-8 become U+FFFD instead of losing the row.
  */
-public final class CsvEventReader implements Closeable {
+public final class CsvEventReader implements EventSource, Closeable {
 
     private static final Logger log = LoggerFactory.getLogger(CsvEventReader.class);
     private static final int MAX_LOGGED_ROWS = 100;
@@ -96,6 +96,7 @@ public final class CsvEventReader implements Closeable {
     }
 
     /** The next event, or null at the end of the file. */
+    @Override
     public GenericRecord next() throws IOException {
         String line;
         while ((line = lines.readLine()) != null) {
