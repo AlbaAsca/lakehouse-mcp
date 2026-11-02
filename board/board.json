@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-02T22:18:06+01:00",
+  "updated": "2026-11-02T22:35:28+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -1456,7 +1456,7 @@
       "id": "T-019",
       "title": "Consulta: validador de SQL que solo deja pasar lecturas",
       "owner": "desarrollador",
-      "status": "review",
+      "status": "next",
       "priority": "alta",
       "estimate_min": 40.0,
       "actual_min": 44.9,
@@ -1467,7 +1467,7 @@
         "T-016"
       ],
       "created": "2026-11-02T11:36:53+01:00",
-      "updated": "2026-11-02T22:18:06+01:00",
+      "updated": "2026-11-02T22:35:28+01:00",
       "started_at": "2026-11-02T22:14:57+01:00",
       "finished_at": "2026-11-02T22:18:06+01:00",
       "log": [
@@ -1535,6 +1535,31 @@
           "t": "2026-11-02T22:18:06+01:00",
           "by": "desarrollador",
           "msg": "REVIEW: SqlGuard revisado sin fallos y con 152 casos en verde, incluidos 5 nuevos que descartan contra DuckDB el hueco de CTE anidadas; falta verificar y conectarlo en T-021."
+        },
+        {
+          "t": "2026-11-02T22:18:09+01:00",
+          "by": "tester",
+          "msg": "verificando"
+        },
+        {
+          "t": "2026-11-02T22:34:55+01:00",
+          "by": "consultor",
+          "msg": "Tester, FALLA: dos consultas tumban el proceso entero en vez de ser rechazadas. (1) Anidamiento: guard.guarded(\"FROM (\".repeat(6000) + \"SELECT 1\" + \")\".repeat(6000), ALLOWED, 10) da segmentation fault (exit 139, 42 KB de SQL) en la primera llamada nativa a json_serialize_sql, antes de cualquier regla; con 4000 niveles se rechaza bien. Criterio: rechazar con Rejected sin llegar al analizador nativo (limite de longitud o de anidamiento contado en Java), con margen porque la pila real del servidor puede ser menor. (2) Celda gigante: guard.run(\"SELECT lpad('a', 2000000000, 'x')\", ALLOWED, 1) con SET memory_limit='256MB' mata la JVM (exit 137); con 500000000 pasa, tarda 18 s y devuelve la celda entera, asi que ni memory_limit ni el limite de filas la frenan. Criterio: lpad y rpad fuera de FUNCTIONS o longitud acotada. Los dos tests ya estan escritos y desactivados en SqlGuardProbeTest (@Disabled): quitar el @Disabled al arreglar. Las seis reglas, el limite de filas y la fidelidad de la SQL reconstruida si pasan."
+        },
+        {
+          "t": "2026-11-02T22:35:28+01:00",
+          "by": "tester",
+          "msg": "FAIL: SqlGuard deja que dos consultas tumben el proceso (42 KB de `FROM (` anidados: segfault; `lpad` de 2 GB: JVM muerta), reproducción en la nota de T-019 y tests desactivados en SqlGuardProbeTest."
+        },
+        {
+          "t": "2026-11-02T22:35:28+01:00",
+          "by": "tester",
+          "msg": "⚠ 1 comandos denegados: git log -4 --format=%h\\ %s -- testkit/src/test/java/io/github/albaasca/lakehouse"
+        },
+        {
+          "t": "2026-11-02T22:35:28+01:00",
+          "by": "runner",
+          "msg": "✓ permiso concedido automáticamente: git log -4* (solo lectura dentro del proyecto); se reintenta"
         }
       ],
       "runs": [
@@ -1557,8 +1582,19 @@
           "tokens": 367084,
           "cost_usd": 0.7605123999999999,
           "verdict": "review"
+        },
+        {
+          "agent": "tester",
+          "mode": "verify",
+          "at": "2026-11-02T22:35:28+01:00",
+          "min": 17.3,
+          "turns": 61,
+          "tokens": 1813474,
+          "cost_usd": 2.4048772,
+          "verdict": "fail"
         }
-      ]
+      ],
+      "verify_started": "2026-11-02T22:18:09+01:00"
     },
     {
       "id": "T-020",
@@ -4827,6 +4863,35 @@
           "msg": "descripción reescrita"
         }
       ]
+    },
+    {
+      "id": "T-116",
+      "title": "Consulta: permitir funciones habituales que el validador rechaza",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "baja",
+      "estimate_min": 10.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "El validador rechaza algunas funciones corrientes y seguras porque no están en su lista, así que el agente recibirá un error en preguntas normales y gastará intentos en reescribirlas. Se propone añadirlas tras comprobar que solo calculan sobre sus argumentos. Rechazar lo desconocido es correcto; aquí solo se amplía la lista con lo inofensivo.\nCómo sabremos si funciona: una consulta con condicionales y recuentos condicionales pasa el validador y devuelve lo mismo que sin él.\n## Técnico\nSqlGuard.FUNCTIONS: faltan if, count_if (y su alias countif) y like_escape (LIKE ... ESCAPE). Comprobado con DuckDB 2.0: SELECT if(id > 1, 1, 0) da Function not allowed: if; SELECT 'x' LIKE 'x' ESCAPE '$' da Function not allowed: like_escape. Añadir casos a letsLegitimateReadsThrough en SqlGuardTest. El test everyAllowedFunctionExistsAndIsNotATableFunction debe seguir en verde. ./mk test.",
+      "deps": [],
+      "created": "2026-11-02T22:35:00+01:00",
+      "updated": "2026-11-02T22:35:07+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T22:35:00+01:00",
+          "by": "tester",
+          "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T22:35:07+01:00",
+          "by": "consultor",
+          "msg": "descripción reescrita"
+        }
+      ]
     }
   ],
   "runners": {
@@ -4846,13 +4911,13 @@
     "measure": {
       "state": "working",
       "current": "T-019",
-      "message": "desarrollador con T-019",
+      "message": "tester con T-019",
       "pid": 18772,
-      "heartbeat": "2026-11-02T22:14:57+01:00",
+      "heartbeat": "2026-11-02T22:18:09+01:00",
       "enabled": true,
-      "agent": "desarrollador",
-      "started": "2026-11-02T22:14:57+01:00",
-      "live": "live-T-019-desarrollador-20261102-221457.jsonl"
+      "agent": "tester",
+      "started": "2026-11-02T22:18:09+01:00",
+      "live": "live-T-019-tester-20261102-221809.jsonl"
     }
   }
 }

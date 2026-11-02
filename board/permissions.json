@@ -41,6 +41,12 @@
       "why": "concedido automáticamente a arquitecto (T-088): solo lectura dentro del proyecto",
       "by": "runner",
       "at": "2026-11-02T18:17:20+01:00"
+    },
+    {
+      "pattern": "git log -4*",
+      "why": "concedido automáticamente a tester (T-019): solo lectura dentro del proyecto",
+      "by": "runner",
+      "at": "2026-11-02T22:35:28+01:00"
     }
   ],
   "denied": []
