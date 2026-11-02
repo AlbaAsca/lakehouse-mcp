@@ -141,6 +141,21 @@ docker compose exec -T seaweedfs curl -s -o /dev/null -w '%{http_code}\n' -X DEL
 
 **Remedio:** para tests que levanten Connect o Trino, [`docs/architecture.md`](../architecture.md#pruebas-qué-puede-verificar-cada-quién) indica apagar el stack antes. Comprueba el consumo con `docker stats --no-stream`.
 
+## Integración continua
+
+[`.github/workflows/ci.yml`](../../.github/workflows/ci.yml) se lanza en cada push a `develop` y `main` y en cada pull request, sin secretos ni Kaggle. Tiene dos trabajos:
+
+| Trabajo | Qué hace | Tiempo máximo |
+|---|---|---|
+| `java` | JDK 25 y `mvn -B -ntp verify`, con Testcontainers sobre el Docker del runner | 60 min |
+| `board-and-scripts` | Python 3.12 y `python -m pytest tests -q` | 10 min |
+
+**Sin probar:** la ejecución en GitHub, y `mvn -B -ntp verify` fuera de la imagen `tools`. Los tiempos máximos son una previsión, no una medida.
+
+Si `java` falla, la ejecución muestra el uso de disco y guarda los informes de los tests en el artefacto `test-reports`.
+
+La imagen del conector no se guarda en caché y se compila en cada ejecución. Testcontainers la construye con el constructor clásico de Docker, que no aprovecha una caché de buildx ([código](https://github.com/testcontainers/testcontainers-java/blob/2.0.5/core/src/main/java/org/testcontainers/images/builder/ImageFromDockerfile.java)).
+
 ## Operaciones destructivas
 
 Estas borran datos y no hay vuelta atrás:

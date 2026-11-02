@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  push:
+    branches: [develop, main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  java:
+    # Pinned: ubuntu-latest moves to 26.04 in November 2026. This image ships Maven 3.10.0, as tools does.
+    runs-on: ubuntu-24.04
+    # Maven downloads, the Iceberg connector built from source and every *IT: over 15 minutes even on a warm machine.
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "25"
+          cache: maven
+      # The JVM runs next to the Docker daemon, so Testcontainers reaches its ports on localhost: the
+      # TESTCONTAINERS_HOST_OVERRIDE of the tools service is not needed, and no test reads .env.
+      #
+      # The connector image is not cached. LakehouseStack builds it with ImageFromDockerfile, which always sends the
+      # build to the daemon's classic builder: it would not use a buildx cache or an image loaded from one. Caching it
+      # needs a change in testkit (reuse a prebuilt image when told so).
+      - name: Build and test
+        run: mvn -B -ntp verify
+      - name: Show disk use
+        if: ${{ !success() }}
+        run: |
+          df -h
+          docker system df
+      - name: Keep test reports
+        if: ${{ !success() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-reports
+          path: |
+            **/target/surefire-reports/
+            **/target/failsafe-reports/
+          if-no-files-found: ignore
+          retention-days: 7
+
+  board-and-scripts:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      # Same packages as infra/tools/Dockerfile, without the Kaggle CLI and its six dependency: no test uses them.
+      - name: Install dependencies
+        run: python -m pip install --quiet pytest fastapi httpx uvicorn
+      - name: Run tests
+        run: python -m pytest tests -q
