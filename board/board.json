@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-02T18:59:31+01:00",
+  "updated": "2026-11-02T19:19:13+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -1169,10 +1169,10 @@
       "id": "T-015",
       "title": "Ingesta: prueba completa de CSV sintético a tabla Iceberg",
       "owner": "desarrollador",
-      "status": "next",
+      "status": "review",
       "priority": "alta",
       "estimate_min": 45.0,
-      "actual_min": null,
+      "actual_min": 19.6,
       "auto": true,
       "manual": null,
       "desc": "Es la primera vez que se juntan todas las piezas: productor, Kafka, conector, Polaris y S3. Es lo más incierto de la ingesta, así que se prueba de punta a punta antes de construir la consulta encima.\nCómo sabremos si funciona: tras enviar la muestra, la tabla contiene exactamente las mismas filas (también las sucias y los duplicados del origen) y sus particiones son por día y tipo de evento.\n\n## Técnico\n- IngestE2EIT: stack completo en Testcontainers con imagen de infra/connect (compila Iceberg desde git; tarda la primera vez, usar deleteOnExit=false para reutilizar la imagen).\n- Comparación fila a fila con DuckDB contra el CSV, usando commit de 10 s en test. Espera con Awaitility hasta cuadrar recuento, con timeout claro.\n- Ejecutar con el stack apagado (memoria).\n- Si el tiempo total de ./mk test pasa de 10 min, anotarlo y proponer cómo repartirlo.",
@@ -1181,9 +1181,9 @@
         "T-013"
       ],
       "created": "2026-11-02T11:36:36+01:00",
-      "updated": "2026-11-02T17:37:14+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-02T19:19:13+01:00",
+      "started_at": "2026-11-02T18:59:36+01:00",
+      "finished_at": "2026-11-02T19:19:13+01:00",
       "log": [
         {
           "t": "2026-11-02T11:36:36+01:00",
@@ -1199,6 +1199,43 @@
           "t": "2026-11-02T17:37:14+01:00",
           "by": "arquitecto",
           "msg": "Recorrido mínimo: ver docs/architecture.md"
+        },
+        {
+          "t": "2026-11-02T18:59:36+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-02T19:18:56+01:00",
+          "by": "consultor",
+          "msg": "./mk test completo: unos 10 min (primer contenedor 18:07:38, último informe 18:17:14, más compilación), justo en el límite. IngestE2EIT añade unos 3 min (170 s). Propuesta si sigue creciendo: T-080 (reutilizar contenedores) y T-077 (tests por módulo); y dejar IngestE2EIT e IcebergSinkFlowIT en un perfil aparte que CI lance siempre. Muestra con precisión de segundos: la pérdida bajo el milisegundo del TimestampConverter (nota de T-012) no se ejerce aquí. Stack parado con docker compose stop y rearrancado con start al terminar."
+        },
+        {
+          "t": "2026-11-02T19:19:13+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: IngestE2EIT verifica fila a fila y por particiones la muestra del CSV a Iceberg, con la suite en verde; el topic con una sola partición queda en T-114."
+        },
+        {
+          "t": "2026-11-02T19:19:13+01:00",
+          "by": "desarrollador",
+          "msg": "⚠ 1 comandos denegados: powershell -NoProfile -Command \"Measure-Command { docker compose run --rm tools "
+        },
+        {
+          "t": "2026-11-02T19:19:13+01:00",
+          "by": "runner",
+          "msg": "✗ «powershell -NoProfile -Command \"Measure-Command { docker compose run --rm tools make test »: varios comandos, tuberías, redirecciones o heredoc: lanza cada comando por separado y crea ficheros con Write/Edit"
+        }
+      ],
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-02T19:19:13+01:00",
+          "min": 19.6,
+          "turns": 79,
+          "tokens": 1651663,
+          "cost_usd": 1.9241124,
+          "verdict": "review"
         }
       ]
     },
@@ -4525,6 +4562,35 @@
           "msg": "creada"
         }
       ]
+    },
+    {
+      "id": "T-114",
+      "title": "El conector deja el topic de eventos con una sola partición",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "alta",
+      "estimate_min": 15.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Al arrancar el stack, el conector se registra antes de que exista el topic de eventos, y el topic se crea solo con una partición en vez de las seis previstas. Cuando llega el productor lo encuentra ya creado y lo deja como está. Los datos llegan completos, pero se pierde el reparto en paralelo que el productor da por hecho. Proponemos que el topic se cree al arrancar el stack, antes de registrar el conector.\nCómo sabremos si funciona: tras arrancar y cargar la muestra en el orden real, el topic tiene seis particiones y la tabla sigue cuadrando con el fichero.\n## Técnico\nVisto en IngestE2EIT (T-015), log: «Topic ecommerce.events already exists with 1 partitions». Falta comprobarlo en el stack de compose.yaml; el orden es el mismo (connect-init en ./mk up, luego ./mk seed). KafkaEventSink.ensureTopic deja el topic existente tal cual. Opciones: crear el topic en connect/register.sh o en un paso de init antes del PUT; desactivar KAFKA_AUTO_CREATE_TOPICS obligaría a crear también control-iceberg y la DLQ. Añadir a IngestE2EIT una comprobación de KafkaEventSink.PARTITIONS.",
+      "deps": [],
+      "created": "2026-11-02T19:07:50+01:00",
+      "updated": "2026-11-02T19:07:57+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T19:07:50+01:00",
+          "by": "desarrollador",
+          "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T19:07:57+01:00",
+          "by": "consultor",
+          "msg": "descripción reescrita"
+        }
+      ]
     }
   ],
   "runners": {
@@ -4543,14 +4609,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-009",
-      "message": "tester con T-009",
+      "current": "T-015",
+      "message": "desarrollador con T-015",
       "pid": 6932,
-      "heartbeat": "2026-11-02T18:56:31+01:00",
+      "heartbeat": "2026-11-02T18:59:36+01:00",
       "enabled": true,
-      "agent": "tester",
-      "started": "2026-11-02T18:56:31+01:00",
-      "live": "live-T-009-tester-20261102-185631.jsonl"
+      "agent": "desarrollador",
+      "started": "2026-11-02T18:59:36+01:00",
+      "live": "live-T-015-desarrollador-20261102-185936.jsonl"
     }
   }
 }

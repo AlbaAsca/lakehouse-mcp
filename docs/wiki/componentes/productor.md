@@ -1,6 +1,6 @@
 # Productor
 
-**Estado:** 🚧 en curso. El lector de CSV, el esquema, el muestreo por sesión, la reordenación y la aceleración están en la rama, con sus tests en verde (T-008, T-011). El envío a Kafka y el comando (T-013) funcionan contra Kafka y Schema Registry en contenedores, con la muestra sintética. Falta probar `./mk seed` con el CSV real y con el conector.
+**Estado:** 🚧 en curso. El lector de CSV, el esquema, el muestreo por sesión, la reordenación y la aceleración están en la rama, con sus tests en verde (T-008, T-011). El envío a Kafka y el comando (T-013) funcionan contra Kafka y Schema Registry en contenedores, con la muestra sintética. `IngestE2EIT` prueba el comando con el conector, en contenedores y con la muestra sintética (T-015). Falta probar `./mk seed` con el CSV real.
 
 [Portada](../README.md) · [Glosario](../01-conceptos.md)
 

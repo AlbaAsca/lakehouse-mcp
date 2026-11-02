@@ -1,6 +1,6 @@
 # Kafka Connect y el sink de Iceberg
 
-**Estado:** ✅ La tarea sale `RUNNING` y un evento acaba como fila de la tabla: lo comprueba `IcebergSinkFlowIT` en contenedores (T-072). `./mk up` sobre un stack ya existente termina sin error y el log del worker no muestra errores. **Sin probar:** `./mk up` desde cero, un evento llegando a la tabla en el stack de `compose.yaml` y el mes real con `./mk seed`.
+**Estado:** ✅ La tarea sale `RUNNING` y un evento acaba como fila de la tabla: lo comprueba `IcebergSinkFlowIT` en contenedores (T-072). `IngestE2EIT` lleva las 50.000 filas de la muestra sintética del CSV a la tabla, también en contenedores (T-015). `./mk up` sobre un stack ya existente termina sin error y el log del worker no muestra errores. **Sin probar:** `./mk up` desde cero, un evento llegando a la tabla en el stack de `compose.yaml` y el mes real con `./mk seed`.
 
 [Portada](../README.md) · [Glosario](../01-conceptos.md)
 
@@ -26,7 +26,9 @@ Connect guarda su estado en tres topics de Kafka: `_connect-configs`, `_connect-
 
 ## Cómo funciona por dentro
 
-Según la [documentación de Iceberg](https://iceberg.apache.org/docs/latest/kafka-connect/), el sink escribe ficheros de datos continuamente, y un coordinador hace el commit en cada intervalo, avisando a través de un topic de control (`control-iceberg` por defecto). La documentación anuncia entrega *exactly-once*, apoyada en las transacciones de Kafka. Aquí no se ha comprobado: lo cubrirá T-015.
+Según la [documentación de Iceberg](https://iceberg.apache.org/docs/latest/kafka-connect/), el sink escribe ficheros de datos continuamente, y un coordinador hace el commit en cada intervalo, avisando a través de un topic de control (`control-iceberg` por defecto). La documentación anuncia entrega *exactly-once*, apoyada en las transacciones de Kafka. Aquí solo está comprobado sin fallos: en `IngestE2EIT` no se pierde ni se repite ninguna fila. **Sin probar:** qué pasa si el worker se cae a mitad de un commit.
+
+`control-iceberg` no hay que crearlo antes: en esa prueba nadie lo crea y la ingesta funciona, con la creación automática de topics que el broker trae activada por defecto.
 
 ```mermaid
 flowchart LR
@@ -69,6 +71,8 @@ El Dockerfile escribe también `version.txt`. Sin ese fichero, el plugin compila
 ## Cómo probarlo tú mismo
 
 La prueba completa está en `./mk test`: `IcebergSinkFlowIT` levanta el worker y el catálogo en contenedores, envía un evento, espera la tarea `RUNNING` y lee la fila campo a campo con DuckDB. Tarda unos 3 minutos, más la compilación de Iceberg si cambia su imagen.
+
+`IngestE2EIT` (módulo `producer`) es la prueba de punta a punta. Registra el conector antes de que exista ningún evento, como `./mk up`, con commits cada 10 s en lugar de 30. Envía la muestra con el comando seed y compara con DuckDB la tabla contra el CSV, leído con el lector de DuckDB y no con el del productor: las mismas filas, incluidas las sucias y los duplicados. También abre los ficheros confirmados y comprueba que cada fila está en la carpeta de su día y su tipo de evento. Tarda unos 3 minutos.
 
 Sobre el stack levantado (**sin probar** tras T-072; las salidas son las esperadas):
 
