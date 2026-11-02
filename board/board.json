@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-03T00:24:58+01:00",
+  "updated": "2026-11-03T00:36:02+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -3685,7 +3685,7 @@
       "id": "T-077",
       "title": "Poder lanzar los tests de un solo módulo",
       "owner": "desarrollador",
-      "status": "review",
+      "status": "done",
       "priority": "alta",
       "estimate_min": 20.0,
       "actual_min": 21.0,
@@ -3698,7 +3698,7 @@
         "T-126"
       ],
       "created": "2026-11-02T17:25:22+01:00",
-      "updated": "2026-11-02T23:36:00+01:00",
+      "updated": "2026-11-03T00:36:02+01:00",
       "started_at": "2026-11-02T23:15:02+01:00",
       "finished_at": "2026-11-02T23:36:00+01:00",
       "log": [
@@ -3771,6 +3771,21 @@
           "t": "2026-11-03T00:21:47+01:00",
           "by": "tú",
           "msg": "✓ permiso concedido: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\.claude\\agents\\desarrollador.md *"
+        },
+        {
+          "t": "2026-11-03T00:25:03+01:00",
+          "by": "tester",
+          "msg": "verificando"
+        },
+        {
+          "t": "2026-11-03T00:35:51+01:00",
+          "by": "consultor",
+          "msg": "Tester: ./mk test MODULE=producer en verde tarda 358 s (el desarrollador midió 5m34s con módulo y 11m11s sin módulo, suite completa no repetida aquí): cerca de la mitad. Solo escribe informes de producer (7 clases de test y 2 de integración). Con un test roto a propósito sale con 2 en 73 s; módulo inexistente, también 2. ./mk test-board: 142 passed. mk.cmd no propaga el error: fallo anterior a T-077, en tarjeta aparte. Instrucciones de agentes: en T-122."
+        },
+        {
+          "t": "2026-11-03T00:36:02+01:00",
+          "by": "tester",
+          "msg": "DONE: `./mk test MODULE=<módulo>` ejecuta solo ese módulo, tarda cerca de la mitad y devuelve error si falla; el fallo de `mk.cmd`, anterior a la tarea, queda en T-133."
         }
       ],
       "runs": [
@@ -3783,8 +3798,19 @@
           "tokens": 249514,
           "cost_usd": 0.9455026000000002,
           "verdict": "review"
+        },
+        {
+          "agent": "tester",
+          "mode": "verify",
+          "at": "2026-11-03T00:36:02+01:00",
+          "min": 11.0,
+          "turns": 13,
+          "tokens": 275323,
+          "cost_usd": 0.85273,
+          "verdict": "done"
         }
-      ]
+      ],
+      "verify_started": "2026-11-03T00:25:03+01:00"
     },
     {
       "id": "T-078",
@@ -5417,6 +5443,11 @@
           "t": "2026-11-02T23:35:41+01:00",
           "by": "consultor",
           "msg": "descripción reescrita"
+        },
+        {
+          "t": "2026-11-03T00:35:49+01:00",
+          "by": "consultor",
+          "msg": "Tester (T-077): los permisos de escritura en desarrollador.md y tester.md ya se concedieron (T-124, T-125), así que esta tarjeta ya se puede hacer. Sigue pendiente: desarrollador.md, línea 11, aún cita MAVEN_ARGS."
         }
       ]
     },
@@ -5721,6 +5752,30 @@
           "msg": "Tester (T-080): el único fallo de board-and-scripts en la CI 41542155817 era este test, corregido en 8577fe0. En local, tests/ queda con 141 pasados y 1 omitido. La CI de ese commit (41544116515) sigue pendiente: si sale verde, esta tarjeta se puede cerrar sin más trabajo."
         }
       ]
+    },
+    {
+      "id": "T-133",
+      "title": "En Windows, mk.cmd da por buenos los tests que fallan",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "alta",
+      "estimate_min": 10.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Cuando los tests fallan, el comando de Windows muestra el error en pantalla pero termina como si todo hubiera ido bien. Un script o una persona que solo mire el resultado daría por buenos unos tests en rojo. Se propone que el comando conserve el resultado de lo que ha ejecutado, porque es el que CLAUDE.md indica para Windows y afecta a todos sus objetivos, no solo a los tests.\nCómo sabremos si funciona: lanzar los tests de un módulo que no existe con el comando de Windows termina con error, igual que con el de Linux, y sigue terminando bien cuando no falla nada.\n\n## Técnico\nDónde: mk.cmd, línea 4. popd pone ERRORLEVEL a 0 y borra el código de docker compose. Es anterior a T-077 (el fichero no cambia desde b09d303).\nSíntoma: ./mk test MODULE=noexiste sale con 2; .\\mk.cmd test MODULE=noexiste desde PowerShell deja LASTEXITCODE en 0, y desde Git Bash también sale con 0, con el mismo make: *** Error 1 en la salida.\nArreglo probado con un sustituto de docker que sale con 2 (sin popd: 2; con popd: 0; con el arreglo: 2): set \"RC=%ERRORLEVEL%\" antes de popd y exit /b %RC% al final.\nCriterio: código de salida distinto de 0 con módulo inexistente y 0 en un objetivo correcto; test de regresión con un sustituto de docker, sin depender de Docker real. Actualizar docs/wiki/componentes/imagen-tools.md, que hoy marca mk.cmd como sin probar y afirma que termina con error.",
+      "deps": [],
+      "created": "2026-11-03T00:35:47+01:00",
+      "updated": "2026-11-03T00:35:47+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-03T00:35:47+01:00",
+          "by": "tester",
+          "msg": "creada"
+        }
+      ]
     }
   ],
   "runners": {
@@ -5739,14 +5794,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-080",
-      "message": "tester con T-080",
+      "current": "T-077",
+      "message": "tester con T-077",
       "pid": 25284,
-      "heartbeat": "2026-11-03T00:16:18+01:00",
+      "heartbeat": "2026-11-03T00:25:03+01:00",
       "enabled": true,
       "agent": "tester",
-      "started": "2026-11-03T00:16:18+01:00",
-      "live": "live-T-080-tester-20261103-001618.jsonl"
+      "started": "2026-11-03T00:25:03+01:00",
+      "live": "live-T-077-tester-20261103-002503.jsonl"
     }
   }
 }
