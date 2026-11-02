@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-02T23:14:58+01:00",
+  "updated": "2026-11-02T23:36:00+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -3519,6 +3519,21 @@
           "t": "2026-11-02T23:14:58+01:00",
           "by": "runner",
           "msg": "? permiso solicitado: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\board\\runner.py * (T-121); la tarjeta espera la decisión"
+        },
+        {
+          "t": "2026-11-02T23:21:33+01:00",
+          "by": "tú",
+          "msg": "✓ permiso concedido: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\board\\runner.py *"
+        },
+        {
+          "t": "2026-11-02T23:21:39+01:00",
+          "by": "tú",
+          "msg": "✓ permiso concedido: git reflog --date=iso-local*"
+        },
+        {
+          "t": "2026-11-02T23:21:45+01:00",
+          "by": "tú",
+          "msg": "✓ permiso concedido: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\tests\\test_runner.py *"
         }
       ],
       "runs": [
@@ -3633,18 +3648,22 @@
       "id": "T-077",
       "title": "Poder lanzar los tests de un solo módulo",
       "owner": "desarrollador",
-      "status": "next",
+      "status": "review",
       "priority": "alta",
       "estimate_min": 20.0,
-      "actual_min": null,
+      "actual_min": 21.0,
       "auto": true,
       "manual": null,
       "desc": "La suite completa ya tarda más de 15 minutos y suele ejecutarse tanto en desarrollo como en revisión, así que las tarjetas pasan la mayor parte del tiempo esperando. Se propone que el desarrollador pruebe solo el módulo que cambia y que la suite completa quede para el tester. Cómo sabremos si funciona: ./mk test MODULE=producer ejecuta solo ese módulo y lo que necesita, tarda mucho menos que la suite completa, y un fallo sigue devolviendo error.\n\n## Técnico\nMakefile, objetivo test: con MODULE, usar mvn -B -q -pl $(MODULE) -am verify, sin que -am ejecute los tests de las dependencias si no hace falta (comprobar con surefire.failIfNoSpecifiedTests o equivalente); sin MODULE, igual que ahora. La regex SAFE de board/permissions.py y sus tests deben admitir ./mk test MODULE=<nombre> sin abrir otros objetivos; lo mismo en make y mk.cmd. Instrucciones: .claude/agents/desarrollador.md (su módulo mientras trabaja) y tester.md (suite completa al verificar); CLAUDE.md, línea de Tests. Medir y anotar en la tarjeta el tiempo con y sin MODULE. Actualizar docs/wiki/componentes/imagen-tools.md.",
-      "deps": [],
+      "deps": [
+        "T-124",
+        "T-125",
+        "T-126"
+      ],
       "created": "2026-11-02T17:25:22+01:00",
-      "updated": "2026-11-02T17:25:22+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-02T23:36:00+01:00",
+      "started_at": "2026-11-02T23:15:02+01:00",
+      "finished_at": "2026-11-02T23:36:00+01:00",
       "log": [
         {
           "t": "2026-11-02T17:25:22+01:00",
@@ -3665,6 +3684,53 @@
           "t": "2026-11-02T22:02:00+01:00",
           "by": "consultor",
           "msg": "Prioridad máxima a petición de la responsable: acelerar el resto de tarjetas. Va antes que el MVP."
+        },
+        {
+          "t": "2026-11-02T23:15:02+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-02T23:35:27+01:00",
+          "by": "consultor",
+          "msg": "Medido con el stack levantado: ./mk test MODULE=producer 5m34s (en verde, sin tests de testkit) frente a ./mk test 11m11s (en verde), la mitad. Una sola medida de cada. Fallos con exit 2: test roto a propósito (ya revertido) y MODULE=noexiste. Sin probar: mk.cmd, cuya ejecución denegó esta sesión. Sin hacer: .claude/agents/desarrollador.md y tester.md, escritura denegada; siguen citando el comando provisional, que sigue funcionando. Tiempo por encima de 1,5x la estimación: la mayor parte fue esperar las dos mediciones; ya no queda previsión de más trabajo."
+        },
+        {
+          "t": "2026-11-02T23:36:00+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: `./mk test MODULE=<módulo>` funciona y tarda la mitad (5m34s frente a 11m11s); faltan las instrucciones de los agentes (T-122) y probar `mk.cmd`, ambos denegados."
+        },
+        {
+          "t": "2026-11-02T23:36:00+01:00",
+          "by": "desarrollador",
+          "msg": "⚠ 3 comandos denegados: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\.claude\\agents\\desarrollador.md | C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\.claude\\agents\\tester.md | ./mk.cmd test MODULE=noexiste"
+        },
+        {
+          "t": "2026-11-02T23:36:00+01:00",
+          "by": "runner",
+          "msg": "? permiso solicitado: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\.claude\\agents\\desarrollador.md * (T-124); la tarjeta espera la decisión"
+        },
+        {
+          "t": "2026-11-02T23:36:00+01:00",
+          "by": "runner",
+          "msg": "? permiso solicitado: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\.claude\\agents\\tester.md * (T-125); la tarjeta espera la decisión"
+        },
+        {
+          "t": "2026-11-02T23:36:00+01:00",
+          "by": "runner",
+          "msg": "? permiso solicitado: ./mk.cmd * (T-126); la tarjeta espera la decisión"
+        }
+      ],
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-02T23:36:00+01:00",
+          "min": 21.0,
+          "turns": 7,
+          "tokens": 249514,
+          "cost_usd": 0.9455026000000002,
+          "verdict": "review"
         }
       ]
     },
@@ -5071,7 +5137,7 @@
       "id": "T-119",
       "title": "Solicitud de permiso: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\tests\\test_runner.py *",
       "owner": "consultor",
-      "status": "human",
+      "status": "done",
       "priority": "media",
       "estimate_min": 2,
       "actual_min": null,
@@ -5080,7 +5146,7 @@
       "desc": "El agente «desarrollador» necesitaba un comando que no está en su lista de permitidos y se lo bloquearon mientras hacía T-073. No es de solo lectura ni está prohibido, así que lo tiene que validar una persona.\n\nPara qué lo quería: (no lo explicó)\n\nCómo decidir: concede si es seguro repetirlo sin supervisión dentro del proyecto; deniega si escribe fuera, publica, borra o usa la red.\n\n## Técnico\n- Comando: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\tests\\test_runner.py\n- Patrón que se concedería: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\tests\\test_runner.py *\n- Tarjeta: T-073",
       "deps": [],
       "created": "2026-11-02T23:14:58+01:00",
-      "updated": "2026-11-02T23:14:58+01:00",
+      "updated": "2026-11-02T23:21:45+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -5088,6 +5154,11 @@
           "t": "2026-11-02T23:14:58+01:00",
           "by": "runner",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T23:21:45+01:00",
+          "by": "tú",
+          "msg": "✓ Concedido: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\tests\\test_runner.py *"
         }
       ],
       "kind": "permiso",
@@ -5103,7 +5174,7 @@
       "id": "T-120",
       "title": "Solicitud de permiso: git reflog --date=iso-local*",
       "owner": "consultor",
-      "status": "human",
+      "status": "done",
       "priority": "media",
       "estimate_min": 2,
       "actual_min": null,
@@ -5112,7 +5183,7 @@
       "desc": "El agente «desarrollador» necesitaba un comando que no está en su lista de permitidos y se lo bloquearon mientras hacía T-073. No es de solo lectura ni está prohibido, así que lo tiene que validar una persona.\n\nPara qué lo quería: (no lo explicó)\n\nCómo decidir: concede si es seguro repetirlo sin supervisión dentro del proyecto; deniega si escribe fuera, publica, borra o usa la red.\n\n## Técnico\n- Comando: git reflog --date=iso-local -n 60 --format=\"%h %gd %gs\"\n- Patrón que se concedería: git reflog --date=iso-local*\n- Tarjeta: T-073",
       "deps": [],
       "created": "2026-11-02T23:14:58+01:00",
-      "updated": "2026-11-02T23:14:58+01:00",
+      "updated": "2026-11-02T23:21:39+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -5120,6 +5191,11 @@
           "t": "2026-11-02T23:14:58+01:00",
           "by": "runner",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T23:21:39+01:00",
+          "by": "tú",
+          "msg": "✓ Concedido: git reflog --date=iso-local*"
         }
       ],
       "kind": "permiso",
@@ -5135,7 +5211,7 @@
       "id": "T-121",
       "title": "Solicitud de permiso: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\board\\runner.py *",
       "owner": "consultor",
-      "status": "human",
+      "status": "done",
       "priority": "media",
       "estimate_min": 2,
       "actual_min": null,
@@ -5144,7 +5220,7 @@
       "desc": "El agente «desarrollador» necesitaba un comando que no está en su lista de permitidos y se lo bloquearon mientras hacía T-073. No es de solo lectura ni está prohibido, así que lo tiene que validar una persona.\n\nPara qué lo quería: (no lo explicó)\n\nCómo decidir: concede si es seguro repetirlo sin supervisión dentro del proyecto; deniega si escribe fuera, publica, borra o usa la red.\n\n## Técnico\n- Comando: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\board\\runner.py\n- Patrón que se concedería: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\board\\runner.py *\n- Tarjeta: T-073",
       "deps": [],
       "created": "2026-11-02T23:14:58+01:00",
-      "updated": "2026-11-02T23:14:58+01:00",
+      "updated": "2026-11-02T23:21:33+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -5152,6 +5228,11 @@
           "t": "2026-11-02T23:14:58+01:00",
           "by": "runner",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T23:21:33+01:00",
+          "by": "tú",
+          "msg": "✓ Concedido: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\board\\runner.py *"
         }
       ],
       "kind": "permiso",
@@ -5161,6 +5242,162 @@
         "agent": "desarrollador",
         "task": "T-073",
         "why": ""
+      }
+    },
+    {
+      "id": "T-122",
+      "title": "Actualizar las instrucciones de desarrollador y tester con el comando de un solo módulo",
+      "owner": "consultor",
+      "status": "backlog",
+      "priority": "media",
+      "estimate_min": 5.0,
+      "actual_min": null,
+      "auto": false,
+      "manual": "Aplicar o autorizar la edición de .claude/agents/desarrollador.md y tester.md: los agentes no pueden escribir en esos ficheros.",
+      "desc": "Las instrucciones de los agentes siguen citando el comando provisional para probar un módulo, porque al agente se le denegó la escritura en esos ficheros. Se propone cambiarlas por el comando definitivo para que nadie pruebe de más ni use una forma antigua.\nCómo sabremos si funciona: las dos instrucciones indican el comando nuevo y el antiguo ya no aparece.\n\n## Técnico\ndesarrollador.md, línea 11: sustituir el texto con MAVEN_ARGS por ./mk test MODULE=<módulo>. tester.md, línea 8: tras «pasa los tests del módulo» añadir «con ./mk test MODULE=<módulo>».",
+      "deps": [
+        "T-077"
+      ],
+      "created": "2026-11-02T23:35:30+01:00",
+      "updated": "2026-11-02T23:35:41+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T23:35:30+01:00",
+          "by": "desarrollador",
+          "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T23:35:41+01:00",
+          "by": "consultor",
+          "msg": "descripción reescrita"
+        }
+      ]
+    },
+    {
+      "id": "T-123",
+      "title": "Cerrar el permiso demasiado amplio de los tests en el ejecutor automático",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "media",
+      "estimate_min": 10.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "El ejecutor automático permite cualquier comando que empiece por el de los tests, así que un agente podría añadir detrás otro objetivo, como apagar el entorno, sin que nadie lo revise. La comprobación de permisos ya es estricta, pero esta lista va por otro lado. Se propone limitarla a las formas previstas.\nCómo sabremos si funciona: un agente puede lanzar los tests de todo el proyecto o de un módulo, y cualquier otro objetivo añadido detrás queda denegado.\n\n## Técnico\nboard/runner.py, ALLOWED: Bash(./mk test*), Bash(make test*) y PowerShell(.\\mk.cmd test*). Sin comprobar en ejecución: visto leyendo el código. Comprobar la sintaxis de comodines de la CLI y mantener ./mk test-board y MODULE=<módulo>.",
+      "deps": [],
+      "created": "2026-11-02T23:35:35+01:00",
+      "updated": "2026-11-02T23:35:43+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T23:35:35+01:00",
+          "by": "desarrollador",
+          "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T23:35:43+01:00",
+          "by": "consultor",
+          "msg": "descripción reescrita"
+        }
+      ]
+    },
+    {
+      "id": "T-124",
+      "title": "Solicitud de permiso: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\.claude\\agents\\desarrollador.md *",
+      "owner": "consultor",
+      "status": "human",
+      "priority": "media",
+      "estimate_min": 2,
+      "actual_min": null,
+      "auto": false,
+      "manual": "Abre la tarjeta y pulsa «Conceder» o «Denegar».",
+      "desc": "El agente «desarrollador» necesitaba un comando que no está en su lista de permitidos y se lo bloquearon mientras hacía T-077. No es de solo lectura ni está prohibido, así que lo tiene que validar una persona.\n\nPara qué lo quería: (no lo explicó)\n\nCómo decidir: concede si es seguro repetirlo sin supervisión dentro del proyecto; deniega si escribe fuera, publica, borra o usa la red.\n\n## Técnico\n- Comando: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\.claude\\agents\\desarrollador.md\n- Patrón que se concedería: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\.claude\\agents\\desarrollador.md *\n- Tarjeta: T-077",
+      "deps": [],
+      "created": "2026-11-02T23:36:00+01:00",
+      "updated": "2026-11-02T23:36:00+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T23:36:00+01:00",
+          "by": "runner",
+          "msg": "creada"
+        }
+      ],
+      "kind": "permiso",
+      "perm": {
+        "pattern": "C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\.claude\\agents\\desarrollador.md *",
+        "command": "C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\.claude\\agents\\desarrollador.md",
+        "agent": "desarrollador",
+        "task": "T-077",
+        "why": ""
+      }
+    },
+    {
+      "id": "T-125",
+      "title": "Solicitud de permiso: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\.claude\\agents\\tester.md *",
+      "owner": "consultor",
+      "status": "human",
+      "priority": "media",
+      "estimate_min": 2,
+      "actual_min": null,
+      "auto": false,
+      "manual": "Abre la tarjeta y pulsa «Conceder» o «Denegar».",
+      "desc": "El agente «desarrollador» necesitaba un comando que no está en su lista de permitidos y se lo bloquearon mientras hacía T-077. No es de solo lectura ni está prohibido, así que lo tiene que validar una persona.\n\nPara qué lo quería: (no lo explicó)\n\nCómo decidir: concede si es seguro repetirlo sin supervisión dentro del proyecto; deniega si escribe fuera, publica, borra o usa la red.\n\n## Técnico\n- Comando: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\.claude\\agents\\tester.md\n- Patrón que se concedería: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\.claude\\agents\\tester.md *\n- Tarjeta: T-077",
+      "deps": [],
+      "created": "2026-11-02T23:36:00+01:00",
+      "updated": "2026-11-02T23:36:00+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T23:36:00+01:00",
+          "by": "runner",
+          "msg": "creada"
+        }
+      ],
+      "kind": "permiso",
+      "perm": {
+        "pattern": "C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\.claude\\agents\\tester.md *",
+        "command": "C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\.claude\\agents\\tester.md",
+        "agent": "desarrollador",
+        "task": "T-077",
+        "why": ""
+      }
+    },
+    {
+      "id": "T-126",
+      "title": "Solicitud de permiso: ./mk.cmd *",
+      "owner": "consultor",
+      "status": "human",
+      "priority": "media",
+      "estimate_min": 2,
+      "actual_min": null,
+      "auto": false,
+      "manual": "Abre la tarjeta y pulsa «Conceder» o «Denegar».",
+      "desc": "El agente «desarrollador» necesitaba un comando que no está en su lista de permitidos y se lo bloquearon mientras hacía T-077. No es de solo lectura ni está prohibido, así que lo tiene que validar una persona.\n\nPara qué lo quería: comprobar que `mk.cmd` pasa el argumento y devuelve el error\n\nCómo decidir: concede si es seguro repetirlo sin supervisión dentro del proyecto; deniega si escribe fuera, publica, borra o usa la red.\n\n## Técnico\n- Comando: ./mk.cmd test MODULE=noexiste\n- Patrón que se concedería: ./mk.cmd *\n- Tarjeta: T-077",
+      "deps": [],
+      "created": "2026-11-02T23:36:00+01:00",
+      "updated": "2026-11-02T23:36:00+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T23:36:00+01:00",
+          "by": "runner",
+          "msg": "creada"
+        }
+      ],
+      "kind": "permiso",
+      "perm": {
+        "pattern": "./mk.cmd *",
+        "command": "./mk.cmd test MODULE=noexiste",
+        "agent": "desarrollador",
+        "task": "T-077",
+        "why": "comprobar que `mk.cmd` pasa el argumento y devuelve el error"
       }
     }
   ],
@@ -5180,14 +5417,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-073",
-      "message": "desarrollador con T-073",
-      "pid": 18772,
-      "heartbeat": "2026-11-02T23:09:13+01:00",
+      "current": "T-077",
+      "message": "desarrollador con T-077",
+      "pid": 25284,
+      "heartbeat": "2026-11-02T23:15:02+01:00",
       "enabled": true,
       "agent": "desarrollador",
-      "started": "2026-11-02T23:09:13+01:00",
-      "live": "live-T-073-desarrollador-20261102-230913.jsonl"
+      "started": "2026-11-02T23:15:02+01:00",
+      "live": "live-T-077-desarrollador-20261102-231502.jsonl"
     }
   }
 }

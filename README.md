@@ -133,6 +133,7 @@ El diseño completo, con las alternativas descartadas, está en [docs/architectu
 
 ```bash
 ./mk test         # Java, con Testcontainers
+./mk test MODULE=producer   # solo los tests de ese módulo
 ./mk test-board   # el panel de agentes
 ./mk smoke        # el stack levantado, de punta a punta
 ```

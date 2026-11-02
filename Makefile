@@ -15,8 +15,14 @@ smoke:
 download-data:
 	mkdir -p /data/raw
 	kaggle datasets download $(DATASET) -f $(MONTH).csv -p /data/raw
+# MODULE=<name> tests only that module: its dependencies are built and installed without running their tests.
 test:
+ifdef MODULE
+	mvn -B -q -pl $(MODULE) -am -DskipTests install
+	mvn -B -q -pl $(MODULE) verify
+else
 	mvn -B -q verify
+endif
 test-board:
 	/opt/py/bin/python -m pytest tests -q
 # Needs the stack up and the real CSV in /data/raw. Kaggle may deliver the file zipped.

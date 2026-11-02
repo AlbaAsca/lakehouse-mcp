@@ -2,7 +2,7 @@
 
 Qué es: demo de portfolio: lakehouse local (Kafka, Iceberg/Polaris sobre SeaweedFS, DuckDB) que un agente Spring AI consulta, vigila y repara vía MCP. Alcance completo: `docs/brief.md`.
 Arranque: `./mk up` (`mk.cmd` en Windows). **Todo corre en Docker**: JDK, Maven, make y Kaggle viven en la imagen `tools`; no se instala nada en el host. Si Docker no responde: `powershell -NoProfile -ExecutionPolicy Bypass -File ..\docker-start.ps1`. Panel: `python board/server.py` → http://localhost:8020
-Tests: `./mk test` (Java), `./mk test-board` (panel). Verifica versiones y APIs en la documentación oficial; si algo no existe o falla, a «Te necesita» con alternativa.
+Tests: `./mk test` (Java), `./mk test MODULE=<módulo>` (solo uno), `./mk test-board` (panel). Verifica versiones y APIs en la documentación oficial; si algo no existe o falla, a «Te necesita» con alternativa.
 
 ## Tu papel: consultor
 La sesión principal es el **consultor**: habla con el responsable (respuestas breves y directas), decide prioridades
@@ -66,7 +66,7 @@ antes de seguir. Cada agente registra su propio inicio y fin (no se cierra en bl
 
 ## Tests por niveles
 Casi todo el tiempo de una tarjeta es esperar tests, así que cada nivel se pasa donde aporta:
-- **Desarrollador y tester:** solo los tests del módulo: `./mk test MAVEN_ARGS="-pl <módulo> -am -DskipITs"` (con T-077, `./mk test MODULE=<módulo>`).
+- **Desarrollador y tester:** solo los tests del módulo: `./mk test MODULE=<módulo>` (compila lo que necesita, pero solo ejecuta los tests de ese módulo).
 - **Suite completa:** la pasa la CI en cada push. Si la CI está en rojo, tarjeta de prioridad alta. A `main` solo sube lo que está en verde.
 - **Excepción, con tests de contenedores antes de cerrar:** las tarjetas que tocan `testkit`, `compose.yaml`, `connect/`, `infra/` o la integración de punta a punta. En caso de duda, pásalos.
 

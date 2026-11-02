@@ -1,8 +1,11 @@
 """Protocolo de permisos: lo seguro se concede solo, lo prohibido nunca, lo dudoso lo valida una persona."""
 import json
 import shutil
+import subprocess
 import sys
 from pathlib import Path
+
+import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "board"))
@@ -27,6 +30,30 @@ def test_clasifica_los_comandos_que_se_denegaron_de_verdad():
     assert pm.classify("docker compose logs --tail 50 kafka")[0] == "seguro"
     assert pm.classify("docker compose down -v")[0] == "revisar"
     assert pm.classify("Rscript foo.R")[:2] == ("revisar", "Rscript *")
+
+
+@pytest.mark.parametrize("cmd", ["./mk test MODULE=producer", "mk.cmd test MODULE=mcp-server", ".\\mk.cmd test MODULE=agent",
+                                 "make test MODULE=testkit"])
+def test_admite_los_tests_de_un_modulo(cmd):
+    assert pm.classify(cmd)[0] == "seguro"
+
+
+@pytest.mark.parametrize("cmd", ["./mk test MODULE=", "./mk test MODULE=../evil", "./mk test MODULE=producer up", "./mk chaos MODULE=producer",
+                                 "./mk test-board MODULE=producer", "./mk test MODULE=producer MAVEN_ARGS=-X",
+                                 "make test MODULE=producer,agent", "make down MODULE=producer"])
+def test_module_no_abre_otros_objetivos_ni_argumentos(cmd):
+    assert pm.classify(cmd)[0] == "revisar"
+
+
+@pytest.mark.skipif(not shutil.which("make"), reason="make solo existe en la imagen tools")
+def test_makefile_con_module_no_ejecuta_los_tests_de_las_dependencias():
+    def recetas(*args):
+        r = subprocess.run(["make", "--no-print-directory", "-n", "test", *args], cwd=ROOT, capture_output=True, text=True, check=True)
+        return r.stdout.splitlines()
+
+    assert recetas() == ["mvn -B -q verify"]
+    assert recetas("MODULE=") == ["mvn -B -q verify"]
+    assert recetas("MODULE=producer") == ["mvn -B -q -pl producer -am -DskipTests install", "mvn -B -q -pl producer verify"]
 
 
 def tarea(b):
