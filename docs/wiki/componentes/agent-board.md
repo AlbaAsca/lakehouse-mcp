@@ -62,7 +62,8 @@ Panel: `python board/server.py` y abre `http://localhost:8020`. Se comprobó que
 ## Qué puede fallar
 
 - **Tarjeta `done` sin su código.** Ocurre hoy: [T-011 está cerrada y sus clases no están en la rama](productor.md). Los commits del runner a veces solo contienen el cambio de estado. Cerrar una tarjeta no prueba que el código esté subido.
-- **Corte por límite de uso.** La tarjeta vuelve a su estado (T-013). Puede dejar ficheros a medias en la rama.
+- **Corte por límite de uso, o agente que termina sin mensaje final.** La tarjeta vuelve a su estado sin contar como fallo y el runner para hasta la siguiente ejecución (T-013, T-084). Puede dejar ficheros a medias en la rama.
+- **Pausa automática.** Tres fallos seguidos del agente (error o tiempo agotado; un `RESULT: blocked` no cuenta) pausan el carril, y el panel muestra el motivo en «En pausa: …» (T-084).
 - **Mensaje ilegible en una tarjeta.** T-012 pasó a `blocked` con un trozo de salida JSON en vez de un motivo, justo cuando el tester se cortó.
 - **Comandos denegados.** Quedan anotados en la tarjeta.
 

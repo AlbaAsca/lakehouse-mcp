@@ -274,8 +274,131 @@ def test_limite_de_uso_no_es_fallo(monkeypatch):
     assert fake["agents"][0]["status"] == "idle"
 
 
+def _new_card(status):
+    def f(b):
+        t = runner.bd.new_task(b, "Tarjeta de prueba", "desarrollador", 5, prio="alta", desc="d", by="test")
+        runner.bd.set_status(b, t, status, "test", "preparada")
+        return t["id"]
+    return runner.bd.update(f)
+
+
+def _stream(monkeypatch, tmp_path, events, code):
+    class FakeProc:
+        stdin = io.StringIO()
+        stdout = iter(json.dumps(e) + "\n" for e in events)
+        wait = staticmethod(lambda: code)
+        kill = staticmethod(lambda: None)
+
+    monkeypatch.setattr(runner, "LOGDIR", tmp_path)
+    monkeypatch.setattr(runner, "claim", lambda *a: None)
+    monkeypatch.setattr(runner.subprocess, "Popen", lambda *a, **kw: FakeProc)
+    return runner.run_claude("claude", "prompt", "tester", 60, tag="T-1")
+
+
+# Lo que escribió de verdad el tester de T-012 (board/runs/T-012-tester-20261102-131521.txt): acaba sin evento result ni stderr
+T012_TAIL = [{"type": "rate_limit_event", "rate_limit_info": {"status": "allowed_warning", "utilization": 0.93}},
+             {"type": "system", "subtype": "thinking_tokens", "estimated_tokens": 1100, "estimated_tokens_delta": 150,
+              "session_id": "24fe7028-9fc5-4d7c-8ae3-ec2f82e5056d", "uuid": "c7a6e441-7b86-49e4-8a4d-2f764dad8db3"}]
+
+
+@pytest.mark.parametrize("mode,before,after", [("verify", "review", "review"), ("work", "doing", "next")])
+def test_agente_cortado_vuelve_a_su_estado_sin_json_en_el_registro(monkeypatch, tmp_path, mode, before, after):
+    tid = _new_card(before)
+    r = _stream(monkeypatch, tmp_path, T012_TAIL, code=1)
+    assert r["text"] == "" and r["cut"]
+    new, verdict, summary = runner.finish(tid, mode, "tester", r)
+    assert (new, verdict, summary) == (after, "cut", runner.CUT_MSG)
+    t = runner.bd.task(runner.bd.load(), tid)
+    assert t["status"] == after and not t.get("runs")
+    assert t["log"][-1]["msg"] == runner.CUT_MSG
+    assert not any("session_id" in e["msg"] or "{" in e["msg"] for e in t["log"])
+
+
+def test_corte_con_stderr_lo_da_como_motivo():
+    r = dict(text="", err="Error:\n  conexión perdida", cut=True)
+    assert runner.interruption(r) == ("cut", f"{runner.CUT_MSG}: Error: conexión perdida")
+
+
+@pytest.mark.parametrize("r", [
+    dict(text="RESULT: blocked — faltan datos", err="", cut=False),  # terminó y lo dijo
+    dict(text="", err="timeout", cut=False),                         # timeout: repetirlo gastaría lo mismo
+])
+def test_lo_que_no_es_un_corte(r):
+    assert runner.interruption(r) is None
+
+
+def test_agotar_los_turnos_es_un_fallo_legible_no_un_corte(monkeypatch, tmp_path):
+    tid = _new_card("doing")
+    r = _stream(monkeypatch, tmp_path, [{"type": "result", "subtype": "error_max_turns", "is_error": False}], code=0)
+    assert r["is_error"] and not r["cut"]
+    new, verdict, summary = runner.finish(tid, "work", "desarrollador", r)
+    assert (new, verdict) == ("blocked", "blocked") and summary == "agotó el máximo de 80 turnos sin mensaje final"
+
+
+def _main_loop(monkeypatch, tmp_path, r, rounds):
+    """Ejecuta el bucle de main con `rounds` tarjetas, sin agente ni git. Devuelve el estado final del carril."""
+    tids = [_new_card("next") for _ in range(rounds)]
+
+    def enable(b):
+        b.setdefault("runner", {}).update(enabled=True, pause_reason=None)
+    runner.bd.update(enable)
+
+    def pick(b, lane):
+        return (runner.bd.task(b, tids.pop(0)), "work") if tids else (None, None)
+
+    def sleep(_):
+        raise KeyboardInterrupt  # en pausa: el bucle real esperaría a que alguien reanude
+    monkeypatch.setattr(runner, "STOP", tmp_path / "STOP")
+    monkeypatch.setattr(runner, "LOGDIR", tmp_path)
+    monkeypatch.setattr(runner, "pick", pick)
+    monkeypatch.setattr(runner, "snapshot", lambda: {})
+    monkeypatch.setattr(runner, "save", lambda *a: True)
+    monkeypatch.setattr(runner, "run_claude", lambda *a, **kw: r)
+    monkeypatch.setattr(runner.time, "sleep", sleep)
+    monkeypatch.setattr(sys, "argv", ["runner.py", "--lane", "all", "--until-idle"])
+    seen = []
+    set_runner = runner.set_runner
+    monkeypatch.setattr(runner, "set_runner", lambda **kw: (seen.append(kw), set_runner(**kw)))
+    monkeypatch.setattr(runner, "LANE", "all")
+    runner.main()
+    return runner.bd.load()["runner"], seen
+
+
+def _agent_result(text, is_error, err=""):
+    return dict(text=text, err=err, code=1 if is_error else 0, secs=1, turns=1, cost=None, usage={}, is_error=is_error, cut=False)
+
+
+def test_tres_bloqueos_legitimos_no_pausan_el_carril(monkeypatch, tmp_path):
+    lane, _ = _main_loop(monkeypatch, tmp_path, _agent_result("RESULT: blocked — falta una medición", False), rounds=3)
+    assert lane["enabled"] is True and not lane.get("pause_reason")
+
+
+def test_tres_fallos_pausan_y_el_panel_dice_por_que(monkeypatch, tmp_path):
+    lane, seen = _main_loop(monkeypatch, tmp_path, _agent_result("", True, err="timeout"), rounds=3)
+    assert lane["enabled"] is False
+    assert "3 fallos seguidos" in lane["pause_reason"] and "timeout" in lane["pause_reason"]
+    assert seen[-2]["message"] == f"En pausa: {lane['pause_reason']}"  # el último es «Runner parado», al salir del test
+
+
+def test_al_reanudar_se_olvida_el_motivo_de_la_pausa(monkeypatch, tmp_path):
+    lane, _ = _main_loop(monkeypatch, tmp_path, _agent_result("RESULT: review — ok", False), rounds=0)
+    assert not lane.get("pause_reason")
+    runner.bd.update(lambda b: b["runner"].update(pause_reason="antigua"))
+    monkeypatch.setattr(sys, "argv", ["runner.py", "--lane", "all", "--until-idle"])
+    runner.main()
+    assert runner.bd.load()["runner"]["pause_reason"] is None
+
+
+def test_un_corte_para_el_runner_sin_contar_fallo(monkeypatch, tmp_path):
+    r = _agent_result("", True) | {"cut": True}
+    lane, seen = _main_loop(monkeypatch, tmp_path, r, rounds=2)
+    assert lane["enabled"] is True and not lane.get("pause_reason")
+    assert sum(kw.get("state") == "working" for kw in seen) == 1  # no sigue gastando en la siguiente tarjeta
+    assert any(kw.get("message") == runner.CUT_MSG for kw in seen)
+
+
 def _live(denied):
-    use = {"type": "assistant", "message": {"content": [
+    use ={"type": "assistant", "message": {"content": [
         {"type": "tool_use", "id": "a", "name": "Bash", "input": {"command": "cat x && python board/board.py add T"}}]}}
     txt = "Permission for this tool use was denied" if denied else "ok"
     res = {"type": "user", "message": {"content": [{"type": "tool_result", "tool_use_id": "a", "content": txt}]}}

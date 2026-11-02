@@ -335,10 +335,15 @@ def run_claude(claude, prompt, agent, timeout_s, tag="run", max_turns=80):
     errf.unlink(missing_ok=True)
     if killed:
         err, code = "timeout", -1
-    text = data.get("result") if isinstance(data.get("result"), str) else "".join(lines[-20:])
-    return dict(denied=denied_commands(lines), text=text or "", err=err[-2000:] if err else "", code=code, secs=time.time() - t0,
-                turns=data.get("num_turns"), cost=data.get("total_cost_usd"),
-                usage=data.get("usage") or {}, is_error=data.get("is_error", code != 0))
+    # El texto es solo el mensaje final: el flujo crudo está en live-*.jsonl y nunca debe acabar de motivo en una tarjeta
+    text = data.get("result") if isinstance(data.get("result"), str) else ""
+    out_of_turns = data.get("subtype") == "error_max_turns"  # repetirlo daría lo mismo: es un fallo, no un corte
+    if out_of_turns and not err:
+        err = f"agotó el máximo de {max_turns} turnos sin mensaje final"
+    return dict(denied=denied_commands(lines), text=text, err=err[-2000:] if err else "", code=code, secs=time.time() - t0,
+                turns=data.get("num_turns"), cost=data.get("total_cost_usd"), usage=data.get("usage") or {},
+                is_error=out_of_turns or data.get("is_error", code != 0),
+                cut=not text.strip() and not killed and not out_of_turns)
 
 
 DENIED_MARK = "Permission for this tool use was denied"
@@ -411,6 +416,7 @@ def permission_protocol(b, t, denied, text, agent):
 
 LIMIT_RE = re.compile(r"you.?ve hit your (weekly |daily |monthly |usage |session |5-hour )?limit|usage limit reached", re.I)
 LIMIT_MSG = "límite de uso, reintenta tras el reset"
+CUT_MSG = "agente cortado sin mensaje final, se reintentará"
 
 
 def is_usage_limit(r):
@@ -418,17 +424,30 @@ def is_usage_limit(r):
     return bool(LIMIT_RE.search(f"{r.get('text') or ''}\n{r.get('err') or ''}"))
 
 
+def interruption(r):
+    """(veredicto, motivo legible) si el agente no llegó a terminar por algo ajeno a la tarea; None si terminó."""
+    if is_usage_limit(r):
+        return "limit", LIMIT_MSG
+    if r.get("cut"):
+        err = " ".join((r.get("err") or "").split())[-200:]
+        return "cut", f"{CUT_MSG}: {err}" if err else CUT_MSG
+    return None
+
+
 def finish(tid, mode, agent, r):
-    if is_usage_limit(r):  # devuelve la tarea a su estado previo; ni blocked ni fallo
+    stopped = interruption(r)
+    if stopped:  # devuelve la tarea a su estado previo; ni blocked ni fallo
+        cause, msg = stopped
+
         def back(b):
             t = bd.task(b, tid)
             new = "review" if mode == "verify" else "next"
-            bd.set_status(b, t, new, agent, LIMIT_MSG)
+            bd.set_status(b, t, new, agent, msg)
             for a in b["agents"]:
                 if a["id"] == agent and a.get("current") == tid:
                     a.update(status="idle", current=None)
             return new
-        return bd.update(back), "limit", LIMIT_MSG
+        return bd.update(back), cause, msg
     m = None
     for line in reversed(r["text"].strip().splitlines()):
         m = RESULT_RE.search(line)
@@ -503,8 +522,9 @@ def contribute(o):
               if "RESULT:" in l), None)
     summary = (m.group(2).strip() if m else "sin RESULT")[:300]
     verdict = (m.group(1).lower() if m else "blocked")
-    if is_usage_limit(r):
-        summary, verdict = LIMIT_MSG, "limit"
+    stopped = interruption(r)
+    if stopped:
+        verdict, summary = "limit", stopped[1]
     u = r["usage"]
     toks = sum(u.get(k) or 0 for k in ("input_tokens", "output_tokens", "cache_read_input_tokens",
                                        "cache_creation_input_tokens")) or None
@@ -516,7 +536,7 @@ def contribute(o):
         bd.set_status(b, t, "blocked" if verdict == "blocked" else "done", agent, f"{verdict.upper()}: {summary}")
     bd.update(close)
     if verdict == "limit":
-        set_runner(contrib_at=None, state="idle", current=None, message=LIMIT_MSG)
+        set_runner(contrib_at=None, state="idle", current=None, message=summary)
         return False
     set_runner(contrib_at=now(), contrib_agent=agent, state="idle", current=None,
                message=f"aportación {agent} ({tid}): {summary}")
@@ -572,13 +592,16 @@ def main():
                 set_runner(state="idle", current=None, message="Recargando runner")
                 os.execv(sys.executable, [sys.executable, __file__, *sys.argv[1:]])
             if not enabled():
-                set_runner(state="paused", current=None, message="En pausa")
+                reason = bd.lane_state(bd.load(), LANE).get("pause_reason")
+                set_runner(state="paused", current=None, message=f"En pausa: {reason}" if reason else "En pausa")
                 if o.once:  # ejecución programada: no esperar a que alguien reanude
                     print("En pausa (panel o board/STOP): no se ejecuta nada.")
                     break
                 time.sleep(5)
                 continue
             b = bd.load()
+            if bd.lane_state(b, LANE).get("pause_reason"):  # reanudado: el motivo de la pausa anterior ya no vale
+                set_runner(pause_reason=None)
             t, mode = pick(b, LANE)
             if not t:
                 set_runner(state="idle", current=None, message="Sin tareas ejecutables")
@@ -623,13 +646,13 @@ def main():
             save(before, tid, f"chore(runner): {tid} {verdict} by {agent}")
             print(f"  → {new} en {r['secs'] / 60:.1f} min · {summary}")
 
-            if verdict == "limit":  # sin fallo contado; parar hasta el reset (la ejecución programada reintenta)
-                set_runner(state="idle", current=None, message=LIMIT_MSG)
+            if verdict in ("limit", "cut"):  # sin fallo contado; parar hasta el reset (la ejecución programada reintenta)
+                set_runner(state="idle", current=None, message=summary)
                 break
-            fails = fails + 1 if (r["is_error"] or verdict == "blocked") else 0
+            fails = fails + 1 if r["is_error"] else 0  # un RESULT blocked es un bloqueo de la tarjeta, no un fallo del runner
             if fails >= MAX_FAILS:
-                set_runner(state="paused", current=None, message=f"Pausado tras {MAX_FAILS} fallos seguidos; revisa board/runs/")
-                bd.update(lambda b: bd.lane_state(b, LANE).update(enabled=False))
+                set_runner(state="paused", current=None, enabled=False,
+                           pause_reason=f"{MAX_FAILS} fallos seguidos, el último en {tid}: {summary[:200]} (revisa board/runs/)")
                 fails = 0
             if o.once:
                 break

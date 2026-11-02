@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-03T00:36:02+01:00",
+  "updated": "2026-11-03T00:40:37+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -4100,15 +4100,18 @@
       "status": "next",
       "priority": "alta",
       "estimate_min": 25.0,
-      "actual_min": null,
+      "actual_min": 4.5,
       "auto": true,
       "manual": null,
       "desc": "T-012 quedó bloqueada con un trozo de JSON como motivo, porque el tester se cortó por el límite de uso. Parece un bloqueo real, pero no lo es, y la tarjeta se queda parada sin que nadie la retome. Se propone tratarlo como un corte: la tarjeta vuelve a su estado y el motivo se puede leer. Cómo sabremos si funciona: un test reproduce esa salida y la tarjeta vuelve a Revisión sin JSON en su registro.\n\n## Técnico\nboard/runner.py, función finish y lectura de RESULT: el texto de BLOCKED venía de la salida en stream-json (mensaje de T-012 a las 13:15). Exigir que RESULT salga del mensaje final, y si no lo hay aplicar el mismo trato que al límite de uso. Test en tests/test_runner.py. Revisar el estado de T-012 tras T-072.",
-      "deps": [],
+      "deps": [
+        "T-135",
+        "T-136"
+      ],
       "created": "2026-11-02T17:30:57+01:00",
-      "updated": "2026-11-02T17:30:59+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-03T00:40:37+01:00",
+      "started_at": "2026-11-03T00:36:05+01:00",
+      "finished_at": "2026-11-03T00:40:37+01:00",
       "log": [
         {
           "t": "2026-11-02T17:30:57+01:00",
@@ -4129,6 +4132,58 @@
           "t": "2026-11-02T22:02:00+01:00",
           "by": "consultor",
           "msg": "Prioridad máxima a petición de la responsable: acelerar el resto de tarjetas. Va antes que el MVP."
+        },
+        {
+          "t": "2026-11-03T00:36:05+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-03T00:37:07+01:00",
+          "by": "consultor",
+          "msg": "Caso real (board/runs/T-012-tester-20261102-131521.txt): el flujo acaba sin evento result, stderr vacio; el texto caia en lines[-20:] de run_claude y finish lo tomaba como motivo. T-012 ya esta done tras T-072: no hay que tocarla."
+        },
+        {
+          "t": "2026-11-03T00:40:37+01:00",
+          "by": "desarrollador",
+          "msg": "BLOCKED: Un agente cortado devuelve la tarjeta a su estado sin JSON en el registro, un bloqueo legítimo no cuenta como fallo y el panel muestra el motivo de la pausa."
+        },
+        {
+          "t": "2026-11-03T00:40:37+01:00",
+          "by": "desarrollador",
+          "msg": "⚠ 3 comandos denegados: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\board\\runner.py | C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\tests\\test_runner.py | python board/board.py add \"El botón Reanudar no despierta a un carril que se pau"
+        },
+        {
+          "t": "2026-11-03T00:40:37+01:00",
+          "by": "runner",
+          "msg": "? permiso solicitado: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\board\\runner.py * (T-135); la tarjeta espera la decisión"
+        },
+        {
+          "t": "2026-11-03T00:40:37+01:00",
+          "by": "runner",
+          "msg": "? permiso solicitado: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\tests\\test_runner.py * (T-136); la tarjeta espera la decisión"
+        },
+        {
+          "t": "2026-11-03T00:40:37+01:00",
+          "by": "runner",
+          "msg": "✗ «python board/board.py add \"El botón Reanudar no despierta a un carril que se pausó solo\" -»: borrar o mover ficheros: usa Write/Edit"
+        },
+        {
+          "t": "2026-11-03T00:40:37+01:00",
+          "by": "runner",
+          "msg": "se reintentará con los permisos resueltos"
+        }
+      ],
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-03T00:40:37+01:00",
+          "min": 4.5,
+          "turns": 37,
+          "tokens": 454758,
+          "cost_usd": 0.9257884000000001,
+          "verdict": "blocked"
         }
       ]
     },
@@ -5776,6 +5831,94 @@
           "msg": "creada"
         }
       ]
+    },
+    {
+      "id": "T-134",
+      "title": "El botón Reanudar no despierta a un carril que se pausó solo",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "media",
+      "estimate_min": 15.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Cuando un carril se pausa solo tras tres fallos, su proceso sigue vivo esperando, pero el botón del panel sigue diciendo «Pausar» y «Iniciar» responde que ya está en marcha. Hoy la única salida es Parar y luego Iniciar. Se propone que el panel permita reanudar ese carril directamente, para no matar nada sin necesidad.\nCómo sabremos si funciona: con un carril pausado solo, un clic lo pone a trabajar de nuevo sin pararlo antes.\n## Técnico\nboard/server.py: /api/board/runner solo cambia runner.enabled (línea 139) y /api/runner/start solo activa carriles sin pid vivo (líneas 268 y 276); runner.py pone enabled=False en runners.<carril>. panel.html: rToggle mira solo B.runner.enabled. Visto en código, sin reproducir en el panel (T-084).",
+      "deps": [],
+      "created": "2026-11-03T00:40:24+01:00",
+      "updated": "2026-11-03T00:40:24+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-03T00:40:24+01:00",
+          "by": "desarrollador",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-135",
+      "title": "Solicitud de permiso: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\board\\runner.py *",
+      "owner": "consultor",
+      "status": "human",
+      "priority": "media",
+      "estimate_min": 2,
+      "actual_min": null,
+      "auto": false,
+      "manual": "Abre la tarjeta y pulsa «Conceder» o «Denegar».",
+      "desc": "El agente «desarrollador» necesitaba un comando que no está en su lista de permitidos y se lo bloquearon mientras hacía T-084. No es de solo lectura ni está prohibido, así que lo tiene que validar una persona.\n\nPara qué lo quería: (no lo explicó)\n\nCómo decidir: concede si es seguro repetirlo sin supervisión dentro del proyecto; deniega si escribe fuera, publica, borra o usa la red.\n\n## Técnico\n- Comando: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\board\\runner.py\n- Patrón que se concedería: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\board\\runner.py *\n- Tarjeta: T-084",
+      "deps": [],
+      "created": "2026-11-03T00:40:37+01:00",
+      "updated": "2026-11-03T00:40:37+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-03T00:40:37+01:00",
+          "by": "runner",
+          "msg": "creada"
+        }
+      ],
+      "kind": "permiso",
+      "perm": {
+        "pattern": "C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\board\\runner.py *",
+        "command": "C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\board\\runner.py",
+        "agent": "desarrollador",
+        "task": "T-084",
+        "why": ""
+      }
+    },
+    {
+      "id": "T-136",
+      "title": "Solicitud de permiso: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\tests\\test_runner.py *",
+      "owner": "consultor",
+      "status": "human",
+      "priority": "media",
+      "estimate_min": 2,
+      "actual_min": null,
+      "auto": false,
+      "manual": "Abre la tarjeta y pulsa «Conceder» o «Denegar».",
+      "desc": "El agente «desarrollador» necesitaba un comando que no está en su lista de permitidos y se lo bloquearon mientras hacía T-084. No es de solo lectura ni está prohibido, así que lo tiene que validar una persona.\n\nPara qué lo quería: (no lo explicó)\n\nCómo decidir: concede si es seguro repetirlo sin supervisión dentro del proyecto; deniega si escribe fuera, publica, borra o usa la red.\n\n## Técnico\n- Comando: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\tests\\test_runner.py\n- Patrón que se concedería: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\tests\\test_runner.py *\n- Tarjeta: T-084",
+      "deps": [],
+      "created": "2026-11-03T00:40:37+01:00",
+      "updated": "2026-11-03T00:40:37+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-03T00:40:37+01:00",
+          "by": "runner",
+          "msg": "creada"
+        }
+      ],
+      "kind": "permiso",
+      "perm": {
+        "pattern": "C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\tests\\test_runner.py *",
+        "command": "C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\tests\\test_runner.py",
+        "agent": "desarrollador",
+        "task": "T-084",
+        "why": ""
+      }
     }
   ],
   "runners": {
@@ -5794,14 +5937,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-077",
-      "message": "tester con T-077",
+      "current": "T-084",
+      "message": "desarrollador con T-084",
       "pid": 25284,
-      "heartbeat": "2026-11-03T00:25:03+01:00",
+      "heartbeat": "2026-11-03T00:36:05+01:00",
       "enabled": true,
-      "agent": "tester",
-      "started": "2026-11-03T00:25:03+01:00",
-      "live": "live-T-077-tester-20261103-002503.jsonl"
+      "agent": "desarrollador",
+      "started": "2026-11-03T00:36:05+01:00",
+      "live": "live-T-084-desarrollador-20261103-003605.jsonl"
     }
   }
 }

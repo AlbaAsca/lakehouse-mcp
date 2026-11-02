@@ -61,7 +61,7 @@ antes de seguir. Cada agente registra su propio inicio y fin (no se cierra en bl
 - **Permisos:** python, git status/diff/log, lectura, `./mvnw`, `./mk test|evals`, `make test|evals`, `docker compose ps|logs`. Nada de instalar, borrar, `cp`/`mv`, `git add`/`commit`/`push` ni comandos
   encadenados (`&&`, `;`, `|`, heredoc): el runner hace los commits. Sin MCP del proyecto (`--strict-mcp-config`).
 - **Comandos denegados:** quedan anotados en la tarjeta; si lo denegado era crear una tarjeta, la suya pasa a Bloqueado.
-- Si se agota el cupo de uso de Claude no cuenta como fallo: la tarjeta vuelve a su estado. Tiempo máximo por tarjeta: 4 × la
+- Si se agota el cupo de uso de Claude o el agente se corta sin mensaje final no cuenta como fallo: la tarjeta vuelve a su estado. Tiempo máximo por tarjeta: 4 × la
   estimación, entre 15 y 120 min. Logs en `board/runs/`.
 
 ## Tests por niveles
