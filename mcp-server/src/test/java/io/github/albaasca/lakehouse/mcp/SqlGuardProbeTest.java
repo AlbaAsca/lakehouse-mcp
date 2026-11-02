@@ -238,6 +238,85 @@ class SqlGuardProbeTest {
         assertThatThrownBy(() -> guard.guarded(sql, ALLOWED, 10)).isInstanceOf(Rejected.class);
     }
 
+    /** The four functions taken out of the list must stay out however they are written. */
+    @ParameterizedTest
+    @ValueSource(strings = {
+        "SELECT LPAD('a', 9, 'x')",
+        "SELECT \"lpad\"('a', 9, 'x')",
+        "SELECT U&\"lpad\"('a', 9, 'x')",
+        "SELECT 'a'.lpad(9, 'x')",
+        "SELECT 'a'.rpad(9, 'x')",
+        "SELECT main.lpad('a', 9, 'x')",
+        "SELECT system.main.rpad('a', 9, 'x')",
+        "SELECT 1 WHERE EXISTS (SELECT replace('a', 'a', 'b'))",
+        "WITH c AS (SELECT regexp_replace('a', 'a', 'b') AS s) SELECT s FROM c",
+        "SELECT 1 UNION ALL SELECT length(rpad('a', 9, 'x'))",
+        "SELECT id FROM lh.ns.events ORDER BY lpad('a', 9, 'x')",
+    })
+    void theFunctionsTakenOutCannotComeBackInAnotherSpelling(String sql) {
+        assertThatThrownBy(() -> guard.guarded(sql, ALLOWED, 10))
+                .isInstanceOfSatisfying(Rejected.class, e -> assertThat(e.rule()).isEqualTo(Rule.FUNCTION));
+    }
+
+    /** The limit counts the text as sent: padding it with comments neither helps an attack nor is trimmed first. */
+    @Test
+    void theLengthLimitCountsCommentsAndWhitespace() {
+        String attack = "SELECT 1";
+
+        assertThatThrownBy(() -> guard.guarded(" ".repeat(SqlGuard.MAX_SQL_LENGTH) + attack, ALLOWED, 10))
+                .isInstanceOfSatisfying(Rejected.class, e -> assertThat(e.rule()).isEqualTo(Rule.SYNTAX));
+    }
+
+    /** What passes at the limit still goes through every rule. */
+    @ParameterizedTest
+    @ValueSource(strings = {"SELECT getenv('HOME')", "SELECT * FROM '/etc/passwd'", "SELECT * FROM secret", "DROP TABLE secret"})
+    void paddingUpToTheLimitDoesNotDisarmTheRules(String attack) {
+        String padded = attack + " --" + "x".repeat(SqlGuard.MAX_SQL_LENGTH - attack.length() - 3);
+
+        assertThat(padded).hasSize(SqlGuard.MAX_SQL_LENGTH);
+        assertThatThrownBy(() -> guard.guarded(padded, ALLOWED, 10)).isInstanceOf(Rejected.class);
+    }
+
+    /** The limit applies to what is written, not to what is rebuilt: the wrapped SQL may be longer and still has to run. */
+    @Test
+    void aQueryThatGrowsWhenRebuiltStillRuns() throws SQLException {
+        String sql = "SELECT 1" + ",1".repeat((SqlGuard.MAX_SQL_LENGTH - 8) / 2);
+
+        assertThat(sql.length()).isLessThanOrEqualTo(SqlGuard.MAX_SQL_LENGTH);
+        assertThat(guard.guarded(sql, ALLOWED, 1).length()).isGreaterThan(SqlGuard.MAX_SQL_LENGTH);
+        assertThat(guard.run(sql, ALLOWED, 1).rows().get(0)).hasSize((SqlGuard.MAX_SQL_LENGTH - 8) / 2 + 1);
+    }
+
+    /**
+     * The deepest shapes that get past the validator, run for real and not only parsed, on a stack of 256 KB. If the margin
+     * were wrong this would not fail: it would kill the test JVM. Hand-worked results: nesting must not change the answer.
+     */
+    private static Stream<Arguments> deepButAllowed() {
+        return Stream.of(
+                arguments("SELECT * FROM (".repeat(160) + "SELECT 1" + ")".repeat(160), "[[1]]"),
+                arguments("SELECT " + "abs(".repeat(160) + "1" + ")".repeat(160), "[[1]]"),
+                arguments("SELECT 1" + "+1".repeat(160), "[[161]]"),
+                arguments("SELECT 1" + " UNION ALL SELECT 1".repeat(200), "[[1]]"));
+    }
+
+    @ParameterizedTest
+    @MethodSource("deepButAllowed")
+    void theDeepestAllowedQueriesRunOnASmallStack(String sql, String expected) throws InterruptedException {
+        Object[] answer = {null};
+        Thread thread = new Thread(null, () -> {
+            try {
+                answer[0] = guard.run(sql, ALLOWED, 1).rows().toString();
+            } catch (Rejected | SQLException e) {
+                answer[0] = e;
+            }
+        }, "small-stack", 256 * 1024);
+
+        thread.start();
+        thread.join();
+
+        assertThat(answer[0]).isEqualTo(expected);
+    }
+
     private static List<String> text(ResultSet rows) throws SQLException {
         List<String> values = new ArrayList<>();
         int width = rows.getMetaData().getColumnCount();

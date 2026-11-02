@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-02T22:59:57+01:00",
+  "updated": "2026-11-02T23:09:10+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -1456,7 +1456,7 @@
       "id": "T-019",
       "title": "Consulta: validador de SQL que solo deja pasar lecturas",
       "owner": "desarrollador",
-      "status": "review",
+      "status": "done",
       "priority": "alta",
       "estimate_min": 40.0,
       "actual_min": 69.3,
@@ -1467,7 +1467,7 @@
         "T-016"
       ],
       "created": "2026-11-02T11:36:53+01:00",
-      "updated": "2026-11-02T22:59:57+01:00",
+      "updated": "2026-11-02T23:09:10+01:00",
       "started_at": "2026-11-02T22:35:32+01:00",
       "finished_at": "2026-11-02T22:59:57+01:00",
       "log": [
@@ -1580,6 +1580,16 @@
           "t": "2026-11-02T22:59:57+01:00",
           "by": "desarrollador",
           "msg": "REVIEW: SqlGuard rechaza en Java el SQL de más de 4.000 caracteres y ya no admite lpad, rpad, replace ni regexp_replace, con tests del módulo en verde; el riesgo de memoria del resto de funciones queda en T-117."
+        },
+        {
+          "t": "2026-11-02T23:00:00+01:00",
+          "by": "tester",
+          "msg": "verificando"
+        },
+        {
+          "t": "2026-11-02T23:09:10+01:00",
+          "by": "tester",
+          "msg": "DONE: SqlGuard rechaza el anidamiento y la celda gigante sin tumbar el proceso, con tests del módulo en verde; el pico de 5 GB de `||` queda anotado en T-117."
         }
       ],
       "runs": [
@@ -1622,9 +1632,19 @@
           "tokens": 1656743,
           "cost_usd": 1.9502139999999997,
           "verdict": "review"
+        },
+        {
+          "agent": "tester",
+          "mode": "verify",
+          "at": "2026-11-02T23:09:10+01:00",
+          "min": 9.1,
+          "turns": 40,
+          "tokens": 1039637,
+          "cost_usd": 1.3971157999999997,
+          "verdict": "done"
         }
       ],
-      "verify_started": "2026-11-02T22:18:09+01:00"
+      "verify_started": "2026-11-02T23:00:00+01:00"
     },
     {
       "id": "T-020",
@@ -4949,6 +4969,35 @@
           "t": "2026-11-02T22:59:28+01:00",
           "by": "consultor",
           "msg": "descripción reescrita"
+        },
+        {
+          "t": "2026-11-02T23:08:47+01:00",
+          "by": "consultor",
+          "msg": "Tester (T-019): medido en DuckDB 2.0 con memory_limit 256MB: || en CTE encadenadas llega a un pico de 5,07 GB (VmHWM), no 1,17 GB, y luego da Out of Memory; son 526 caracteres. Reproducir: WITH c0 AS (SELECT 'xxxxxxxxxx' AS s), c1 AS (SELECT s||s||s||s||s||s||s||s||s||s AS s FROM c0), ... hasta c8, SELECT length(s) FROM c8. Pasa todas las reglas de SqlGuard. Con el GB previsto para el servidor, esto probablemente lo mata (sin probar con ese límite): conviene subir la prioridad. En cambio concat, concat_ws y string_agg fallan pronto con error normal, sin pico (pico medido solo como máximo acumulado). Cruces de 20 a 80 tablas no terminan en 15 s pero cancel() los corta en menos de 1 s."
+        }
+      ]
+    },
+    {
+      "id": "T-118",
+      "title": "Borrar un test vacío y una carpeta temporal que dejó el validador de SQL",
+      "owner": "consultor",
+      "status": "backlog",
+      "priority": "baja",
+      "estimate_min": 2.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Al medir el validador quedaron dos restos que los agentes no pueden borrar porque tienen prohibido eliminar ficheros: un fichero de test vacío, ya subido al repositorio, y una carpeta temporal de unos 800 MB, ya ignorada por git. No afectan a los tests, pero ensucian el código y ocupan disco. Se propone borrarlos a mano.\nCómo sabremos si funciona: ninguno de los dos existe y los tests del módulo siguen en verde.\n## Técnico\nBorrar mcp-server/src/test/java/io/github/albaasca/lakehouse/mcp/TmpGuardMeasureTest.java y mcp-server/.tmp. El tester lo usó de nuevo para medir en T-019 y lo dejó igual que estaba. ./mk test MAVEN_ARGS=\"-pl mcp-server -am -DskipITs\".",
+      "deps": [],
+      "created": "2026-11-02T23:08:51+01:00",
+      "updated": "2026-11-02T23:08:51+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T23:08:51+01:00",
+          "by": "tester",
+          "msg": "creada"
         }
       ]
     }
@@ -4970,13 +5019,13 @@
     "measure": {
       "state": "working",
       "current": "T-019",
-      "message": "desarrollador con T-019",
+      "message": "tester con T-019",
       "pid": 18772,
-      "heartbeat": "2026-11-02T22:35:32+01:00",
+      "heartbeat": "2026-11-02T23:00:01+01:00",
       "enabled": true,
-      "agent": "desarrollador",
-      "started": "2026-11-02T22:35:32+01:00",
-      "live": "live-T-019-desarrollador-20261102-223532.jsonl"
+      "agent": "tester",
+      "started": "2026-11-02T23:00:00+01:00",
+      "live": "live-T-019-tester-20261102-230001.jsonl"
     }
   }
 }
