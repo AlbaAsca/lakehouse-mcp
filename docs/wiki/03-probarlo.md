@@ -21,11 +21,11 @@ Vas a levantar el lakehouse en tu ordenador, crear una tabla, viajar a una versi
 **Sin probar:** el comando no se ejecutó para esta wiki, aunque se comprobó que el repositorio responde sin credenciales.
 
 ```bash
-git clone -b develop https://github.com/AlbaAsca/lakehouse-mcp.git
+git clone https://github.com/AlbaAsca/lakehouse-mcp.git
 cd lakehouse-mcp
 ```
 
-La rama es `develop`, porque `main` aún no tiene Postgres. Todos los comandos siguientes se lanzan desde esta carpeta.
+Todos los comandos siguientes se lanzan desde esta carpeta.
 
 ## Paso 2. Crea tu configuración
 
