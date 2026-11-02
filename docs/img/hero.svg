@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 380" width="1200" height="380" font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif">
+  <!-- Paleta Tokyo Night (github.com/folke/tokyonight.nvim) -->
+  <defs>
+    <linearGradient id="title" x1="0" x2="1"><stop offset="0" stop-color="#7AA2F7"/><stop offset="1" stop-color="#BB9AF7"/></linearGradient>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M40 0H0V40" fill="none" stroke="#1F2335" stroke-width="1"/>
+    </pattern>
+    <style>
+      .node { fill: #24283B; stroke-width: 2; }
+      .label { fill: #C0CAF5; font-size: 17px; font-weight: 600; text-anchor: middle; }
+      .sub { fill: #9AA5CE; font-size: 13px; text-anchor: middle; }
+      .flow { fill: none; stroke-width: 2.5; stroke-dasharray: 6 8; animation: dash 1.2s linear infinite; }
+      @keyframes dash { to { stroke-dashoffset: -28; } }
+    </style>
+  </defs>
+
+  <rect width="1200" height="380" rx="18" fill="#16161E"/>
+  <rect width="1200" height="380" rx="18" fill="url(#grid)" opacity="0.6"/>
+
+  <text x="60" y="84" font-size="50" font-weight="800" fill="url(#title)">lakehouse-mcp</text>
+  <text x="62" y="124" font-size="21" fill="#C0CAF5">Un lakehouse local que un agente de IA consulta, vigila y repara vía MCP.</text>
+  <text x="62" y="154" font-size="15" fill="#9AA5CE">Java 25 · Spring Boot 4 · Spring AI 2 · Apache Kafka · Apache Iceberg · Apache Polaris · DuckDB 2</text>
+
+  <!-- Flujo principal -->
+  <path class="flow" stroke="#7DCFFF" d="M210 260 H250"/>
+  <path class="flow" stroke="#7DCFFF" d="M400 260 H440"/>
+  <path class="flow" stroke="#9ECE6A" d="M590 260 H630"/>
+  <path class="flow" stroke="#BB9AF7" d="M780 260 H820"/>
+  <path class="flow" stroke="#FF9E64" d="M970 260 H1000"/>
+
+  <circle r="6" fill="#7DCFFF"><animateMotion dur="2.2s" repeatCount="indefinite" path="M210 260 H250"/></circle>
+  <circle r="6" fill="#7DCFFF"><animateMotion dur="2.2s" begin="0.4s" repeatCount="indefinite" path="M400 260 H440"/></circle>
+  <circle r="6" fill="#9ECE6A"><animateMotion dur="2.2s" begin="0.8s" repeatCount="indefinite" path="M590 260 H630"/></circle>
+  <circle r="6" fill="#BB9AF7"><animateMotion dur="2.2s" begin="1.2s" repeatCount="indefinite" path="M780 260 H820"/></circle>
+  <circle r="6" fill="#FF9E64"><animateMotion dur="2.2s" begin="1.6s" repeatCount="indefinite" path="M970 260 H1000"/></circle>
+
+  <rect class="node" x="60" y="215" width="150" height="90" rx="12" stroke="#7DCFFF"/>
+  <text class="label" x="135" y="255">Eventos</text>
+  <text class="sub" x="135" y="279">productor Java</text>
+
+  <rect class="node" x="250" y="215" width="150" height="90" rx="12" stroke="#7DCFFF"/>
+  <text class="label" x="325" y="255">Kafka</text>
+  <text class="sub" x="325" y="279">Schema Registry</text>
+
+  <rect class="node" x="440" y="215" width="150" height="90" rx="12" stroke="#9ECE6A"/>
+  <text class="label" x="515" y="255">Iceberg</text>
+  <text class="sub" x="515" y="279">Polaris · SeaweedFS</text>
+
+  <rect class="node" x="630" y="215" width="150" height="90" rx="12" stroke="#BB9AF7"/>
+  <text class="label" x="705" y="255">DuckDB</text>
+  <text class="sub" x="705" y="279">motor de consulta</text>
+
+  <rect class="node" x="820" y="215" width="150" height="90" rx="12" stroke="#FF9E64"/>
+  <text class="label" x="895" y="255">Servidor MCP</text>
+  <text class="sub" x="895" y="279">tools con RBAC</text>
+
+  <rect class="node" x="1000" y="215" width="140" height="90" rx="12" stroke="#F7768E"/>
+  <text class="label" x="1070" y="255">Agente</text>
+  <text class="sub" x="1070" y="279">Spring AI</text>
+</svg>
