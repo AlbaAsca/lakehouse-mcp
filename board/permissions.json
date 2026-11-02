@@ -1,10 +1,10 @@
 {
   "allowed": [
     {
-      "pattern": "docker *",
-      "why": "concedido por el responsable desde el panel",
+      "pattern": "docker compose config*",
+      "why": "validar compose.yaml sin supervisión; sustituye a docker *, demasiado amplio",
       "by": "responsable",
-      "at": "2026-11-02T11:53:12+01:00"
+      "at": "2026-11-02T13:07:35+01:00"
     }
   ],
   "denied": []
