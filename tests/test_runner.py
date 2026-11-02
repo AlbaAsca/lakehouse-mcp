@@ -1,7 +1,12 @@
+import io
 import os
 import json
+import shutil
+import subprocess
 import sys
 from pathlib import Path
+
+import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "board"))
 import runner  # noqa: E402
@@ -44,22 +49,36 @@ def test_guarda_de_instancia_por_carril():
     assert runner.other_instance({"runner": {"pid": os.getpid()}}, "think") is None  # uno mismo no cuenta
 
 
-def test_commit_solo_con_ficheros_propios(tmp_path, monkeypatch):
-    import shutil
-    import subprocess
+@pytest.fixture
+def repo(tmp_path, monkeypatch):
+    """Repo git desechable con el runner apuntando a él; devuelve (ruta, g) con g = comando git."""
     if not shutil.which("git"):
-        return
-    g = lambda *a: subprocess.run(["git", *a], cwd=tmp_path, capture_output=True, text=True, check=True).stdout
+        pytest.skip("sin git")
+    root = tmp_path / "repo"
+    root.mkdir()
+    g = lambda *a: subprocess.run(["git", *a], cwd=root, capture_output=True, text=True, check=True).stdout
     g("init", "-q")
     g("config", "user.email", "t@t")
     g("config", "user.name", "t")
-    (tmp_path / "board").mkdir()
+    (root / "board").mkdir()
+    (root / ".gitignore").write_text("*.log\n", encoding="utf-8")
     for n in ("board/board.json", "otro.txt", "previo.txt"):
-        (tmp_path / n).write_text("0", encoding="utf-8")
+        (root / n).write_text("0", encoding="utf-8")
     g("add", "-A")
     g("commit", "-q", "-m", "init")
+    monkeypatch.setattr(runner, "ROOT", root)
+    monkeypatch.setattr(runner, "CLAIMS", tmp_path / "claims")
+    monkeypatch.setattr(runner.time, "sleep", lambda s: None)
+    return root, g
+
+
+def _committed(g):
+    return g("show", "--name-only", "--format=", "HEAD").split()
+
+
+def test_commit_solo_con_ficheros_propios(repo):
+    tmp_path, g = repo
     (tmp_path / "previo.txt").write_text("a medias", encoding="utf-8")  # trabajo del otro carril ya en curso
-    monkeypatch.setattr(runner, "ROOT", tmp_path)
     before = runner.snapshot()
     assert "previo.txt" in before
     (tmp_path / "mio.py").write_text("x", encoding="utf-8")  # nuevo
@@ -69,6 +88,131 @@ def test_commit_solo_con_ficheros_propios(tmp_path, monkeypatch):
     assert files == ["board/board.json", "mio.py", "otro.txt"]
     assert g("show", "--name-only", "--format=", "HEAD").split() == files
     assert "previo.txt" in g("status", "--porcelain")  # sigue sin commitear
+
+
+def test_corte_y_reintento_conservan_los_ficheros_de_la_tarjeta(repo):
+    root, g = repo
+    # primer intento: el agente escribe y el runner muere antes del commit (■ Parar, reinicio del PC)
+    (root / "mio.py").write_text("x", encoding="utf-8")
+    runner.claim("T-1", ["mio.py"])
+    # reintento: el fichero ya está en `before` y no vuelve a cambiar
+    before = runner.snapshot()
+    assert "mio.py" in before
+    (root / "board/board.json").write_text("1", encoding="utf-8")
+    assert runner.commit_own(before, "chore: retry", "T-1") == ["board/board.json", "mio.py"]
+    assert _committed(g) == ["board/board.json", "mio.py"]
+    assert runner.claims() == {}  # guardado: ya no está pendiente
+
+
+def test_commit_no_se_lleva_lo_del_otro_carril_ni_lo_pierde(repo):
+    root, g = repo
+    before = runner.snapshot()
+    (root / "board/board.json").write_text("1", encoding="utf-8")
+    (root / "mio.py").write_text("x", encoding="utf-8")
+    runner.claim("T-1", ["mio.py"])
+    (root / "suyo.py").write_text("a medias", encoding="utf-8")  # el otro carril lo crea durante T-1
+    runner.claim("T-2", ["suyo.py"])
+    (root / "generado.txt").write_text("g", encoding="utf-8")  # salida de un comando de T-1: nadie lo apunta
+    assert runner.commit_own(before, "chore: T-1", "T-1") == ["board/board.json", "generado.txt", "mio.py"]
+    assert "suyo.py" in g("status", "--porcelain")
+    (root / "board/board.json").write_text("2", encoding="utf-8")
+    assert runner.commit_own(runner.snapshot(), "chore: T-2", "T-2") == ["board/board.json", "suyo.py"]
+    assert _committed(g) == ["board/board.json", "suyo.py"]
+
+
+def test_commit_incluye_lo_apuntado_aunque_el_estado_de_git_salga_vacio(repo, monkeypatch):
+    root, g = repo  # caso T-011: 0b10718 solo llevó board.json con los ficheros creados en esa misma ejecución
+    before = runner.snapshot()
+    (root / "mio.py").write_text("x", encoding="utf-8")
+    (root / "board/board.json").write_text("1", encoding="utf-8")
+    runner.claim("T-1", ["mio.py"])
+    monkeypatch.setattr(runner, "snapshot", lambda: {})
+    runner.commit_own(before, "chore: T-1", "T-1")
+    assert _committed(g) == ["board/board.json", "mio.py"]
+
+
+def test_rutas_apuntadas_que_git_no_admite_no_tumban_el_commit(repo):
+    root, g = repo
+    before = runner.snapshot()
+    (root / "board/board.json").write_text("1", encoding="utf-8")
+    (root / "mio.py").write_text("x", encoding="utf-8")
+    (root / "salida.log").write_text("ignorado", encoding="utf-8")
+    (root / "otro.txt").unlink()  # borrado que sí debe guardarse
+    runner.claim("T-1", ["mio.py", "salida.log", "ya-no-existe.py", "otro.txt"])
+    runner.commit_own(before, "chore: T-1", "T-1")
+    assert _committed(g) == ["board/board.json", "mio.py", "otro.txt"]
+
+
+def test_sin_cambios_no_es_un_fallo(repo):
+    root, g = repo
+    runner.claim("T-1", ["otro.txt"])  # un Edit que no llegó a cambiar nada
+    assert runner.commit_own(runner.snapshot(), "chore: nada", "T-1") == ["board/board.json", "otro.txt"]
+    assert g("log", "--format=%s", "-1").strip() == "init" and runner.claims() == {}
+
+
+def test_fallo_de_git_conserva_lo_apuntado_y_se_anota_en_la_tarjeta(repo, monkeypatch):
+    root, g = repo
+    before = runner.snapshot()
+    (root / "mio.py").write_text("x", encoding="utf-8")
+    (root / "board/board.json").write_text("1", encoding="utf-8")
+    runner.claim("T-1", ["mio.py"])
+    lock = root / ".git/index.lock"
+    lock.write_text("", encoding="utf-8")  # otro proceso con git a medias
+    fake = {"tasks": [{"id": "T-1", "log": []}]}
+    monkeypatch.setattr(runner.bd, "update", lambda f: f(fake))
+    monkeypatch.setattr(runner.bd, "task", lambda b, tid: b["tasks"][0])
+    monkeypatch.setattr(runner.bd, "log", lambda t, by, msg: t["log"].append(msg))
+    assert runner.save(before, "T-1", "chore: T-1") is False
+    assert "commit fallido" in fake["tasks"][0]["log"][0]
+    assert runner.claims() == {"T-1": {"mio.py"}}
+    lock.unlink()
+    assert runner.save(runner.snapshot(), "T-1", "chore: T-1") is True  # el siguiente commit lo recupera
+    assert _committed(g) == ["board/board.json", "mio.py"]
+
+
+def test_git_retry_supera_un_bloqueo_pasajero(repo, monkeypatch):
+    root, g = repo
+    before = runner.snapshot()
+    (root / "board/board.json").write_text("1", encoding="utf-8")
+    lock = root / ".git/index.lock"
+    lock.write_text("", encoding="utf-8")
+    monkeypatch.setattr(runner.time, "sleep", lambda s: lock.unlink(missing_ok=True))  # el otro proceso termina
+    runner.commit_own(before, "chore: T-1", "T-1")
+    assert _committed(g) == ["board/board.json"]
+
+
+def _use(name, **inp):
+    return json.dumps({"type": "assistant", "message": {"content": [{"type": "tool_use", "id": "a", "name": name, "input": inp}]}})
+
+
+def test_tool_paths_solo_escrituras_dentro_del_repo(repo, tmp_path):
+    root, _ = repo
+    assert runner.tool_paths(_use("Write", file_path=str(root / "src" / "A.java"))) == ["src/A.java"]
+    assert runner.tool_paths(_use("Edit", file_path="relativo.py")) == ["relativo.py"]
+    assert runner.tool_paths(_use("Write", file_path=str(tmp_path / "scratchpad.py"))) == []
+    assert runner.tool_paths(_use("Read", file_path=str(root / "a.py"))) == []
+    assert runner.tool_paths(_use("Bash", command="python x.py")) == []
+    assert runner.tool_paths('{"type":"system","note":"tool_use"}') == []
+    assert runner.tool_paths("tool_use sin json") == []
+
+
+def test_run_claude_apunta_lo_que_escribe_el_agente_al_momento(repo, tmp_path, monkeypatch):
+    root, _ = repo
+
+    class FakeProc:
+        stdin = io.StringIO()
+        stdout = iter([_use("Write", file_path=str(root / "mio.py")) + "\n",
+                       _use("Bash", command="ls") + "\n",
+                       '{"type":"result","result":"RESULT: review — ok","is_error":false}\n'])
+        wait = staticmethod(lambda: 0)
+        kill = staticmethod(lambda: None)
+
+    monkeypatch.setattr(runner, "LOGDIR", tmp_path)
+    monkeypatch.setattr(runner, "set_runner", lambda **kw: None)
+    monkeypatch.setattr(runner.subprocess, "Popen", lambda *a, **kw: FakeProc)
+    r = runner.run_claude("claude", "prompt", "desarrollador", 60, tag="T-1")
+    assert "RESULT: review" in r["text"]
+    assert runner.claims() == {"T-1": {"mio.py"}}
 
 
 def test_limpia_carriles_con_pid_muerto():

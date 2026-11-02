@@ -11,7 +11,7 @@ el estado del proyecto y aporta algo pequeño o registra tarjetas; como mucho un
 Dos carriles en paralelo (--lane): think = investigador, experto, arquitecto (board.THINK_ROLES; + rondas de aportación);
 measure = el resto (desarrollador, tester…) (las verificaciones de review siempre van a measure); all (por defecto) = todo en uno.
 Cada carril tiene su estado en board.json (`runners.<carril>`; all usa `runner`) y su guarda de instancia única.
-Los commits de cada tarjeta solo incluyen los ficheros que cambiaron durante ella (+ board/board.json), nunca `git add -A`.
+Los commits de cada tarjeta incluyen lo que escribió su agente (board/runs/claims/), lo que cambió durante ella sin ser de otra tarjeta y board/board.json, nunca `git add -A`.
 
 Uso: python board/runner.py [--lane think|measure|all] [--once | --until-idle] [--contribute] [--contrib-every H] [--dry-run] [--claude RUTA]
 """
@@ -34,6 +34,8 @@ import permissions as pm  # noqa: E402
 ROOT = Path(__file__).parents[1]
 STOP = Path(__file__).with_name("STOP")
 LOGDIR = Path(__file__).with_name("runs")
+CLAIMS = LOGDIR / "claims"  # <tarjeta>.txt: ficheros que ha escrito su agente y aún no están en un commit
+EDIT_TOOLS = {"Write", "Edit", "NotebookEdit"}
 RESULT_RE = re.compile(r"RESULT:\s*(done|review|human|blocked|fail)\b\s*[—:-]?\s*(.*)", re.I)
 MAX_FAILS = 3
 
@@ -185,9 +187,24 @@ def git(*args):
                           cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace")
 
 
+class GitError(RuntimeError):
+    pass
+
+
+def git_retry(*args, tries=5):
+    """Como git(), pero reintenta (p. ej. index.lock del otro carril) y lanza GitError si sigue fallando: un fallo mudo pierde ficheros."""
+    for i in range(tries):
+        r = git(*args)
+        if r is None or r.returncode == 0:
+            return r
+        if i < tries - 1:
+            time.sleep(1)
+    raise GitError(f"git {args[0]}: {(r.stderr or r.stdout).strip()[:300]}")
+
+
 def snapshot():
     """Estado del árbol de trabajo: {ruta: (estado git, mtime, tamaño)}. Sirve para saber qué cambió durante una tarjeta."""
-    r = git("status", "--porcelain", "-z", "-uall")
+    r = git_retry("status", "--porcelain", "-z", "-uall")
     out, parts = {}, (r.stdout.split("\0") if r else [])
     i = 0
     while i < len(parts):
@@ -204,13 +221,73 @@ def snapshot():
     return out
 
 
-def commit_own(before, msg):
-    """Commit solo con lo que cambió desde `before` (+ board/board.json); lo que ya estaba a medias, o es del otro carril, no entra."""
+def tool_paths(line):
+    """Rutas del repo que una línea del stream del agente va a escribir (Write/Edit); lo de fuera del repo no cuenta."""
+    if "tool_use" not in line:
+        return []
+    try:
+        content = json.loads(line)["message"]["content"]
+    except (json.JSONDecodeError, KeyError, TypeError):
+        return []
+    out = []
+    for c in content if isinstance(content, list) else []:
+        fp = (c.get("input") or {}).get("file_path") if isinstance(c, dict) and c.get("name") in EDIT_TOOLS else None
+        if fp:
+            try:
+                out.append((ROOT / fp).resolve().relative_to(ROOT.resolve()).as_posix())
+            except ValueError:
+                pass
+    return out
+
+
+def claim(tid, paths):
+    """Apunta los ficheros de la tarjeta al momento: sobrevive a un corte y el otro carril sabe que no son suyos."""
+    if not paths:
+        return
+    try:
+        CLAIMS.mkdir(parents=True, exist_ok=True)
+        with (CLAIMS / f"{tid}.txt").open("a", encoding="utf-8") as f:
+            f.writelines(p + "\n" for p in paths)
+    except OSError as e:  # no debe tumbar al agente en marcha
+        print(f"  ⚠ no se pudo apuntar {paths} en {tid}: {e}")
+
+
+def claims():
+    """{tarjeta: ficheros apuntados} de las tarjetas aún sin guardar."""
+    return {f.stem: set(f.read_text(encoding="utf-8").splitlines()) for f in CLAIMS.glob("*.txt")}
+
+
+def commit_own(before, msg, tid=None):
+    """Commit con los ficheros apuntados por la tarjeta `tid` (aunque sean de un intento anterior o ya estuvieran en `before`),
+    lo que cambió desde `before` (ficheros generados por comandos, que nadie apunta) y board/board.json.
+    Lo apuntado por otra tarjeta y lo que ya estaba a medias no entran. Lanza GitError si no se puede guardar; lo apuntado se conserva."""
+    apuntado = claims()
+    own = apuntado.pop(tid, set())
+    foreign = set().union(*apuntado.values())
     after = snapshot()
-    files = sorted({p for p, v in after.items() if before.get(p) != v} | {"board/board.json"})
-    git("add", "--", *files)
-    git("commit", "-q", "-m", msg, "--", *files)
+    wanted = ({p for p, v in after.items() if before.get(p) != v} - foreign) | own
+    # solo lo que git admite: una ruta ignorada o que ya no existe haría fallar el add y el commit enteros
+    known = git_retry("ls-files", "-c", "-o", "--exclude-standard", "-z", "--", *wanted) if wanted else None
+    files = sorted({p for p in (known.stdout.split("\0") if known else []) if p} | {"board/board.json"})
+    git_retry("add", "--", *files)
+    pending = git("diff", "--cached", "--quiet", "--", *files)
+    if pending and pending.returncode:  # sin cambios, commit devolvería error
+        git_retry("commit", "-q", "-m", msg, "--", *files)
+    if tid:
+        (CLAIMS / f"{tid}.txt").unlink(missing_ok=True)
     return files
+
+
+def save(before, tid, msg):
+    """Guarda y sube la tarjeta. Si git falla lo deja anotado en ella: sus ficheros siguen apuntados y entran en su siguiente commit."""
+    try:
+        commit_own(before, msg, tid)
+    except GitError as e:
+        print(f"  ⚠ {tid} sin guardar: {e}")
+        bd.update(lambda b: bd.log(bd.task(b, tid), "runner", f"⚠ commit fallido, ficheros sin guardar: {e}"))
+        return False
+    git("push", "-q", "--follow-tags")  # sincroniza con GitHub (lo hace el runner, nunca el agente)
+    return True
 
 
 # Tope de turnos por rol (medido en un proyecto real: los agentes que investigan gastaban 3-4 veces más por ejecución)
@@ -245,6 +322,7 @@ def run_claude(claude, prompt, agent, timeout_s, tag="run", max_turns=80):
                 f.write(line)
                 f.flush()
                 lines.append(line)
+                claim(tag, tool_paths(line))
                 if '"type":"result"' in line.replace(" ", ""):
                     try:
                         data = json.loads(line)
@@ -442,8 +520,7 @@ def contribute(o):
         return False
     set_runner(contrib_at=now(), contrib_agent=agent, state="idle", current=None,
                message=f"aportación {agent} ({tid}): {summary}")
-    commit_own(before, f"chore(runner): contribution round by {agent}")
-    git("push", "-q", "--follow-tags")
+    save(before, tid, f"chore(runner): contribution round by {agent}")
     print(f"  → {summary}")
     return True
 
@@ -543,8 +620,7 @@ def main():
                         if a["id"] == "tester" and a.get("current") == tid:
                             a.update(status="idle", current=None)
                 bd.update(free)
-            commit_own(before, f"chore(runner): {tid} {verdict} by {agent}")
-            git("push", "-q", "--follow-tags")  # sincroniza con GitHub (lo hace el runner, nunca el agente)
+            save(before, tid, f"chore(runner): {tid} {verdict} by {agent}")
             print(f"  → {new} en {r['secs'] / 60:.1f} min · {summary}")
 
             if verdict == "limit":  # sin fallo contado; parar hasta el reset (la ejecución programada reintenta)
