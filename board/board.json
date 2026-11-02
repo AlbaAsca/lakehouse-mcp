@@ -1,0 +1,93 @@
+{
+  "project": "lakehouse-mcp",
+  "updated": "2026-10-14T11:57:27+02:00",
+  "columns": [
+    {
+      "id": "backlog",
+      "name": "Backlog"
+    },
+    {
+      "id": "next",
+      "name": "Próximo"
+    },
+    {
+      "id": "doing",
+      "name": "En curso"
+    },
+    {
+      "id": "review",
+      "name": "Revisión"
+    },
+    {
+      "id": "human",
+      "name": "Te necesita"
+    },
+    {
+      "id": "blocked",
+      "name": "Bloqueado"
+    },
+    {
+      "id": "done",
+      "name": "Hecho"
+    }
+  ],
+  "runner": {
+    "enabled": false,
+    "state": "paused",
+    "current": null,
+    "heartbeat": "2026-10-14T11:57:27+02:00",
+    "message": "En pausa",
+    "pid": 6095
+  },
+  "agents": [
+    {
+      "id": "consultor",
+      "name": "Consultor",
+      "role": "Habla contigo, prioriza y reparte",
+      "color": "#ff9e64",
+      "status": "idle",
+      "current": null
+    },
+    {
+      "id": "arquitecto",
+      "name": "Arquitecto",
+      "role": "Diseña la solución y trocea en tareas estimadas",
+      "color": "#bb9af7",
+      "status": "idle",
+      "current": null
+    },
+    {
+      "id": "desarrollador",
+      "name": "Desarrollador",
+      "role": "Implementa las tareas",
+      "color": "#7aa2f7",
+      "status": "idle",
+      "current": null
+    },
+    {
+      "id": "tester",
+      "name": "Tester",
+      "role": "Verifica, escribe tests y busca fallos",
+      "color": "#9ece6a",
+      "status": "idle",
+      "current": null
+    },
+    {
+      "id": "investigador",
+      "name": "Investigador",
+      "role": "Busca alternativas, librerías y mejoras",
+      "color": "#7dcfff",
+      "status": "idle",
+      "current": null
+    },
+    {
+      "id": "experto",
+      "name": "Experto en datos",
+      "role": "Revisa con criterio de plataformas de datos",
+      "color": "#e0af68",
+      "status": "idle",
+      "current": null
+    }
+  ],
+  "tasks": []
+}

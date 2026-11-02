@@ -1,0 +1,445 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Panel de trabajo</title>
+<style>
+/* Paleta Tokyo Night Day / Tokyo Night (github.com/folke/tokyonight.nvim) */
+:root{--bg:#e1e2e7;--panel:#e9e9ed;--sunk:#d0d5e3;--ink:#3760bf;--muted:#6172b0;--line:#c4c8da;--acc:#2e7de9;--ok:#587539;--warn:#8c6c3e;--bad:#f52a65}
+@media (prefers-color-scheme:dark){:root{--bg:#1a1b26;--panel:#24283b;--sunk:#16161e;--ink:#c0caf5;--muted:#9aa5ce;--line:#292e42;--acc:#7aa2f7;--ok:#9ece6a;--warn:#e0af68;--bad:#f7768e}}
+*{box-sizing:border-box}
+body{margin:0;font:14px/1.4 system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;display:flex;flex-direction:column}
+button,select,input,textarea{font:inherit;color:inherit;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:5px 9px}
+button{cursor:pointer}button:disabled{opacity:.45;cursor:default}button.primary{background:var(--acc);border-color:var(--acc);color:#fff}
+header{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;padding:12px 16px;background:var(--panel);border-bottom:1px solid var(--line)}
+header h1{font-size:16px;margin:0}
+.kpi{display:flex;flex-wrap:wrap;gap:6px 16px;color:var(--muted);font-size:13px}.kpi b{color:var(--ink);font-variant-numeric:tabular-nums}
+.kpi .alert b{color:var(--acc)}
+.sp{flex:1}
+#upd{font-size:12px;color:var(--muted)}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block;flex:none}
+#runner{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;margin:12px 16px 0;padding:10px 14px;background:var(--panel);border:1px solid var(--line);border-radius:10px}
+#runner .state{display:flex;align-items:center;gap:8px;font-weight:600}
+#runner .pulse{width:10px;height:10px;border-radius:50%;background:var(--muted)}
+#runner .lane{display:flex;flex-wrap:wrap;align-items:center;gap:4px 12px;flex:1 1 100%}
+#runner .lane .state{min-width:210px}
+#runner .lane.working .pulse{background:var(--ok);animation:p 1.4s infinite}
+#runner .lane.paused .pulse{background:var(--warn)}#runner .lane.stale .pulse,#runner .lane.stopped .pulse{background:var(--bad)}
+#liveLane{margin-left:8px}
+@keyframes p{50%{opacity:.35}}
+#live{margin:8px 16px 0;padding:8px 14px;background:var(--panel);border:1px solid var(--line);border-radius:10px;font-size:13px}
+#live summary{cursor:pointer;font-weight:600}#liveFile{color:var(--muted);font-weight:400}
+#liveLog{max-height:340px;overflow:auto;margin-top:8px;font-family:ui-monospace,Consolas,monospace;font-size:12px}
+#liveLog div{padding:2px 0;border-bottom:1px dashed var(--line);white-space:pre-wrap;word-break:break-word}
+#liveLog .ts{display:inline-block;min-width:64px;color:var(--muted);font-variant-numeric:tabular-nums;opacity:.8}
+#liveLog .espera{color:var(--acc)}
+#liveLog .k{display:inline-block;min-width:92px;color:var(--muted)}
+#liveLog .herramienta .k{color:var(--acc)}#liveLog .piensa{color:var(--muted);font-style:italic}
+#liveLog .error .k{color:var(--warn)}#liveLog .denegado .k{color:var(--bad);font-weight:700}#liveLog .fin{font-weight:600}
+.desc-view{display:grid;gap:8px;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px;line-height:1.5}
+.desc-view p{margin:0}.desc-view .muted{color:var(--muted)}
+.desc-view details summary,.desc-edit summary{cursor:pointer;color:var(--muted);font-size:13px}
+.desc-view .tech{white-space:pre-wrap;font:12px/1.5 ui-monospace,Consolas,monospace;color:var(--muted);margin-top:6px}
+.desc-edit textarea{width:100%;min-height:160px;margin-top:6px}
+.actions .sp{flex:1}
+/* Hecho: cuadrícula de píxeles tipo «actividad de GitHub», una casilla por tarea, del color de su agente */
+.col.done .cards{gap:8px}
+.pix{display:grid;grid-auto-flow:column;grid-template-rows:repeat(7,11px);grid-auto-columns:11px;gap:3px;overflow-x:auto;padding:2px 0 4px}
+.pix i{width:11px;height:11px;border-radius:3px;background:var(--c);cursor:pointer;transition:transform .12s}
+.pix i:hover{transform:scale(1.45);box-shadow:0 0 0 1px var(--panel)}
+.pix i.gap{background:transparent;cursor:default;pointer-events:none}
+.pix i.rej{opacity:.45}
+.vgroup{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:7px 8px;display:grid;gap:6px}
+.vgroup.retired{opacity:.6}
+.vhead{display:flex;gap:6px;align-items:baseline;font-size:12px;cursor:pointer;color:var(--muted)}
+.vhead b{color:var(--ink);font-size:13px}
+.vhead > *{white-space:nowrap}
+.vhead .ret{color:var(--bad)}
+.vhead .lb{font-variant-numeric:tabular-nums;color:var(--ink)}
+.vhead .n{font-variant-numeric:tabular-nums;min-width:18px;text-align:right}
+.pixw{display:grid;grid-template-columns:repeat(auto-fill,11px);gap:3px}
+.pixw i{width:11px;height:11px;border-radius:3px;background:var(--c);cursor:pointer;transition:transform .12s}
+.pixw i:hover{transform:scale(1.45);box-shadow:0 0 0 1px var(--panel)}
+.pixw i.rej{opacity:.4}
+.pixfoot{display:flex;gap:6px;align-items:center;font-size:12px;color:var(--muted)}
+.pixfoot button{font-size:12px;padding:3px 8px}
+#doneDlg{max-width:760px;width:calc(100vw - 32px)}
+#doneDlg .ver{border-top:1px solid var(--line);padding:10px 0;display:grid;gap:6px}
+#doneDlg .ver h3{margin:0;font-size:14px;display:flex;gap:8px;flex-wrap:wrap;align-items:baseline}
+#doneDlg .ver h3 small{color:var(--muted);font-weight:400}
+#doneDlg .ver .ret{color:var(--bad);font-size:12px}
+#doneDlg .ver .lb{font-variant-numeric:tabular-nums}
+#doneDlg ul{list-style:none;margin:0;padding:0;display:grid;gap:2px;font-size:13px}
+#doneDlg li{cursor:pointer;padding:2px 4px;border-radius:4px;display:flex;gap:8px;align-items:center}
+#doneDlg li:hover{background:var(--sunk)}
+#doneDlg li i{width:9px;height:9px;border-radius:2px;background:var(--c);flex:none}
+#doneDlg li span.id{color:var(--muted);font-variant-numeric:tabular-nums;flex:none}
+#runner .info{color:var(--muted);font-size:13px}#runner .info b{color:var(--ink)}
+#agents{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px;padding:12px 16px}
+.agent{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px;cursor:pointer;border-top:3px solid var(--c);min-width:0}
+.agent.sel{outline:2px solid var(--c)}
+.agent .top{display:flex;align-items:center;gap:6px}
+.agent .name{font-weight:600}
+.badge{margin-left:auto;font-size:11px;padding:1px 7px;border-radius:99px;background:var(--sunk);color:var(--muted)}
+.badge.working{background:color-mix(in srgb,var(--ok) 18%,transparent);color:var(--ok)}
+.agent .role{font-size:12px;color:var(--muted);margin:2px 0 6px}
+.agent .cfg{font-size:11px;color:var(--muted);margin:-4px 0 6px;font-variant:small-caps;letter-spacing:.02em}
+.agent .now,.agent .next{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.agent .next,.agent .load{color:var(--muted);font-size:12px}.agent .load{margin-top:4px}
+#board{flex:1;display:grid;grid-template-columns:repeat(7,minmax(190px,1fr));gap:10px;padding:4px 16px 16px;overflow-x:auto;align-items:start}
+.col{background:var(--sunk);border:1px solid var(--line);border-radius:10px;min-height:140px;display:flex;flex-direction:column}
+.col.human{border-color:color-mix(in srgb,var(--acc) 55%,var(--line))}
+.col.over{outline:2px dashed var(--acc)}
+.col h2{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:0;padding:10px 10px 6px;display:flex;gap:6px}
+.col.human h2{color:var(--acc)}
+.col h2 span:last-child{margin-left:auto;font-variant-numeric:tabular-nums;text-transform:none}
+.cards{display:flex;flex-direction:column;gap:6px;padding:0 8px 8px;flex:1}
+.card{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--c);border-radius:8px;padding:8px 9px;cursor:grab}
+.card.live{box-shadow:0 0 0 2px color-mix(in srgb,var(--ok) 45%,transparent)}
+.card .meta{display:flex;gap:6px;align-items:center;font-size:11px;color:var(--muted);flex-wrap:wrap}
+.card .t{margin:4px 0 6px;font-weight:500}
+.card .manual{font-size:12px;background:color-mix(in srgb,var(--acc) 10%,transparent);color:var(--ink);border-radius:6px;padding:5px 7px;margin:4px 0 6px}
+.prio{font-size:10px;text-transform:uppercase;letter-spacing:.04em;padding:0 5px;border-radius:4px;border:1px solid currentColor}
+.prio.alta{color:var(--bad)}.prio.media{color:var(--warn)}.prio.baja{color:var(--muted)}
+.tm{margin-left:auto;font-variant-numeric:tabular-nums}.tm .over{color:var(--bad)}.tm .under{color:var(--ok)}
+.bar{height:4px;background:var(--sunk);border-radius:2px;overflow:hidden;margin-top:6px}
+.bar i{display:block;height:100%;background:var(--c)}.bar.over i{background:var(--bad)}
+dialog{border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--ink);width:min(580px,94vw);padding:0}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+dialog form{padding:16px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+dialog label{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted)}
+dialog .full{grid-column:1/-1}
+dialog textarea{min-height:64px;resize:vertical}
+dialog h3{margin:0;grid-column:1/-1;font-size:15px}
+.facts{grid-column:1/-1;font-size:12px;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px 14px}.facts b{color:var(--ink)}
+.log{grid-column:1/-1;max-height:170px;overflow:auto;font-size:12px;border-top:1px solid var(--line);padding-top:8px}
+.log div{padding:2px 0;color:var(--muted)}.log b{color:var(--ink);font-weight:500}
+.actions{grid-column:1/-1;display:flex;gap:8px;justify-content:flex-end}
+@media (max-width:700px){#board{grid-template-columns:repeat(7,82vw)}}
+</style>
+</head>
+<body>
+<header>
+  <h1 id="title">Panel de trabajo</h1>
+  <div class="kpi">
+    <span>Cola automática <b id="kQueue">–</b></span>
+    <span class="alert">Te necesitan <b id="kHuman">–</b></span>
+    <span>Hecho <b id="kDone">–</b></span>
+    <span title="Media de tiempo real / estimado en tareas terminadas con estimación">Precisión estimaciones <b id="kFactor">–</b></span>
+  </div>
+  <span class="sp"></span>
+  <span id="upd"></span>
+  <button class="primary" id="new">Nueva tarea</button>
+</header>
+<section id="runner"><div id="lanes" style="flex:1 1 100%"></div><span class="sp"></span>
+  <button id="rStart" title="Trabaja las tarjetas pendientes una tras otra y se para cuando no quedan">▶ Iniciar</button>
+  <button id="rStop" title="Para el runner y al agente que esté trabajando; su tarjeta vuelve a Próximo">■ Parar</button>
+  <button id="rToggle" title="En pausa, ni el botón Iniciar ni la ejecución programada cogen tarjetas">Pausar</button></section>
+<details id="live"><summary>📜 Ver en directo qué hace el agente <select id="liveLane" onclick="event.stopPropagation()"><option value="think">Pensar</option><option value="measure">Medir</option><option value="all">Único</option></select> <span id="liveFile"></span></summary><div id="liveLog"></div></details>
+<section id="agents"></section>
+<main id="board"></main>
+
+<dialog id="dlg">
+  <form method="dialog" id="f">
+    <h3 id="fId"></h3>
+    <label class="full">Título <input name="title" required></label>
+    <label>Responsable <select name="owner"></select></label>
+    <label>Estado <select name="status"></select></label>
+    <label>Prioridad <select name="priority"><option>alta</option><option>media</option><option>baja</option></select></label>
+    <label>Estimación (min de agente) <input name="estimate_min" type="number" step="1" min="1"></label>
+    <label class="full">Depende de <input name="deps" placeholder="T-003, T-007"></label>
+    <div class="full desc-view" id="fDesc"></div>
+    <details class="full desc-edit"><summary>Editar descripción</summary><textarea name="desc" aria-label="Descripción"></textarea></details>
+    <label class="full">Lo que tienes que hacer tú (vacío = la hacen los agentes solos) <input name="manual"></label>
+    <label class="full">Añadir nota <input name="note" placeholder="Opcional: queda en el historial"></label>
+    <div class="facts" id="fFacts"></div>
+    <div class="log" id="fLog"></div>
+    <div class="actions"><button type="button" id="fGrant" hidden>✓ Conceder permiso</button><button type="button" id="fDeny" hidden>✗ Denegar</button><span class="sp"></span><button value="cancel" formnovalidate>Cancelar</button><button class="primary" value="ok">Guardar</button></div>
+  </form>
+</dialog>
+<dialog id="doneDlg">
+  <h3 style="margin-top:0">Hecho, por versión</h3>
+  <div id="doneBody"></div>
+  <div class="actions"><span class="sp"></span><button id="doneClose">Cerrar</button></div>
+</dialog>
+
+<script>
+const $ = (s) => document.querySelector(s);
+let B = null, filter = null, editing = false, dragId = null;
+const PR = { alta: 0, media: 1, baja: 2 };
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const fmtMin = (m) => m == null ? "–" : m < 1 ? "<1 min" : m < 60 ? Math.round(m) + " min" : (m / 60).toFixed(1).replace(".", ",") + " h";
+const minsSince = (t) => t ? (Date.now() - new Date(t)) / 60000 : 0;
+const agentOf = (id) => B.agents.find((a) => a.id === id) || { name: id, color: "#888" };
+const isAuto = (t) => t.owner !== "consultor" && t.status !== "human";
+const verifyMin = (t) => (t.runs || []).filter((r) => r.mode === "verify").reduce((s, r) => s + (r.min || 0), 0);
+function realMin(t) {  // tiempo real medido: trabajo (doing) + verificación; en curso cuenta en vivo
+  let m = (t.actual_min || 0) + verifyMin(t);
+  if (t.status === "doing" && t.started_at) m += minsSince(t.started_at);
+  return t.actual_min == null && t.status !== "doing" && !verifyMin(t) ? null : m;
+}
+function factor() {
+  const s = B.tasks.filter((t) => t.status === "done" && t.estimate_min && t.actual_min != null);
+  if (s.length < 3) return { f: 1, n: s.length };
+  return { f: s.reduce((a, t) => a + realMin(t), 0) / s.reduce((a, t) => a + t.estimate_min, 0), n: s.length };
+}
+
+async function api(method, url, body) {
+  const r = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: body && JSON.stringify(body) });
+  if (!r.ok) alert("No se pudo guardar: " + (await r.text()));
+  return load(true);
+}
+async function load(force) {
+  if (!force && (editing || dragId)) return;
+  try {
+    const nb = await (await fetch("/api/board", { cache: "no-store" })).json();
+    if (force || !B || nb.updated !== B.updated) { B = nb; render(); } else { B.runner = nb.runner; B.runners = nb.runners; renderRunner(); }
+    $("#upd").textContent = "Actualizado " + new Date(B.updated).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  } catch (e) { $("#upd").textContent = "Sin conexión con el servidor"; }
+}
+
+const LANE_NAMES = { think: "🧠 Pensar", measure: "📏 Medir", all: "⚙ Único" };
+function laneInfo(r, st, dead) {
+  if (st === "working" && r.current) {
+    const t = B.tasks.find((x) => x.id === r.current);
+    let info = `<b>${esc(agentOf(r.agent).name)}</b> con ${r.current}${t ? " · " + esc(t.title) : ""} · lleva <b>${fmtMin(minsSince(r.started))}</b>${t?.estimate_min ? " de " + fmtMin(t.estimate_min) + " estimados" : ""}`;
+    const act = r.last_activity ? minsSince(r.last_activity) : null;
+    if (act != null) info += act < 1 ? ` · <b>activo</b> (última acción hace ${Math.round(act * 60)} s)`
+      : ` · última acción hace <b>${fmtMin(act)}</b>${act > 10 ? " (pensando o atascado)" : ""}`;
+    return info;
+  }
+  if (dead) return `Su proceso ya no existe; ${r.current || "la tarea"} quedó a medias. Pulsa <b>▶ Iniciar</b> para retomarla.`;
+  if (st === "stopped") return "Pulsa <b>▶ Iniciar</b> o espera a la próxima ejecución automática";
+  return esc(r.message || "");
+}
+function renderRunner() {
+  const g = B.runner || {}, rs = B.runners || {};
+  const lanes = [["think", rs.think || {}], ["measure", rs.measure || {}]];
+  if (g.alive || g.state === "working") lanes.push(["all", g]);  // runner único (modo antiguo) en marcha
+  $("#lanes").innerHTML = lanes.map(([k, r]) => {
+    const dead = r.state === "working" && r.alive === false;  // el panel dice «trabajando» pero el proceso ya no existe
+    const stale = dead || (r.state === "working" && minsSince(r.heartbeat) > 70);
+    const st = stale ? "stale" : r.state || "stopped";
+    const txt = dead ? "⚠ El agente se ha parado" : { working: "trabajando", idle: "en espera", paused: "en pausa", stopped: "parado", stale: "sin señal" }[st];
+    return `<div class="lane ${st}"><span class="state"><span class="pulse"></span>${LANE_NAMES[k]}: ${txt}</span><span class="info">${laneInfo(r, st, dead)}</span></div>`;
+  }).join("");
+  const alive = lanes.some(([, r]) => r.alive);
+  $("#rToggle").textContent = g.enabled === false ? "Reanudar" : "Pausar";
+  $("#rToggle").onclick = () => api("POST", "/api/board/runner", { enabled: g.enabled === false });
+  $("#rStart").disabled = lanes.every(([, r]) => r.alive);
+  $("#rStop").disabled = !alive;
+  $("#rStart").onclick = () => api("POST", "/api/runner/start");
+  $("#rStop").onclick = () => confirm("¿Parar los dos carriles y a los agentes que estén trabajando ahora?") && api("POST", "/api/runner/stop");
+}
+
+async function loadLive() {
+  if (!$("#live").open) return;
+  try {
+    const r = await (await fetch("/api/runner/live?lane=" + $("#liveLane").value, { cache: "no-store" })).json();
+    const box = $("#liveLog"), atEnd = box.scrollTop + box.clientHeight >= box.scrollHeight - 20;
+    const icon = { inicio: "▶ inicio", texto: "💬 dice", piensa: "🤔 piensa", herramienta: "🔧 usa", resultado: "↩ recibe", error: "⚠ fallo (lo corrige)", denegado: "⛔ denegado", fin: "✅ fin", espera: "⏳ esperando" };
+    $("#liveFile").textContent = r.file ? "· " + r.file : "· aún no hay ejecuciones";
+    const hhmmss = (t) => t ? new Date(t).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit", second: "2-digit" }) : "";
+    box.innerHTML = r.events.map((e) => `<div class="${e.kind}"><span class="ts">${hhmmss(e.t)}</span><span class="k">${icon[e.kind] || e.kind}</span>${esc(e.text)}</div>`).join("");
+    if (atEnd) box.scrollTop = box.scrollHeight;
+  } catch (e) {}
+}
+$("#liveLane").addEventListener("change", loadLive); $("#live").addEventListener("toggle", loadLive); setInterval(loadLive, 3000);
+
+function render() {
+  $("#title").textContent = "Panel de trabajo · " + (B.project || "");
+  const { f, n } = factor();
+  const queue = B.tasks.filter((t) => ["review", "next", "backlog", "doing"].includes(t.status) && isAuto(t));
+  const qMin = queue.reduce((s, t) => s + Math.max(0, (t.estimate_min || 10) - (t.status === "doing" ? minsSince(t.started_at) : 0)), 0) * f;
+  const eta = new Date(Date.now() + qMin * 60000).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" });
+  $("#kQueue").textContent = `${queue.length} tareas · ~${fmtMin(qMin)} (≈ ${eta})`;
+  $("#kHuman").textContent = B.tasks.filter((t) => t.status === "human" || (t.owner === "consultor" && t.status !== "done")).length;
+  $("#kDone").textContent = B.tasks.filter((t) => t.status === "done").length + " / " + B.tasks.length;
+  $("#kFactor").textContent = n < 3 ? `sin datos (${n}/3 tareas medidas)` : `real = ${f.toFixed(2).replace(".", ",")} × estimado (${n})`;
+  renderRunner();
+
+  const ORD = ["doing", "review", "next", "backlog", "human"];
+  $("#agents").innerHTML = B.agents.map((a) => {
+    const mine = B.tasks.filter((t) => t.owner === a.id);
+    const cur = B.tasks.find((t) => t.id === a.current);
+    const nxt = mine.filter((t) => ORD.includes(t.status) && t.id !== a.current)
+      .sort((x, y) => ORD.indexOf(x.status) - ORD.indexOf(y.status) || PR[x.priority] - PR[y.priority])[0];
+    const load = mine.filter((t) => t.status !== "done").reduce((s, t) => s + (t.estimate_min || 10), 0) * f;
+    return `<div class="agent ${filter === a.id ? "sel" : ""}" style="--c:${a.color}" data-a="${a.id}">
+      <div class="top"><span class="dot" style="background:${a.color}"></span><span class="name">${esc(a.name)}</span><span class="badge ${a.status}">${a.status === "working" ? "Trabajando" : "Libre"}</span></div>
+      <div class="role">${esc(a.role)}</div>
+      <div class="cfg">${a.model ? `${esc(a.model)} · esfuerzo ${esc(a.effort || "por defecto")}` : "Modelo de la sesión"}</div>
+      <div class="now">${cur ? `▶ ${cur.id} · ${esc(cur.title)}` : "<span style='color:var(--muted)'>Sin tarea en curso</span>"}</div>
+      <div class="next">${nxt ? `Siguiente: ${nxt.id} · ${esc(nxt.title)}` : "Sin próximas tareas"}</div>
+      <div class="load">${mine.filter((t) => t.status !== "done").length} tareas · ~${fmtMin(load)}</div>
+    </div>`;
+  }).join("");
+  document.querySelectorAll(".agent").forEach((el) => el.onclick = () => { filter = filter === el.dataset.a ? null : el.dataset.a; render(); });
+
+  $("#board").innerHTML = B.columns.map((c) => {
+    const ts = B.tasks.filter((t) => t.status === c.id && (!filter || t.owner === filter))
+      .sort((x, y) => c.id === "done" ? (y.finished_at || "").localeCompare(x.finished_at || "") : PR[x.priority] - PR[y.priority] || x.id.localeCompare(y.id));
+    const m = c.id === "done" ? ts.reduce((s, t) => s + (realMin(t) || 0), 0) : ts.reduce((s, t) => s + (t.estimate_min || 0), 0);
+    const body = c.id === "done" ? doneGrid(ts) : ts.map(card).join("");
+    return `<section class="col ${c.id}" data-s="${c.id}"><h2><span>${c.name}</span><span>${ts.length}${m ? " · " + fmtMin(m) : ""}</span></h2>
+      <div class="cards">${body}</div></section>`;
+  }).join("");
+  document.querySelectorAll(".col.done i[data-id]").forEach((el) => el.onclick = (e) => { e.stopPropagation(); openTask(el.dataset.id); });
+  document.querySelectorAll(".vgroup .vhead").forEach((el) => el.onclick = () => openDone(el.parentElement.dataset.v));
+  document.querySelectorAll(".card").forEach((el) => {
+    el.ondragstart = (e) => { dragId = el.dataset.id; e.dataTransfer.effectAllowed = "move"; };
+    el.ondragend = () => setTimeout(() => (dragId = null), 50);
+    el.onclick = () => openTask(el.dataset.id);
+  });
+  document.querySelectorAll(".col").forEach((col) => {
+    col.ondragover = (e) => { e.preventDefault(); col.classList.add("over"); };
+    col.ondragleave = () => col.classList.remove("over");
+    col.ondrop = (e) => {
+      e.preventDefault(); col.classList.remove("over");
+      const id = dragId; dragId = null;
+      const t = B.tasks.find((x) => x.id === id);
+      if (t && t.status !== col.dataset.s) api("PATCH", "/api/board/task/" + id, { status: col.dataset.s });
+    };
+  });
+}
+function card(t) {
+  const a = agentOf(t.owner), real = realMin(t), est = t.estimate_min;
+  const live = [B.runner, ...Object.values(B.runners || {})].some((r) => r?.current === t.id && r?.state === "working" && r?.alive !== false);
+  let tm = "";
+  if (real == null) tm = est ? `est ${fmtMin(est)}` : "";
+  else if (!est) tm = `real ${fmtMin(real)}`;
+  else tm = `${fmtMin(real)} <span class="${real > est * 1.2 ? "over" : real < est * 0.8 ? "under" : ""}">/ ${fmtMin(est)}</span>`;
+  const pct = est && real != null ? Math.min(100, real / est * 100) : 0;
+  const manual = (t.status === "human" || t.owner === "consultor") && t.status !== "done" && t.manual;
+  return `<article class="card ${live ? "live" : ""}" draggable="true" data-id="${t.id}" style="--c:${a.color}">
+    <div class="meta"><span>${t.id}</span><span class="prio ${t.priority}">${t.priority}</span><span class="tm">${tm}</span></div>
+    <div class="t">${esc(t.title)}</div>
+    ${manual ? `<div class="manual"><b>Tú:</b> ${esc(t.manual)}</div>` : ""}
+    <div class="meta"><span class="dot" style="background:${a.color}"></span>${esc(a.name)}${t.deps?.length ? ` · depende de ${t.deps.join(", ")}` : ""}${t.runs?.length ? ` · ${t.runs.length} ejecuc.` : ""}</div>
+    ${t.status === "doing" && est ? `<div class="bar ${real > est ? "over" : ""}"><i style="width:${pct}%"></i></div>` : ""}
+  </article>`;
+}
+
+// Descripción: lenguaje llano arriba; lo técnico va debajo de una línea «## Técnico» y se muestra plegado.
+function renderDesc(d) {
+  if (!d) return '<p class="muted">Sin descripción.</p>';
+  const i = d.search(/^##\s*T[eé]cnico\s*$/im);
+  const human = (i < 0 ? d : d.slice(0, i)).trim(), tech = i < 0 ? "" : d.slice(i).replace(/^##\s*T[eé]cnico\s*$/im, "").trim();
+  const paras = human.split(/\n\s*\n/).map((p) => `<p>${esc(p).replace(/\n/g, "<br>")}</p>`).join("");
+  return paras + (tech ? `<details><summary>Detalles técnicos</summary><div class="tech">${esc(tech)}</div></details>` : "");
+}
+const f = $("#f");
+function openTask(id) {
+  editing = true;
+  const isNew = !id;
+  const t = isNew ? { title: "", owner: filter && filter !== "consultor" ? filter : "desarrollador", status: "backlog", priority: "media", estimate_min: 10, desc: "", deps: [], manual: "", log: [] }
+    : B.tasks.find((x) => x.id === id);
+  f.owner.innerHTML = B.agents.map((a) => `<option value="${a.id}">${esc(a.name)}</option>`).join("");
+  f.status.innerHTML = B.columns.map((c) => `<option value="${c.id}">${c.name}</option>`).join("");
+  $("#fId").textContent = isNew ? "Nueva tarea" : t.id;
+  for (const k of ["title", "owner", "status", "priority", "estimate_min", "desc", "manual"]) f[k].value = t[k] ?? "";
+  f.deps.value = (t.deps || []).join(", "); f.note.value = "";
+  $("#fDesc").innerHTML = renderDesc(t.desc);
+  const isPerm = !!(t.perm && t.status === "human");
+  for (const [id, decision, verb] of [["#fGrant", "grant", "Conceder"], ["#fDeny", "deny", "Denegar"]]) {
+    const btn = $(id);
+    btn.hidden = !isPerm;
+    btn.onclick = async () => {
+      if (!confirm(`${verb} «${t.perm.pattern}» al runner?\n\nLo pidió: ${t.perm.agent} (${t.perm.task})\nPara: ${t.perm.why || "(no lo explicó)"}`)) return;
+      $("#dlg").close("cancel");
+      await api("POST", "/api/permissions/" + t.id, { decision });
+    };
+  }
+  $(".desc-edit").open = isNew;
+  const runs = t.runs || [];
+  $("#fFacts").innerHTML = isNew ? "" : [
+    `Estimado <b>${fmtMin(t.estimate_min)}</b>`, `Real <b>${fmtMin(realMin(t))}</b>`,
+    t.started_at ? `Inicio <b>${new Date(t.started_at).toLocaleString("es-ES", { dateStyle: "short", timeStyle: "short" })}</b>` : "",
+    runs.length ? `Ejecuciones <b>${runs.length}</b>` : "",
+    runs.some((r) => r.turns) ? `Turnos <b>${runs.reduce((s, r) => s + (r.turns || 0), 0)}</b>` : "",
+    runs.some((r) => r.tokens) ? `Tokens <b>${runs.reduce((s, r) => s + (r.tokens || 0), 0).toLocaleString("es-ES")}</b>` : "",
+  ].filter(Boolean).join("");
+  $("#fLog").innerHTML = [...(t.log || [])].reverse().map((l) =>
+    `<div>${new Date(l.t).toLocaleString("es-ES", { dateStyle: "short", timeStyle: "short" })} · <b>${esc(l.by)}</b> · ${esc(l.msg)}</div>`).join("");
+  $("#dlg").onclose = () => {
+    editing = false;
+    if ($("#dlg").returnValue !== "ok") return;
+    const body = { title: f.title.value.trim(), owner: f.owner.value, priority: f.priority.value, status: f.status.value,
+      estimate_min: +f.estimate_min.value || null, desc: f.desc.value, manual: f.manual.value.trim() || null,
+      deps: f.deps.value.split(",").map((s) => s.trim()).filter(Boolean), note: f.note.value.trim() || undefined };
+    isNew ? api("POST", "/api/board/task", body) : api("PATCH", "/api/board/task/" + t.id, body);
+  };
+  $("#dlg").returnValue = ""; $("#dlg").showModal();
+}
+$("#new").onclick = () => openTask(null);
+// ---- Hecho como cuadrícula de píxeles agrupada por versión ----
+let VERS = [];
+async function loadVersions() {
+  try {
+    const r = await fetch("/api/versions", { cache: "no-store" });
+    const v = r.ok ? await r.json() : [];
+    VERS = Array.isArray(v) ? v : [];  // servidor antiguo sin /api/versions: todo va al grupo «siguiente»
+  } catch (e) { VERS = []; }
+  if (B && !editing) render();
+}
+function versionOf(t) {  // la primera versión publicada después de terminar la tarea; si no hay, la siguiente
+  const end = t.finished_at || t.updated || "";
+  const v = VERS.find((x) => new Date(x.date) >= new Date(end));
+  return v ? v.name : "siguiente";
+}
+const isRejected = (t) => /RECHAZADA|NO se promueve/i.test((t.log || []).slice(-3).map((l) => l.msg).join(" "));
+function pixel(t) {
+  const a = agentOf(t.owner);
+  return `<i data-id="${t.id}" class="${isRejected(t) ? "rej" : ""}" style="--c:${a.color}" title="${esc(t.id + " · " + t.title + " · " + a.name)}"></i>`;
+}
+function groups(ts) {  // [[versión, tareas en orden de cierre]] de la más antigua a la más reciente
+  const by = new Map([...VERS.map((v) => [v.name, []]), ["siguiente", []]]);
+  [...ts].sort((x, y) => (x.finished_at || "").localeCompare(y.finished_at || "")).forEach((t) => by.get(versionOf(t))?.push(t));
+  return [...by.entries()].filter(([, l]) => l.length);
+}
+function doneGrid(ts) {
+  if (!ts.length) return '<div class="pixfoot">Aún no hay nada hecho</div>';
+  // un bloque por versión, de la más reciente a la más antigua: de un vistazo se ve qué tareas entraron en cada una
+  const info = Object.fromEntries(VERS.map((v) => [v.name, v]));
+  const blocks = groups(ts).reverse().map(([name, l]) => {
+    const v = info[name];
+    const title = v ? (v.tag || name) : "En camino";
+    const sub = v && v.tag ? name : "";
+    const lb = v?.lb != null ? String(v.lb).replace(".", ",") : "";
+    return `<div class="vgroup${v?.retired ? " retired" : ""}" data-v="${esc(name)}">
+      <div class="vhead" title="Ver la lista de esta versión"><b>${esc(title)}</b>${sub && !v?.retired ? `<span>${esc(sub)}</span>` : ""}${v?.retired ? '<span class="ret">retirada</span>' : ""}<span class="sp"></span>${lb ? `<span class="lb">${lb}</span>` : ""}<span class="n">${l.length}</span></div>
+      <div class="pixw">${l.map(pixel).join("")}</div></div>`;
+  }).join("");
+  return blocks + `<div class="pixfoot">${ts.length} tareas · casilla clara = rechazada</div>`;
+}
+function openDone(only) {
+  const ts = B.tasks.filter((t) => t.status === "done" && (!filter || t.owner === filter))
+    .filter((t) => !only || versionOf(t) === only);
+  const info = Object.fromEntries(VERS.map((v) => [v.name, v]));
+  $("#doneBody").innerHTML = groups(ts).reverse().map(([name, l]) => {
+    const v = info[name];
+    const head = v ? `${v.tag ? esc(v.tag) + " · " : ""}${esc(name)}` : "Hacia la próxima versión";
+    const meta = v ? `<small>${new Date(v.date).toLocaleString("es-ES", { dateStyle: "short", timeStyle: "short" })}</small>` : "";
+    const lb = v?.lb != null ? `<span class="lb">nota ${String(v.lb).replace(".", ",")}</span>` : "";
+    const ret = v?.retired ? '<span class="ret">retirada</span>' : "";
+    return `<div class="ver"><h3>${head} ${lb} ${ret} ${meta}<small>· ${l.length} tareas</small></h3>
+      <div class="pix">${l.map(pixel).join("")}</div>
+      <ul>${l.slice().reverse().map((t) => `<li data-id="${t.id}" style="--c:${agentOf(t.owner).color}"><i></i><span class="id">${t.id}</span>${esc(t.title)}</li>`).join("")}</ul></div>`;
+  }).join("");
+  document.querySelectorAll("#doneBody [data-id]").forEach((el) => el.onclick = () => { $("#doneDlg").close(); openTask(el.dataset.id); });
+  $("#doneDlg").showModal();
+}
+$("#doneClose").onclick = () => $("#doneDlg").close();
+loadVersions(); setInterval(loadVersions, 60000);
+// enlaces directos (también para capturas): ?open=T-012 abre una tarjeta · ?live=think|measure|all despliega el log en directo
+load(true).then(() => {
+  const q = new URLSearchParams(location.search);
+  if (q.get("live")) { $("#liveLane").value = q.get("live"); $("#live").open = true; loadLive(); }
+  if (q.get("open") && B?.tasks.some((t) => t.id === q.get("open"))) openTask(q.get("open"));
+  if (q.get("done")) loadVersions().then(openDone);
+});
+setInterval(load, 4000); setInterval(() => B && !editing && !dragId && render(), 30000);
+</script>
+</body>
+</html>
