@@ -14,7 +14,7 @@ Se aplican a las cuatro métricas.
 | **`price` <= 0** | Se ignora en el dinero (ticket y marcas). En el embudo y el abandono cuenta. | El precio erróneo no borra lo que hizo la persona. No hay indicio de que un negativo sea una devolución. | Quitar la fila en todas: una compra real desaparecería del embudo. |
 | **Tipos de evento** | Solo `view`, `cart` y `purchase`, en coincidencia exacta. Cualquier otro se ignora. | Son los únicos que definen las etapas. | |
 | **Tiempo** | `event_time` tal como está guardado, en UTC. Un día va de 00:00:00 inclusive a 00:00:00 del día siguiente, exclusive. | Es la zona del origen. | Hora local de la tienda: el dataset no la indica. |
-| **Ventana** | `from` y `to` son fechas, **ambas incluidas**. `from = to` es un solo día. Sin ellas, todos los datos. | Es lo que se espera al preguntar «del 1 al 3». | Intervalo semiabierto: exige pedir «hasta el día siguiente» para ver un día. |
+| **Ventana** | `from` y `to` son fechas, **ambas incluidas**. `from = to` es un solo día. Si falta una, ese lado queda abierto; sin ninguna, todos los datos. Si `from` es posterior a `to`, no hay datos. | Es lo que se espera al preguntar «del 1 al 3». | Intervalo semiabierto: exige pedir «hasta el día siguiente» para ver un día. |
 | **Sin datos** | Si el denominador es 0, el resultado es nulo, nunca 0. | Una caída al 0 % y un día sin datos son cosas distintas. | |
 | **Redondeo** | Solo al presentar: tasas de 0 a 1 con 6 decimales, dinero con 2. Al comparar se admite una diferencia de 0,000001 en tasas y 0,01 en dinero. | `price` es de coma flotante, y sumar en otro orden cambia los últimos decimales. | |
 
@@ -157,7 +157,7 @@ Se mide por sesión, no por producto: si se añaden dos productos y se compra un
 
 **Cálculo:** sobre las compras válidas (las del [ticket medio](#ticket-medio)), se agrupa por `brand` y se suma `price`.
 
-- **Orden:** de más a menos ingresos, redondeados a 2 decimales. Si empatan, por `brand` de la A a la Z.
+- **Orden:** de más a menos ingresos, redondeados a 2 decimales. Si empatan, por `brand` de la A a la Z, comparando por punto de código Unicode (las mayúsculas van antes que las minúsculas).
 - **Límite:** las 10 primeras por defecto, o las que indique `limit`. Solo esta métrica lo usa.
 - **Sin compras válidas:** lista vacía y `revenue_without_brand` = 0.
 - **`brand`:** se compara tal cual, sin cambiar mayúsculas. El vacío equivale a nulo.

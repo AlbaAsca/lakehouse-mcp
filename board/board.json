@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-02T18:26:47+01:00",
+  "updated": "2026-11-02T18:35:44+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -69,8 +69,8 @@
       "name": "Tester",
       "role": "Verifica, escribe tests y busca fallos",
       "color": "#9ece6a",
-      "status": "idle",
-      "current": null
+      "status": "working",
+      "current": "T-012"
     },
     {
       "id": "investigador",
@@ -869,6 +869,11 @@
           "t": "2026-11-02T18:18:43+01:00",
           "by": "consultor",
           "msg": "El bloqueo era un corte del tester (T-084), y T-072 ya arregló el conector. Verifícala de nuevo: sin esto no avanza T-015."
+        },
+        {
+          "t": "2026-11-02T18:26:53+01:00",
+          "by": "tester",
+          "msg": "verificando"
         }
       ],
       "runs": [
@@ -893,7 +898,7 @@
           "verdict": "blocked"
         }
       ],
-      "verify_started": "2026-11-02T13:15:01+01:00"
+      "verify_started": "2026-11-02T18:26:53+01:00"
     },
     {
       "id": "T-013",
@@ -1554,10 +1559,10 @@
       "id": "T-027",
       "title": "Semántica: definir en palabras las cuatro métricas",
       "owner": "arquitecto",
-      "status": "blocked",
+      "status": "done",
       "priority": "alta",
       "estimate_min": 15.0,
-      "actual_min": 4.1,
+      "actual_min": 4.8,
       "auto": true,
       "manual": null,
       "desc": "Antes de escribir SQL hay que decidir qué significa cada métrica, porque hay más de una forma razonable de calcularla y la verdad de referencia y el código tienen que partir de la misma definición, cada uno por su lado.\nCómo sabremos si funciona: dos personas leyendo el documento calcularían lo mismo; incluye un ejemplo de 5 filas resuelto a mano por métrica.\n\n## Técnico\ndocs/metrics.md: conversión view->cart->purchase, ticket medio, abandono de carrito, top marcas. Fijar la unidad (sesión o usuario), el trato de sesiones nulas, price <= 0, duplicados y brand nula; ventana temporal y zona horaria (UTC). Sin SQL.",
@@ -1565,9 +1570,9 @@
         "T-004"
       ],
       "created": "2026-11-02T11:37:34+01:00",
-      "updated": "2026-11-02T18:10:48+01:00",
-      "started_at": "2026-11-02T18:06:44+01:00",
-      "finished_at": "2026-11-02T18:10:48+01:00",
+      "updated": "2026-11-02T18:35:44+01:00",
+      "started_at": "2026-11-02T18:35:01+01:00",
+      "finished_at": "2026-11-02T18:35:44+01:00",
       "log": [
         {
           "t": "2026-11-02T11:37:34+01:00",
@@ -1593,6 +1598,21 @@
           "t": "2026-11-02T18:10:48+01:00",
           "by": "runner",
           "msg": "✗ «python board/board.py add \"Semántica: comprobar las definiciones con el dataset real\" --ow»: varios comandos, tuberías, redirecciones o heredoc: lanza cada comando por separado y crea ficheros con Write/Edit"
+        },
+        {
+          "t": "2026-11-02T18:34:57+01:00",
+          "by": "consultor",
+          "msg": "El bloqueo fue un board.py add con saltos de línea, denegado; reintenta con una sola línea por comando"
+        },
+        {
+          "t": "2026-11-02T18:35:01+01:00",
+          "by": "runner",
+          "msg": "empieza arquitecto"
+        },
+        {
+          "t": "2026-11-02T18:35:44+01:00",
+          "by": "arquitecto",
+          "msg": "DONE: Las cuatro métricas quedan definidas en docs/metrics.md con ejemplos a mano, y T-110 las contrastará con el dataset real."
         }
       ],
       "runs": [
@@ -1605,6 +1625,16 @@
           "tokens": 379870,
           "cost_usd": 0.9430516999999999,
           "verdict": "blocked"
+        },
+        {
+          "agent": "arquitecto",
+          "mode": "work",
+          "at": "2026-11-02T18:35:44+01:00",
+          "min": 0.7,
+          "turns": 12,
+          "tokens": 121381,
+          "cost_usd": 0.2825908,
+          "verdict": "done"
         }
       ]
     },
@@ -3459,6 +3489,11 @@
           "t": "2026-11-02T17:30:59+01:00",
           "by": "consultor",
           "msg": "Prioridad: protege o desatasca el trabajo del runner"
+        },
+        {
+          "t": "2026-11-02T18:34:57+01:00",
+          "by": "consultor",
+          "msg": "También: un RESULT blocked legítimo cuenta como fallo y, a los 3 seguidos (MAX_FAILS), el carril se pausa solo (board/runner.py:556) y el mensaje acaba como «En pausa», sin motivo. Le pasó al carril de pensar el 2-nov con T-027 y T-088. Un bloqueo no debe contar como fallo, y el panel debe mostrar por qué se pausó."
         }
       ]
     },
@@ -3590,7 +3625,7 @@
       "id": "T-088",
       "title": "Traducir al inglés la portada y la arquitectura de la wiki",
       "owner": "arquitecto",
-      "status": "next",
+      "status": "blocked",
       "priority": "baja",
       "estimate_min": 30.0,
       "actual_min": 0.7,
@@ -3601,7 +3636,7 @@
         "T-086"
       ],
       "created": "2026-11-02T17:30:58+01:00",
-      "updated": "2026-11-02T18:17:20+01:00",
+      "updated": "2026-11-02T18:34:57+01:00",
       "started_at": "2026-11-02T18:16:36+01:00",
       "finished_at": "2026-11-02T18:17:20+01:00",
       "log": [
@@ -3639,6 +3674,11 @@
           "t": "2026-11-02T18:17:20+01:00",
           "by": "runner",
           "msg": "se reintentará con los permisos resueltos"
+        },
+        {
+          "t": "2026-11-02T18:34:57+01:00",
+          "by": "consultor",
+          "msg": "Espera a T-046 o T-055; no debe consumir ejecuciones hasta entonces"
         }
       ],
       "runs": [
@@ -3658,7 +3698,7 @@
       "id": "T-089",
       "title": "[Tú] Comprobar el conector en el stack completo",
       "owner": "consultor",
-      "status": "backlog",
+      "status": "done",
       "priority": "alta",
       "estimate_min": 10.0,
       "actual_min": null,
@@ -3669,7 +3709,7 @@
         "T-072"
       ],
       "created": "2026-11-02T17:34:33+01:00",
-      "updated": "2026-11-02T17:34:39+01:00",
+      "updated": "2026-11-02T18:33:45+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -3687,6 +3727,11 @@
           "t": "2026-11-02T17:59:15+01:00",
           "by": "consultor",
           "msg": "Tester (T-072): ./mk up ejecutado sobre el stack ya existente, sin borrar volúmenes: código 0, imagen de Connect reconstruida en 8.1.0, connect-init respondió 200 y el log del worker no tiene errores. Sigue pendiente: mirar el estado RUNNING en /connectors/iceberg-sink/status, y comprobar un arranque desde cero (no se borraron datos)."
+        },
+        {
+          "t": "2026-11-02T18:33:45+01:00",
+          "by": "consultor",
+          "msg": "./mk up sin error; conector y tarea RUNNING, versión 1.12.0; ./mk smoke en verde"
         }
       ]
     },
@@ -4316,32 +4361,58 @@
           "msg": "descripción reescrita"
         }
       ]
+    },
+    {
+      "id": "T-110",
+      "title": "Semántica: comprobar las definiciones con el dataset real",
+      "owner": "arquitecto",
+      "status": "backlog",
+      "priority": "media",
+      "estimate_min": 15.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Las definiciones de las métricas se escribieron sin poder ver el dataset real: los casos raros se contaron solo en la muestra sintética. Si en los datos reales abundan las compras sin carrito, las sesiones con varias compras o las marcas vacías, alguna regla podría dar resultados engañosos. Proponemos contrastar el documento con el informe del perfil real y corregirlo antes de que dependa más trabajo de él.\nCómo sabremos si funciona: el documento recoge las proporciones reales y dice, regla a regla, si se mantiene o cambia y por qué.\n## Técnico\nEntrada: informe de perfil de T-007, sin copiar datos reales al repo. Actualizar la tabla «Cuánto importa cada caso» de docs/metrics.md con filas distintas, sesión nula, price <= 0, brand nula, compra sin carrito, varias compras por sesión y sesiones que cruzan medianoche UTC. Si cambia una regla, avisar en T-029 y T-031.",
+      "deps": [
+        "T-007"
+      ],
+      "created": "2026-11-02T18:35:32+01:00",
+      "updated": "2026-11-02T18:35:32+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T18:35:32+01:00",
+          "by": "arquitecto",
+          "msg": "creada"
+        }
+      ]
     }
   ],
   "runners": {
     "think": {
-      "state": "paused",
-      "current": null,
-      "message": "En pausa",
+      "state": "working",
+      "current": "T-027",
+      "message": "arquitecto con T-027",
       "pid": 21744,
-      "heartbeat": "2026-11-02T18:26:47+01:00",
-      "enabled": false,
+      "heartbeat": "2026-11-02T18:35:01+01:00",
+      "enabled": true,
       "agent": "arquitecto",
-      "started": "2026-11-02T18:16:36+01:00",
-      "live": "live-T-088-arquitecto-20261102-181636.jsonl",
+      "started": "2026-11-02T18:35:01+01:00",
+      "live": "live-T-027-arquitecto-20261102-183501.jsonl",
       "contrib_at": "2026-11-02T11:46:22+01:00",
       "contrib_agent": "investigador"
     },
     "measure": {
       "state": "working",
-      "current": "T-016",
-      "message": "desarrollador con T-016",
+      "current": "T-012",
+      "message": "tester con T-012",
       "pid": 6932,
-      "heartbeat": "2026-11-02T18:08:24+01:00",
+      "heartbeat": "2026-11-02T18:26:54+01:00",
       "enabled": true,
-      "agent": "desarrollador",
-      "started": "2026-11-02T18:08:24+01:00",
-      "live": "live-T-016-desarrollador-20261102-180824.jsonl"
+      "agent": "tester",
+      "started": "2026-11-02T18:26:54+01:00",
+      "live": "live-T-012-tester-20261102-182654.jsonl"
     }
   }
 }
