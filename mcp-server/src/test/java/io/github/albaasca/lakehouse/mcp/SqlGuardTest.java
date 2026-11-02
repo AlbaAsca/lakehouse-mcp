@@ -284,6 +284,19 @@ class SqlGuardTest {
         assertThatThrownBy(() -> guard.guarded(sql, ALLOWED, 10)).isInstanceOf(Rejected.class);
     }
 
+    /** Rule 4 lets these through because the inner name is the outer CTE: this checks that the engine binds it the same way. */
+    @ParameterizedTest
+    @ValueSource(strings = {
+        "WITH secret AS (SELECT 'cte' AS s) SELECT * FROM (WITH secret AS (SELECT * FROM secret) SELECT * FROM secret)",
+        "WITH secret AS (SELECT 'cte' AS s) SELECT * FROM (WITH SECRET AS (SELECT * FROM secret) SELECT * FROM SECRET)",
+        "WITH secret AS (SELECT 'cte' AS s), b AS (WITH secret AS (SELECT * FROM secret) SELECT * FROM secret) SELECT * FROM b",
+        "WITH secret AS (SELECT 'cte' AS s) SELECT (WITH secret AS (SELECT * FROM secret) SELECT s FROM secret)",
+        "WITH secret AS (SELECT 'cte' AS s) SELECT * FROM (WITH secret AS MATERIALIZED (SELECT * FROM secret) FROM secret)",
+    })
+    void aNestedCteWithAnOuterNameNeverReachesTheRealTable(String sql) throws SQLException {
+        assertThat(guard.run(sql, ALLOWED, 10).rows()).containsExactly(List.of("cte"));
+    }
+
     @Test
     void theTableListComesFromTheCaller() throws SQLException {
         List<TableName> onlyTheView = List.of(TableName.of("at_snapshot"));
