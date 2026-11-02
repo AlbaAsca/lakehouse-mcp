@@ -45,39 +45,11 @@ descubre leyendo un dashboard. Este proyecto pone al agente delante de esos prob
 
 ## Arquitectura
 
-```mermaid
-flowchart LR
-    CSV["📦 Dataset de Kaggle<br/>un mes, con muestreo"]
-    P["🏭 Productor Java<br/>orden temporal · aceleración"]
-    subgraph K["Streaming"]
-        T[("Apache Kafka<br/>KRaft")]
-        SR["Schema Registry<br/>contratos"]
-    end
-    C["Kafka Connect<br/>Iceberg sink"]
-    subgraph L["Lakehouse"]
-        POL["Apache Polaris<br/>catálogo REST"]
-        S3[("SeaweedFS<br/>API S3")]
-    end
-    D["DuckDB 2.0"]
-    subgraph APP["Spring Boot 4 · Spring AI 2"]
-        MCP["Servidor MCP<br/>RBAC · auditoría"]
-        SEM["Capa semántica<br/>YAML"]
-        A["🤖 Agente"]
-    end
-    H["👩 Responsable<br/>aprueba los arreglos"]
+<p align="center">
+  <img src="docs/img/architecture.svg" alt="Arquitectura: el productor envía eventos a Kafka, Kafka Connect los escribe en Iceberg (Polaris y SeaweedFS), DuckDB los consulta, el servidor MCP los expone y el agente propone arreglos que aprueba el responsable" width="100%">
+</p>
 
-    CSV --> P --> T
-    P -. "esquema" .-> SR
-    T --> C
-    C --> POL
-    C --> S3
-    D --> POL
-    D --> S3
-    MCP --> D
-    SEM --> MCP
-    A <-- "MCP" --> MCP
-    A <--> H
-```
+<p align="center"><sub>Es el diseño completo: lo que ya funciona está en <a href="#qué-hay-y-qué-falta">Qué hay y qué falta</a>.</sub></p>
 
 | Pieza | Versión | Para qué |
 |---|---|---|
