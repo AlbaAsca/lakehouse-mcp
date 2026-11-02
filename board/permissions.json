@@ -35,6 +35,12 @@
       "why": "concedido por el responsable desde el panel",
       "by": "responsable",
       "at": "2026-11-02T18:14:30+01:00"
+    },
+    {
+      "pattern": "git log -8*",
+      "why": "concedido automáticamente a arquitecto (T-088): solo lectura dentro del proyecto",
+      "by": "runner",
+      "at": "2026-11-02T18:17:20+01:00"
     }
   ],
   "denied": []

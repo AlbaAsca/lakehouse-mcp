@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-02T18:16:31+01:00",
+  "updated": "2026-11-02T18:17:20+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -3503,10 +3503,10 @@
       "id": "T-088",
       "title": "Traducir al inglés la portada y la arquitectura de la wiki",
       "owner": "arquitecto",
-      "status": "backlog",
+      "status": "next",
       "priority": "baja",
       "estimate_min": 30.0,
-      "actual_min": null,
+      "actual_min": 0.7,
       "auto": true,
       "manual": null,
       "desc": "La wiki solo está en español, y para reclutadores de fuera conviene tener en inglés al menos la entrada. Se propone traducir la portada y la arquitectura cuando el proyecto esté estable, para no mantener dos versiones mientras cambia. Cómo sabremos si funciona: una persona que no lee español entiende qué es el proyecto y cómo está montado, con enlaces que funcionan.\n\n## Técnico\ndocs/wiki/en/ o sufijo por página; scripts/publish_wiki.py exige nombres únicos y sus tests deben seguir en verde. Hacerlo tras T-046 o T-055, cuando el proyecto sea estable.",
@@ -3514,14 +3514,56 @@
         "T-086"
       ],
       "created": "2026-11-02T17:30:58+01:00",
-      "updated": "2026-11-02T17:30:58+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-02T18:17:20+01:00",
+      "started_at": "2026-11-02T18:16:36+01:00",
+      "finished_at": "2026-11-02T18:17:20+01:00",
       "log": [
         {
           "t": "2026-11-02T17:30:58+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T18:16:36+01:00",
+          "by": "runner",
+          "msg": "empieza arquitecto"
+        },
+        {
+          "t": "2026-11-02T18:17:07+01:00",
+          "by": "consultor",
+          "msg": "Sin traducir: la propia tarjeta pide esperar a T-046 o T-055 y ambas siguen en backlog; la portada aún cambia con cada entrega. Al desbloquear, sin tocar el script: docs/wiki/en/overview.md y en/architecture.md dan páginas Overview y Architecture sin chocar con nombres existentes (en/02-arquitectura.md chocaría y en/README.md saldría como Readme). Pega: al estar en subcarpeta salen bajo Componentes en la barra lateral; para evitarlo hay que tocar publish_wiki.py (desarrollador). Leído del código, sin probar. board.py no permite añadir deps a una tarjeta existente: hay que moverla a mano al cerrar T-046 o T-055."
+        },
+        {
+          "t": "2026-11-02T18:17:20+01:00",
+          "by": "arquitecto",
+          "msg": "BLOCKED: La traducción espera a T-046 o T-055, ambas en backlog, como pide la propia tarjeta; el plan para retomarla queda anotado en ella."
+        },
+        {
+          "t": "2026-11-02T18:17:20+01:00",
+          "by": "arquitecto",
+          "msg": "⚠ 1 comandos denegados: git log -8 --format=%h\\ %ad\\ %s --date=short -- docs/wiki/README.md docs/wiki/02"
+        },
+        {
+          "t": "2026-11-02T18:17:20+01:00",
+          "by": "runner",
+          "msg": "✓ permiso concedido automáticamente: git log -8* (solo lectura dentro del proyecto); se reintenta"
+        },
+        {
+          "t": "2026-11-02T18:17:20+01:00",
+          "by": "runner",
+          "msg": "se reintentará con los permisos resueltos"
+        }
+      ],
+      "runs": [
+        {
+          "agent": "arquitecto",
+          "mode": "work",
+          "at": "2026-11-02T18:17:20+01:00",
+          "min": 0.7,
+          "turns": 11,
+          "tokens": 95537,
+          "cost_usd": 0.2490332,
+          "verdict": "blocked"
         }
       ]
     },
@@ -4109,14 +4151,14 @@
   "runners": {
     "think": {
       "state": "working",
-      "current": "T-101",
-      "message": "arquitecto con T-101",
+      "current": "T-088",
+      "message": "arquitecto con T-088",
       "pid": 21744,
-      "heartbeat": "2026-11-02T18:10:51+01:00",
+      "heartbeat": "2026-11-02T18:16:36+01:00",
       "enabled": true,
       "agent": "arquitecto",
-      "started": "2026-11-02T18:10:51+01:00",
-      "live": "live-T-101-arquitecto-20261102-181051.jsonl",
+      "started": "2026-11-02T18:16:36+01:00",
+      "live": "live-T-088-arquitecto-20261102-181636.jsonl",
       "contrib_at": "2026-11-02T11:46:22+01:00",
       "contrib_agent": "investigador"
     },
