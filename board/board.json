@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-02T11:56:28+01:00",
+  "updated": "2026-11-02T12:02:21+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -123,7 +123,7 @@
       "id": "T-002",
       "title": "Infra: que el catálogo sobreviva a un reinicio de Polaris",
       "owner": "desarrollador",
-      "status": "review",
+      "status": "done",
       "priority": "alta",
       "estimate_min": 45.0,
       "actual_min": 5.3,
@@ -134,7 +134,7 @@
         "T-066"
       ],
       "created": "2026-11-02T11:35:10+01:00",
-      "updated": "2026-11-02T11:48:32+01:00",
+      "updated": "2026-11-02T12:02:21+01:00",
       "started_at": "2026-11-02T11:43:15+01:00",
       "finished_at": "2026-11-02T11:48:32+01:00",
       "log": [
@@ -172,6 +172,16 @@
           "t": "2026-11-02T11:53:12+01:00",
           "by": "tú",
           "msg": "✓ permiso concedido: docker *"
+        },
+        {
+          "t": "2026-11-02T11:56:34+01:00",
+          "by": "tester",
+          "msg": "verificando"
+        },
+        {
+          "t": "2026-11-02T12:02:21+01:00",
+          "by": "tester",
+          "msg": "DONE: Diff revisado, suites en verde (Java y 88 de panel) y catálogo y tabla sobreviven al reinicio de Polaris y a recrear los contenedores con el compose real en un proyecto aislado; añadido test contra la desviación de configuración."
         }
       ],
       "runs": [
@@ -184,8 +194,19 @@
           "tokens": 339349,
           "cost_usd": 0.8819288000000001,
           "verdict": "review"
+        },
+        {
+          "agent": "tester",
+          "mode": "verify",
+          "at": "2026-11-02T12:02:21+01:00",
+          "min": 5.8,
+          "turns": 35,
+          "tokens": 464379,
+          "cost_usd": 0.7111487999999999,
+          "verdict": "done"
         }
-      ]
+      ],
+      "verify_started": "2026-11-02T11:56:34+01:00"
     },
     {
       "id": "T-003",
@@ -2053,14 +2074,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-004",
-      "message": "tester con T-004",
+      "current": "T-002",
+      "message": "tester con T-002",
       "pid": 25568,
-      "heartbeat": "2026-11-02T11:52:31+01:00",
+      "heartbeat": "2026-11-02T11:56:34+01:00",
       "enabled": true,
       "agent": "tester",
-      "started": "2026-11-02T11:52:31+01:00",
-      "live": "live-T-004-tester-20261102-115231.jsonl"
+      "started": "2026-11-02T11:56:34+01:00",
+      "live": "live-T-002-tester-20261102-115634.jsonl"
     }
   }
 }
