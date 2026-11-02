@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-02T12:45:37+01:00",
+  "updated": "2026-11-02T12:51:51+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -339,7 +339,7 @@
       "id": "T-006",
       "title": "Infra: kit de pruebas que levanta el lakehouse en contenedores",
       "owner": "desarrollador",
-      "status": "blocked",
+      "status": "done",
       "priority": "alta",
       "estimate_min": 40.0,
       "actual_min": 7.2,
@@ -350,7 +350,7 @@
         "T-002"
       ],
       "created": "2026-11-02T11:35:33+01:00",
-      "updated": "2026-11-02T12:31:43+01:00",
+      "updated": "2026-11-02T12:51:47+01:00",
       "started_at": "2026-11-02T12:09:50+01:00",
       "finished_at": "2026-11-02T12:13:00+01:00",
       "log": [
@@ -428,6 +428,11 @@
           "t": "2026-11-02T12:31:43+01:00",
           "by": "runner",
           "msg": "✗ «./mk test > \"C:/Users/albaa/AppData/Local/Temp/claude/C--Users-albaa-Documents-2026-lakeho»: varios comandos, tuberías, redirecciones o heredoc: lanza cada comando por separado y crea ficheros con Write/Edit"
+        },
+        {
+          "t": "2026-11-02T12:51:47+01:00",
+          "by": "consultor",
+          "msg": "./mk test en verde con el stack apagado (112 s, commit 2362f23, worktree limpio)"
         }
       ],
       "runs": [
@@ -626,10 +631,10 @@
       "id": "T-011",
       "title": "Productor: muestreo, orden temporal, aceleración y hora actual",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "review",
       "priority": "alta",
       "estimate_min": 40.0,
-      "actual_min": null,
+      "actual_min": 6.1,
       "auto": true,
       "manual": null,
       "desc": "La demo debe reproducir el mes como si ocurriera ahora y a la velocidad que queramos, usando solo parte de los datos. Se muestrea por sesión completa, no por fila, porque si no se rompe el recorrido vista-carrito-compra y las métricas salen falsas. Esta tarjeta es solo la lógica, sin Kafka, para poder probarla con un reloj simulado.\nCómo sabremos si funciona: una sesión entra entera o no entra, el mismo porcentaje da siempre las mismas filas, y los tiempos entre eventos se dividen exactamente por la aceleración.\n\n## Técnico\n- Parámetros: sample-rate o max-rows, speedup, rewrite-timestamp (desplaza todo para que el primero sea ahora). Hash determinista de user_session; las filas sin sesión se muestrean por hash de la fila.\n- Si docs/data-profile.md dice que el CSV no está ordenado, documentar la opción elegida: el mes no cabe en memoria.\n- Reloj inyectable (java.time.Clock), sin sleeps reales en tests. Tests unitarios elemento a elemento. Verificación: ./mk test.",
@@ -637,14 +642,41 @@
         "T-008"
       ],
       "created": "2026-11-02T11:35:57+01:00",
-      "updated": "2026-11-02T11:35:57+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-02T12:51:51+01:00",
+      "started_at": "2026-11-02T12:45:43+01:00",
+      "finished_at": "2026-11-02T12:51:51+01:00",
       "log": [
         {
           "t": "2026-11-02T11:35:57+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T12:45:43+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-02T12:51:37+01:00",
+          "by": "consultor",
+          "msg": "Sin docs/data-profile.md (T-007 pendiente): orden con ventana acotada de 100 000 eventos muestreados; los que llegan más tarde se entregan sin esperar y se cuentan. Revisar EventReplay.DEFAULT_REORDER_WINDOW cuando exista el perfil. Decisiones 14, 18 y 19 en docs/architecture.md. max-rows necesita dos pasadas: T-013 debe abrir el fichero dos veces."
+        },
+        {
+          "t": "2026-11-02T12:51:51+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: Muestreo por sesión, orden con ventana acotada, aceleración y hora actual hechos con reloj simulado y suite en verde; falta contrastar la ventana con el perfil real (T-007)."
+        }
+      ],
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-02T12:51:51+01:00",
+          "min": 6.1,
+          "turns": 41,
+          "tokens": 421752,
+          "cost_usd": 1.1579548,
+          "verdict": "review"
         }
       ]
     },
@@ -652,7 +684,7 @@
       "id": "T-012",
       "title": "Ingesta: configurar y registrar el conector hacia Iceberg",
       "owner": "desarrollador",
-      "status": "blocked",
+      "status": "next",
       "priority": "alta",
       "estimate_min": 35.0,
       "actual_min": null,
@@ -663,7 +695,7 @@
         "T-002"
       ],
       "created": "2026-11-02T11:35:58+01:00",
-      "updated": "2026-11-02T11:41:38+01:00",
+      "updated": "2026-11-02T12:51:47+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -681,6 +713,11 @@
           "t": "2026-11-02T11:41:38+01:00",
           "by": "consultor",
           "msg": "Espera a T-006; no se puede añadir dep a una tarjeta creada"
+        },
+        {
+          "t": "2026-11-02T12:51:47+01:00",
+          "by": "consultor",
+          "msg": "T-006 terminada: desbloqueada"
         }
       ]
     },
@@ -952,6 +989,11 @@
           "t": "2026-11-02T11:37:14+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T12:51:39+01:00",
+          "by": "consultor",
+          "msg": "Aviso de T-011: con rewrite-timestamp y aceleración mayor que 1, event_time va por delante del reloj (desplazamiento fijo, decisión 19 de docs/architecture.md). La frescura no puede salir de now - max(event_time) sin tenerlo en cuenta; puede salir negativa."
         }
       ]
     },
@@ -2288,14 +2330,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-008",
-      "message": "tester con T-008",
+      "current": "T-011",
+      "message": "desarrollador con T-011",
       "pid": 25568,
-      "heartbeat": "2026-11-02T12:39:15+01:00",
+      "heartbeat": "2026-11-02T12:45:43+01:00",
       "enabled": true,
-      "agent": "tester",
-      "started": "2026-11-02T12:39:15+01:00",
-      "live": "live-T-008-tester-20261102-123915.jsonl"
+      "agent": "desarrollador",
+      "started": "2026-11-02T12:45:43+01:00",
+      "live": "live-T-011-desarrollador-20261102-124543.jsonl"
     }
   }
 }
