@@ -174,7 +174,7 @@ python board/server.py   # http://localhost:8020
 
 Es un proyecto de portfolio, no una plataforma de producción, y está a medio construir:
 
-- **El catálogo de Polaris aún vive en memoria.** Si Polaris se reinicia, se pierde aunque los datos sigan en S3. Es lo primero que se está resolviendo, con Postgres.
+- **El catálogo de Polaris se guarda en Postgres.** Un test demuestra que sobrevive a un reinicio de Polaris en contenedores de prueba; falta comprobarlo en el stack completo.
 - **Un solo nodo de todo.** Un broker y una instancia de cada servicio, con unos 8 GB de RAM para Docker. Trino solo arranca para el benchmark.
 - **Secretos locales.** Las credenciales son claves estáticas en `.env`, adecuadas para una demo local.
 - **Coste de las evals.** Llaman a un modelo de pago, así que no pueden lanzarse enteras en cada push.

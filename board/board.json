@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-02T11:46:22+01:00",
+  "updated": "2026-11-02T11:48:32+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -61,8 +61,8 @@
       "name": "Desarrollador",
       "role": "Implementa las tareas",
       "color": "#7aa2f7",
-      "status": "working",
-      "current": "T-002"
+      "status": "idle",
+      "current": null
     },
     {
       "id": "tester",
@@ -123,18 +123,20 @@
       "id": "T-002",
       "title": "Infra: que el catálogo sobreviva a un reinicio de Polaris",
       "owner": "desarrollador",
-      "status": "doing",
+      "status": "review",
       "priority": "alta",
       "estimate_min": 45.0,
-      "actual_min": null,
+      "actual_min": 5.3,
       "auto": true,
       "manual": null,
       "desc": "Polaris guarda el catálogo en memoria: tras reiniciarlo, el catálogo lakehouse da 404 aunque los datos sigan en S3. Se propone guardarlo en Postgres, que es la opción documentada para Polaris 1.8.0, y crear un kit de pruebas donde demostrarlo.\nCómo sabremos si funciona: un test crea catálogo y tabla, para y arranca Polaris, y el catálogo y la tabla siguen ahí.\n\n## Técnico\n- compose.yaml: servicio postgres con volumen e imagen propia infra/postgres (COPY de init SQL con CREATE SCHEMA polaris_schema a /docker-entrypoint-initdb.d; sin bind mounts). Base ops también aquí (decisión 10 de docs/architecture.md).\n- Servicio de un uso polaris-bootstrap: imagen apache/polaris-admin-tool:1.8.0, comando bootstrap -r REALM -c REALM,CLIENT_ID,CLIENT_SECRET. polaris depende de él con service_completed_successfully.\n- Polaris: polaris.persistence.type=relational-jdbc, quarkus.datasource.username/password, quarkus.datasource.jdbc.url. Quitar POLARIS_BOOTSTRAP_CREDENTIALS. La doc 1.8.0 mezcla nombres de propiedad: el test decide.\n- Comprobar que un segundo bootstrap sale con código 0 (la doc dice idempotente, no da el código). Si no, envolverlo.\n- POSTGRES_PASSWORD con valor por defecto en compose para no romper el .env existente; añadir a .env.example.\n- Módulo Maven nuevo testkit con PolarisPersistenceIT (Testcontainers, misma config que compose), failsafe.\n- Verificación: ./mk test. La comprobación con compose real va en otra tarjeta manual.\n- Fuentes: https://polaris.apache.org/releases/1.8.0/metastores/relational-jdbc/ y /releases/1.8.0/admin-tool/",
-      "deps": [],
+      "deps": [
+        "T-066"
+      ],
       "created": "2026-11-02T11:35:10+01:00",
-      "updated": "2026-11-02T11:43:15+01:00",
+      "updated": "2026-11-02T11:48:32+01:00",
       "started_at": "2026-11-02T11:43:15+01:00",
-      "finished_at": null,
+      "finished_at": "2026-11-02T11:48:32+01:00",
       "log": [
         {
           "t": "2026-11-02T11:35:10+01:00",
@@ -145,6 +147,38 @@
           "t": "2026-11-02T11:43:15+01:00",
           "by": "runner",
           "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-02T11:48:18+01:00",
+          "by": "consultor",
+          "msg": "PolarisPersistenceIT: 2 tests en verde con ./mk test. Propiedades de la doc que valen: polaris.persistence.type, quarkus.datasource.username/password, quarkus.datasource.jdbc.url. El segundo bootstrap sale con código 0: no hace falta envolverlo. Sin comprobar (para T-005): compose.yaml no se ha ejecutado ni validado (docker compose config denegado); el test no cubre el healthcheck de postgres, el volumen /var/lib/postgresql de Postgres 18, ni reiniciar Postgres."
+        },
+        {
+          "t": "2026-11-02T11:48:32+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: Catálogo en Postgres con test de reinicio y segundo bootstrap en verde; compose.yaml sin ejecutar ni validar, pendiente en T-005."
+        },
+        {
+          "t": "2026-11-02T11:48:32+01:00",
+          "by": "desarrollador",
+          "msg": "⚠ 1 comandos denegados: docker compose config --quiet"
+        },
+        {
+          "t": "2026-11-02T11:48:32+01:00",
+          "by": "runner",
+          "msg": "? permiso solicitado: docker * (T-066); la tarjeta espera la decisión"
+        }
+      ],
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-02T11:48:32+01:00",
+          "min": 5.3,
+          "turns": 41,
+          "tokens": 339349,
+          "cost_usd": 0.8819288000000001,
+          "verdict": "review"
         }
       ]
     },
@@ -1877,15 +1911,47 @@
           "verdict": "done"
         }
       ]
+    },
+    {
+      "id": "T-066",
+      "title": "Solicitud de permiso: docker *",
+      "owner": "consultor",
+      "status": "human",
+      "priority": "media",
+      "estimate_min": 2,
+      "actual_min": null,
+      "auto": false,
+      "manual": "Abre la tarjeta y pulsa «Conceder» o «Denegar».",
+      "desc": "El agente «desarrollador» necesitaba un comando que no está en su lista de permitidos y se lo bloquearon mientras hacía T-002. No es de solo lectura ni está prohibido, así que lo tiene que validar una persona.\n\nPara qué lo quería: validar la sintaxis y las variables de compose.yaml sin imprimir secretos\n\nCómo decidir: concede si es seguro repetirlo sin supervisión dentro del proyecto; deniega si escribe fuera, publica, borra o usa la red.\n\n## Técnico\n- Comando: docker compose config --quiet\n- Patrón que se concedería: docker *\n- Tarjeta: T-002",
+      "deps": [],
+      "created": "2026-11-02T11:48:32+01:00",
+      "updated": "2026-11-02T11:48:32+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T11:48:32+01:00",
+          "by": "runner",
+          "msg": "creada"
+        }
+      ],
+      "kind": "permiso",
+      "perm": {
+        "pattern": "docker *",
+        "command": "docker compose config --quiet",
+        "agent": "desarrollador",
+        "task": "T-002",
+        "why": "validar la sintaxis y las variables de compose.yaml sin imprimir secretos"
+      }
     }
   ],
   "runners": {
     "think": {
-      "state": "idle",
+      "state": "stopped",
       "current": null,
-      "message": "aportación investigador (T-065): notas en docs/NOTAS-investigador.md con 3 hallazgos y fuentes; las 2 tarjetas NO se crearon (permiso denegado), sus datos quedan en las notas",
+      "message": "Runner parado",
       "pid": 15960,
-      "heartbeat": "2026-11-02T11:46:22+01:00",
+      "heartbeat": "2026-11-02T11:46:28+01:00",
       "enabled": true,
       "agent": "investigador",
       "started": "2026-11-02T11:43:16+01:00",

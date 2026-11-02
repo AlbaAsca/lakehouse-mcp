@@ -65,6 +65,6 @@ antes de seguir. Cada agente registra su propio inicio y fin (no se cierra en bl
   estimación, entre 15 y 120 min. Logs en `board/runs/`.
 
 ## Código
-`producer/` reproduce eventos · `connect/` config del sink · `mcp-server/` tools MCP · `agent/` cliente Spring AI · `semantic/` métricas YAML · `evals/` preguntas y verdad de referencia · `bench/` DuckDB vs Trino · `infra/` imágenes y scripts · `docs/` diseño y Pages · `board/` panel.
+`producer/` reproduce eventos · `connect/` config del sink · `mcp-server/` tools MCP · `agent/` cliente Spring AI · `semantic/` métricas YAML · `evals/` preguntas y verdad de referencia · `bench/` DuckDB vs Trino · `testkit/` tests con contenedores · `infra/` imágenes y scripts · `docs/` diseño y Pages · `board/` panel.
 - Dataset con licencia «© Original Authors»: **no subas datos reales al repo**; la muestra de CI es sintética con el mismo esquema.
 - `compose.yaml` no usa bind mounts salvo en `tools`: la configuración va dentro de las imágenes.
