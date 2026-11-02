@@ -1,0 +1,48 @@
+name: Publish wiki
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - docs/wiki/**
+      - docs/img/**
+      - scripts/publish_wiki.py
+      - .github/workflows/wiki.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: wiki
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    env:
+      WIKI_URL: https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.wiki.git
+    steps:
+      - uses: actions/checkout@v4
+      - name: Clone the wiki
+        id: clone
+        run: |
+          if git clone --depth 1 "$WIKI_URL" wiki-out; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::warning::The wiki has no pages yet: create the first one in the Wiki tab, then run this workflow."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Build pages
+        if: steps.clone.outputs.ready == 'true'
+        run: python3 scripts/publish_wiki.py wiki-out --repo "$GITHUB_REPOSITORY" --branch "$GITHUB_REF_NAME"
+      - name: Push pages
+        if: steps.clone.outputs.ready == 'true'
+        working-directory: wiki-out
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet && { echo "Wiki already up to date"; exit 0; }
+          git commit -m "docs: publish wiki from ${GITHUB_SHA::7}"
+          git push
