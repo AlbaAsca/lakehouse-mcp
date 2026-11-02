@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-02T11:41:38+01:00",
+  "updated": "2026-11-02T13:24:11+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -32,12 +32,12 @@
     }
   ],
   "runner": {
-    "enabled": false,
-    "state": "paused",
+    "enabled": true,
+    "state": "stopped",
     "current": null,
     "heartbeat": "2026-10-14T11:57:27+02:00",
-    "message": "En pausa",
-    "pid": 6095
+    "message": "Runner parado (pid muerto)",
+    "pid": null
   },
   "agents": [
     {
@@ -123,25 +123,90 @@
       "id": "T-002",
       "title": "Infra: que el catálogo sobreviva a un reinicio de Polaris",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "done",
       "priority": "alta",
       "estimate_min": 45.0,
-      "actual_min": null,
+      "actual_min": 5.3,
       "auto": true,
       "manual": null,
       "desc": "Polaris guarda el catálogo en memoria: tras reiniciarlo, el catálogo lakehouse da 404 aunque los datos sigan en S3. Se propone guardarlo en Postgres, que es la opción documentada para Polaris 1.8.0, y crear un kit de pruebas donde demostrarlo.\nCómo sabremos si funciona: un test crea catálogo y tabla, para y arranca Polaris, y el catálogo y la tabla siguen ahí.\n\n## Técnico\n- compose.yaml: servicio postgres con volumen e imagen propia infra/postgres (COPY de init SQL con CREATE SCHEMA polaris_schema a /docker-entrypoint-initdb.d; sin bind mounts). Base ops también aquí (decisión 10 de docs/architecture.md).\n- Servicio de un uso polaris-bootstrap: imagen apache/polaris-admin-tool:1.8.0, comando bootstrap -r REALM -c REALM,CLIENT_ID,CLIENT_SECRET. polaris depende de él con service_completed_successfully.\n- Polaris: polaris.persistence.type=relational-jdbc, quarkus.datasource.username/password, quarkus.datasource.jdbc.url. Quitar POLARIS_BOOTSTRAP_CREDENTIALS. La doc 1.8.0 mezcla nombres de propiedad: el test decide.\n- Comprobar que un segundo bootstrap sale con código 0 (la doc dice idempotente, no da el código). Si no, envolverlo.\n- POSTGRES_PASSWORD con valor por defecto en compose para no romper el .env existente; añadir a .env.example.\n- Módulo Maven nuevo testkit con PolarisPersistenceIT (Testcontainers, misma config que compose), failsafe.\n- Verificación: ./mk test. La comprobación con compose real va en otra tarjeta manual.\n- Fuentes: https://polaris.apache.org/releases/1.8.0/metastores/relational-jdbc/ y /releases/1.8.0/admin-tool/",
-      "deps": [],
+      "deps": [
+        "T-066"
+      ],
       "created": "2026-11-02T11:35:10+01:00",
-      "updated": "2026-11-02T11:35:10+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-02T12:02:21+01:00",
+      "started_at": "2026-11-02T11:43:15+01:00",
+      "finished_at": "2026-11-02T11:48:32+01:00",
       "log": [
         {
           "t": "2026-11-02T11:35:10+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T11:43:15+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-02T11:48:18+01:00",
+          "by": "consultor",
+          "msg": "PolarisPersistenceIT: 2 tests en verde con ./mk test. Propiedades de la doc que valen: polaris.persistence.type, quarkus.datasource.username/password, quarkus.datasource.jdbc.url. El segundo bootstrap sale con código 0: no hace falta envolverlo. Sin comprobar (para T-005): compose.yaml no se ha ejecutado ni validado (docker compose config denegado); el test no cubre el healthcheck de postgres, el volumen /var/lib/postgresql de Postgres 18, ni reiniciar Postgres."
+        },
+        {
+          "t": "2026-11-02T11:48:32+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: Catálogo en Postgres con test de reinicio y segundo bootstrap en verde; compose.yaml sin ejecutar ni validar, pendiente en T-005."
+        },
+        {
+          "t": "2026-11-02T11:48:32+01:00",
+          "by": "desarrollador",
+          "msg": "⚠ 1 comandos denegados: docker compose config --quiet"
+        },
+        {
+          "t": "2026-11-02T11:48:32+01:00",
+          "by": "runner",
+          "msg": "? permiso solicitado: docker * (T-066); la tarjeta espera la decisión"
+        },
+        {
+          "t": "2026-11-02T11:53:12+01:00",
+          "by": "tú",
+          "msg": "✓ permiso concedido: docker *"
+        },
+        {
+          "t": "2026-11-02T11:56:34+01:00",
+          "by": "tester",
+          "msg": "verificando"
+        },
+        {
+          "t": "2026-11-02T12:02:21+01:00",
+          "by": "tester",
+          "msg": "DONE: Diff revisado, suites en verde (Java y 88 de panel) y catálogo y tabla sobreviven al reinicio de Polaris y a recrear los contenedores con el compose real en un proyecto aislado; añadido test contra la desviación de configuración."
         }
-      ]
+      ],
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-02T11:48:32+01:00",
+          "min": 5.3,
+          "turns": 41,
+          "tokens": 339349,
+          "cost_usd": 0.8819288000000001,
+          "verdict": "review"
+        },
+        {
+          "agent": "tester",
+          "mode": "verify",
+          "at": "2026-11-02T12:02:21+01:00",
+          "min": 5.8,
+          "turns": 35,
+          "tokens": 464379,
+          "cost_usd": 0.7111487999999999,
+          "verdict": "done"
+        }
+      ],
+      "verify_started": "2026-11-02T11:56:34+01:00"
     },
     {
       "id": "T-003",
@@ -171,31 +236,84 @@
       "id": "T-004",
       "title": "Infra: muestra sintética para CI, sin datos reales",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "done",
       "priority": "alta",
       "estimate_min": 35.0,
-      "actual_min": null,
+      "actual_min": 3.8,
       "auto": true,
       "manual": null,
       "desc": "CI y casi todos los tests necesitan datos, y la licencia del dataset impide usar un extracto real. Se propone un generador con semilla fija que invente eventos con el mismo esquema, incluya los tipos de suciedad del origen y una caída de compras plantada para que el agente tenga algo que explicar.\nCómo sabremos si funciona: dos ejecuciones dan un fichero idéntico byte a byte, cada caso sucio aparece, y ningún valor proviene del dataset real.\n\n## Técnico\n- infra/synthetic/generate.py (solo biblioteca estándar; salida UTF-8) --seed --rows --out. Fichero versionado testdata/synthetic-events.csv.gz, ~50k filas, 14 días (gzip con mtime=0 para reproducibilidad; .gitignore no excluye .csv.gz).\n- Esquema: event_time, event_type, product_id, category_id, category_code, brand, price, user_id, user_session.\n- Sesiones coherentes view->cart->purchase. Casos sucios: category_code y brand nulos, user_session nulo, price 0 o negativo, duplicados exactos.\n- Día con caída plantada de compras (documentar qué día y por qué marca o categoría en infra/synthetic/README.md).\n- Valores claramente inventados (marcas ficticias, ids en rango propio), nunca derivados del CSV real.\n- Tests en tests/ (./mk test-board): determinismo, esquema, presencia de cada caso, guarda contra CSV sin comprimir o de más de 5 MB en el repo.",
       "deps": [],
       "created": "2026-11-02T11:35:11+01:00",
-      "updated": "2026-11-02T11:35:11+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-02T11:56:28+01:00",
+      "started_at": "2026-11-02T11:48:37+01:00",
+      "finished_at": "2026-11-02T11:52:24+01:00",
       "log": [
         {
           "t": "2026-11-02T11:35:11+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T11:48:37+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-02T11:52:24+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: Generador determinista y muestra de 50.000 filas con casos sucios y caída plantada; 46 tests en verde en Windows, falta pasarlos en el contenedor con `./mk test-board`."
+        },
+        {
+          "t": "2026-11-02T11:52:30+01:00",
+          "by": "tester",
+          "msg": "verificando"
+        },
+        {
+          "t": "2026-11-02T11:56:28+01:00",
+          "by": "tester",
+          "msg": "DONE: Muestra determinista, con todos los casos sucios y la caída plantada verificados, sin valores del dataset real, y 73 tests en verde en Windows y en el contenedor."
+        },
+        {
+          "t": "2026-11-02T11:56:28+01:00",
+          "by": "tester",
+          "msg": "⚠ 1 comandos denegados: docker compose --profile tools run --rm -T tools duckdb -csv -c \"SELECT count(*)"
+        },
+        {
+          "t": "2026-11-02T11:56:28+01:00",
+          "by": "runner",
+          "msg": "✗ «docker compose --profile tools run --rm -T tools duckdb -csv -c \"SELECT count(*) n, count(»: varios comandos, tuberías, redirecciones o heredoc: lanza cada comando por separado y crea ficheros con Write/Edit"
         }
-      ]
+      ],
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-02T11:52:24+01:00",
+          "min": 3.8,
+          "turns": 26,
+          "tokens": 219046,
+          "cost_usd": 0.7592933999999999,
+          "verdict": "review"
+        },
+        {
+          "agent": "tester",
+          "mode": "verify",
+          "at": "2026-11-02T11:56:28+01:00",
+          "min": 4.0,
+          "turns": 32,
+          "tokens": 329175,
+          "cost_usd": 0.7272744,
+          "verdict": "done"
+        }
+      ],
+      "verify_started": "2026-11-02T11:52:30+01:00"
     },
     {
       "id": "T-005",
       "title": "Infra: comprobar la persistencia del catálogo en el stack real",
       "owner": "consultor",
-      "status": "backlog",
+      "status": "done",
       "priority": "alta",
       "estimate_min": 10.0,
       "actual_min": null,
@@ -206,7 +324,7 @@
         "T-002"
       ],
       "created": "2026-11-02T11:35:32+01:00",
-      "updated": "2026-11-02T11:35:32+01:00",
+      "updated": "2026-11-02T12:55:29+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -214,6 +332,11 @@
           "t": "2026-11-02T11:35:32+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T12:55:29+01:00",
+          "by": "consultor",
+          "msg": "up, restart de polaris, smoke y up de nuevo: todo en verde; el init devuelve 409, el catálogo sobrevive"
         }
       ]
     },
@@ -221,10 +344,10 @@
       "id": "T-006",
       "title": "Infra: kit de pruebas que levanta el lakehouse en contenedores",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "done",
       "priority": "alta",
       "estimate_min": 40.0,
-      "actual_min": null,
+      "actual_min": 7.2,
       "auto": true,
       "manual": null,
       "desc": "Casi todo lo que viene se tiene que probar contra un lakehouse de verdad, y los agentes no pueden levantar el stack. Se propone un kit común que arranque SeaweedFS, Postgres y Polaris desde las mismas imágenes de infra/ y los comparta entre tests, para no repetirlo en cada módulo ni disparar los tiempos.\nCómo sabremos si funciona: un test escribe y lee una fila en Iceberg desde DuckDB a través de Polaris, igual que ./mk smoke, sin stack levantado.\n\n## Técnico\n- testkit: LakehouseStack (singleton; ImageFromDockerfile desde infra/seaweedfs, infra/postgres, infra/polaris; bootstrap + init.sh). Ampliable después con Kafka, Registry y Connect.\n- Dentro de tools se accede por TESTCONTAINERS_HOST_OVERRIDE=host.docker.internal con puertos mapeados.\n- Ayudante de ATTACH con ACCESS_DELEGATION_MODE none y secreto S3 propio, apuntando al puerto mapeado.\n- pom raíz: BOM de Testcontainers, surefire para unitarios, failsafe para *IT. Presupuesto: ./mk test completo en ~10 min (ver docs/architecture.md); si se pasa, anotarlo en la tarjeta.\n- Verificación: ./mk test con el stack apagado.",
@@ -232,16 +355,134 @@
         "T-002"
       ],
       "created": "2026-11-02T11:35:33+01:00",
-      "updated": "2026-11-02T11:35:33+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-02T12:51:47+01:00",
+      "started_at": "2026-11-02T12:09:50+01:00",
+      "finished_at": "2026-11-02T12:13:00+01:00",
       "log": [
         {
           "t": "2026-11-02T11:35:33+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T12:02:26+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-02T12:05:56+01:00",
+          "by": "consultor",
+          "msg": "Verificación parcial: ./mk test en verde (4 IT de testkit, 61 s; LakehouseStackIT escribe y lee con DuckDB por Polaris), pero con el stack de compose LEVANTADO, no apagado como pedía la tarjeta. No lo paré: no es mío y ./mk down no está en mis permisos. Los logs muestran que los tests usan solo sus contenedores y puertos mapeados (55333, 55338...), no 8181/8333. Falta para el tester: repetir ./mk test con el stack apagado."
+        },
+        {
+          "t": "2026-11-02T12:06:25+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: LakehouseStack y su test de DuckDB por Polaris en verde con `./mk test`, pero falta repetirlo con el stack apagado (anotado en la tarjeta)."
+        },
+        {
+          "t": "2026-11-02T12:06:30+01:00",
+          "by": "tester",
+          "msg": "verificando"
+        },
+        {
+          "t": "2026-11-02T12:09:45+01:00",
+          "by": "tester",
+          "msg": "FAIL: `./mk test-board` da 13 fallos porque T-006 movió la configuración que lee `tests/test_polaris_persistence_config.py` (reproducir con `./mk test-board`; arreglo en T-069), y aún falta repetir `./mk test` con el stack apagado."
+        },
+        {
+          "t": "2026-11-02T12:09:50+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-02T12:12:46+01:00",
+          "by": "consultor",
+          "msg": "Arreglada la regresión que marcó el tester: tests/test_polaris_persistence_config.py ahora lee LakehouseStack.java (mismo cambio que propone T-069). ./mk test-board: 88 passed. ./mk test: verde. SIGUE SIN VERIFICAR con el stack apagado: el stack de compose sigue levantado (visto con docker compose ps) y no lo he parado porque es compartido y T-068 necesita investigarlo en su estado actual, sin Postgres. Lo que sí hay: testkit/src no usa localhost ni puertos fijos del host, solo puertos mapeados por Testcontainers. Es indicio, no la prueba que pide la tarjeta."
+        },
+        {
+          "t": "2026-11-02T12:13:00+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: Regresión de `test-board` arreglada y ambas suites en verde, pero falta repetir `./mk test` con el stack apagado, que no he parado para no borrar el estado que necesita T-068."
+        },
+        {
+          "t": "2026-11-02T12:13:05+01:00",
+          "by": "tester",
+          "msg": "verificando"
+        },
+        {
+          "t": "2026-11-02T12:31:24+01:00",
+          "by": "consultor",
+          "msg": "Tester: verificado todo menos la condición de stack apagado. ./mk test en verde (5 IT, 74 s antes de añadir un test; presupuesto 10 min) y ./mk test-board 88 passed. Con un fallo provocado a propósito en el test de DuckDB, ./mk test falla con exit 2 (ya revertido). Polaris de compose: 0 líneas de log durante la primera ejecución, y la suite no deja contenedores propios. Añadido a LakehouseStackIT un test que exige puertos distintos de 8181, 8182 y 8333. PENDIENTE: ./mk test con el stack apagado; no lo he parado porque T-068 necesita su estado actual. Hacerlo al cerrar T-068."
+        },
+        {
+          "t": "2026-11-02T12:31:28+01:00",
+          "by": "consultor",
+          "msg": "Corrección de la nota anterior: la ejecución de 74 s tenía 4 IT, no 5. Con el test nuevo son 5 IT, también en verde, y esa ejecución no la cronometré."
+        },
+        {
+          "t": "2026-11-02T12:31:43+01:00",
+          "by": "tester",
+          "msg": "BLOCKED: Suites en verde y kit verificado, pero falta `./mk test` con el stack apagado, pendiente de T-068 y de permiso para `./mk down`."
+        },
+        {
+          "t": "2026-11-02T12:31:43+01:00",
+          "by": "tester",
+          "msg": "⚠ 1 comandos denegados: ./mk test > \"C:/Users/albaa/AppData/Local/Temp/claude/C--Users-albaa-Documents-2"
+        },
+        {
+          "t": "2026-11-02T12:31:43+01:00",
+          "by": "runner",
+          "msg": "✗ «./mk test > \"C:/Users/albaa/AppData/Local/Temp/claude/C--Users-albaa-Documents-2026-lakeho»: varios comandos, tuberías, redirecciones o heredoc: lanza cada comando por separado y crea ficheros con Write/Edit"
+        },
+        {
+          "t": "2026-11-02T12:51:47+01:00",
+          "by": "consultor",
+          "msg": "./mk test en verde con el stack apagado (112 s, commit 2362f23, worktree limpio)"
         }
-      ]
+      ],
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-02T12:06:25+01:00",
+          "min": 4.0,
+          "turns": 38,
+          "tokens": 313715,
+          "cost_usd": 0.759153,
+          "verdict": "review"
+        },
+        {
+          "agent": "tester",
+          "mode": "verify",
+          "at": "2026-11-02T12:09:45+01:00",
+          "min": 3.2,
+          "turns": 25,
+          "tokens": 380701,
+          "cost_usd": 0.6315337999999999,
+          "verdict": "fail"
+        },
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-02T12:13:00+01:00",
+          "min": 3.2,
+          "turns": 21,
+          "tokens": 204932,
+          "cost_usd": 0.3999464,
+          "verdict": "review"
+        },
+        {
+          "agent": "tester",
+          "mode": "verify",
+          "at": "2026-11-02T12:31:43+01:00",
+          "min": 18.6,
+          "turns": 38,
+          "tokens": 569262,
+          "cost_usd": 0.7033685999999999,
+          "verdict": "blocked"
+        }
+      ],
+      "verify_started": "2026-11-02T12:13:05+01:00"
     },
     {
       "id": "T-007",
@@ -273,10 +514,10 @@
       "id": "T-008",
       "title": "Productor: esquema Avro y lectura tolerante del CSV",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "done",
       "priority": "alta",
       "estimate_min": 30.0,
-      "actual_min": null,
+      "actual_min": 7.3,
       "auto": true,
       "manual": null,
       "desc": "El productor tiene que leer el CSV sin perder las filas sucias, porque son justo los casos de calidad que queremos conservar. Se propone definir el esquema Avro y un lector que acepte nulos y formatos raros sin descartar nada.\nCómo sabremos si funciona: cada fila de la muestra sintética se convierte en un evento con los mismos valores, incluidas las sucias.\n\n## Técnico\n- producer/src/main/avro/event.avsc, nullable en category_code, brand, user_session; event_time como timestamp-micros.\n- Formato de fecha del origen: 2019-10-01 00:00:00 UTC (confirmar con docs/data-profile.md si ya existe).\n- Soporte de .csv y .csv.gz en streaming, sin cargar en memoria (fichero real de varios GB).\n- Las filas ilegibles se cuentan y se registran; no paran el proceso.\n- Tests unitarios elemento a elemento contra testdata/synthetic-events.csv.gz. Verificación: ./mk test.",
@@ -284,16 +525,59 @@
         "T-004"
       ],
       "created": "2026-11-02T11:35:34+01:00",
-      "updated": "2026-11-02T11:35:34+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-02T12:45:37+01:00",
+      "started_at": "2026-11-02T12:31:49+01:00",
+      "finished_at": "2026-11-02T12:39:10+01:00",
       "log": [
         {
           "t": "2026-11-02T11:35:34+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T12:31:49+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-02T12:39:10+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: Esquema Avro y lector tolerante de CSV y gzip en streaming, con las 50.000 filas de la muestra verificadas campo a campo y `./mk test` en verde."
+        },
+        {
+          "t": "2026-11-02T12:39:14+01:00",
+          "by": "tester",
+          "msg": "verificando"
+        },
+        {
+          "t": "2026-11-02T12:45:37+01:00",
+          "by": "tester",
+          "msg": "DONE: Diff leído, suite en verde y las 50.000 filas coinciden columna a columna con una referencia independiente en Python; añadidos 8 tests de regresión y casos adversos."
         }
-      ]
+      ],
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-02T12:39:10+01:00",
+          "min": 7.3,
+          "turns": 38,
+          "tokens": 405225,
+          "cost_usd": 1.1567872000000001,
+          "verdict": "review"
+        },
+        {
+          "agent": "tester",
+          "mode": "verify",
+          "at": "2026-11-02T12:45:37+01:00",
+          "min": 6.4,
+          "turns": 22,
+          "tokens": 309138,
+          "cost_usd": 0.8321656,
+          "verdict": "done"
+        }
+      ],
+      "verify_started": "2026-11-02T12:39:14+01:00"
     },
     {
       "id": "T-009",
@@ -352,10 +636,10 @@
       "id": "T-011",
       "title": "Productor: muestreo, orden temporal, aceleración y hora actual",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "done",
       "priority": "alta",
       "estimate_min": 40.0,
-      "actual_min": null,
+      "actual_min": 6.1,
       "auto": true,
       "manual": null,
       "desc": "La demo debe reproducir el mes como si ocurriera ahora y a la velocidad que queramos, usando solo parte de los datos. Se muestrea por sesión completa, no por fila, porque si no se rompe el recorrido vista-carrito-compra y las métricas salen falsas. Esta tarjeta es solo la lógica, sin Kafka, para poder probarla con un reloj simulado.\nCómo sabremos si funciona: una sesión entra entera o no entra, el mismo porcentaje da siempre las mismas filas, y los tiempos entre eventos se dividen exactamente por la aceleración.\n\n## Técnico\n- Parámetros: sample-rate o max-rows, speedup, rewrite-timestamp (desplaza todo para que el primero sea ahora). Hash determinista de user_session; las filas sin sesión se muestrean por hash de la fila.\n- Si docs/data-profile.md dice que el CSV no está ordenado, documentar la opción elegida: el mes no cabe en memoria.\n- Reloj inyectable (java.time.Clock), sin sleeps reales en tests. Tests unitarios elemento a elemento. Verificación: ./mk test.",
@@ -363,16 +647,64 @@
         "T-008"
       ],
       "created": "2026-11-02T11:35:57+01:00",
-      "updated": "2026-11-02T11:35:57+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-02T13:00:22+01:00",
+      "started_at": "2026-11-02T12:45:43+01:00",
+      "finished_at": "2026-11-02T12:51:51+01:00",
       "log": [
         {
           "t": "2026-11-02T11:35:57+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T12:45:43+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-02T12:51:37+01:00",
+          "by": "consultor",
+          "msg": "Sin docs/data-profile.md (T-007 pendiente): orden con ventana acotada de 100 000 eventos muestreados; los que llegan más tarde se entregan sin esperar y se cuentan. Revisar EventReplay.DEFAULT_REORDER_WINDOW cuando exista el perfil. Decisiones 14, 18 y 19 en docs/architecture.md. max-rows necesita dos pasadas: T-013 debe abrir el fichero dos veces."
+        },
+        {
+          "t": "2026-11-02T12:51:51+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: Muestreo por sesión, orden con ventana acotada, aceleración y hora actual hechos con reloj simulado y suite en verde; falta contrastar la ventana con el perfil real (T-007)."
+        },
+        {
+          "t": "2026-11-02T12:51:58+01:00",
+          "by": "tester",
+          "msg": "verificando"
+        },
+        {
+          "t": "2026-11-02T13:00:22+01:00",
+          "by": "tester",
+          "msg": "DONE: Muestreo, orden, aceleración y hora actual coinciden fila a fila con una referencia independiente en 20 escenarios y las suites están en verde; el desorden real queda pendiente en T-070."
         }
-      ]
+      ],
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-02T12:51:51+01:00",
+          "min": 6.1,
+          "turns": 41,
+          "tokens": 421752,
+          "cost_usd": 1.1579548,
+          "verdict": "review"
+        },
+        {
+          "agent": "tester",
+          "mode": "verify",
+          "at": "2026-11-02T13:00:22+01:00",
+          "min": 8.4,
+          "turns": 31,
+          "tokens": 638397,
+          "cost_usd": 1.2013924,
+          "verdict": "done"
+        }
+      ],
+      "verify_started": "2026-11-02T12:51:58+01:00"
     },
     {
       "id": "T-012",
@@ -381,7 +713,7 @@
       "status": "blocked",
       "priority": "alta",
       "estimate_min": 35.0,
-      "actual_min": null,
+      "actual_min": 14.5,
       "auto": true,
       "manual": null,
       "desc": "Los eventos deben llegar solos de Kafka a Iceberg. El plugin ya está cargado, pero falta su configuración y un modo de registrarla al arrancar. Como las imágenes Confluent no traen curl, lo registrará un servicio pequeño de un solo uso.\nCómo sabremos si funciona: en la prueba de integración de la siguiente tarjeta el conector queda RUNNING; aquí, que la configuración es válida contra el endpoint de validación.\n\n## Técnico\n- connect/iceberg-sink.json: tabla lakehouse.ecommerce.events, particionado day(event_time) y event_type, catalogo REST de Polaris, S3 con claves estáticas y endpoint seaweedfs, path-style. Commit ~30 s. evolve-schema apagado (decisión 3). DLQ activada para mensajes ilegibles.\n- Servicio connect-init en compose (Alpine + curl + jq; JSON dentro de la imagen, sustitución de secretos desde el entorno) idempotente con PUT /connectors/{name}/config.\n- Connect también necesita que exista el namespace: añadirlo a init.sh.\n- Verificación: test con el contenedor Connect construido desde infra/connect, PUT /connector-plugins/.../config/validate sin errores. ./mk test.",
@@ -389,9 +721,9 @@
         "T-002"
       ],
       "created": "2026-11-02T11:35:58+01:00",
-      "updated": "2026-11-02T11:41:38+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-02T13:15:21+01:00",
+      "started_at": "2026-11-02T13:00:28+01:00",
+      "finished_at": "2026-11-02T13:14:56+01:00",
       "log": [
         {
           "t": "2026-11-02T11:35:58+01:00",
@@ -407,17 +739,65 @@
           "t": "2026-11-02T11:41:38+01:00",
           "by": "consultor",
           "msg": "Espera a T-006; no se puede añadir dep a una tarjeta creada"
+        },
+        {
+          "t": "2026-11-02T12:51:47+01:00",
+          "by": "consultor",
+          "msg": "T-006 terminada: desbloqueada"
+        },
+        {
+          "t": "2026-11-02T13:00:28+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-02T13:14:56+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: Conector configurado y registrable con `connect-init`, configuración válida contra un worker real y `./mk test` en verde; el estado RUNNING con datos queda para T-015."
+        },
+        {
+          "t": "2026-11-02T13:15:01+01:00",
+          "by": "tester",
+          "msg": "verificando"
+        },
+        {
+          "t": "2026-11-02T13:15:21+01:00",
+          "by": "tester",
+          "msg": "BLOCKED: 100,\"session_id\":\"24fe7028-9fc5-4d7c-8ae3-ec2f82e5056d\",\"uuid\":\"83be6c78-7a98-47cd-99d1-0ae8c06a0fdd\"}\n{\"type\":\"system\",\"subtype\":\"thinking_tokens\",\"estimated_tokens\":1100,\"estimated_tokens_delta\":150,\"session_id\":\"24fe7028-9fc5-4d7c-8ae3-ec2f82e5056d\",\"uuid\":\"c7a6e441-7b86-49e4-8a4d-2f764dad8db3\"}"
         }
-      ]
+      ],
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-02T13:14:56+01:00",
+          "min": 14.4,
+          "turns": 6,
+          "tokens": 205224,
+          "cost_usd": 1.2227626000000003,
+          "verdict": "review"
+        },
+        {
+          "agent": "tester",
+          "mode": "verify",
+          "at": "2026-11-02T13:15:21+01:00",
+          "min": 0.3,
+          "turns": null,
+          "tokens": null,
+          "cost_usd": null,
+          "verdict": "blocked"
+        }
+      ],
+      "verify_started": "2026-11-02T13:15:01+01:00"
     },
     {
       "id": "T-013",
       "title": "Productor: enviar a Kafka y comando seed",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "next",
       "priority": "alta",
       "estimate_min": 35.0,
-      "actual_min": null,
+      "actual_min": 8.8,
       "auto": true,
       "manual": null,
       "desc": "Falta unir la lógica de reproducción con Kafka y dar un comando para lanzarlo. El responsable lanzará seed sobre el CSV real, y los tests lo harán sobre la muestra sintética.\nCómo sabremos si funciona: un test envía la muestra a Kafka y Schema Registry en contenedores, consume el topic y compara evento a evento con el CSV.\n\n## Técnico\n- Añadir Kafka y Schema Registry a testkit LakehouseStack (arrancan solo si se piden).\n- Topic ecommerce.events; clave user_session para conservar el orden por sesión; creación idempotente del topic con varias particiones.\n- CLI: --input --sample-rate --max-rows --speedup --rewrite-timestamp; métricas de progreso al log.\n- Makefile: seed con variables MONTH, SAMPLE y SPEEDUP, y compilación del jar. Sigue siendo target solo para el responsable.\n- Verificación: ProducerIT en ./mk test.",
@@ -426,14 +806,29 @@
         "T-006"
       ],
       "created": "2026-11-02T11:36:18+01:00",
-      "updated": "2026-11-02T11:36:18+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-02T13:24:11+01:00",
+      "started_at": "2026-11-02T13:15:26+01:00",
+      "finished_at": "2026-11-02T13:24:11+01:00",
       "log": [
         {
           "t": "2026-11-02T11:36:18+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T13:00:01+01:00",
+          "by": "consultor",
+          "msg": "Del tester (T-011): con max-rows hay que abrir el fichero dos veces, una para SessionSampler.ofMaxRows y otra para EventReplay.run, porque ofMaxRows consume la fuente. Si maxRows es menor que la primera cubeta con filas, la muestra sale vacía sin error: conviene avisar en el comando seed."
+        },
+        {
+          "t": "2026-11-02T13:15:26+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-02T13:24:11+01:00",
+          "by": "desarrollador",
+          "msg": "límite de uso, reintenta tras el reset"
         }
       ]
     },
@@ -487,6 +882,11 @@
           "t": "2026-11-02T11:36:36+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T13:14:41+01:00",
+          "by": "consultor",
+          "msg": "De T-012: comprobar elemento a elemento que event_time llega bien a la tabla. El conector usa TimestampConverter (micros a Timestamp) porque, según el código de AvroData (rama master, no la 8.4), timestamp-micros llega a Connect como long, y day() no podría particionarlo; sin el convertidor, RecordConverter además lo leería como milisegundos. Se pierde lo inferior al milisegundo. Solo está validada la configuración, no el dato real. Revisar también si hace falta crear antes el topic de control control-iceberg."
         }
       ]
     },
@@ -678,6 +1078,11 @@
           "t": "2026-11-02T11:37:14+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T12:51:39+01:00",
+          "by": "consultor",
+          "msg": "Aviso de T-011: con rewrite-timestamp y aceleración mayor que 1, event_time va por delante del reloj (desplazamiento fijo, decisión 19 de docs/architecture.md). La frescura no puede salir de now - max(event_time) sin tenerlo en cuenta; puede salir negativa."
         }
       ]
     },
@@ -1190,6 +1595,11 @@
           "t": "2026-11-02T11:38:51+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T13:14:42+01:00",
+          "by": "consultor",
+          "msg": "De T-012: por el código de RecordConverter (Iceberg 1.12.0, leído por encima, sin probar), con evolve-schema apagado una columna nueva parece ignorarse sin error en vez de fallar. La decisión 3 de docs/architecture.md cuenta con que el drift sea un fallo detectable: confirmarlo con un caso real antes de diseñar la detección."
         }
       ]
     },
@@ -1567,6 +1977,11 @@
           "t": "2026-11-02T11:40:10+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T11:44:45+01:00",
+          "by": "consultor",
+          "msg": "Cambio del responsable: el README sigue el formato de sus repos públicos (portada SVG, insignias, español con bloque 🇬🇧 In English, tabla de decisiones, limitaciones). Ya hay una versión con estado real: actualizarla, no reescribirla en inglés."
         }
       ]
     },
@@ -1813,8 +2228,280 @@
           "t": "2026-11-02T11:41:01+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T11:44:46+01:00",
+          "by": "consultor",
+          "msg": "Mantener el formato actual del README y marcar en 'Qué hay y qué falta' lo que se complete."
+        }
+      ]
+    },
+    {
+      "id": "T-065",
+      "title": "Ronda de aportación: investigador",
+      "owner": "investigador",
+      "status": "done",
+      "priority": "baja",
+      "estimate_min": 15,
+      "actual_min": 3.1,
+      "auto": true,
+      "manual": null,
+      "desc": "Busca una alternativa, librería o técnica concreta con ganancia esperada que no esté ya en el panel.",
+      "deps": [],
+      "created": "2026-11-02T11:43:15+01:00",
+      "updated": "2026-11-02T11:46:22+01:00",
+      "started_at": "2026-11-02T11:43:15+01:00",
+      "finished_at": "2026-11-02T11:46:22+01:00",
+      "log": [
+        {
+          "t": "2026-11-02T11:43:15+01:00",
+          "by": "runner",
+          "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T11:43:15+01:00",
+          "by": "runner",
+          "msg": "empieza la ronda"
+        },
+        {
+          "t": "2026-11-02T11:46:22+01:00",
+          "by": "investigador",
+          "msg": "DONE: notas en docs/NOTAS-investigador.md con 3 hallazgos y fuentes; las 2 tarjetas NO se crearon (permiso denegado), sus datos quedan en las notas"
+        }
+      ],
+      "kind": "contrib",
+      "runs": [
+        {
+          "agent": "investigador",
+          "mode": "contrib",
+          "at": "2026-11-02T11:46:22+01:00",
+          "min": 3.1,
+          "turns": 29,
+          "tokens": 339265,
+          "cost_usd": 0.8309183,
+          "verdict": "done"
+        }
+      ]
+    },
+    {
+      "id": "T-066",
+      "title": "Solicitud de permiso: docker *",
+      "owner": "consultor",
+      "status": "done",
+      "priority": "media",
+      "estimate_min": 2,
+      "actual_min": null,
+      "auto": false,
+      "manual": "Abre la tarjeta y pulsa «Conceder» o «Denegar».",
+      "desc": "El agente «desarrollador» necesitaba un comando que no está en su lista de permitidos y se lo bloquearon mientras hacía T-002. No es de solo lectura ni está prohibido, así que lo tiene que validar una persona.\n\nPara qué lo quería: validar la sintaxis y las variables de compose.yaml sin imprimir secretos\n\nCómo decidir: concede si es seguro repetirlo sin supervisión dentro del proyecto; deniega si escribe fuera, publica, borra o usa la red.\n\n## Técnico\n- Comando: docker compose config --quiet\n- Patrón que se concedería: docker *\n- Tarjeta: T-002",
+      "deps": [],
+      "created": "2026-11-02T11:48:32+01:00",
+      "updated": "2026-11-02T11:53:12+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T11:48:32+01:00",
+          "by": "runner",
+          "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T11:53:12+01:00",
+          "by": "tú",
+          "msg": "✓ Concedido: docker *"
+        },
+        {
+          "t": "2026-11-02T13:07:36+01:00",
+          "by": "consultor",
+          "msg": "El responsable redujo el permiso: de docker * a docker compose config*."
+        }
+      ],
+      "kind": "permiso",
+      "perm": {
+        "pattern": "docker *",
+        "command": "docker compose config --quiet",
+        "agent": "desarrollador",
+        "task": "T-002",
+        "why": "validar la sintaxis y las variables de compose.yaml sin imprimir secretos"
+      }
+    },
+    {
+      "id": "T-067",
+      "title": "README: esquema de arquitectura animado",
+      "owner": "consultor",
+      "status": "done",
+      "priority": "media",
+      "estimate_min": 15.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "El README mostraba la arquitectura con Mermaid; se sustituye por un esquema animado con el estilo de la portada. Cómo sabremos si funciona: en GitHub se ve el esquema con movimiento.",
+      "deps": [],
+      "created": "2026-11-02T11:55:03+01:00",
+      "updated": "2026-11-02T11:55:46+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T11:55:03+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T11:55:46+01:00",
+          "by": "consultor",
+          "msg": "Esquema animado visto en GitHub en develop"
+        }
+      ]
+    },
+    {
+      "id": "T-068",
+      "title": "El stack levantado funciona sin su base de datos",
+      "owner": "tester",
+      "status": "backlog",
+      "priority": "media",
+      "estimate_min": 10.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Al terminar T-006, el stack de compose aparecía con el catálogo marcado como sano, pero el contenedor de su base de datos no estaba, ni siquiera parado. No sé por qué ni si el catálogo sigue funcionando; puede que alguien lo quitara a mano o que el estado de sano no detecte la falta de base de datos. Se propone reproducirlo y, si el estado de sano engaña, proponer una comprobación mejor.\nCómo sabremos si funciona: sabremos por qué desapareció y, si se cae la base de datos, el catálogo dejará de aparecer como sano.\n## Técnico\nVisto el 2026-11-02 con docker compose ps -a: faltan postgres y polaris-bootstrap; polaris Up (healthy) desde hace 36 min, lakehouse-init Exited (0). El healthcheck es curl a :8182/q/health. Causa sin investigar; la ejecución de ./mk test de T-006 solo usa contenedores propios de Testcontainers.",
+      "deps": [],
+      "created": "2026-11-02T12:06:04+01:00",
+      "updated": "2026-11-02T12:06:11+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T12:06:04+01:00",
+          "by": "desarrollador",
+          "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T12:06:11+01:00",
+          "by": "consultor",
+          "msg": "descripción reescrita"
+        },
+        {
+          "t": "2026-11-02T12:55:29+01:00",
+          "by": "consultor",
+          "msg": "Pista del consultor: el 2-nov a las 12:50 el stack aún corría con contenedores anteriores a T-002 y no tenía Postgres porque nadie lo había recreado; tras ./mk up Postgres aparece sano. Falta comprobar si el healthcheck de Polaris detecta la caída de la base de datos."
+        }
+      ]
+    },
+    {
+      "id": "T-069",
+      "title": "Reparar la comprobación de Polaris que rompió el kit de pruebas",
+      "owner": "desarrollador",
+      "status": "done",
+      "priority": "alta",
+      "estimate_min": 5.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Al mover la configuración de Polaris al kit de pruebas común, la comprobación que vigila que el arranque real y el de los tests usen la misma persistencia sigue buscándola en el fichero antiguo, y falla. Mientras esté rota, nadie se enteraría si el arranque real perdiera la persistencia. Se propone apuntarla al kit nuevo, sin relajar ninguna de sus condiciones.\nCómo sabremos si funciona: los tests del panel vuelven a verde y la comprobación sigue detectando cada cambio indebido en la configuración.\n\n## Técnico\n- Dónde: tests/test_polaris_persistence_config.py, líneas 1-5 y 14 (constante IT). Roto por bcbdef3 (T-006).\n- Síntoma: ./mk test-board da 13 fallos en ese fichero, ValueError: substring not found en it_persistence (línea 35), porque PERSISTENCE = Map.of( ya no está en PolarisPersistenceIT.java.\n- Arreglo probado en una copia fuera del repo: leer testkit/src/main/java/io/github/albaasca/lakehouse/testkit/LakehouseStack.java da 15 passed sin más cambios.\n- Criterio: ./mk test-board sin fallos, sin borrar ni aflojar casos de test_each_drift_is_detected, y docstring actualizado.",
+      "deps": [],
+      "created": "2026-11-02T12:09:31+01:00",
+      "updated": "2026-11-02T12:55:29+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T12:09:31+01:00",
+          "by": "tester",
+          "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T12:12:48+01:00",
+          "by": "consultor",
+          "msg": "El arreglo ya está hecho dentro de T-006 (la constante IT apunta a LakehouseStack.java y el docstring está actualizado; no se ha tocado ningún caso de test_each_drift_is_detected). ./mk test-board: 88 passed. Esta tarjeta sigue abierta: al cogerla solo hay que comprobarlo y cerrarla."
+        },
+        {
+          "t": "2026-11-02T12:55:29+01:00",
+          "by": "consultor",
+          "msg": "./mk test-board: 88 passed; el arreglo ya estaba en T-006"
+        }
+      ]
+    },
+    {
+      "id": "T-070",
+      "title": "Productor: comprobar con el CSV real que la ventana de orden basta",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "media",
+      "estimate_min": 10.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "La reproducción reordena los eventos con una ventana de 100 000, elegida sin conocer el fichero real porque su perfil aún no existe. Si el desorden real es mayor, parte de los eventos saldrán tarde y fuera de orden; si no hay desorden, la ventana gasta memoria sin necesidad. Se propone ajustar el valor cuando el perfil esté hecho.\nCómo sabremos si funciona: el valor elegido está justificado con el desorden medido y, al reproducir el mes real, casi ningún evento sale tarde.\n## Técnico\nEventReplay.DEFAULT_REORDER_WINDOW y decisión 18 de docs/architecture.md, contra docs/data-profile.md (T-007). La ventana cuenta eventos ya muestreados: con sample-rate bajo cubre más tiempo. Criterio: Result.late() medido en la reproducción real y anotado en la tarjeta. Si cambia el valor, EventReplayReferenceTest usa la constante y debe seguir en verde.",
+      "deps": [
+        "T-007"
+      ],
+      "created": "2026-11-02T13:00:00+01:00",
+      "updated": "2026-11-02T13:00:08+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T13:00:00+01:00",
+          "by": "tester",
+          "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T13:00:08+01:00",
+          "by": "consultor",
+          "msg": "descripción reescrita"
+        }
+      ]
+    },
+    {
+      "id": "T-071",
+      "title": "Wiki: explicar toda la arquitectura, de principiante a experto",
+      "owner": "consultor",
+      "status": "backlog",
+      "priority": "alta",
+      "estimate_min": 90.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Alguien sin conocimientos y un experto deben poder entender qué hay montado, para qué sirve cada pieza, cómo se conecta y cómo probarla. Se escribe en docs/wiki y cada comando se prueba contra el stack real. Cómo sabremos si funciona: los comandos publicados dan la salida que dice la wiki y nada se presenta como hecho sin estarlo.",
+      "deps": [],
+      "created": "2026-11-02T13:09:51+01:00",
+      "updated": "2026-11-02T13:09:51+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T13:09:51+01:00",
+          "by": "consultor",
+          "msg": "creada"
         }
       ]
     }
-  ]
+  ],
+  "runners": {
+    "think": {
+      "state": "stopped",
+      "current": null,
+      "message": "Runner parado",
+      "pid": 15960,
+      "heartbeat": "2026-11-02T11:46:28+01:00",
+      "enabled": true,
+      "agent": "investigador",
+      "started": "2026-11-02T11:43:16+01:00",
+      "live": "live-T-065-investigador-20261102-114316.jsonl",
+      "contrib_at": "2026-11-02T11:46:22+01:00",
+      "contrib_agent": "investigador"
+    },
+    "measure": {
+      "state": "working",
+      "current": "T-013",
+      "message": "desarrollador con T-013",
+      "pid": 25568,
+      "heartbeat": "2026-11-02T13:15:28+01:00",
+      "enabled": true,
+      "agent": "desarrollador",
+      "started": "2026-11-02T13:15:28+01:00",
+      "live": "live-T-013-desarrollador-20261102-131528.jsonl"
+    }
+  }
 }

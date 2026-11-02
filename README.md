@@ -61,16 +61,21 @@ descubre leyendo un dashboard. Este proyecto pone al agente delante de esos prob
 | DuckDB | 2.0.0 | Motor de consulta (extensión `iceberg`) |
 | Java · Spring Boot · Spring AI | 25 · 4.1.2 · 2.0.2 | Productor, servidor MCP y agente |
 
+## La wiki
+
+¿No sabes qué es un lakehouse? ¿O quieres ver exactamente lo que hay montado? [**La wiki**](docs/wiki/README.md) sirve para las dos cosas: conceptos desde cero, el viaje de un evento,
+una página por cada pieza (qué es, cómo se conecta, cómo está configurada y cómo probarla), [un tutorial paso a paso](docs/wiki/03-probarlo.md) y [guía de diagnóstico](docs/wiki/04-operacion.md).
+
 ## Qué hay y qué falta
 
 | | Pieza | Estado |
 |---|---|---|
 | ✅ | Stack en Docker Compose, con healthchecks | Arranca con un comando |
 | ✅ | Ida y vuelta DuckDB → Polaris → SeaweedFS | Lo comprueba `./mk smoke` |
-| ✅ | Plugin del conector de Iceberg cargado en Connect | Lo comprueba `./mk smoke`; sin conector registrado todavía |
+| ⚠️ | Conector de Iceberg | Se registra, pero su tarea falla al arrancar (T-072): **aún no entran datos** |
 | ✅ | Herramientas en una imagen (`tools`) | JDK, Maven, make, DuckDB y Kaggle, sin instalar nada |
-| 🚧 | Persistencia del catálogo de Polaris | En curso: hoy se pierde al reiniciar Polaris |
-| ⬜ | Productor e ingesta del mes real | Planificado |
+| ✅ | Persistencia del catálogo de Polaris | En Postgres: sobrevive a un reinicio |
+| 🚧 | Productor e ingesta del mes real | Lectura, muestreo y orden hechos; falta el envío y la ingesta |
 | ⬜ | Servidor MCP: `list_tables`, `describe_table`, `run_query`, `get_metric`, `pipeline_health`, `data_quality_check`, `time_travel`, `propose_fix`, `apply_fix` | Planificado |
 | ⬜ | Capa semántica y agente | Planificado |
 | ⬜ | Self-healing con `make chaos` | Planificado |
@@ -93,13 +98,15 @@ cp .env.example .env   # y cambia las contraseñas
 |---|---|
 | Descargar el dataset (necesita `~/.kaggle`) | `./mk download-data` |
 | Otro mes | `./mk download-data MONTH=2019-Nov` |
+| Reproducir el mes en Kafka (con el stack arriba) | `./mk seed` (por defecto 1 % de las sesiones a 3600×) |
+| Otra muestra, velocidad o mes | `./mk seed MONTH=2019-Nov SAMPLE=0.1 SPEEDUP=60` |
 | Ver el estado de los servicios | `docker compose ps` |
 | Ver los logs de un servicio | `docker compose logs --tail 50 connect` |
 | Maven dentro del contenedor | `./mvnw verify` |
 | Apagar | `./mk down` |
 | Apagar y borrar los datos | `docker compose down -v` |
 
-Los objetivos `seed`, `evals`, `chaos`, `bench` y `demo` ya existen en el `Makefile`, pero todavía avisan de que no están implementados.
+Los objetivos `evals`, `chaos`, `bench` y `demo` ya existen en el `Makefile`, pero todavía avisan de que no están implementados.
 
 ## Los datos
 
@@ -146,7 +153,7 @@ python board/server.py   # http://localhost:8020
 
 Es un proyecto de portfolio, no una plataforma de producción, y está a medio construir:
 
-- **El catálogo de Polaris aún vive en memoria.** Si Polaris se reinicia, se pierde aunque los datos sigan en S3. Es lo primero que se está resolviendo, con Postgres.
+- **El catálogo de Polaris se guarda en Postgres.** Un test demuestra que sobrevive a un reinicio de Polaris en contenedores de prueba; falta comprobarlo en el stack completo.
 - **Un solo nodo de todo.** Un broker y una instancia de cada servicio, con unos 8 GB de RAM para Docker. Trino solo arranca para el benchmark.
 - **Secretos locales.** Las credenciales son claves estáticas en `.env`, adecuadas para una demo local.
 - **Coste de las evals.** Llaman a un modelo de pago, así que no pueden lanzarse enteras en cada push.

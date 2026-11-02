@@ -1,0 +1,39 @@
+{
+  "name": "iceberg-sink",
+  "connector.class": "org.apache.iceberg.connect.IcebergSinkConnector",
+  "tasks.max": "1",
+  "topics": "ecommerce.events",
+
+  "transforms": "eventTime",
+  "transforms.eventTime.type": "org.apache.kafka.connect.transforms.TimestampConverter$Value",
+  "transforms.eventTime.field": "event_time",
+  "transforms.eventTime.target.type": "Timestamp",
+  "transforms.eventTime.unix.precision": "microseconds",
+
+  "errors.tolerance": "all",
+  "errors.deadletterqueue.topic.name": "ecommerce.events.dlq",
+  "errors.deadletterqueue.topic.replication.factor": "1",
+  "errors.deadletterqueue.context.headers.enable": "true",
+
+  "iceberg.tables": "ecommerce.events",
+  "iceberg.tables.auto-create-enabled": "true",
+  "iceberg.tables.evolve-schema-enabled": "false",
+  "iceberg.tables.default-partition-by": "day(event_time),event_type",
+  "iceberg.control.commit.interval-ms": "30000",
+
+  "iceberg.catalog": "lakehouse",
+  "iceberg.catalog.type": "rest",
+  "iceberg.catalog.uri": "http://polaris:8181/api/catalog",
+  "iceberg.catalog.warehouse": "lakehouse",
+  "iceberg.catalog.oauth2-server-uri": "http://polaris:8181/api/catalog/v1/oauth/tokens",
+  "iceberg.catalog.credential": "${POLARIS_CLIENT_ID}:${POLARIS_CLIENT_SECRET}",
+  "iceberg.catalog.scope": "PRINCIPAL_ROLE:ALL",
+  "iceberg.catalog.header.Polaris-Realm": "${POLARIS_REALM}",
+
+  "iceberg.catalog.io-impl": "org.apache.iceberg.aws.s3.S3FileIO",
+  "iceberg.catalog.s3.endpoint": "http://seaweedfs:8333",
+  "iceberg.catalog.s3.path-style-access": "true",
+  "iceberg.catalog.s3.access-key-id": "${S3_ACCESS_KEY}",
+  "iceberg.catalog.s3.secret-access-key": "${S3_SECRET_KEY}",
+  "iceberg.catalog.client.region": "${S3_REGION}"
+}

@@ -1,0 +1,17 @@
+{
+  "type": "record",
+  "name": "Event",
+  "namespace": "io.github.albaasca.lakehouse.events",
+  "doc": "One row of the e-commerce behaviour CSV. Field order matches the CSV columns.",
+  "fields": [
+    {"name": "event_time", "type": {"type": "long", "logicalType": "timestamp-micros"}},
+    {"name": "event_type", "type": "string"},
+    {"name": "product_id", "type": "long"},
+    {"name": "category_id", "type": "long"},
+    {"name": "category_code", "type": ["null", "string"], "default": null},
+    {"name": "brand", "type": ["null", "string"], "default": null},
+    {"name": "price", "type": "double", "doc": "Kept as found: zero and negative prices are data-quality cases, not errors."},
+    {"name": "user_id", "type": "long"},
+    {"name": "user_session", "type": ["null", "string"], "default": null}
+  ]
+}
