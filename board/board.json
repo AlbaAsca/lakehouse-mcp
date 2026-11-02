@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-02T13:15:21+01:00",
+  "updated": "2026-11-02T13:24:11+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -794,10 +794,10 @@
       "id": "T-013",
       "title": "Productor: enviar a Kafka y comando seed",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "next",
       "priority": "alta",
       "estimate_min": 35.0,
-      "actual_min": null,
+      "actual_min": 8.8,
       "auto": true,
       "manual": null,
       "desc": "Falta unir la lógica de reproducción con Kafka y dar un comando para lanzarlo. El responsable lanzará seed sobre el CSV real, y los tests lo harán sobre la muestra sintética.\nCómo sabremos si funciona: un test envía la muestra a Kafka y Schema Registry en contenedores, consume el topic y compara evento a evento con el CSV.\n\n## Técnico\n- Añadir Kafka y Schema Registry a testkit LakehouseStack (arrancan solo si se piden).\n- Topic ecommerce.events; clave user_session para conservar el orden por sesión; creación idempotente del topic con varias particiones.\n- CLI: --input --sample-rate --max-rows --speedup --rewrite-timestamp; métricas de progreso al log.\n- Makefile: seed con variables MONTH, SAMPLE y SPEEDUP, y compilación del jar. Sigue siendo target solo para el responsable.\n- Verificación: ProducerIT en ./mk test.",
@@ -806,9 +806,9 @@
         "T-006"
       ],
       "created": "2026-11-02T11:36:18+01:00",
-      "updated": "2026-11-02T11:36:18+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-02T13:24:11+01:00",
+      "started_at": "2026-11-02T13:15:26+01:00",
+      "finished_at": "2026-11-02T13:24:11+01:00",
       "log": [
         {
           "t": "2026-11-02T11:36:18+01:00",
@@ -819,6 +819,16 @@
           "t": "2026-11-02T13:00:01+01:00",
           "by": "consultor",
           "msg": "Del tester (T-011): con max-rows hay que abrir el fichero dos veces, una para SessionSampler.ofMaxRows y otra para EventReplay.run, porque ofMaxRows consume la fuente. Si maxRows es menor que la primera cubeta con filas, la muestra sale vacía sin error: conviene avisar en el comando seed."
+        },
+        {
+          "t": "2026-11-02T13:15:26+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-02T13:24:11+01:00",
+          "by": "desarrollador",
+          "msg": "límite de uso, reintenta tras el reset"
         }
       ]
     },
@@ -2484,14 +2494,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-012",
-      "message": "tester con T-012",
+      "current": "T-013",
+      "message": "desarrollador con T-013",
       "pid": 25568,
-      "heartbeat": "2026-11-02T13:15:02+01:00",
+      "heartbeat": "2026-11-02T13:15:28+01:00",
       "enabled": true,
-      "agent": "tester",
-      "started": "2026-11-02T13:15:02+01:00",
-      "live": "live-T-012-tester-20261102-131502.jsonl"
+      "agent": "desarrollador",
+      "started": "2026-11-02T13:15:28+01:00",
+      "live": "live-T-013-desarrollador-20261102-131528.jsonl"
     }
   }
 }

@@ -1,5 +1,6 @@
 package io.github.albaasca.lakehouse.testkit;
 
+import com.github.dockerjava.api.command.InspectContainerResponse;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -20,12 +21,16 @@ import org.testcontainers.containers.Network;
 import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.images.builder.ImageFromDockerfile;
+import org.testcontainers.images.builder.Transferable;
 
 /**
  * SeaweedFS, Postgres and Polaris with the images and configuration of compose.yaml, ready for Iceberg tables.
  *
  * <p>One stack per JVM (so one per Maven module): it starts on the first {@link #shared()} and Testcontainers removes
  * it when the JVM exits. Every test class in the module sees the same catalog, so use your own namespace.
+ *
+ * <p>Kafka and Schema Registry start only with {@link #sharedStreaming()}, on the same network: a test can ask for the
+ * catalog, for streaming or for both, and pays only for what it asks.
  */
 public final class LakehouseStack {
 
@@ -76,20 +81,51 @@ public final class LakehouseStack {
             .withEnv("JAVA_OPTS_APPEND", "-Xmx512m")
             .withExposedPorts(8181, 8182)
             .waitingFor(Wait.forHttp("/q/health").forPort(8182).forStatusCode(200).withStartupTimeout(STARTUP_TIMEOUT));
+    private final KafkaBroker kafka = new KafkaBroker(network);
+    private final GenericContainer<?> schemaRegistry = new GenericContainer<>("confluentinc/cp-schema-registry:8.4.0")
+            .withNetwork(network)
+            .withEnv(Map.of(
+                    "SCHEMA_REGISTRY_HOST_NAME", "schema-registry",
+                    "SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS", "kafka:9092",
+                    "SCHEMA_REGISTRY_LISTENERS", "http://0.0.0.0:8081",
+                    "SCHEMA_REGISTRY_HEAP_OPTS", "-Xmx256m"))
+            .withNetworkAliases("schema-registry")
+            .withExposedPorts(8081)
+            .waitingFor(Wait.forHttp("/subjects").forPort(8081).forStatusCode(200).withStartupTimeout(STARTUP_TIMEOUT));
+    private boolean catalogStarted;
+    private boolean streamingStarted;
 
     private LakehouseStack() {}
 
-    /** The stack of this JVM, started on the first call (about a minute once the images are built). */
+    /** The stack of this JVM with its catalog, started on the first call (about a minute once the images are built). */
     public static synchronized LakehouseStack shared() {
+        LakehouseStack stack = instance();
+        if (!stack.catalogStarted) {
+            stack.startCatalog();
+            stack.catalogStarted = true;
+        }
+        return stack;
+    }
+
+    /** The stack of this JVM with Kafka and Schema Registry, started on the first call. */
+    public static synchronized LakehouseStack sharedStreaming() {
+        LakehouseStack stack = instance();
+        if (!stack.streamingStarted) {
+            stack.kafka.start();
+            stack.schemaRegistry.start();
+            stack.streamingStarted = true;
+        }
+        return stack;
+    }
+
+    private static LakehouseStack instance() {
         if (shared == null) {
-            LakehouseStack stack = new LakehouseStack();
-            stack.start();
-            shared = stack;
+            shared = new LakehouseStack();
         }
         return shared;
     }
 
-    private void start() {
+    private void startCatalog() {
         postgres.start();
         seaweedfs.start();
         bootstrap();
@@ -126,6 +162,16 @@ public final class LakehouseStack {
     /** {@code host:port} of the S3 API from the test JVM. */
     public String s3Endpoint() {
         return seaweedfs.getHost() + ":" + seaweedfs.getMappedPort(8333);
+    }
+
+    /** {@code host:port} of Kafka from the test JVM. Containers on the network use {@code kafka:9092}. */
+    public String kafkaBootstrapServers() {
+        return kafka.bootstrapServers();
+    }
+
+    /** Base URL of Schema Registry from the test JVM. Containers on the network use {@code http://schema-registry:8081}. */
+    public String schemaRegistryUrl() {
+        return "http://" + schemaRegistry.getHost() + ":" + schemaRegistry.getMappedPort(8081);
     }
 
     /** Bearer token of the root principal. */
@@ -172,6 +218,49 @@ public final class LakehouseStack {
             container.withNetwork(network)
                     .withStartupCheckStrategy(new OneShotStartupCheckStrategy().withTimeout(STARTUP_TIMEOUT))
                     .start();
+        }
+    }
+
+    /**
+     * A broker that must advertise its mapped port, which is only known once the container exists: it waits for a
+     * script with that address before starting. Same listeners as compose.yaml.
+     */
+    private static final class KafkaBroker extends GenericContainer<KafkaBroker> {
+
+        private static final int EXTERNAL_PORT = 19092;
+        private static final String STARTER = "/tmp/start-broker.sh";
+
+        KafkaBroker(Network network) {
+            super("apache/kafka:4.4.0");
+            withNetwork(network);
+            withNetworkAliases("kafka");
+            withEnv(Map.of(
+                    "KAFKA_NODE_ID", "1",
+                    "KAFKA_PROCESS_ROLES", "broker,controller",
+                    "KAFKA_LISTENERS", "INTERNAL://:9092,EXTERNAL://:" + EXTERNAL_PORT + ",CONTROLLER://:9093",
+                    "KAFKA_LISTENER_SECURITY_PROTOCOL_MAP", "INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT",
+                    "KAFKA_INTER_BROKER_LISTENER_NAME", "INTERNAL",
+                    "KAFKA_CONTROLLER_LISTENER_NAMES", "CONTROLLER",
+                    "KAFKA_CONTROLLER_QUORUM_VOTERS", "1@kafka:9093",
+                    "KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR", "1",
+                    "KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR", "1",
+                    "KAFKA_TRANSACTION_STATE_LOG_MIN_ISR", "1"));
+            withEnv("KAFKA_HEAP_OPTS", "-Xmx512m");
+            withExposedPorts(EXTERNAL_PORT);
+            withCommand("sh", "-c", "while [ ! -f " + STARTER + " ]; do sleep 0.1; done; exec " + STARTER);
+            waitingFor(Wait.forLogMessage(".*Kafka Server started.*", 1).withStartupTimeout(STARTUP_TIMEOUT));
+        }
+
+        String bootstrapServers() {
+            return getHost() + ":" + getMappedPort(EXTERNAL_PORT);
+        }
+
+        @Override
+        protected void containerIsStarting(InspectContainerResponse container) {
+            String script = "#!/bin/sh\n"
+                    + "export KAFKA_ADVERTISED_LISTENERS=INTERNAL://kafka:9092,EXTERNAL://" + bootstrapServers() + "\n"
+                    + "exec /etc/kafka/docker/run\n";
+            copyFileToContainer(Transferable.of(script, 0777), STARTER);
         }
     }
 

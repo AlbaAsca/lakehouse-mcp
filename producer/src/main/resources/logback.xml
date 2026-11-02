@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The command does not start Spring Boot, so without this file logback would default to DEBUG. -->
+<configuration>
+  <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+      <pattern>%d{HH:mm:ss} %-5level %logger{0} - %msg%n</pattern>
+    </encoder>
+  </appender>
+  <logger name="org.apache.kafka" level="WARN"/>
+  <logger name="io.confluent" level="WARN"/>
+  <root level="INFO">
+    <appender-ref ref="CONSOLE"/>
+  </root>
+</configuration>

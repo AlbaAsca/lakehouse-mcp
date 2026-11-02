@@ -93,13 +93,15 @@ cp .env.example .env   # y cambia las contraseñas
 |---|---|
 | Descargar el dataset (necesita `~/.kaggle`) | `./mk download-data` |
 | Otro mes | `./mk download-data MONTH=2019-Nov` |
+| Reproducir el mes en Kafka (con el stack arriba) | `./mk seed` (por defecto 1 % de las sesiones a 3600×) |
+| Otra muestra, velocidad o mes | `./mk seed MONTH=2019-Nov SAMPLE=0.1 SPEEDUP=60` |
 | Ver el estado de los servicios | `docker compose ps` |
 | Ver los logs de un servicio | `docker compose logs --tail 50 connect` |
 | Maven dentro del contenedor | `./mvnw verify` |
 | Apagar | `./mk down` |
 | Apagar y borrar los datos | `docker compose down -v` |
 
-Los objetivos `seed`, `evals`, `chaos`, `bench` y `demo` ya existen en el `Makefile`, pero todavía avisan de que no están implementados.
+Los objetivos `evals`, `chaos`, `bench` y `demo` ya existen en el `Makefile`, pero todavía avisan de que no están implementados.
 
 ## Los datos
 
