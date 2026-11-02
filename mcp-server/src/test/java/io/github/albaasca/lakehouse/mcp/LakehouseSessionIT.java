@@ -18,8 +18,10 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.SQLTimeoutException;
+import java.sql.Statement;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
@@ -27,6 +29,8 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -139,6 +143,56 @@ class LakehouseSessionIT {
                     .containsExactly("10");
             assertThat(strings(session, "SELECT transform, source_column FROM iceberg_partition_specs('" + TABLE
                     + "') ORDER BY field_id")).containsExactly("day|event_time", "identity|event_type");
+        }
+    }
+
+    /** Every data file holds one partition only, and each partition has the rows the plain Java reference counts. */
+    @Test
+    void theRowsAreReallyStoredByDayAndEventType() throws Exception {
+        Map<String, Long> expected = new TreeMap<>();
+        for (String row : rowsOfTheSample()) {
+            String[] f = row.split("\\|", -1);
+            long day = Math.floorDiv(Long.parseLong(f[0]), 86_400_000_000L);
+            expected.merge(LocalDate.ofEpochDay(day) + "|" + f[1], 1L, Long::sum);
+        }
+        String utcDay = "strftime(timezone('UTC', event_time), '%Y-%m-%d')";
+
+        try (LakehouseSession session = new LakehouseSession(settings())) {
+            Map<String, Long> actual = session.query("SELECT " + utcDay + " || '|' || event_type, count(*) FROM " + TABLE
+                    + " GROUP BY 1", rows -> {
+                        Map<String, Long> out = new TreeMap<>();
+                        while (rows.next()) {
+                            out.put(rows.getString(1), rows.getLong(2));
+                        }
+                        return out;
+                    });
+            assertThat(actual).containsExactlyEntriesOf(expected);
+
+            assertThat(strings(session, "SELECT count(*) FROM (SELECT filename FROM " + TABLE + " GROUP BY filename "
+                    + "HAVING count(DISTINCT event_type) > 1 OR count(DISTINCT " + utcDay + ") > 1)"))
+                    .containsExactly("0");
+            assertThat(Long.parseLong(strings(session, "SELECT count(DISTINCT filename) FROM " + TABLE).get(0)))
+                    .isGreaterThanOrEqualTo(expected.size());
+        }
+    }
+
+    /** The server stays open for hours: it has to see what the sink writes after it started. */
+    @Test
+    void aSessionAlreadyOpenSeesNewTablesAndNewRows() throws Exception {
+        try (LakehouseSession session = new LakehouseSession(settings().withPoolSize(1));
+                Connection writer = DriverManager.getConnection("jdbc:duckdb:")) {
+            assertThat(strings(session, "SELECT count(*) FROM " + TABLE)).containsExactly("50000");
+
+            stack.attachDuckDb(writer);
+            SyntheticLoader.load(writer, "session_it_fresh", "events");
+            String fresh = "lh.session_it_fresh.events";
+            assertThat(strings(session, "SELECT count(*) FROM " + fresh)).containsExactly("50000");
+
+            try (Statement statement = writer.createStatement()) {
+                statement.execute("INSERT INTO " + LakehouseStack.DUCKDB_CATALOG + ".session_it_fresh.events "
+                        + "SELECT * FROM " + LakehouseStack.DUCKDB_CATALOG + ".session_it_fresh.events LIMIT 7");
+            }
+            assertThat(strings(session, "SELECT count(*) FROM " + fresh)).containsExactly("50007");
         }
     }
 

@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-02T18:44:34+01:00",
+  "updated": "2026-11-02T18:56:25+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -684,6 +684,11 @@
           "t": "2026-11-02T18:40:32+01:00",
           "by": "consultor",
           "msg": "La responsable pidió no cancelar ejecuciones en develop y main: solo en pull requests."
+        },
+        {
+          "t": "2026-11-02T18:47:18+01:00",
+          "by": "consultor",
+          "msg": "Primera ejecución completa en verde: run 41492653907, commit 49dfc13, Java 10 min, panel y scripts en segundos. Compruébalo en GitHub y cierra."
         }
       ],
       "verify_started": "2026-11-02T17:59:50+01:00",
@@ -1181,7 +1186,7 @@
       "id": "T-016",
       "title": "Consulta: conexión a DuckDB y carga rápida de datos de prueba",
       "owner": "desarrollador",
-      "status": "review",
+      "status": "done",
       "priority": "alta",
       "estimate_min": 35.0,
       "actual_min": 18.4,
@@ -1192,7 +1197,7 @@
         "T-014"
       ],
       "created": "2026-11-02T11:36:36+01:00",
-      "updated": "2026-11-02T18:26:45+01:00",
+      "updated": "2026-11-02T18:56:25+01:00",
       "started_at": "2026-11-02T18:08:24+01:00",
       "finished_at": "2026-11-02T18:26:45+01:00",
       "log": [
@@ -1225,6 +1230,16 @@
           "t": "2026-11-02T18:26:45+01:00",
           "by": "desarrollador",
           "msg": "REVIEW: LakehouseSession y SyntheticLoader listos con 11 tests de integración y `./mk test` en verde; falta precargar las extensiones en la imagen (anotado en T-093)."
+        },
+        {
+          "t": "2026-11-02T18:44:40+01:00",
+          "by": "tester",
+          "msg": "verificando"
+        },
+        {
+          "t": "2026-11-02T18:56:25+01:00",
+          "by": "tester",
+          "msg": "DONE: Carga sin Kafka, lectura fila a fila y corte por tiempo verificados con `./mk test` en verde; añadidos 2 tests y registrados T-111 (zona horaria) y T-112 (caducidad del token)."
         }
       ],
       "runs": [
@@ -1237,8 +1252,19 @@
           "tokens": 189577,
           "cost_usd": 1.6533728,
           "verdict": "review"
+        },
+        {
+          "agent": "tester",
+          "mode": "verify",
+          "at": "2026-11-02T18:56:25+01:00",
+          "min": 11.7,
+          "turns": 33,
+          "tokens": 408714,
+          "cost_usd": 0.8391281999999999,
+          "verdict": "done"
         }
-      ]
+      ],
+      "verify_started": "2026-11-02T18:44:40+01:00"
     },
     {
       "id": "T-017",
@@ -4407,6 +4433,54 @@
           "msg": "creada"
         }
       ]
+    },
+    {
+      "id": "T-111",
+      "title": "Consulta: que las cifras por día no dependan de la zona horaria de la máquina",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "alta",
+      "estimate_min": 10.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "La conexión del servidor usa la zona horaria de la máquina donde corre, y la muestra se guarda en UTC. Al agrupar o filtrar por día, la misma pregunta da otra respuesta según dónde se ejecute: en una máquina con hora de Tokio, las compras de una marca en un día salen 39 en lugar de 10. Hoy no se nota porque los contenedores van en UTC. Se propone fijar UTC al abrir la sesión, para que el agente siempre dé la misma cifra.\nCómo sabremos si funciona: los tests de la conexión pasan igual con la máquina en hora de Tokio que en UTC.\n\n## Técnico\nDónde: LakehouseSession.startup no fija TimeZone; event_time es TIMESTAMPTZ y event_time::DATE usa la zona de la sesión.\nReproducir: docker compose run --rm -e TZ=Asia/Tokyo tools mvn -B -q -pl mcp-server -am verify -Dit.test=LakehouseSessionIT -Dtest=NoUnitTests -Dsurefire.failIfNoSpecifiedTests=false -Dfailsafe.failIfNoSpecifiedTests=false\nSíntoma: theSampleKeepsItsDirtyCasesAndItsPartitions y startsWithoutDownloadingOnceTheExtensionsAreInItsDirectory reciben 39 y esperan 10 (brand synth-nimbora, purchase, 2024-03-10). Referencia independiente: 10, en scripts/analysis/t016_reference.py.\nCriterio: ese comando en verde, y un test que compruebe current_setting('TimeZone') = 'UTC' en todas las conexiones del pool, no solo en la raíz: root.duplicate() puede no heredar un SET de sesión (sin comprobar). Actualizar docs/wiki/componentes/duckdb.md.",
+      "deps": [],
+      "created": "2026-11-02T18:56:07+01:00",
+      "updated": "2026-11-02T18:56:07+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T18:56:07+01:00",
+          "by": "tester",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-112",
+      "title": "Consulta: comprobar que la conexión sigue viva cuando caduca el permiso del catálogo",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "media",
+      "estimate_min": 25.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "El servidor abre la conexión una sola vez y debe seguir abierto durante horas, pero el permiso que recibe del catálogo es temporal. Ningún test ni documento comprueba qué pasa cuando caduca: si la conexión no lo renueva, todas las consultas empezarían a fallar hasta reiniciar el servidor. Se propone probarlo con un permiso de vida muy corta y, si falla, reconectar solo.\nCómo sabremos si funciona: una sesión abierta sigue respondiendo con las filas correctas después de caducar su permiso.\n\n## Técnico\nDónde: LakehouseSession crea el secreto iceberg (CREATE SECRET lakehouse_polaris) y el ATTACH solo en el constructor. Sin comprobar: si DuckDB renueva el token y cuánto dura en Polaris 1.8.0 (mirarlo en su documentación oficial).\nCriterio: test en LakehouseSessionIT con un Polaris configurado con token de pocos segundos (o, si no se puede configurar, resultado documentado en la tarjeta): abrir sesión, esperar a que caduque, leer lh.session_it.events y obtener 50000. Si falla: reabrir el ATTACH o la instancia ante el error de autenticación, sin perder el límite de tiempo. Anotar el resultado en docs/wiki/componentes/duckdb.md.",
+      "deps": [],
+      "created": "2026-11-02T18:56:12+01:00",
+      "updated": "2026-11-02T18:56:12+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T18:56:12+01:00",
+          "by": "tester",
+          "msg": "creada"
+        }
+      ]
     }
   ],
   "runners": {
@@ -4425,14 +4499,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-012",
-      "message": "tester con T-012",
+      "current": "T-016",
+      "message": "tester con T-016",
       "pid": 6932,
-      "heartbeat": "2026-11-02T18:26:54+01:00",
+      "heartbeat": "2026-11-02T18:44:41+01:00",
       "enabled": true,
       "agent": "tester",
-      "started": "2026-11-02T18:26:54+01:00",
-      "live": "live-T-012-tester-20261102-182654.jsonl"
+      "started": "2026-11-02T18:44:41+01:00",
+      "live": "live-T-016-tester-20261102-184441.jsonl"
     }
   }
 }
