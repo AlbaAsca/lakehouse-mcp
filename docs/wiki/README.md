@@ -36,7 +36,7 @@ Cada página empieza en lenguaje llano y avanza hasta el detalle técnico. Puede
 | 🚧 | Productor Java (T-008, T-011, T-013) | Lectura, muestreo, orden y envío a Kafka con tests en verde sobre la muestra sintética. Falta probar `./mk seed` con el CSV real. [Detalle](componentes/productor.md) |
 | ✅ | Conector hacia Iceberg (T-012, T-072) | La tarea sale `RUNNING` y un evento llega a la tabla, comprobado en contenedores; `./mk up` sobre un stack ya existente termina sin error. **Sin probar:** `./mk up` desde cero, un evento en el stack de `compose.yaml` y el mes real. [Detalle](componentes/kafka-connect.md) |
 | ⬜ | Ingesta de eventos reales de principio a fin (T-015, T-018) | Hoy no hay eventos reales ni tabla `ecommerce.events` |
-| ⬜ | [Servidor MCP](componentes/servidor-mcp.md), [capa semántica](componentes/capa-semantica.md), [agente](componentes/agente.md) | Solo existen sus `pom.xml` |
+| ⬜ | [Servidor MCP](componentes/servidor-mcp.md), [capa semántica](componentes/capa-semantica.md), [agente](componentes/agente.md) | Solo existen sus `pom.xml`; la capa semántica tiene además sus [definiciones en palabras](../metrics.md) |
 | ⬜ | Chaos y self-healing, evals, benchmark, RBAC y auditoría | Planificado. `./mk evals`, `chaos`, `bench` y `demo` responden «not implemented yet» |
 
 No hay ninguna cifra de precisión ni de rendimiento porque todavía no se ha medido nada de eso.

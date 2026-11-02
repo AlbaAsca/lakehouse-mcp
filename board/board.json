@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-02T18:08:19+01:00",
+  "updated": "2026-11-02T18:10:48+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -53,16 +53,16 @@
       "name": "Arquitecto",
       "role": "Diseña la solución y trocea en tareas estimadas",
       "color": "#bb9af7",
-      "status": "working",
-      "current": "T-027"
+      "status": "idle",
+      "current": null
     },
     {
       "id": "desarrollador",
       "name": "Desarrollador",
       "role": "Implementa las tareas",
       "color": "#7aa2f7",
-      "status": "idle",
-      "current": null
+      "status": "working",
+      "current": "T-016"
     },
     {
       "id": "tester",
@@ -1141,7 +1141,7 @@
       "id": "T-016",
       "title": "Consulta: conexión a DuckDB y carga rápida de datos de prueba",
       "owner": "desarrollador",
-      "status": "next",
+      "status": "doing",
       "priority": "alta",
       "estimate_min": 35.0,
       "actual_min": null,
@@ -1152,8 +1152,8 @@
         "T-014"
       ],
       "created": "2026-11-02T11:36:36+01:00",
-      "updated": "2026-11-02T17:37:15+01:00",
-      "started_at": null,
+      "updated": "2026-11-02T18:08:24+01:00",
+      "started_at": "2026-11-02T18:08:24+01:00",
       "finished_at": null,
       "log": [
         {
@@ -1170,6 +1170,11 @@
           "t": "2026-11-02T18:05:32+01:00",
           "by": "consultor",
           "msg": "T-014: un error cierra el Statement JDBC (usar uno por consulta); jdbc:duckdb: abre base nueva en cada getConnection (compartir con duplicate()); ATTACH admite READ_ONLY. Ver docs/spike-duckdb-iceberg.md."
+        },
+        {
+          "t": "2026-11-02T18:08:24+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
         }
       ]
     },
@@ -1487,10 +1492,10 @@
       "id": "T-027",
       "title": "Semántica: definir en palabras las cuatro métricas",
       "owner": "arquitecto",
-      "status": "doing",
+      "status": "blocked",
       "priority": "alta",
       "estimate_min": 15.0,
-      "actual_min": null,
+      "actual_min": 4.1,
       "auto": true,
       "manual": null,
       "desc": "Antes de escribir SQL hay que decidir qué significa cada métrica, porque hay más de una forma razonable de calcularla y la verdad de referencia y el código tienen que partir de la misma definición, cada uno por su lado.\nCómo sabremos si funciona: dos personas leyendo el documento calcularían lo mismo; incluye un ejemplo de 5 filas resuelto a mano por métrica.\n\n## Técnico\ndocs/metrics.md: conversión view->cart->purchase, ticket medio, abandono de carrito, top marcas. Fijar la unidad (sesión o usuario), el trato de sesiones nulas, price <= 0, duplicados y brand nula; ventana temporal y zona horaria (UTC). Sin SQL.",
@@ -1498,9 +1503,9 @@
         "T-004"
       ],
       "created": "2026-11-02T11:37:34+01:00",
-      "updated": "2026-11-02T18:06:44+01:00",
+      "updated": "2026-11-02T18:10:48+01:00",
       "started_at": "2026-11-02T18:06:44+01:00",
-      "finished_at": null,
+      "finished_at": "2026-11-02T18:10:48+01:00",
       "log": [
         {
           "t": "2026-11-02T11:37:34+01:00",
@@ -1511,6 +1516,33 @@
           "t": "2026-11-02T18:06:44+01:00",
           "by": "runner",
           "msg": "empieza arquitecto"
+        },
+        {
+          "t": "2026-11-02T18:10:48+01:00",
+          "by": "arquitecto",
+          "msg": "BLOCKED: Las cuatro métricas quedan definidas en docs/metrics.md con ejemplos a mano; falta crear la tarjeta de contraste con el dataset real, denegada y pedida en PERMISO."
+        },
+        {
+          "t": "2026-11-02T18:10:48+01:00",
+          "by": "arquitecto",
+          "msg": "⚠ 1 comandos denegados: python board/board.py add \"Semántica: comprobar las definiciones con el dataset "
+        },
+        {
+          "t": "2026-11-02T18:10:48+01:00",
+          "by": "runner",
+          "msg": "✗ «python board/board.py add \"Semántica: comprobar las definiciones con el dataset real\" --ow»: varios comandos, tuberías, redirecciones o heredoc: lanza cada comando por separado y crea ficheros con Write/Edit"
+        }
+      ],
+      "runs": [
+        {
+          "agent": "arquitecto",
+          "mode": "work",
+          "at": "2026-11-02T18:10:48+01:00",
+          "min": 4.1,
+          "turns": 39,
+          "tokens": 379870,
+          "cost_usd": 0.9430516999999999,
+          "verdict": "blocked"
         }
       ]
     },
@@ -3887,14 +3919,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-009",
-      "message": "tester con T-009",
+      "current": "T-016",
+      "message": "desarrollador con T-016",
       "pid": 6932,
-      "heartbeat": "2026-11-02T17:59:50+01:00",
+      "heartbeat": "2026-11-02T18:08:24+01:00",
       "enabled": true,
-      "agent": "tester",
-      "started": "2026-11-02T17:59:50+01:00",
-      "live": "live-T-009-tester-20261102-175950.jsonl"
+      "agent": "desarrollador",
+      "started": "2026-11-02T18:08:24+01:00",
+      "live": "live-T-016-desarrollador-20261102-180824.jsonl"
     }
   }
 }

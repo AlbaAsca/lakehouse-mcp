@@ -1,6 +1,6 @@
 # Capa semántica
 
-**Estado:** ⬜ planificado. Solo existe [`semantic/pom.xml`](../../../semantic/pom.xml). Tarjetas T-027, T-029, T-031 y T-033.
+**Estado:** ⬜ planificado. Existen las [definiciones en palabras](../../metrics.md) y [`semantic/pom.xml`](../../../semantic/pom.xml), sin código. Tarjetas pendientes: T-029, T-031 y T-033.
 
 [Portada](../README.md) · [Glosario](../01-conceptos.md)
 
@@ -27,7 +27,7 @@ Métricas en ficheros YAML dentro de `semantic/` ([decisión 8](../../architectu
 
 El orden de las tarjetas es la parte interesante:
 
-1. T-027: el arquitecto las define en palabras.
+1. T-027: el arquitecto las define en palabras, en [`docs/metrics.md`](../../metrics.md).
 2. T-029: el tester calcula la respuesta correcta sin ver la implementación.
 3. T-031: se escribe el YAML y debe coincidir.
 4. T-033: `get_metric(name, from, to, limit)` las expone por MCP.
@@ -42,7 +42,7 @@ Todavía no se puede.
 
 ## Qué puede fallar
 
-Riesgos de diseño: que una definición en palabras sea ambigua, sobre todo con datos sucios (duplicados, sesiones nulas), y que una pregunta no encaje con ninguna métrica. En ese caso el agente recurriría a `run_query`.
+Riesgos de diseño: que una definición en palabras sea ambigua, sobre todo con datos sucios (T-029 lo pone a prueba), y que una pregunta no encaje con ninguna métrica. En ese caso el agente recurriría a `run_query`.
 
 ## Para saber más
 
