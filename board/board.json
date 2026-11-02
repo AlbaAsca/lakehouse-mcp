@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-02T12:06:25+01:00",
+  "updated": "2026-11-02T12:09:45+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -339,7 +339,7 @@
       "id": "T-006",
       "title": "Infra: kit de pruebas que levanta el lakehouse en contenedores",
       "owner": "desarrollador",
-      "status": "review",
+      "status": "next",
       "priority": "alta",
       "estimate_min": 40.0,
       "actual_min": 4.0,
@@ -350,7 +350,7 @@
         "T-002"
       ],
       "created": "2026-11-02T11:35:33+01:00",
-      "updated": "2026-11-02T12:06:25+01:00",
+      "updated": "2026-11-02T12:09:45+01:00",
       "started_at": "2026-11-02T12:02:26+01:00",
       "finished_at": "2026-11-02T12:06:25+01:00",
       "log": [
@@ -373,6 +373,16 @@
           "t": "2026-11-02T12:06:25+01:00",
           "by": "desarrollador",
           "msg": "REVIEW: LakehouseStack y su test de DuckDB por Polaris en verde con `./mk test`, pero falta repetirlo con el stack apagado (anotado en la tarjeta)."
+        },
+        {
+          "t": "2026-11-02T12:06:30+01:00",
+          "by": "tester",
+          "msg": "verificando"
+        },
+        {
+          "t": "2026-11-02T12:09:45+01:00",
+          "by": "tester",
+          "msg": "FAIL: `./mk test-board` da 13 fallos porque T-006 movió la configuración que lee `tests/test_polaris_persistence_config.py` (reproducir con `./mk test-board`; arreglo en T-069), y aún falta repetir `./mk test` con el stack apagado."
         }
       ],
       "runs": [
@@ -385,8 +395,19 @@
           "tokens": 313715,
           "cost_usd": 0.759153,
           "verdict": "review"
+        },
+        {
+          "agent": "tester",
+          "mode": "verify",
+          "at": "2026-11-02T12:09:45+01:00",
+          "min": 3.2,
+          "turns": 25,
+          "tokens": 380701,
+          "cost_usd": 0.6315337999999999,
+          "verdict": "fail"
         }
-      ]
+      ],
+      "verify_started": "2026-11-02T12:06:30+01:00"
     },
     {
       "id": "T-007",
@@ -2112,6 +2133,30 @@
           "msg": "descripción reescrita"
         }
       ]
+    },
+    {
+      "id": "T-069",
+      "title": "Reparar la comprobación de Polaris que rompió el kit de pruebas",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "alta",
+      "estimate_min": 5.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Al mover la configuración de Polaris al kit de pruebas común, la comprobación que vigila que el arranque real y el de los tests usen la misma persistencia sigue buscándola en el fichero antiguo, y falla. Mientras esté rota, nadie se enteraría si el arranque real perdiera la persistencia. Se propone apuntarla al kit nuevo, sin relajar ninguna de sus condiciones.\nCómo sabremos si funciona: los tests del panel vuelven a verde y la comprobación sigue detectando cada cambio indebido en la configuración.\n\n## Técnico\n- Dónde: tests/test_polaris_persistence_config.py, líneas 1-5 y 14 (constante IT). Roto por bcbdef3 (T-006).\n- Síntoma: ./mk test-board da 13 fallos en ese fichero, ValueError: substring not found en it_persistence (línea 35), porque PERSISTENCE = Map.of( ya no está en PolarisPersistenceIT.java.\n- Arreglo probado en una copia fuera del repo: leer testkit/src/main/java/io/github/albaasca/lakehouse/testkit/LakehouseStack.java da 15 passed sin más cambios.\n- Criterio: ./mk test-board sin fallos, sin borrar ni aflojar casos de test_each_drift_is_detected, y docstring actualizado.",
+      "deps": [],
+      "created": "2026-11-02T12:09:31+01:00",
+      "updated": "2026-11-02T12:09:31+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T12:09:31+01:00",
+          "by": "tester",
+          "msg": "creada"
+        }
+      ]
     }
   ],
   "runners": {
@@ -2131,13 +2176,13 @@
     "measure": {
       "state": "working",
       "current": "T-006",
-      "message": "desarrollador con T-006",
+      "message": "tester con T-006",
       "pid": 25568,
-      "heartbeat": "2026-11-02T12:02:26+01:00",
+      "heartbeat": "2026-11-02T12:06:31+01:00",
       "enabled": true,
-      "agent": "desarrollador",
-      "started": "2026-11-02T12:02:26+01:00",
-      "live": "live-T-006-desarrollador-20261102-120226.jsonl"
+      "agent": "tester",
+      "started": "2026-11-02T12:06:31+01:00",
+      "live": "live-T-006-tester-20261102-120631.jsonl"
     }
   }
 }
