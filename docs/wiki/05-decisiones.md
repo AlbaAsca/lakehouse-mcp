@@ -56,7 +56,7 @@ Diferencias entre documentos y realidad, comprobadas el 2 de noviembre de 2026 e
 | README | «Los módulos Java aún no tienen código ni tests propios» | `producer` y `testkit` los tienen |
 | [`architecture.md`](../architecture.md#pruebas-qué-puede-verificar-cada-quién) | `./mvnw` «no sirve en el host porque no hay JDK» | [`mvnw`](../../mvnw) lanza Maven dentro de `tools` |
 | [`architecture.md`](../architecture.md#riesgos-abiertos) | Riesgo: el bootstrap repetido podría fallar | Sale bien: `already bootstrapped; skipping` |
-| `architecture.md` | Time travel con `snapshot_from_id` | Funciona, y también `AT (VERSION => id)`. T-014 debe fijarlo |
+| `architecture.md` | Time travel con `snapshot_from_id` | Funciona, y también `AT (VERSION => id)`. T-014 recomienda `AT` ([detalle](../spike-duckdb-iceberg.md)); falta que lo decida el arquitecto |
 | [`architecture.svg`](../img/architecture.svg) | No muestra Postgres ni Trino | Postgres está en el stack; Trino, declarado |
 | [`smoke.sh`](../../infra/smoke.sh) | «every service answers» | Comprueba Registry y Connect por HTTP, y DuckDB, Polaris y SeaweedFS de punta a punta. Kafka solo por su healthcheck. Además, deja ficheros y el namespace `smoke` |
 | [`brief.md`](../brief.md) | README en inglés con Mermaid | Hoy en español y con SVG. Pendiente en T-055 |

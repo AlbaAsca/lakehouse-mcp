@@ -68,7 +68,19 @@ Lo comprobado para esta wiki sobre una tabla de prueba:
 | Time travel | `... AT (VERSION => id)` | ✅ |
 | Time travel | `iceberg_scan('lh.ns.tabla', snapshot_from_id=id)` | ✅ |
 
-**Sin comprobar:** borrado en tablas particionadas, `ATTACH` de solo lectura y validación con `json_serialize_sql`. Son las preguntas abiertas de **T-014**.
+T-014 comprobó además, con tests en `DuckDbIcebergSpikeIT`:
+
+| Qué | Sintaxis | Resultado |
+|---|---|---|
+| Borrar en tabla particionada | `DELETE FROM t WHERE ...` | ✅ |
+| Quitar una de dos filas idénticas | `DELETE ... WHERE filename = ... AND file_row_number = ...` | ✅ |
+| Catálogo de solo lectura | `ATTACH ... (TYPE iceberg, READ_ONLY, ...)` | ✅ |
+| Rechazar lo que no es `SELECT` | `json_serialize_sql(...)` | ✅ |
+| Vista sobre tabla Iceberg | `CREATE TEMP VIEW`, `CREATE VIEW memory.main.v` | ✅, sin `AT` a través de la vista |
+
+**Cuidado:** `SELECT * FROM iceberg_rollback_to_snapshot(...)` cambia la tabla si el catálogo es escribible. Detalle y fuentes en [`spike-duckdb-iceberg.md`](../../spike-duckdb-iceberg.md).
+
+**Sin comprobar:** borrar sobre ficheros escritos por el sink real o mientras el sink hace commit, y que Trino lea los ficheros de borrado de DuckDB.
 
 ## Qué puede fallar
 

@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-02T17:59:42+01:00",
+  "updated": "2026-11-02T18:06:39+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -69,16 +69,16 @@
       "name": "Tester",
       "role": "Verifica, escribe tests y busca fallos",
       "color": "#9ece6a",
-      "status": "idle",
-      "current": null
+      "status": "working",
+      "current": "T-009"
     },
     {
       "id": "investigador",
       "name": "Investigador",
       "role": "Busca alternativas, librerías y mejoras",
       "color": "#7dcfff",
-      "status": "working",
-      "current": "T-014"
+      "status": "idle",
+      "current": null
     },
     {
       "id": "experto",
@@ -632,8 +632,14 @@
           "t": "2026-11-02T17:53:15+01:00",
           "by": "consultor",
           "msg": "Primera ejecución completa (run 41484128862): panel y scripts en verde; Java 8 min hasta fallar por DuckDbIcebergSpikeIT, de T-014, no por el workflow. Los IT del conector pasaron en GitHub. Falta una ejecución entera en verde para cerrar."
+        },
+        {
+          "t": "2026-11-02T17:59:50+01:00",
+          "by": "tester",
+          "msg": "verificando"
         }
-      ]
+      ],
+      "verify_started": "2026-11-02T17:59:50+01:00"
     },
     {
       "id": "T-010",
@@ -975,20 +981,21 @@
       "id": "T-014",
       "title": "Consulta: comprobar qué hace de verdad DuckDB con Iceberg",
       "owner": "investigador",
-      "status": "doing",
+      "status": "done",
       "priority": "alta",
       "estimate_min": 40.0,
-      "actual_min": null,
+      "actual_min": 27.9,
       "auto": true,
       "manual": null,
       "desc": "Varias decisiones dependen de cosas que la documentación de DuckDB no deja claras: cómo leer un snapshot antiguo, si se puede borrar en tablas particionadas por Polaris sin STS, si se puede quitar un duplicado exacto. Es mejor probarlo antes de construir encima, con un experimento pequeño.\nCómo sabremos si funciona: queda un documento que responde a cada pregunta con «comprobado» y un test que lo demuestra, o una alternativa si no se puede.\n\n## Técnico\nFichero docs/spike-duckdb-iceberg.md y testkit/.../DuckDbIcebergSpikeIT, en ./mk test. Preguntas:\n1. INSERT en tabla particionada por day(ts), event_type.\n2. Time travel: snapshot_from_id (documentado) o AT (VERSION =>).\n3. iceberg_snapshots e iceberg_metadata.\n4. DELETE en particionada y lectura posterior; cómo borrar solo una de dos filas idénticas (file_path/file_row_number) o, si no se puede, reescribir la partición.\n5. Si ATTACH admite READ_ONLY.\n6. Si json_serialize_sql rechaza lo no-SELECT, y qué nodo da para funciones de tabla como read_csv.\n7. Vistas sobre tablas Iceberg (decisión 12): vista temporal local que hashea user_id.\nSi alguna respuesta invalida una decisión de docs/architecture.md, anotarlo aquí y crear tarjeta para el arquitecto.",
       "deps": [
-        "T-006"
+        "T-006",
+        "T-103"
       ],
       "created": "2026-11-02T11:36:19+01:00",
-      "updated": "2026-11-02T17:38:48+01:00",
+      "updated": "2026-11-02T18:06:39+01:00",
       "started_at": "2026-11-02T17:38:42+01:00",
-      "finished_at": null,
+      "finished_at": "2026-11-02T18:06:39+01:00",
       "log": [
         {
           "t": "2026-11-02T11:36:19+01:00",
@@ -1014,6 +1021,33 @@
           "t": "2026-11-02T17:53:15+01:00",
           "by": "consultor",
           "msg": "CI en develop falla por esta prueba: DuckDbIcebergSpikeIT.explore da 'SQL Statement was closed' (run 41484128862) y tumba la suite. Un experimento de investigación no debe romper el build: arréglalo, o sácalo de la suite (etiqueta o perfil) antes de cerrar la tarjeta."
+        },
+        {
+          "t": "2026-11-02T18:06:39+01:00",
+          "by": "investigador",
+          "msg": "DONE: Las siete preguntas quedan comprobadas con 56 casos en verde y documento con fuentes, y T-101 lleva al arquitecto la revisión de cuatro decisiones."
+        },
+        {
+          "t": "2026-11-02T18:06:39+01:00",
+          "by": "investigador",
+          "msg": "⚠ 1 comandos denegados: git check-ignore -v testkit/src/test/java/io/github/albaasca/lakehouse/testkit/D"
+        },
+        {
+          "t": "2026-11-02T18:06:39+01:00",
+          "by": "runner",
+          "msg": "? permiso solicitado: git check-ignore -v* (T-103); la tarjeta espera la decisión"
+        }
+      ],
+      "runs": [
+        {
+          "agent": "investigador",
+          "mode": "work",
+          "at": "2026-11-02T18:06:39+01:00",
+          "min": 28.0,
+          "turns": 82,
+          "tokens": 2832865,
+          "cost_usd": 3.4331498000000007,
+          "verdict": "done"
         }
       ]
     },
@@ -1082,6 +1116,11 @@
           "t": "2026-11-02T17:37:15+01:00",
           "by": "arquitecto",
           "msg": "Recorrido mínimo: ver docs/architecture.md"
+        },
+        {
+          "t": "2026-11-02T18:05:32+01:00",
+          "by": "consultor",
+          "msg": "T-014: un error cierra el Statement JDBC (usar uno por consulta); jdbc:duckdb: abre base nueva en cada getConnection (compartir con duplicate()); ATTACH admite READ_ONLY. Ver docs/spike-duckdb-iceberg.md."
         }
       ]
     },
@@ -1181,6 +1220,11 @@
           "t": "2026-11-02T17:37:17+01:00",
           "by": "arquitecto",
           "msg": "Recorrido mínimo: ver docs/architecture.md"
+        },
+        {
+          "t": "2026-11-02T18:05:31+01:00",
+          "by": "consultor",
+          "msg": "T-014: json_serialize_sql deja pasar rutas como BASE_TABLE, SHOW_REF, varias sentencias y un SELECT que hace rollback. Seis reglas del validador en docs/spike-duckdb-iceberg.md, pregunta 6."
         }
       ]
     },
@@ -1245,6 +1289,11 @@
           "t": "2026-11-02T17:37:18+01:00",
           "by": "arquitecto",
           "msg": "Recorrido mínimo: ver docs/architecture.md"
+        },
+        {
+          "t": "2026-11-02T18:05:33+01:00",
+          "by": "consultor",
+          "msg": "T-014: time travel con AT (VERSION => id), que no necesita función de tabla. No funciona a través de una vista; se puede fijar con CREATE TEMP VIEW v AS SELECT ... FROM t AT (VERSION => id). Ver docs/spike-duckdb-iceberg.md."
         }
       ]
     },
@@ -1723,6 +1772,11 @@
           "t": "2026-11-02T11:38:49+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T18:05:35+01:00",
+          "by": "consultor",
+          "msg": "T-014: la sentencia para quitar duplicados está en docs/spike-duckdb-iceberg.md (columna filename, no file_path). Sin comprobar y a cubrir aquí: ficheros escritos por el sink real y borrado mientras el sink hace commit."
         }
       ]
     },
@@ -1979,6 +2033,11 @@
           "t": "2026-11-02T11:39:41+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T18:05:36+01:00",
+          "by": "consultor",
+          "msg": "T-014: sin comprobar que Trino lea los ficheros de borrado de DuckDB; cubrirlo aquí. DuckDB también compacta (iceberg_rewrite_data_files, min_input_files por defecto 5) pero no expira snapshots. Ver docs/spike-duckdb-iceberg.md."
         }
       ]
     },
@@ -2165,6 +2224,11 @@
           "t": "2026-11-02T11:40:09+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T18:05:38+01:00",
+          "by": "consultor",
+          "msg": "T-014: la vista TEMP solo existe en su conexión; con pool usar CREATE VIEW memory.main.v. La vista sobre catálogo READ_ONLY funciona. Sin AT a través de la vista. Ver docs/spike-duckdb-iceberg.md, pregunta 7."
         }
       ]
     },
@@ -3608,6 +3672,112 @@
           "msg": "creada"
         }
       ]
+    },
+    {
+      "id": "T-100",
+      "title": "El runner mete en el commit de una tarjeta el trabajo a medias del otro carril",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "alta",
+      "estimate_min": 25.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Los dos carriles trabajan en la misma copia del repositorio, y al cerrar una tarjeta se guarda todo lo que haya cambiado desde que empezó, también lo que estaba escribiendo el otro agente. Así llegó a develop una prueba a medias de otra tarjeta, y esa prueba es la que hizo fallar la integración continua. Se propone que cada tarjeta guarde solo sus propios ficheros, o que cada carril trabaje en su propia copia.\nCómo sabremos si funciona: con dos tarjetas en marcha a la vez, el commit de la primera que termina no contiene ningún fichero de la otra.\n\n## Técnico\nDónde: board/runner.py commit_own. Compara snapshot actual con before, así que cualquier fichero del otro carril creado durante la ejecución entra, pese a lo que dice su docstring.\nSíntoma: el commit 6897776 (T-013 done by tester, 17:42) incluye testkit/src/test/java/io/github/albaasca/lakehouse/testkit/DuckDbIcebergSpikeIT.java, de T-014, en doing desde 17:38.\nCriterio: test en tests/test_runner.py que simula un fichero del otro carril creado entre before y commit_own y comprueba que no entra en el commit, y que tampoco se pierde. Distinto de T-073, que trata el caso contrario.",
+      "deps": [],
+      "created": "2026-11-02T18:02:36+01:00",
+      "updated": "2026-11-02T18:02:36+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T18:02:36+01:00",
+          "by": "tester",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-101",
+      "title": "Revisar cuatro decisiones de arquitectura con lo comprobado en DuckDB",
+      "owner": "arquitecto",
+      "status": "backlog",
+      "priority": "alta",
+      "estimate_min": 20.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "La prueba de DuckDB con Iceberg confirma lo esencial del diseño, pero cambia varias cosas. Una consulta de lectura puede dar marcha atrás a una tabla, y los analistas no pueden viajar en el tiempo a través de sus vistas. Además, DuckDB ya hace operaciones que el diseño encarga a otras herramientas. Se propone actualizar las decisiones afectadas antes de construir encima, para no programar lo que luego haya que rehacer.\nCómo sabremos si funciona: el documento de arquitectura dice qué forma de viaje en el tiempo se usa, cómo se protege el catálogo y qué puede hacer un analista con snapshots antiguos, sin contradecir lo comprobado.\n\n## Técnico\nHechos y tests en docs/spike-duckdb-iceberg.md, sección «Efecto en las decisiones». Decisión 5: AT (VERSION => id) en vez de snapshot_from_id; valorar quitar Iceberg Java API. Decisión 6: iceberg_rewrite_data_files compacta (min_input_files por defecto 5), pero no hay función de expirar; relacionado con T-087. Decisión 7: añadir las seis reglas del validador. Decisión 12: vista en memory.main para el pool, time travel del analista por decidir. Nueva: dos instancias DuckDB, la del agente solo con ATTACH READ_ONLY. Afecta a T-016, T-019, T-021, T-047, T-054. Actualizar también docs/wiki/05-decisiones.md.",
+      "deps": [
+        "T-014"
+      ],
+      "created": "2026-11-02T18:05:29+01:00",
+      "updated": "2026-11-02T18:05:29+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T18:05:29+01:00",
+          "by": "investigador",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-102",
+      "title": "El runner guarda ficheros de otra tarjeta en commits ajenos",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "media",
+      "estimate_min": 20.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Mientras se hacía la comprobación de DuckDB, el test nuevo acabó en los commits de otras dos tarjetas, y uno de ellos guardó una versión a medias. El historial queda engañoso: parece que el trabajo es de otra tarea, y se puede guardar algo sin terminar. Se propone que cada carril guarde solo los ficheros que ha cambiado su propio agente, como ya dice la norma del proyecto.\nCómo sabremos si funciona: con dos agentes trabajando a la vez, cada commit contiene solo los ficheros de su tarjeta.\n\n## Técnico\nEvidencia: testkit/src/test/java/io/github/albaasca/lakehouse/testkit/DuckDbIcebergSpikeIT.java es de T-014 y entró en 6897776 (chore(runner): T-013 done by tester) y 44c7ee5 (chore(runner): T-072 done by tester). Mirar en board/runner.py cómo se calculan los ficheros de cada carril, sobre todo en el modo de verificación del tester. Test sin procesos reales: dos carriles con ficheros distintos sin mezclarse.",
+      "deps": [],
+      "created": "2026-11-02T18:06:23+01:00",
+      "updated": "2026-11-02T18:06:23+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T18:06:23+01:00",
+          "by": "investigador",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-103",
+      "title": "Solicitud de permiso: git check-ignore -v*",
+      "owner": "consultor",
+      "status": "human",
+      "priority": "media",
+      "estimate_min": 2,
+      "actual_min": null,
+      "auto": false,
+      "manual": "Abre la tarjeta y pulsa «Conceder» o «Denegar».",
+      "desc": "El agente «investigador» necesitaba un comando que no está en su lista de permitidos y se lo bloquearon mientras hacía T-014. No es de solo lectura ni está prohibido, así que lo tiene que validar una persona.\n\nPara qué lo quería: (no lo explicó)\n\nCómo decidir: concede si es seguro repetirlo sin supervisión dentro del proyecto; deniega si escribe fuera, publica, borra o usa la red.\n\n## Técnico\n- Comando: git check-ignore -v testkit/src/test/java/io/github/albaasca/lakehouse/testkit/DuckDbIcebe\n- Patrón que se concedería: git check-ignore -v*\n- Tarjeta: T-014",
+      "deps": [],
+      "created": "2026-11-02T18:06:39+01:00",
+      "updated": "2026-11-02T18:06:39+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T18:06:39+01:00",
+          "by": "runner",
+          "msg": "creada"
+        }
+      ],
+      "kind": "permiso",
+      "perm": {
+        "pattern": "git check-ignore -v*",
+        "command": "git check-ignore -v testkit/src/test/java/io/github/albaasca/lakehouse/testkit/DuckDbIcebe",
+        "agent": "investigador",
+        "task": "T-014",
+        "why": ""
+      }
     }
   ],
   "runners": {
@@ -3626,14 +3796,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-072",
-      "message": "tester con T-072",
+      "current": "T-009",
+      "message": "tester con T-009",
       "pid": 6932,
-      "heartbeat": "2026-11-02T17:42:34+01:00",
+      "heartbeat": "2026-11-02T17:59:50+01:00",
       "enabled": true,
       "agent": "tester",
-      "started": "2026-11-02T17:42:34+01:00",
-      "live": "live-T-072-tester-20261102-174234.jsonl"
+      "started": "2026-11-02T17:59:50+01:00",
+      "live": "live-T-009-tester-20261102-175950.jsonl"
     }
   }
 }
