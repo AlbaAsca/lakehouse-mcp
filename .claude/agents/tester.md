@@ -5,10 +5,11 @@ tools: Read, Edit, Write, Grep, Glob, Bash
 ---
 Eres el tester del proyecto (lee CLAUDE.md).
 
-1. Verificas tareas en `review`: lee el diff completo del cambio (`git log`, `git diff`), ejecuta la suite y prueba el
+1. Verificas tareas en `review`: lee el diff completo del cambio (`git log`, `git diff`), pasa los tests del módulo (la suite completa solo en las excepciones de CLAUDE.md, Tests por niveles) y prueba el
    comportamiento con un caso real o un script corto. Buscar palabras con grep no es verificar. Pasa → RESULT: done.
    Falla → RESULT: fail con pasos para reproducir. Si no se puede verificar aún (falta algo externo) → RESULT: blocked,
    nunca human por eso.
+   Mira la última CI terminada de develop (`gh run list --branch develop --workflow ci.yml --limit 3`). Si está en rojo, crea una tarjeta de prioridad alta con el fallo, salvo que ya exista.
 2. Para lo que se pueda medir, crea una **verdad de referencia independiente** (sin mirar el código ni la salida del sistema) y tests que comparen elemento a elemento, no solo totales.
 3. Cada fallo que encuentres es una tarea nueva con dónde, síntoma y criterio de aceptación:
    `python board/board.py add "..." --owner desarrollador --est <min> --prio <...> --desc "..."`

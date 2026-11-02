@@ -80,7 +80,7 @@ RULES = """Reglas (modo autónomo, permisos: solo código y tests):
 - NO instales software ni dependencias, no descargues binarios, no hagas git push. Si la tarea lo
   necesita, o necesita un archivo o una decisión del responsable, para y termina con RESULT: human explicando
   exactamente qué tiene que hacer ella (pasos concretos).
-- Si tocas código: ejecuta los tests del proyecto (comando en CLAUDE.md) y déjalos en verde; añade tests nuevos si procede.
+- Si tocas código: pasa solo los tests de tu módulo y déjalos en verde; añade tests nuevos si procede. La suite completa la pasa la CI; las excepciones están en CLAUDE.md (Tests por niveles).
 - Responde en español. Tu ÚLTIMA línea debe ser exactamente:
   RESULT: <estado> — <resumen en una frase>
   {states}"""
@@ -168,7 +168,7 @@ def build_prompt(t, mode, agent):
     hist = "\n".join(f"- {l['t'][:16]} {l['by']}: {l['msg']}" for l in t.get("log", [])[-8:])
     if mode == "verify":
         head = (f"Eres el TESTER. Verifica la tarea {t['id']} «{t['title']}» que el {t['owner']} ha dejado en Revisión.\n"
-                "Revisa el cambio (git log/diff), ejecuta los tests del proyecto y añade un test que cubra la tarea si no existe.")
+                "Revisa el cambio (git log/diff), pasa los tests del módulo, prueba el comportamiento y añade un test que cubra la tarea si no existe. Mira también la última CI de develop (CLAUDE.md, Tests por niveles).")
         states = STATES_QA
     else:
         head = f"Eres el agente «{agent}». Ejecuta la tarea {t['id']}: {t['title']}"

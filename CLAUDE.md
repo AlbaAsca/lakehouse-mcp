@@ -38,7 +38,7 @@ antes de seguir. Cada agente registra su propio inicio y fin (no se cierra en bl
 ## Calidad
 - Antes de cambiar una regla o un algoritmo, mira el caso real (datos, captura, salida).
 - Para resultados medibles: **verdad de referencia independiente** + tests elemento a elemento, no solo totales.
-- Ninguna tarea se da por hecha sin la suite en verde. Verificar es leer el diff, pasar los tests y probar el comportamiento;
+- Ninguna tarea se da por hecha sin los tests de su módulo en verde. Verificar es leer el diff, pasar los tests y probar el comportamiento;
   buscar palabras con grep no es verificar.
 - Los tests **nunca** tocan `board/board.json` real ni procesos reales (`tests/conftest.py` redirige el panel a una copia).
 - Windows (consola cp1252): todo script que imprime fuerza UTF-8 (`sys.stdout.reconfigure(encoding="utf-8")`; los .bat ponen
@@ -63,6 +63,12 @@ antes de seguir. Cada agente registra su propio inicio y fin (no se cierra en bl
 - **Comandos denegados:** quedan anotados en la tarjeta; si lo denegado era crear una tarjeta, la suya pasa a Bloqueado.
 - Si se agota el cupo de uso de Claude no cuenta como fallo: la tarjeta vuelve a su estado. Tiempo máximo por tarjeta: 4 × la
   estimación, entre 15 y 120 min. Logs en `board/runs/`.
+
+## Tests por niveles
+Casi todo el tiempo de una tarjeta es esperar tests, así que cada nivel se pasa donde aporta:
+- **Desarrollador y tester:** solo los tests del módulo: `./mk test MAVEN_ARGS="-pl <módulo> -am -DskipITs"` (con T-077, `./mk test MODULE=<módulo>`).
+- **Suite completa:** la pasa la CI en cada push. Si la CI está en rojo, tarjeta de prioridad alta. A `main` solo sube lo que está en verde.
+- **Excepción, con tests de contenedores antes de cerrar:** las tarjetas que tocan `testkit`, `compose.yaml`, `connect/`, `infra/` o la integración de punta a punta. En caso de duda, pásalos.
 
 ## Documentación
 `docs/wiki/` explica cada pieza a principiantes y expertos. Quien cambie el comportamiento, la configuración o el estado de una pieza actualiza su página en la misma tarjeta (`componentes/<pieza>.md`, y el estado en `docs/wiki/README.md`). Todo comando publicado se ejecuta antes; lo que no, se marca «sin probar». Nunca se presenta como hecho lo planificado.
