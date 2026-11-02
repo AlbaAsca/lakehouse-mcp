@@ -1,0 +1,124 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 650" width="1200" height="650" font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif">
+  <!-- Paleta Tokyo Night (github.com/folke/tokyonight.nvim) -->
+  <defs>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M40 0H0V40" fill="none" stroke="#1F2335" stroke-width="1"/>
+    </pattern>
+    <style>
+      .node { fill: #24283B; stroke-width: 2; }
+      .group { fill: #1A1B26; stroke: #3B4261; stroke-width: 1.5; stroke-dasharray: 5 5; }
+      .glabel { fill: #9AA5CE; font-size: 14px; font-weight: 600; }
+      .label { fill: #C0CAF5; font-size: 17px; font-weight: 600; text-anchor: middle; }
+      .sub { fill: #9AA5CE; font-size: 13px; text-anchor: middle; }
+      .edge { fill: #9AA5CE; font-size: 12px; }
+      .flow { fill: none; stroke-width: 2.5; stroke-dasharray: 6 8; animation: dash 1.2s linear infinite; }
+      @keyframes dash { to { stroke-dashoffset: -28; } }
+    </style>
+  </defs>
+
+  <rect width="1200" height="650" rx="18" fill="#16161E"/>
+  <rect width="1200" height="650" rx="18" fill="url(#grid)" opacity="0.6"/>
+
+  <!-- Grupos -->
+  <rect class="group" x="450" y="40" width="200" height="275" rx="14"/>
+  <text class="glabel" x="466" y="66">Streaming</text>
+  <rect class="group" x="910" y="40" width="250" height="275" rx="14"/>
+  <text class="glabel" x="926" y="66">Lakehouse</text>
+  <rect class="group" x="300" y="375" width="550" height="215" rx="14"/>
+  <text class="glabel" x="316" y="401">Spring Boot 4 · Spring AI 2</text>
+
+  <!-- Flujos de escritura -->
+  <path class="flow" stroke="#7DCFFF" d="M190 125 H240"/>
+  <path class="flow" stroke="#7DCFFF" d="M400 125 H470"/>
+  <path class="flow" stroke="#E0AF68" d="M320 165 V260 H470"/>
+  <path class="flow" stroke="#7DCFFF" d="M630 125 H700"/>
+  <path class="flow" stroke="#9ECE6A" d="M860 125 H930"/>
+  <path class="flow" stroke="#9ECE6A" d="M780 165 V260 H930"/>
+  <!-- Flujos de consulta -->
+  <path class="flow" stroke="#BB9AF7" d="M1035 315 V430"/>
+  <path class="flow" stroke="#BB9AF7" d="M930 470 H820"/>
+  <path class="flow" stroke="#BB9AF7" d="M710 525 V510"/>
+  <path class="flow" stroke="#FF9E64" d="M530 458 H600"/>
+  <path class="flow" stroke="#BB9AF7" d="M600 482 H530"/>
+  <!-- Aprobación humana -->
+  <path class="flow" stroke="#F7768E" d="M330 458 H220"/>
+  <path class="flow" stroke="#F7768E" d="M220 482 H330"/>
+
+  <circle r="6" fill="#7DCFFF"><animateMotion dur="1.4s" repeatCount="indefinite" path="M190 125 H240"/></circle>
+  <circle r="6" fill="#7DCFFF"><animateMotion dur="1.8s" begin="0.3s" repeatCount="indefinite" path="M400 125 H470"/></circle>
+  <circle r="6" fill="#E0AF68"><animateMotion dur="3.2s" repeatCount="indefinite" path="M320 165 V260 H470"/></circle>
+  <circle r="6" fill="#7DCFFF"><animateMotion dur="1.8s" begin="0.6s" repeatCount="indefinite" path="M630 125 H700"/></circle>
+  <circle r="6" fill="#9ECE6A"><animateMotion dur="1.8s" begin="0.9s" repeatCount="indefinite" path="M860 125 H930"/></circle>
+  <circle r="6" fill="#9ECE6A"><animateMotion dur="3.2s" begin="0.9s" repeatCount="indefinite" path="M780 165 V260 H930"/></circle>
+  <circle r="6" fill="#BB9AF7"><animateMotion dur="2.4s" repeatCount="indefinite" path="M1035 315 V430"/></circle>
+  <circle r="6" fill="#BB9AF7"><animateMotion dur="2.2s" begin="0.5s" repeatCount="indefinite" path="M930 470 H820"/></circle>
+  <circle r="5" fill="#BB9AF7"><animateMotion dur="1.2s" repeatCount="indefinite" path="M710 525 V510"/></circle>
+  <circle r="6" fill="#FF9E64"><animateMotion dur="1.8s" repeatCount="indefinite" path="M530 458 H600"/></circle>
+  <circle r="6" fill="#BB9AF7"><animateMotion dur="1.8s" begin="0.9s" repeatCount="indefinite" path="M600 482 H530"/></circle>
+  <circle r="6" fill="#F7768E"><animateMotion dur="2.4s" repeatCount="indefinite" path="M330 458 H220"/></circle>
+  <circle r="6" fill="#F7768E"><animateMotion dur="2.4s" begin="1.2s" repeatCount="indefinite" path="M220 482 H330"/></circle>
+
+  <!-- Fila de escritura -->
+  <rect class="node" x="40" y="85" width="150" height="80" rx="12" stroke="#7DCFFF"/>
+  <text class="label" x="115" y="120">Dataset</text>
+  <text class="sub" x="115" y="143">Kaggle · un mes</text>
+
+  <rect class="node" x="240" y="85" width="160" height="80" rx="12" stroke="#7DCFFF"/>
+  <text class="label" x="320" y="120">Productor Java</text>
+  <text class="sub" x="320" y="143">orden temporal</text>
+
+  <rect class="node" x="470" y="85" width="160" height="80" rx="12" stroke="#7DCFFF"/>
+  <text class="label" x="550" y="120">Apache Kafka</text>
+  <text class="sub" x="550" y="143">KRaft</text>
+
+  <rect class="node" x="470" y="220" width="160" height="80" rx="12" stroke="#E0AF68"/>
+  <text class="label" x="550" y="255">Schema Registry</text>
+  <text class="sub" x="550" y="278">data contracts</text>
+
+  <rect class="node" x="700" y="85" width="160" height="80" rx="12" stroke="#9ECE6A"/>
+  <text class="label" x="780" y="120">Kafka Connect</text>
+  <text class="sub" x="780" y="143">Iceberg sink</text>
+
+  <rect class="node" x="930" y="85" width="210" height="80" rx="12" stroke="#9ECE6A"/>
+  <text class="label" x="1035" y="120">Apache Polaris</text>
+  <text class="sub" x="1035" y="143">catálogo Iceberg REST</text>
+
+  <rect class="node" x="930" y="220" width="210" height="80" rx="12" stroke="#9ECE6A"/>
+  <text class="label" x="1035" y="255">SeaweedFS</text>
+  <text class="sub" x="1035" y="278">tablas Iceberg · API S3</text>
+
+  <text class="edge" x="330" y="215">esquema</text>
+  <text class="edge" x="790" y="215">Parquet</text>
+  <text class="edge" x="868" y="112">commit</text>
+  <text class="edge" x="1045" y="365">lee</text>
+
+  <!-- Fila de consulta -->
+  <rect class="node" x="930" y="430" width="210" height="80" rx="12" stroke="#BB9AF7"/>
+  <text class="label" x="1035" y="465">DuckDB 2.0</text>
+  <text class="sub" x="1035" y="488">motor de consulta</text>
+
+  <rect class="node" x="600" y="430" width="220" height="80" rx="12" stroke="#FF9E64"/>
+  <text class="label" x="710" y="465">Servidor MCP</text>
+  <text class="sub" x="710" y="488">RBAC · auditoría</text>
+
+  <rect class="node" x="600" y="525" width="220" height="50" rx="12" stroke="#BB9AF7"/>
+  <text class="label" x="710" y="556">Capa semántica</text>
+
+  <rect class="node" x="330" y="430" width="200" height="80" rx="12" stroke="#FF9E64"/>
+  <text class="label" x="430" y="465">Agente</text>
+  <text class="sub" x="430" y="488">detecta · propone</text>
+
+  <rect class="node" x="40" y="430" width="180" height="80" rx="12" stroke="#F7768E"/>
+  <text class="label" x="130" y="465">Responsable</text>
+  <text class="sub" x="130" y="488">aprueba el arreglo</text>
+
+  <text class="edge" x="545" y="447">tools</text>
+
+  <!-- Leyenda -->
+  <circle cx="52" cy="622" r="5" fill="#7DCFFF"/><text class="edge" x="64" y="626">eventos</text>
+  <circle cx="142" cy="622" r="5" fill="#E0AF68"/><text class="edge" x="154" y="626">esquemas</text>
+  <circle cx="240" cy="622" r="5" fill="#9ECE6A"/><text class="edge" x="252" y="626">escritura en Iceberg</text>
+  <circle cx="400" cy="622" r="5" fill="#BB9AF7"/><text class="edge" x="412" y="626">consulta</text>
+  <circle cx="490" cy="622" r="5" fill="#FF9E64"/><text class="edge" x="502" y="626">llamadas MCP</text>
+  <circle cx="610" cy="622" r="5" fill="#F7768E"/><text class="edge" x="622" y="626">aprobación humana</text>
+</svg>
