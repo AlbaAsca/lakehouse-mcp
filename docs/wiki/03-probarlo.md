@@ -232,7 +232,7 @@ docker compose run --rm -T tools sh docs/wiki/ejemplos/lh.sh "SELECT count(*) AS
 
 | Querrías | Hoy | Alternativa real |
 |---|---|---|
-| Cargar los datos reales | `./mk seed` no está terminado (T-013), el conector falla (T-072) y el CSV hay que descargarlo con tu cuenta de Kaggle | Crear tablas a mano, como aquí |
+| Cargar los datos reales | `./mk seed` está sin probar con el CSV real, el conector falla (T-072) y el CSV hay que descargarlo con tu cuenta de Kaggle | Crear tablas a mano, como aquí |
 | Ver la tabla `ecommerce.events` | No existe hasta completar T-012, T-013 y T-015 | Tabla `wiki_demo` |
 | Ver archivos S3 con un cliente estándar | `tools` no trae `aws` | `glob()` en DuckDB |
 | Hablar con el agente | No existe (T-034) | Ninguna |

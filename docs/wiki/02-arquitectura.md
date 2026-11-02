@@ -64,7 +64,7 @@ sequenceDiagram
 ```
 
 1. **Lectura.** `CsvEventReader` convierte cada línea en un registro Avro. Los datos sucios se conservan a propósito; una fila ilegible se cuenta y se salta.
-2. **Envío.** `KafkaEventSink` publica en el topic `ecommerce.events`, previsto con 6 particiones.
+2. **Envío.** `KafkaEventSink` publica en el topic `ecommerce.events`, con 6 particiones y `user_session` como clave.
 3. **Escritura.** El sink escribe ficheros Parquet bajo `s3://lakehouse/warehouse/`.
 4. **Commit.** Cada 30 segundos (`iceberg.control.commit.interval-ms`) el conector confirma en Polaris. Hasta entonces, los datos escritos no son visibles en la tabla.
 5. **Consulta.** DuckDB pide la tabla a Polaris y lee los ficheros directamente de SeaweedFS con su propia clave S3.

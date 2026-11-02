@@ -41,7 +41,7 @@ Cuando `make up` corre dentro de `tools`, habla con el Docker de tu ordenador a 
 | `test-board` | ✅ probado |
 | `test` | ✅ probado |
 | `download-data` | Sin probar: requiere credenciales de Kaggle |
-| `seed` | Sin probar: requiere el CSV real y T-013 |
+| `seed` | Sin probar: requiere el CSV real. El comando que lanza sí está probado con la muestra sintética (`ProducerIT`) |
 | `evals`, `chaos`, `bench`, `demo` | ⬜ responden `not implemented yet` |
 
 ## Cómo probarlo tú mismo

@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-02T13:24:11+01:00",
+  "updated": "2026-11-02T16:50:50+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -764,6 +764,11 @@
           "t": "2026-11-02T13:15:21+01:00",
           "by": "tester",
           "msg": "BLOCKED: 100,\"session_id\":\"24fe7028-9fc5-4d7c-8ae3-ec2f82e5056d\",\"uuid\":\"83be6c78-7a98-47cd-99d1-0ae8c06a0fdd\"}\n{\"type\":\"system\",\"subtype\":\"thinking_tokens\",\"estimated_tokens\":1100,\"estimated_tokens_delta\":150,\"session_id\":\"24fe7028-9fc5-4d7c-8ae3-ec2f82e5056d\",\"uuid\":\"c7a6e441-7b86-49e4-8a4d-2f764dad8db3\"}"
+        },
+        {
+          "t": "2026-11-02T16:45:28+01:00",
+          "by": "consultor",
+          "msg": "Queda parada: el tester se cortó por el límite y, al probar el stack, su tarea sale FAILED. El arreglo está en T-072."
         }
       ],
       "runs": [
@@ -794,10 +799,10 @@
       "id": "T-013",
       "title": "Productor: enviar a Kafka y comando seed",
       "owner": "desarrollador",
-      "status": "next",
+      "status": "review",
       "priority": "alta",
       "estimate_min": 35.0,
-      "actual_min": 8.8,
+      "actual_min": 13.7,
       "auto": true,
       "manual": null,
       "desc": "Falta unir la lógica de reproducción con Kafka y dar un comando para lanzarlo. El responsable lanzará seed sobre el CSV real, y los tests lo harán sobre la muestra sintética.\nCómo sabremos si funciona: un test envía la muestra a Kafka y Schema Registry en contenedores, consume el topic y compara evento a evento con el CSV.\n\n## Técnico\n- Añadir Kafka y Schema Registry a testkit LakehouseStack (arrancan solo si se piden).\n- Topic ecommerce.events; clave user_session para conservar el orden por sesión; creación idempotente del topic con varias particiones.\n- CLI: --input --sample-rate --max-rows --speedup --rewrite-timestamp; métricas de progreso al log.\n- Makefile: seed con variables MONTH, SAMPLE y SPEEDUP, y compilación del jar. Sigue siendo target solo para el responsable.\n- Verificación: ProducerIT en ./mk test.",
@@ -806,9 +811,9 @@
         "T-006"
       ],
       "created": "2026-11-02T11:36:18+01:00",
-      "updated": "2026-11-02T13:24:11+01:00",
-      "started_at": "2026-11-02T13:15:26+01:00",
-      "finished_at": "2026-11-02T13:24:11+01:00",
+      "updated": "2026-11-02T16:50:50+01:00",
+      "started_at": "2026-11-02T16:45:54+01:00",
+      "finished_at": "2026-11-02T16:50:50+01:00",
       "log": [
         {
           "t": "2026-11-02T11:36:18+01:00",
@@ -829,6 +834,28 @@
           "t": "2026-11-02T13:24:11+01:00",
           "by": "desarrollador",
           "msg": "límite de uso, reintenta tras el reset"
+        },
+        {
+          "t": "2026-11-02T16:45:54+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-02T16:50:50+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: Envío a Kafka y comando seed verificados con ProducerIT en contenedores (5/5) y wiki actualizada; falta probar `./mk seed` con el CSV real."
+        }
+      ],
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-02T16:50:50+01:00",
+          "min": 4.9,
+          "turns": 41,
+          "tokens": 333058,
+          "cost_usd": 0.6919725999999999,
+          "verdict": "review"
         }
       ]
     },
@@ -2457,7 +2484,7 @@
       "id": "T-071",
       "title": "Wiki: explicar toda la arquitectura, de principiante a experto",
       "owner": "consultor",
-      "status": "backlog",
+      "status": "done",
       "priority": "alta",
       "estimate_min": 90.0,
       "actual_min": null,
@@ -2466,7 +2493,7 @@
       "desc": "Alguien sin conocimientos y un experto deben poder entender qué hay montado, para qué sirve cada pieza, cómo se conecta y cómo probarla. Se escribe en docs/wiki y cada comando se prueba contra el stack real. Cómo sabremos si funciona: los comandos publicados dan la salida que dice la wiki y nada se presenta como hecho sin estarlo.",
       "deps": [],
       "created": "2026-11-02T13:09:51+01:00",
-      "updated": "2026-11-02T13:09:51+01:00",
+      "updated": "2026-11-02T16:45:28+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -2474,6 +2501,69 @@
           "t": "2026-11-02T13:09:51+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T16:45:28+01:00",
+          "by": "consultor",
+          "msg": "Wiki en docs/wiki; tutorial ejecutado de principio a fin salvo el git clone"
+        }
+      ]
+    },
+    {
+      "id": "T-072",
+      "title": "Hacer que el conector de Iceberg funcione de verdad",
+      "owner": "desarrollador",
+      "status": "next",
+      "priority": "alta",
+      "estimate_min": 45.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "El conector se registra, pero su tarea falla nada más arrancar, así que no entra ningún dato en Iceberg. Además, ./mk up termina a veces con error porque el registro se adelanta al arranque de Connect. Hay que encontrar la causa y arreglar las dos cosas. Cómo sabremos si funciona: con el stack recién levantado, la tarea sale RUNNING, ./mk up termina sin error y un evento de prueba acaba en una tabla Iceberg.\n\n## Técnico\nTraza: NoClassDefFoundError org/apache/kafka/common/utils/AppInfoParser en IcebergSinkTask.start:51, sobre cp-kafka-connect 8.4.0. El conector informa versión 1.13.0-SNAPSHOT aunque el Dockerfile clona apache-iceberg-1.12.0: revisar también eso. connect/register.sh no reintenta con 404 y connect-init salió con 1 («iceberg-sink: 404»); en el segundo intento dio 201. Actualizar docs/wiki/componentes/kafka-connect.md y 04-operacion.md.",
+      "deps": [],
+      "created": "2026-11-02T16:45:27+01:00",
+      "updated": "2026-11-02T16:45:52+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T16:45:27+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T16:45:52+01:00",
+          "by": "consultor",
+          "msg": "Prioridad: sin esto no entra ningun dato"
+        }
+      ]
+    },
+    {
+      "id": "T-073",
+      "title": "El runner dejó sin subir el código de una tarjeta terminada",
+      "owner": "desarrollador",
+      "status": "next",
+      "priority": "alta",
+      "estimate_min": 25.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "T-011 quedó como hecha, pero sus clases siguieron sin confirmar y develop dejó de compilar para cualquiera que lo clonara. Ya está subido a mano; falta evitar que se repita. Cómo sabremos si funciona: un test reproduce el corte y reintento de una tarjeta y sus ficheros acaban en el commit.\n\n## Técnico\nHipótesis sin confirmar: board/runner.py commit_own solo incluye lo que cambió desde el snapshot before; si una tarjeta se corta (límite de uso) y se reintenta, los ficheros del primer intento ya están en before y quedan fuera. Además, el tester debería verificar sobre lo confirmado, no sobre el árbol de trabajo.",
+      "deps": [],
+      "created": "2026-11-02T16:45:28+01:00",
+      "updated": "2026-11-02T16:45:52+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T16:45:28+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T16:45:52+01:00",
+          "by": "consultor",
+          "msg": "Evita que develop vuelva a quedar sin compilar"
         }
       ]
     }
@@ -2482,8 +2572,8 @@
     "think": {
       "state": "stopped",
       "current": null,
-      "message": "Runner parado",
-      "pid": 15960,
+      "message": "Runner parado (pid muerto)",
+      "pid": null,
       "heartbeat": "2026-11-02T11:46:28+01:00",
       "enabled": true,
       "agent": "investigador",
@@ -2496,12 +2586,12 @@
       "state": "working",
       "current": "T-013",
       "message": "desarrollador con T-013",
-      "pid": 25568,
-      "heartbeat": "2026-11-02T13:15:28+01:00",
+      "pid": 6932,
+      "heartbeat": "2026-11-02T16:45:55+01:00",
       "enabled": true,
       "agent": "desarrollador",
-      "started": "2026-11-02T13:15:28+01:00",
-      "live": "live-T-013-desarrollador-20261102-131528.jsonl"
+      "started": "2026-11-02T16:45:55+01:00",
+      "live": "live-T-013-desarrollador-20261102-164555.jsonl"
     }
   }
 }
