@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-02T11:41:38+01:00",
+  "updated": "2026-11-02T11:46:22+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -32,12 +32,12 @@
     }
   ],
   "runner": {
-    "enabled": false,
-    "state": "paused",
+    "enabled": true,
+    "state": "stopped",
     "current": null,
     "heartbeat": "2026-10-14T11:57:27+02:00",
-    "message": "En pausa",
-    "pid": 6095
+    "message": "Runner parado (pid muerto)",
+    "pid": null
   },
   "agents": [
     {
@@ -61,8 +61,8 @@
       "name": "Desarrollador",
       "role": "Implementa las tareas",
       "color": "#7aa2f7",
-      "status": "idle",
-      "current": null
+      "status": "working",
+      "current": "T-002"
     },
     {
       "id": "tester",
@@ -123,7 +123,7 @@
       "id": "T-002",
       "title": "Infra: que el catálogo sobreviva a un reinicio de Polaris",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "doing",
       "priority": "alta",
       "estimate_min": 45.0,
       "actual_min": null,
@@ -132,14 +132,19 @@
       "desc": "Polaris guarda el catálogo en memoria: tras reiniciarlo, el catálogo lakehouse da 404 aunque los datos sigan en S3. Se propone guardarlo en Postgres, que es la opción documentada para Polaris 1.8.0, y crear un kit de pruebas donde demostrarlo.\nCómo sabremos si funciona: un test crea catálogo y tabla, para y arranca Polaris, y el catálogo y la tabla siguen ahí.\n\n## Técnico\n- compose.yaml: servicio postgres con volumen e imagen propia infra/postgres (COPY de init SQL con CREATE SCHEMA polaris_schema a /docker-entrypoint-initdb.d; sin bind mounts). Base ops también aquí (decisión 10 de docs/architecture.md).\n- Servicio de un uso polaris-bootstrap: imagen apache/polaris-admin-tool:1.8.0, comando bootstrap -r REALM -c REALM,CLIENT_ID,CLIENT_SECRET. polaris depende de él con service_completed_successfully.\n- Polaris: polaris.persistence.type=relational-jdbc, quarkus.datasource.username/password, quarkus.datasource.jdbc.url. Quitar POLARIS_BOOTSTRAP_CREDENTIALS. La doc 1.8.0 mezcla nombres de propiedad: el test decide.\n- Comprobar que un segundo bootstrap sale con código 0 (la doc dice idempotente, no da el código). Si no, envolverlo.\n- POSTGRES_PASSWORD con valor por defecto en compose para no romper el .env existente; añadir a .env.example.\n- Módulo Maven nuevo testkit con PolarisPersistenceIT (Testcontainers, misma config que compose), failsafe.\n- Verificación: ./mk test. La comprobación con compose real va en otra tarjeta manual.\n- Fuentes: https://polaris.apache.org/releases/1.8.0/metastores/relational-jdbc/ y /releases/1.8.0/admin-tool/",
       "deps": [],
       "created": "2026-11-02T11:35:10+01:00",
-      "updated": "2026-11-02T11:35:10+01:00",
-      "started_at": null,
+      "updated": "2026-11-02T11:43:15+01:00",
+      "started_at": "2026-11-02T11:43:15+01:00",
       "finished_at": null,
       "log": [
         {
           "t": "2026-11-02T11:35:10+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T11:43:15+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
         }
       ]
     },
@@ -1567,6 +1572,11 @@
           "t": "2026-11-02T11:40:10+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T11:44:45+01:00",
+          "by": "consultor",
+          "msg": "Cambio del responsable: el README sigue el formato de sus repos públicos (portada SVG, insignias, español con bloque 🇬🇧 In English, tabla de decisiones, limitaciones). Ya hay una versión con estado real: actualizarla, no reescribirla en inglés."
         }
       ]
     },
@@ -1813,8 +1823,86 @@
           "t": "2026-11-02T11:41:01+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T11:44:46+01:00",
+          "by": "consultor",
+          "msg": "Mantener el formato actual del README y marcar en 'Qué hay y qué falta' lo que se complete."
+        }
+      ]
+    },
+    {
+      "id": "T-065",
+      "title": "Ronda de aportación: investigador",
+      "owner": "investigador",
+      "status": "done",
+      "priority": "baja",
+      "estimate_min": 15,
+      "actual_min": 3.1,
+      "auto": true,
+      "manual": null,
+      "desc": "Busca una alternativa, librería o técnica concreta con ganancia esperada que no esté ya en el panel.",
+      "deps": [],
+      "created": "2026-11-02T11:43:15+01:00",
+      "updated": "2026-11-02T11:46:22+01:00",
+      "started_at": "2026-11-02T11:43:15+01:00",
+      "finished_at": "2026-11-02T11:46:22+01:00",
+      "log": [
+        {
+          "t": "2026-11-02T11:43:15+01:00",
+          "by": "runner",
+          "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T11:43:15+01:00",
+          "by": "runner",
+          "msg": "empieza la ronda"
+        },
+        {
+          "t": "2026-11-02T11:46:22+01:00",
+          "by": "investigador",
+          "msg": "DONE: notas en docs/NOTAS-investigador.md con 3 hallazgos y fuentes; las 2 tarjetas NO se crearon (permiso denegado), sus datos quedan en las notas"
+        }
+      ],
+      "kind": "contrib",
+      "runs": [
+        {
+          "agent": "investigador",
+          "mode": "contrib",
+          "at": "2026-11-02T11:46:22+01:00",
+          "min": 3.1,
+          "turns": 29,
+          "tokens": 339265,
+          "cost_usd": 0.8309183,
+          "verdict": "done"
         }
       ]
     }
-  ]
+  ],
+  "runners": {
+    "think": {
+      "state": "idle",
+      "current": null,
+      "message": "aportación investigador (T-065): notas en docs/NOTAS-investigador.md con 3 hallazgos y fuentes; las 2 tarjetas NO se crearon (permiso denegado), sus datos quedan en las notas",
+      "pid": 15960,
+      "heartbeat": "2026-11-02T11:46:22+01:00",
+      "enabled": true,
+      "agent": "investigador",
+      "started": "2026-11-02T11:43:16+01:00",
+      "live": "live-T-065-investigador-20261102-114316.jsonl",
+      "contrib_at": "2026-11-02T11:46:22+01:00",
+      "contrib_agent": "investigador"
+    },
+    "measure": {
+      "state": "working",
+      "current": "T-002",
+      "message": "desarrollador con T-002",
+      "pid": 25568,
+      "heartbeat": "2026-11-02T11:43:16+01:00",
+      "enabled": true,
+      "agent": "desarrollador",
+      "started": "2026-11-02T11:43:16+01:00",
+      "live": "live-T-002-desarrollador-20261102-114316.jsonl"
+    }
+  }
 }

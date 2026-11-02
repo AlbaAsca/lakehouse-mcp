@@ -1,5 +1,12 @@
 name: lakehouse-mcp
 
+# Polaris server and admin tool must read the same metastore. testkit/PolarisPersistenceIT uses this same config.
+x-polaris-persistence: &polaris-persistence
+  polaris.persistence.type: relational-jdbc
+  quarkus.datasource.username: polaris
+  quarkus.datasource.password: ${POSTGRES_PASSWORD:-change-me-postgres}
+  quarkus.datasource.jdbc.url: jdbc:postgresql://postgres:5432/polaris
+
 # No bind mounts outside the tools service: `make up` also runs inside that container and paths would not resolve.
 services:
   kafka:
@@ -54,12 +61,36 @@ services:
       timeout: 5s
       retries: 18
 
+  postgres:
+    build: infra/postgres
+    environment:
+      POSTGRES_DB: polaris
+      POSTGRES_USER: polaris
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change-me-postgres}
+    volumes: [postgres-data:/var/lib/postgresql]
+    healthcheck:
+      # Over TCP: during initdb the temporary server only listens on the unix socket.
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U polaris -d polaris"]
+      interval: 5s
+      timeout: 5s
+      retries: 24
+
+  polaris-bootstrap:
+    image: apache/polaris-admin-tool:1.8.0
+    depends_on:
+      postgres: {condition: service_healthy}
+    environment: *polaris-persistence
+    command: ["bootstrap", "-r", "${POLARIS_REALM}", "-c", "${POLARIS_REALM},${POLARIS_CLIENT_ID},${POLARIS_CLIENT_SECRET}"]
+    restart: "no"
+
   polaris:
     image: apache/polaris:1.8.0
     depends_on:
       seaweedfs: {condition: service_healthy}
+      postgres: {condition: service_healthy}
+      polaris-bootstrap: {condition: service_completed_successfully}
     environment:
-      POLARIS_BOOTSTRAP_CREDENTIALS: ${POLARIS_REALM},${POLARIS_CLIENT_ID},${POLARIS_CLIENT_SECRET}
+      <<: *polaris-persistence
       polaris.realm-context.realms: ${POLARIS_REALM}
       AWS_REGION: ${S3_REGION}
       AWS_ACCESS_KEY_ID: ${S3_ACCESS_KEY}
@@ -134,5 +165,6 @@ services:
 volumes:
   kafka-data:
   seaweedfs-data:
+  postgres-data:
   m2:
   data:

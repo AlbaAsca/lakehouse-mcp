@@ -19,6 +19,7 @@
     <module>semantic</module>
     <module>evals</module>
     <module>bench</module>
+    <module>testkit</module>
   </modules>
   <properties>
     <java.version>25</java.version>
