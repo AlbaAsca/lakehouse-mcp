@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-02T13:00:22+01:00",
+  "updated": "2026-11-02T13:14:56+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -710,10 +710,10 @@
       "id": "T-012",
       "title": "Ingesta: configurar y registrar el conector hacia Iceberg",
       "owner": "desarrollador",
-      "status": "next",
+      "status": "review",
       "priority": "alta",
       "estimate_min": 35.0,
-      "actual_min": null,
+      "actual_min": 14.5,
       "auto": true,
       "manual": null,
       "desc": "Los eventos deben llegar solos de Kafka a Iceberg. El plugin ya está cargado, pero falta su configuración y un modo de registrarla al arrancar. Como las imágenes Confluent no traen curl, lo registrará un servicio pequeño de un solo uso.\nCómo sabremos si funciona: en la prueba de integración de la siguiente tarjeta el conector queda RUNNING; aquí, que la configuración es válida contra el endpoint de validación.\n\n## Técnico\n- connect/iceberg-sink.json: tabla lakehouse.ecommerce.events, particionado day(event_time) y event_type, catalogo REST de Polaris, S3 con claves estáticas y endpoint seaweedfs, path-style. Commit ~30 s. evolve-schema apagado (decisión 3). DLQ activada para mensajes ilegibles.\n- Servicio connect-init en compose (Alpine + curl + jq; JSON dentro de la imagen, sustitución de secretos desde el entorno) idempotente con PUT /connectors/{name}/config.\n- Connect también necesita que exista el namespace: añadirlo a init.sh.\n- Verificación: test con el contenedor Connect construido desde infra/connect, PUT /connector-plugins/.../config/validate sin errores. ./mk test.",
@@ -721,9 +721,9 @@
         "T-002"
       ],
       "created": "2026-11-02T11:35:58+01:00",
-      "updated": "2026-11-02T12:51:47+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-02T13:14:56+01:00",
+      "started_at": "2026-11-02T13:00:28+01:00",
+      "finished_at": "2026-11-02T13:14:56+01:00",
       "log": [
         {
           "t": "2026-11-02T11:35:58+01:00",
@@ -744,6 +744,28 @@
           "t": "2026-11-02T12:51:47+01:00",
           "by": "consultor",
           "msg": "T-006 terminada: desbloqueada"
+        },
+        {
+          "t": "2026-11-02T13:00:28+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-02T13:14:56+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: Conector configurado y registrable con `connect-init`, configuración válida contra un worker real y `./mk test` en verde; el estado RUNNING con datos queda para T-015."
+        }
+      ],
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-02T13:14:56+01:00",
+          "min": 14.4,
+          "turns": 6,
+          "tokens": 205224,
+          "cost_usd": 1.2227626000000003,
+          "verdict": "review"
         }
       ]
     },
@@ -829,6 +851,11 @@
           "t": "2026-11-02T11:36:36+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T13:14:41+01:00",
+          "by": "consultor",
+          "msg": "De T-012: comprobar elemento a elemento que event_time llega bien a la tabla. El conector usa TimestampConverter (micros a Timestamp) porque, según el código de AvroData (rama master, no la 8.4), timestamp-micros llega a Connect como long, y day() no podría particionarlo; sin el convertidor, RecordConverter además lo leería como milisegundos. Se pierde lo inferior al milisegundo. Solo está validada la configuración, no el dato real. Revisar también si hace falta crear antes el topic de control control-iceberg."
         }
       ]
     },
@@ -1537,6 +1564,11 @@
           "t": "2026-11-02T11:38:51+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T13:14:42+01:00",
+          "by": "consultor",
+          "msg": "De T-012: por el código de RecordConverter (Iceberg 1.12.0, leído por encima, sin probar), con evolve-schema apagado una columna nueva parece ignorarse sin error en vez de fallar. La decisión 3 de docs/architecture.md cuenta con que el drift sea un fallo detectable: confirmarlo con un caso real antes de diseñar la detección."
         }
       ]
     },
@@ -2246,6 +2278,11 @@
           "t": "2026-11-02T11:53:12+01:00",
           "by": "tú",
           "msg": "✓ Concedido: docker *"
+        },
+        {
+          "t": "2026-11-02T13:07:36+01:00",
+          "by": "consultor",
+          "msg": "El responsable redujo el permiso: de docker * a docker compose config*."
         }
       ],
       "kind": "permiso",
@@ -2384,6 +2421,30 @@
           "msg": "descripción reescrita"
         }
       ]
+    },
+    {
+      "id": "T-071",
+      "title": "Wiki: explicar toda la arquitectura, de principiante a experto",
+      "owner": "consultor",
+      "status": "backlog",
+      "priority": "alta",
+      "estimate_min": 90.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Alguien sin conocimientos y un experto deben poder entender qué hay montado, para qué sirve cada pieza, cómo se conecta y cómo probarla. Se escribe en docs/wiki y cada comando se prueba contra el stack real. Cómo sabremos si funciona: los comandos publicados dan la salida que dice la wiki y nada se presenta como hecho sin estarlo.",
+      "deps": [],
+      "created": "2026-11-02T13:09:51+01:00",
+      "updated": "2026-11-02T13:09:51+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T13:09:51+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ]
     }
   ],
   "runners": {
@@ -2402,14 +2463,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-011",
-      "message": "tester con T-011",
+      "current": "T-012",
+      "message": "desarrollador con T-012",
       "pid": 25568,
-      "heartbeat": "2026-11-02T12:51:59+01:00",
+      "heartbeat": "2026-11-02T13:00:29+01:00",
       "enabled": true,
-      "agent": "tester",
-      "started": "2026-11-02T12:51:59+01:00",
-      "live": "live-T-011-tester-20261102-125159.jsonl"
+      "agent": "desarrollador",
+      "started": "2026-11-02T13:00:29+01:00",
+      "live": "live-T-012-desarrollador-20261102-130029.jsonl"
     }
   }
 }

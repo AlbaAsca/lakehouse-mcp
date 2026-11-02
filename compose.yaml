@@ -141,6 +141,13 @@ services:
       timeout: 5s
       retries: 30
 
+  connect-init:
+    build: connect
+    depends_on:
+      connect: {condition: service_healthy}
+    env_file: [.env]
+    restart: "no"
+
   trino:
     image: trinodb/trino:484
     profiles: [bench]

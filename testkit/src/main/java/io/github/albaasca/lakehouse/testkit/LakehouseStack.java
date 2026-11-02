@@ -175,13 +175,13 @@ public final class LakehouseStack {
         }
     }
 
-    private static ImageFromDockerfile image(String infraDir) {
+    static ImageFromDockerfile image(String infraDir) {
         return new ImageFromDockerfile("lakehouse-testkit-" + infraDir, false)
                 .withDockerfile(repositoryRoot().resolve("infra").resolve(infraDir).resolve("Dockerfile"));
     }
 
     /** Tests run from their module directory, so the root is the closest parent that holds infra/. */
-    private static Path repositoryRoot() {
+    static Path repositoryRoot() {
         for (Path dir = Path.of("").toAbsolutePath(); dir != null; dir = dir.getParent()) {
             if (Files.isDirectory(dir.resolve("infra"))) {
                 return dir;

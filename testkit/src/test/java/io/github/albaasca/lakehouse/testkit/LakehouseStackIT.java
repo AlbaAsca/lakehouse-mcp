@@ -3,6 +3,9 @@ package io.github.albaasca.lakehouse.testkit;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -36,6 +39,21 @@ class LakehouseStackIT {
                 assertThat(rows.next()).isFalse();
             }
         }
+    }
+
+    /** The sink creates its table but not the namespace: init.sh must leave it ready. */
+    @Test
+    void initScriptCreatesTheNamespaceOfTheSink() throws Exception {
+        LakehouseStack stack = LakehouseStack.shared();
+
+        HttpResponse<String> response = HttpClient.newHttpClient().send(
+                HttpRequest.newBuilder(URI.create(stack.polarisUrl() + "/api/catalog/v1/lakehouse/namespaces/ecommerce"))
+                        .header("Authorization", "Bearer " + stack.polarisToken())
+                        .header("Polaris-Realm", LakehouseStack.REALM)
+                        .build(),
+                HttpResponse.BodyHandlers.ofString());
+
+        assertThat(response.statusCode()).as(response.body()).isEqualTo(200);
     }
 
     /** The ports published by compose.yaml: reaching any of them would mean depending on `./mk up`. */
