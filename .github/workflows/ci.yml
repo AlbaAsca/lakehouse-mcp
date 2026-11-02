@@ -10,7 +10,9 @@ permissions:
 
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  # Each finished card pushes to develop: cancelling there would stop the build from ever finishing. GitHub keeps
+  # the running build and only the newest waiting one.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   java:
