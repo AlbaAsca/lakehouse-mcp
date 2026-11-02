@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-02T17:00:16+01:00",
+  "updated": "2026-11-02T17:34:55+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -53,16 +53,16 @@
       "name": "Arquitecto",
       "role": "Diseña la solución y trocea en tareas estimadas",
       "color": "#bb9af7",
-      "status": "idle",
-      "current": null
+      "status": "working",
+      "current": "T-086"
     },
     {
       "id": "desarrollador",
       "name": "Desarrollador",
       "role": "Implementa las tareas",
       "color": "#7aa2f7",
-      "status": "idle",
-      "current": null
+      "status": "working",
+      "current": "T-009"
     },
     {
       "id": "tester",
@@ -583,7 +583,7 @@
       "id": "T-009",
       "title": "Infra: GitHub Actions con build y tests",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "doing",
       "priority": "media",
       "estimate_min": 20.0,
       "actual_min": null,
@@ -594,14 +594,29 @@
         "T-006"
       ],
       "created": "2026-11-02T11:35:56+01:00",
-      "updated": "2026-11-02T11:35:56+01:00",
-      "started_at": null,
+      "updated": "2026-11-02T17:33:19+01:00",
+      "started_at": "2026-11-02T17:33:19+01:00",
       "finished_at": null,
       "log": [
         {
           "t": "2026-11-02T11:35:56+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T17:30:27+01:00",
+          "by": "consultor",
+          "msg": "Se adelanta: develop estuvo roto sin que nadie lo notara"
+        },
+        {
+          "t": "2026-11-02T17:30:27+01:00",
+          "by": "consultor",
+          "msg": "El responsable pide adelantarla. Debe correr en cada push a develop y main. La suite ya pasa de 15 minutos: fija un timeout razonable y anota lo que tarda en GitHub; si es excesivo, enlaza con la tarjeta de reutilizar contenedores."
+        },
+        {
+          "t": "2026-11-02T17:33:19+01:00",
+          "by": "desarrollador",
+          "msg": "Empieza en worktree aparte, en paralelo al runner"
         }
       ]
     },
@@ -875,6 +890,11 @@
           "t": "2026-11-02T17:00:16+01:00",
           "by": "runner",
           "msg": "se reintentará con los permisos resueltos"
+        },
+        {
+          "t": "2026-11-02T17:02:27+01:00",
+          "by": "tú",
+          "msg": "✓ permiso concedido: ./mk *"
         }
       ],
       "runs": [
@@ -2555,18 +2575,20 @@
       "id": "T-072",
       "title": "Hacer que el conector de Iceberg funcione de verdad",
       "owner": "desarrollador",
-      "status": "next",
+      "status": "review",
       "priority": "alta",
       "estimate_min": 45.0,
-      "actual_min": null,
+      "actual_min": 34.6,
       "auto": true,
       "manual": null,
       "desc": "El conector se registra, pero su tarea falla nada más arrancar, así que no entra ningún dato en Iceberg. Además, ./mk up termina a veces con error porque el registro se adelanta al arranque de Connect. Hay que encontrar la causa y arreglar las dos cosas. Cómo sabremos si funciona: con el stack recién levantado, la tarea sale RUNNING, ./mk up termina sin error y un evento de prueba acaba en una tabla Iceberg.\n\n## Técnico\nTraza: NoClassDefFoundError org/apache/kafka/common/utils/AppInfoParser en IcebergSinkTask.start:51, sobre cp-kafka-connect 8.4.0. El conector informa versión 1.13.0-SNAPSHOT aunque el Dockerfile clona apache-iceberg-1.12.0: revisar también eso. connect/register.sh no reintenta con 404 y connect-init salió con 1 («iceberg-sink: 404»); en el segundo intento dio 201. Actualizar docs/wiki/componentes/kafka-connect.md y 04-operacion.md.",
-      "deps": [],
+      "deps": [
+        "T-090"
+      ],
       "created": "2026-11-02T16:45:27+01:00",
-      "updated": "2026-11-02T16:45:52+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-02T17:34:55+01:00",
+      "started_at": "2026-11-02T17:00:21+01:00",
+      "finished_at": "2026-11-02T17:34:55+01:00",
       "log": [
         {
           "t": "2026-11-02T16:45:27+01:00",
@@ -2577,6 +2599,43 @@
           "t": "2026-11-02T16:45:52+01:00",
           "by": "consultor",
           "msg": "Prioridad: sin esto no entra ningun dato"
+        },
+        {
+          "t": "2026-11-02T17:00:21+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-02T17:34:55+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: Conector arreglado y comprobado en contenedores (tarea RUNNING, evento en la tabla, suites en verde); falta probar `./mk up` en el stack real (T-089)."
+        },
+        {
+          "t": "2026-11-02T17:34:55+01:00",
+          "by": "desarrollador",
+          "msg": "⚠ 2 comandos denegados: docker compose images connect | docker compose exec connect ls -la /opt/connectors /opt/connectors/iceberg-sink"
+        },
+        {
+          "t": "2026-11-02T17:34:55+01:00",
+          "by": "runner",
+          "msg": "? permiso solicitado: docker * (T-090); la tarjeta espera la decisión"
+        },
+        {
+          "t": "2026-11-02T17:34:55+01:00",
+          "by": "runner",
+          "msg": "? permiso solicitado: docker * (T-090); la tarjeta espera la decisión"
+        }
+      ],
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-02T17:34:55+01:00",
+          "min": 34.6,
+          "turns": 31,
+          "tokens": 537408,
+          "cost_usd": 2.03465,
+          "verdict": "review"
         }
       ]
     },
@@ -2671,7 +2730,7 @@
       "id": "T-076",
       "title": "Solicitud de permiso: ./mk *",
       "owner": "consultor",
-      "status": "human",
+      "status": "done",
       "priority": "media",
       "estimate_min": 2,
       "actual_min": null,
@@ -2680,7 +2739,7 @@
       "desc": "El agente «tester» necesitaba un comando que no está en su lista de permitidos y se lo bloquearon mientras hacía T-013. No es de solo lectura ni está prohibido, así que lo tiene que validar una persona.\n\nPara qué lo quería: (no lo explicó)\n\nCómo decidir: concede si es seguro repetirlo sin supervisión dentro del proyecto; deniega si escribe fuera, publica, borra o usa la red.\n\n## Técnico\n- Comando: ./mk -n seed MONTH=2019-Nov SAMPLE=0.05 SPEEDUP=60\n- Patrón que se concedería: ./mk *\n- Tarjeta: T-013",
       "deps": [],
       "created": "2026-11-02T17:00:16+01:00",
-      "updated": "2026-11-02T17:00:16+01:00",
+      "updated": "2026-11-02T17:02:27+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -2688,6 +2747,11 @@
           "t": "2026-11-02T17:00:16+01:00",
           "by": "runner",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T17:02:27+01:00",
+          "by": "tú",
+          "msg": "✓ Concedido: ./mk *"
         }
       ],
       "kind": "permiso",
@@ -2698,32 +2762,444 @@
         "task": "T-013",
         "why": ""
       }
+    },
+    {
+      "id": "T-077",
+      "title": "Poder lanzar los tests de un solo módulo",
+      "owner": "desarrollador",
+      "status": "next",
+      "priority": "alta",
+      "estimate_min": 20.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "La suite completa ya tarda más de 15 minutos y suele ejecutarse tanto en desarrollo como en revisión, así que las tarjetas pasan la mayor parte del tiempo esperando. Se propone que el desarrollador pruebe solo el módulo que cambia y que la suite completa quede para el tester. Cómo sabremos si funciona: ./mk test MODULE=producer ejecuta solo ese módulo y lo que necesita, tarda mucho menos que la suite completa, y un fallo sigue devolviendo error.\n\n## Técnico\nMakefile, objetivo test: con MODULE, usar mvn -B -q -pl $(MODULE) -am verify, sin que -am ejecute los tests de las dependencias si no hace falta (comprobar con surefire.failIfNoSpecifiedTests o equivalente); sin MODULE, igual que ahora. La regex SAFE de board/permissions.py y sus tests deben admitir ./mk test MODULE=<nombre> sin abrir otros objetivos; lo mismo en make y mk.cmd. Instrucciones: .claude/agents/desarrollador.md (su módulo mientras trabaja) y tester.md (suite completa al verificar); CLAUDE.md, línea de Tests. Medir y anotar en la tarjeta el tiempo con y sin MODULE. Actualizar docs/wiki/componentes/imagen-tools.md.",
+      "deps": [],
+      "created": "2026-11-02T17:25:22+01:00",
+      "updated": "2026-11-02T17:25:22+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T17:25:22+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T17:25:22+01:00",
+          "by": "consultor",
+          "msg": "Prioridad: acorta la espera de todas las tarjetas siguientes"
+        }
+      ]
+    },
+    {
+      "id": "T-078",
+      "title": "Que la comprobación rápida detecte un conector roto",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "alta",
+      "estimate_min": 25.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Hoy ./mk smoke dice que todo va bien aunque la tarea del conector de Iceberg haya fallado, así que da una falsa tranquilidad. Se propone que compruebe que el conector funciona y que un evento de prueba llega de verdad a una tabla. Cómo sabremos si funciona: con el conector roto a propósito, smoke falla y dice por qué; con el conector sano, pasa y no deja restos.\n\n## Técnico\ninfra/smoke.sh: exigir connector.state y tasks[*].state RUNNING en /connectors/iceberg-sink/status, con espera acotada; enviar un evento de prueba y comprobar que aparece en la tabla desde DuckDB. Limpiar lo creado, también el namespace smoke que hoy se queda. Actualizar docs/wiki/04-operacion.md y componentes/kafka-connect.md.",
+      "deps": [
+        "T-072"
+      ],
+      "created": "2026-11-02T17:30:26+01:00",
+      "updated": "2026-11-02T17:30:26+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T17:30:26+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-079",
+      "title": "Que el tester verifique sobre una copia limpia del commit",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "alta",
+      "estimate_min": 30.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "T-011 pasó la revisión porque el tester veía ficheros que no estaban subidos, y develop quedó sin compilar para los demás. Se propone que la verificación corra sobre una copia limpia de lo confirmado. Cómo sabremos si funciona: una tarjeta cuyo código depende de un fichero sin confirmar falla la verificación, con un mensaje que nombra ese fichero.\n\n## Técnico\nboard/runner.py, modo verify: crear un git worktree del commit de la tarjeta y lanzar ahí al tester, o, si lo anterior complica los permisos, comprobar antes de verificar que git status no tiene cambios de la tarjeta sin confirmar y que compila un git archive del commit. El worktree necesita .env (ignorado por git) y el proyecto Compose compartido no debe chocar. Añadir test en tests/test_runner.py; respetar que los tests no tocan el panel ni procesos reales. Documentar en docs/wiki/componentes/agent-board.md.",
+      "deps": [
+        "T-073"
+      ],
+      "created": "2026-11-02T17:30:26+01:00",
+      "updated": "2026-11-02T17:30:26+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T17:30:26+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-080",
+      "title": "Reutilizar contenedores para acortar la suite de tests",
+      "owner": "desarrollador",
+      "status": "next",
+      "priority": "alta",
+      "estimate_min": 40.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "La suite completa pasa de 15 minutos porque varios tests levantan sus propios contenedores. Se propone compartir un único stack durante cada ejecución, sin que los tests se pisen entre ellos. Cómo sabremos si funciona: la suite tarda bastante menos, medido antes y después en el mismo equipo, y sigue en verde al ejecutarla dos veces seguidas.\n\n## Técnico\ntestkit/src/main/java/.../LakehouseStack.java: arrancar una sola vez por JVM (patrón singleton de Testcontainers, cerrado por Ryuk) y hacer que IcebergSinkConfigIT, IcebergSinkFlowIT, LakehouseStackIT y ProducerIT lo reutilicen; aislar con nombres únicos de topic, namespace y conector. Revisar forkCount de surefire/failsafe y si cada módulo necesita su propia JVM. No activar testcontainers.reuse.enable, para que CI parta siempre de limpio. Anotar tiempos en la tarjeta. Coordinar con T-077.",
+      "deps": [],
+      "created": "2026-11-02T17:30:26+01:00",
+      "updated": "2026-11-02T17:30:27+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T17:30:26+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T17:30:27+01:00",
+          "by": "consultor",
+          "msg": "Acorta la espera de todas las tarjetas"
+        }
+      ]
+    },
+    {
+      "id": "T-081",
+      "title": "Probar un modelo más barato según el rol del agente",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "media",
+      "estimate_min": 30.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Todos los agentes usan el modelo de la sesión y ya agotamos el cupo una vez. Se propone probar un modelo más barato en el tester y en tarjetas mecánicas, comparando si se le escapan fallos. Cómo sabremos si funciona: las tarjetas gastan menos cupo y, en una comparación con fallos sembrados a propósito, el modelo barato detecta los mismos.\n\n## Técnico\nCampo model en la cabecera de .claude/agents/*.md. Comparar coste con total_cost_usd de board/runs/live-*.jsonl. Sembrar 3-5 fallos en una rama de prueba. Anotar el resultado en la tarjeta; no cambiar el modelo por defecto si se escapa alguno.",
+      "deps": [],
+      "created": "2026-11-02T17:30:57+01:00",
+      "updated": "2026-11-02T17:30:57+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T17:30:57+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-082",
+      "title": "Arrancar el carril de pensar sin rondas de aportación",
+      "owner": "desarrollador",
+      "status": "next",
+      "priority": "alta",
+      "estimate_min": 20.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "El botón del panel lanza siempre rondas de aportación en el carril de pensar, que gastan cupo en ideas fuera del plan. Por eso está apagado y las tarjetas del arquitecto y del investigador no avanzan. Se propone poder arrancarlo sin ellas. Cómo sabremos si funciona: al arrancar sin aportación, el carril hace solo tarjetas del panel y no crea ninguna ronda.\n\n## Técnico\nboard/server.py, runner_start: añade --contribute al carril think. Parámetro contribute=false o ajuste en el panel, con test en tests/test_board.py. Además, el carril con --until-idle sale si no tiene tarjetas listas y no vuelve solo: documentarlo en docs/wiki/componentes/agent-board.md.",
+      "deps": [],
+      "created": "2026-11-02T17:30:57+01:00",
+      "updated": "2026-11-02T17:30:59+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T17:30:57+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T17:30:59+01:00",
+          "by": "consultor",
+          "msg": "Prioridad: protege o desatasca el trabajo del runner"
+        }
+      ]
+    },
+    {
+      "id": "T-083",
+      "title": "Decidir si el runner se reanuda solo tras un corte",
+      "owner": "consultor",
+      "status": "human",
+      "priority": "media",
+      "estimate_min": 10.0,
+      "actual_min": null,
+      "auto": false,
+      "manual": "Decidir si instalar la tarea programada con scripts/install-schedule.ps1 (cada 3 h). Evita parones, pero gasta cupo sin que estés delante.",
+      "desc": "Cuando se agota el cupo o se cierra la sesión, el runner se queda parado hasta que alguien lo arranca; esta tarde perdimos 3,5 horas. La tarea programada lo evitaría. Es una decisión de gasto, así que la toma la responsable. Cómo sabremos si funciona: tras un corte, el runner vuelve a trabajar solo en la siguiente ejecución programada.",
+      "deps": [],
+      "created": "2026-11-02T17:30:57+01:00",
+      "updated": "2026-11-02T17:30:59+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T17:30:57+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T17:30:59+01:00",
+          "by": "consultor",
+          "msg": "Decisión de gasto de la responsable"
+        },
+        {
+          "t": "2026-11-02T17:31:31+01:00",
+          "by": "tú",
+          "msg": "me parece bien"
+        }
+      ]
+    },
+    {
+      "id": "T-084",
+      "title": "Que un agente cortado no deje la tarjeta bloqueada con basura",
+      "owner": "desarrollador",
+      "status": "next",
+      "priority": "alta",
+      "estimate_min": 25.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "T-012 quedó bloqueada con un trozo de JSON como motivo, porque el tester se cortó por el límite de uso. Parece un bloqueo real, pero no lo es, y la tarjeta se queda parada sin que nadie la retome. Se propone tratarlo como un corte: la tarjeta vuelve a su estado y el motivo se puede leer. Cómo sabremos si funciona: un test reproduce esa salida y la tarjeta vuelve a Revisión sin JSON en su registro.\n\n## Técnico\nboard/runner.py, función finish y lectura de RESULT: el texto de BLOCKED venía de la salida en stream-json (mensaje de T-012 a las 13:15). Exigir que RESULT salga del mensaje final, y si no lo hay aplicar el mismo trato que al límite de uso. Test en tests/test_runner.py. Revisar el estado de T-012 tras T-072.",
+      "deps": [],
+      "created": "2026-11-02T17:30:57+01:00",
+      "updated": "2026-11-02T17:30:59+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T17:30:57+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T17:30:59+01:00",
+          "by": "consultor",
+          "msg": "Prioridad: protege o desatasca el trabajo del runner"
+        }
+      ]
+    },
+    {
+      "id": "T-085",
+      "title": "Prohibir siempre los comandos destructivos, aunque haya un permiso amplio",
+      "owner": "desarrollador",
+      "status": "next",
+      "priority": "alta",
+      "estimate_min": 20.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Un permiso amplio como ./mk * o docker * deja a los agentes ejecutar cosas que borran datos sin supervisión. Se propone una lista cerrada que nunca se conceda, sea cual sea el permiso. Cómo sabremos si funciona: docker compose down -v, docker system prune y ./mk down se deniegan aunque exista un permiso que los cubra.\n\n## Técnico\nboard/permissions.py NEVER y runner.py DENIED, que prevalecen sobre allowed. Añadir a los tests de tests/test_permissions.py. Revisar el permiso actual ./mk *, concedido a las 17:02: al terminar T-072, proponer a la responsable reducirlo a up, smoke y test.",
+      "deps": [],
+      "created": "2026-11-02T17:30:58+01:00",
+      "updated": "2026-11-02T17:30:59+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T17:30:58+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T17:30:59+01:00",
+          "by": "consultor",
+          "msg": "Prioridad: protege o desatasca el trabajo del runner"
+        }
+      ]
+    },
+    {
+      "id": "T-086",
+      "title": "Reordenar el plan para tener pronto una demo de principio a fin",
+      "owner": "arquitecto",
+      "status": "doing",
+      "priority": "alta",
+      "estimate_min": 30.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Quedan muchas tarjetas y lo más vistoso, el agente respondiendo, llega tarde. Se propone adelantar un recorrido mínimo: datos en Iceberg, consulta por MCP y el agente contestando una pregunta, para que el repo público enseñe algo real pronto. Cómo sabremos si funciona: docs/architecture.md describe el recorrido, las tarjetas tienen ese orden y se indica qué se puede recortar.\n\n## Técnico\nRevisar deps de las tarjetas de ingesta, MCP y agente (T-015, T-018, T-030/T-034...). Sin tocar código. Si hay que reordenar algo que board.py no permite, proponerlo en una nota. Incluye dejar lista la grabación del GIF con ese recorrido.",
+      "deps": [],
+      "created": "2026-11-02T17:30:58+01:00",
+      "updated": "2026-11-02T17:33:45+01:00",
+      "started_at": "2026-11-02T17:33:40+01:00",
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T17:30:58+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T17:33:19+01:00",
+          "by": "consultor",
+          "msg": "Primero del carril de pensar: reordena el plan antes de seguir"
+        },
+        {
+          "t": "2026-11-02T17:33:40+01:00",
+          "by": "runner",
+          "msg": "empieza arquitecto"
+        },
+        {
+          "t": "2026-11-02T17:33:45+01:00",
+          "by": "arquitecto",
+          "msg": "Empiezo a revisar el plan"
+        }
+      ]
+    },
+    {
+      "id": "T-087",
+      "title": "Decidir si se quita el benchmark con Trino",
+      "owner": "consultor",
+      "status": "human",
+      "priority": "baja",
+      "estimate_min": 5.0,
+      "actual_min": null,
+      "auto": false,
+      "manual": "Decidir si se elimina el benchmark DuckDB frente a Trino. Propuesta: es lo primero a recortar si falta cupo, pero la compactación actual también usa Trino y habría que revisarlo.",
+      "desc": "El benchmark con Trino consume mucha memoria y aporta menos que el self-healing o las evals. Se plantea quitarlo si falta cupo. Es una decisión de alcance, así que la toma la responsable. Cómo sabremos si funciona: el panel y el brief reflejan la decisión.",
+      "deps": [],
+      "created": "2026-11-02T17:30:58+01:00",
+      "updated": "2026-11-02T17:30:59+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T17:30:58+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T17:30:59+01:00",
+          "by": "consultor",
+          "msg": "Decisión de alcance de la responsable"
+        }
+      ]
+    },
+    {
+      "id": "T-088",
+      "title": "Traducir al inglés la portada y la arquitectura de la wiki",
+      "owner": "arquitecto",
+      "status": "backlog",
+      "priority": "baja",
+      "estimate_min": 30.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "La wiki solo está en español, y para reclutadores de fuera conviene tener en inglés al menos la entrada. Se propone traducir la portada y la arquitectura cuando el proyecto esté estable, para no mantener dos versiones mientras cambia. Cómo sabremos si funciona: una persona que no lee español entiende qué es el proyecto y cómo está montado, con enlaces que funcionan.\n\n## Técnico\ndocs/wiki/en/ o sufijo por página; scripts/publish_wiki.py exige nombres únicos y sus tests deben seguir en verde. Hacerlo tras T-046 o T-055, cuando el proyecto sea estable.",
+      "deps": [
+        "T-086"
+      ],
+      "created": "2026-11-02T17:30:58+01:00",
+      "updated": "2026-11-02T17:30:58+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T17:30:58+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-089",
+      "title": "[Tú] Comprobar el conector en el stack completo",
+      "owner": "consultor",
+      "status": "backlog",
+      "priority": "alta",
+      "estimate_min": 10.0,
+      "actual_min": null,
+      "auto": false,
+      "manual": "Lanza ./mk up (reconstruye el conector, unos minutos). Debe terminar sin error. Después abre http://localhost:8083/connectors/iceberg-sink/status: el conector y la tarea deben salir RUNNING.",
+      "desc": "El arreglo del conector está probado en contenedores de test, pero no en el stack que se levanta con el comando normal, porque los agentes no pueden ejecutar ese arranque. Falta hacerlo una vez para cerrar el círculo.\nCómo sabremos si funciona: el arranque termina sin error y el conector y su tarea salen en marcha.\n\n## Técnico\nEl stack levantado sigue con la imagen antigua (cp-kafka-connect 8.4.0) hasta que se reconstruya. Comprobar que connect-init termina con código 0 y anotar si ha visto algún 404 en sus reintentos.",
+      "deps": [
+        "T-072"
+      ],
+      "created": "2026-11-02T17:34:33+01:00",
+      "updated": "2026-11-02T17:34:39+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T17:34:33+01:00",
+          "by": "desarrollador",
+          "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T17:34:39+01:00",
+          "by": "consultor",
+          "msg": "descripción reescrita"
+        }
+      ]
+    },
+    {
+      "id": "T-090",
+      "title": "Solicitud de permiso: docker *",
+      "owner": "consultor",
+      "status": "human",
+      "priority": "media",
+      "estimate_min": 2,
+      "actual_min": null,
+      "auto": false,
+      "manual": "Abre la tarjeta y pulsa «Conceder» o «Denegar».",
+      "desc": "El agente «desarrollador» necesitaba un comando que no está en su lista de permitidos y se lo bloquearon mientras hacía T-072. No es de solo lectura ni está prohibido, así que lo tiene que validar una persona.\n\nPara qué lo quería: (no lo explicó)\n\nCómo decidir: concede si es seguro repetirlo sin supervisión dentro del proyecto; deniega si escribe fuera, publica, borra o usa la red.\n\n## Técnico\n- Comando: docker compose images connect\n- Patrón que se concedería: docker *\n- Tarjeta: T-072",
+      "deps": [],
+      "created": "2026-11-02T17:34:55+01:00",
+      "updated": "2026-11-02T17:34:55+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T17:34:55+01:00",
+          "by": "runner",
+          "msg": "creada"
+        }
+      ],
+      "kind": "permiso",
+      "perm": {
+        "pattern": "docker *",
+        "command": "docker compose images connect",
+        "agent": "desarrollador",
+        "task": "T-072",
+        "why": ""
+      }
     }
   ],
   "runners": {
     "think": {
-      "state": "stopped",
-      "current": null,
-      "message": "Runner parado (pid muerto)",
-      "pid": null,
-      "heartbeat": "2026-11-02T11:46:28+01:00",
+      "state": "working",
+      "current": "T-086",
+      "message": "arquitecto con T-086",
+      "pid": 21744,
+      "heartbeat": "2026-11-02T17:33:40+01:00",
       "enabled": true,
-      "agent": "investigador",
-      "started": "2026-11-02T11:43:16+01:00",
-      "live": "live-T-065-investigador-20261102-114316.jsonl",
+      "agent": "arquitecto",
+      "started": "2026-11-02T17:33:40+01:00",
+      "live": "live-T-086-arquitecto-20261102-173340.jsonl",
       "contrib_at": "2026-11-02T11:46:22+01:00",
       "contrib_agent": "investigador"
     },
     "measure": {
       "state": "working",
-      "current": "T-013",
-      "message": "tester con T-013",
+      "current": "T-072",
+      "message": "desarrollador con T-072",
       "pid": 6932,
-      "heartbeat": "2026-11-02T16:50:55+01:00",
+      "heartbeat": "2026-11-02T17:00:22+01:00",
       "enabled": true,
-      "agent": "tester",
-      "started": "2026-11-02T16:50:55+01:00",
-      "live": "live-T-013-tester-20261102-165055.jsonl"
+      "agent": "desarrollador",
+      "started": "2026-11-02T17:00:22+01:00",
+      "live": "live-T-072-desarrollador-20261102-170022.jsonl"
     }
   }
 }

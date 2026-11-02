@@ -126,6 +126,9 @@ services:
       CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: 1
       CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: 1
       CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: 1
+      # An idle sink only wakes up at each flush, and only then the Iceberg task reads its control topic. At the default
+      # 60 s it misses every commit window (30 s) and nothing is written. The sink keeps its offsets elsewhere: flushing is cheap.
+      CONNECT_OFFSET_FLUSH_INTERVAL_MS: 1000
       CONNECT_KEY_CONVERTER: org.apache.kafka.connect.storage.StringConverter
       CONNECT_VALUE_CONVERTER: io.confluent.connect.avro.AvroConverter
       CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL: http://schema-registry:8081

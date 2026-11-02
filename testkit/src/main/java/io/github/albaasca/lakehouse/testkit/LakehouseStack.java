@@ -154,6 +154,11 @@ public final class LakehouseStack {
         polaris.start();
     }
 
+    /** The network of the stack, for a test that adds its own container (aliases: kafka, polaris, seaweedfs...). */
+    public Network network() {
+        return network;
+    }
+
     /** Base URL of Polaris from the test JVM, without a trailing slash. */
     public String polarisUrl() {
         return "http://" + polaris.getHost() + ":" + polaris.getMappedPort(8181);

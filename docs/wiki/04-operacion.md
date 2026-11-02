@@ -54,7 +54,7 @@ Salidas que parecen errores y no lo son:
 
 **Comprobado:** en ambas imágenes, `curl` no está.
 
-**Remedio ya aplicado:** el healthcheck abre el puerto con bash: `exec 3<>/dev/tcp/localhost/8081`. Solo comprueba que el puerto acepta conexiones, no que el servicio esté listo. Por eso [`connect/register.sh`](../../connect/register.sh) reintenta si Connect responde 409 o 5xx.
+**Remedio ya aplicado:** el healthcheck abre el puerto con bash: `exec 3<>/dev/tcp/localhost/8081`. Solo comprueba que el puerto acepta conexiones, no que el servicio esté listo. Por eso [`connect/register.sh`](../../connect/register.sh) reintenta si Connect responde 404, 409 o 5xx.
 
 ### Error 400 de credential vending
 
@@ -107,17 +107,25 @@ docker compose exec -T seaweedfs curl -s -o /dev/null -w '%{http_code}\n' -X DEL
 
 **Síntoma:** `curl localhost:8083/connectors/iceberg-sink/status` muestra el conector `RUNNING` y la tarea `FAILED`, con `NoClassDefFoundError: org/apache/kafka/common/utils/AppInfoParser`. El número de versión del conector es `1.13.0-SNAPSHOT`, no `1.12.0`.
 
-**Causa:** sin confirmar; se investiga en T-072. La tarea falla al arrancar, antes de leer ningún evento.
+**Causa:** el Kafka de `cp-kafka-connect:8.4.0` tiene esa clase en `org.apache.kafka.common.utils.internals` (se ve en su propio log), y el sink la busca en el paquete anterior. El `1.13.0-SNAPSHOT` era un problema aparte: faltaba `version.txt` al compilar.
 
-**Remedio:** ninguno todavía. Hasta entonces no entran datos en Iceberg. Las tablas creadas a mano con DuckDB funcionan.
+**Remedio ya aplicado (T-072):** [`infra/connect/Dockerfile`](../../infra/connect/Dockerfile) usa `cp-kafka-connect:8.1.0` y escribe `version.txt`. Con el stack viejo, `./mk up` reconstruye la imagen. No subas esa versión sin pasar `IcebergSinkFlowIT`.
+
+### La tarea sale `RUNNING` pero la tabla no aparece
+
+**Síntoma:** en el log de `connect` se repite `Commit timeout reached` seguido de `committed to 0 table(s)`, cada 30 s.
+
+**Causa probable:** con el topic parado, la tarea solo se despierta en cada `offset.flush.interval.ms`, 60 s por defecto, y es entonces cuando lee su topic de control. Así no llega a responder dentro de la ventana de commit de 30 s. Se deduce del log, no del código del sink: el aviso de rebalanceo del consumidor de control caía justo en ese ciclo de 60 s. Lo comprobado es el efecto: con 60 s, `IcebergSinkFlowIT` no recibe la fila, y con 1 s, sí.
+
+**Remedio ya aplicado (T-072):** `CONNECT_OFFSET_FLUSH_INTERVAL_MS: 1000` en [`compose.yaml`](../../compose.yaml).
 
 ### `connect-init` termina con 404
 
-**Síntoma:** `./mk up` acaba con `container lakehouse-mcp-connect-init-1 exited (1)` y el log dice `iceberg-sink: 404`.
+**Síntoma:** `./mk up` acababa con `container lakehouse-mcp-connect-init-1 exited (1)` y el log decía `iceberg-sink: 404`.
 
-**Causa:** con el worker recién arrancado, Connect puede responder 404, y [`register.sh`](../../connect/register.sh) solo reintenta con 409 y 5xx. Visto una vez; se corrige en T-072.
+**Causa:** con el worker recién arrancado, Connect puede responder 404, y [`register.sh`](../../connect/register.sh) no reintentaba con ese código. Visto una vez.
 
-**Remedio:** `docker compose up connect-init`. La segunda vez devolvió 201.
+**Remedio ya aplicado (T-072):** ahora reintenta también con 404, durante unos 2 minutos. Lo cubre `tests/test_connect_register.py` con un Connect simulado; **sin probar** en un `./mk up` real. Si aun así falla, `docker compose up connect-init` lo registra de nuevo.
 
 ### `connect-init` no aparece
 

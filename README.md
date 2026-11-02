@@ -72,7 +72,7 @@ una página por cada pieza (qué es, cómo se conecta, cómo está configurada y
 |---|---|---|
 | ✅ | Stack en Docker Compose, con healthchecks | Arranca con un comando |
 | ✅ | Ida y vuelta DuckDB → Polaris → SeaweedFS | Lo comprueba `./mk smoke` |
-| ⚠️ | Conector de Iceberg | Se registra, pero su tarea falla al arrancar (T-072): **aún no entran datos** |
+| ✅ | Conector de Iceberg | Un evento llega de Kafka a la tabla, comprobado en contenedores; falta el stack completo con el mes real |
 | ✅ | Herramientas en una imagen (`tools`) | JDK, Maven, make, DuckDB y Kaggle, sin instalar nada |
 | ✅ | Persistencia del catálogo de Polaris | En Postgres: sobrevive a un reinicio |
 | 🚧 | Productor e ingesta del mes real | Lectura, muestreo y orden hechos; falta el envío y la ingesta |

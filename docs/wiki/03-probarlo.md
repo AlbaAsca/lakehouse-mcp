@@ -37,8 +37,6 @@ Abre `.env` y cambia las contraseñas si quieres. Para probar en local valen las
 
 ## Paso 3. Levanta todo
 
-**Puede terminar con un error que no afecta a este tutorial:** si ves `container lakehouse-mcp-connect-init-1 exited (1)`, el registro del conector se adelantó al arranque de Connect ([T-072](04-operacion.md#connect-init-termina-con-404)). Lanza `docker compose up connect-init` y sigue.
-
 ```bash
 ./mk up
 ```
@@ -232,7 +230,7 @@ docker compose run --rm -T tools sh docs/wiki/ejemplos/lh.sh "SELECT count(*) AS
 
 | Querrías | Hoy | Alternativa real |
 |---|---|---|
-| Cargar los datos reales | `./mk seed` está sin probar con el CSV real, el conector falla (T-072) y el CSV hay que descargarlo con tu cuenta de Kaggle | Crear tablas a mano, como aquí |
+| Cargar los datos reales | `./mk seed` está sin probar con el CSV real y el CSV hay que descargarlo con tu cuenta de Kaggle | Crear tablas a mano, como aquí |
 | Ver la tabla `ecommerce.events` | No existe hasta completar T-012, T-013 y T-015 | Tabla `wiki_demo` |
 | Ver archivos S3 con un cliente estándar | `tools` no trae `aws` | `glob()` en DuckDB |
 | Hablar con el agente | No existe (T-034) | Ninguna |

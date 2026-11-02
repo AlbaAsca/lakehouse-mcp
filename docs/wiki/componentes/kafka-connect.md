@@ -1,6 +1,6 @@
 # Kafka Connect y el sink de Iceberg
 
-**Estado:** ⚠️ El worker y el plugin funcionan y el conector `iceberg-sink` se registra, pero la tarea sale `FAILED` con `NoClassDefFoundError: org/apache/kafka/common/utils/AppInfoParser` (T-072). **Hoy no entran datos en Iceberg.**
+**Estado:** ✅ La tarea sale `RUNNING` y un evento acaba como fila de la tabla: lo comprueba `IcebergSinkFlowIT` en contenedores (T-072). **Sin probar:** `./mk up` en el stack completo y el mes real con `./mk seed`.
 
 [Portada](../README.md) · [Glosario](../01-conceptos.md)
 
@@ -39,10 +39,11 @@ flowchart LR
 
 ## Cómo está configurado aquí
 
-**Worker.** Servicio `connect` en [`compose.yaml`](../../../compose.yaml), imagen construida con [`infra/connect/Dockerfile`](../../../infra/connect/Dockerfile) sobre `confluentinc/cp-kafka-connect:8.4.0`.
+**Worker.** Servicio `connect` en [`compose.yaml`](../../../compose.yaml), imagen construida con [`infra/connect/Dockerfile`](../../../infra/connect/Dockerfile) sobre `confluentinc/cp-kafka-connect:8.1.0`. No es la 8.4.0 de Schema Registry: con ella [la tarea no arranca](../04-operacion.md#el-conector-sale-failed).
 
 | Opción | Valor | Por qué |
 |---|---|---|
+| `CONNECT_OFFSET_FLUSH_INTERVAL_MS` | `1000` | Con los 60 s por defecto, [el commit nunca llega con el topic parado](../04-operacion.md#la-tarea-sale-running-pero-la-tabla-no-aparece) |
 | `CONNECT_VALUE_CONVERTER` | `AvroConverter` | Los eventos son Avro |
 | `CONNECT_PLUGIN_PATH` | incluye `/opt/connectors` | Donde queda el plugin compilado |
 | `KAFKA_HEAP_OPTS` | `-Xmx1g` | Presupuesto de memoria |
@@ -50,7 +51,7 @@ flowchart LR
 
 **Plugin.** No hay zip publicado: la documentación indica que se genera con el build. El Dockerfile clona la etiqueta `apache-iceberg-1.12.0` y ejecuta el `distZip`. Se usa `git clone` y no un tarball [porque el build necesita `.git`](../04-operacion.md#el-conector-de-iceberg-no-se-puede-descargar).
 
-Una rareza comprobada: el plugin se anuncia como `1.13.0-SNAPSHOT`. Sus metadatos (`iceberg-build.properties`) indican `git.tags=apache-iceberg-1.12.0`, es decir, es el código de la etiqueta 1.12.0 con otra etiqueta de versión.
+El Dockerfile escribe también `version.txt`. Sin ese fichero, el plugin compilado de la etiqueta 1.12.0 se anunciaba como `1.13.0-SNAPSHOT`; con él se anuncia como `1.12.0`, y `IcebergSinkFlowIT` lo comprueba.
 
 **Conector.** [`connect/iceberg-sink.json`](../../../connect/iceberg-sink.json), registrado por el servicio de un solo uso `connect-init` con [`connect/register.sh`](../../../connect/register.sh).
 
@@ -67,11 +68,15 @@ Una rareza comprobada: el plugin se anuncia como `1.13.0-SNAPSHOT`. Sus metadato
 
 ## Cómo probarlo tú mismo
 
+La prueba completa está en `./mk test`: `IcebergSinkFlowIT` levanta el worker y el catálogo en contenedores, envía un evento, espera la tarea `RUNNING` y lee la fila campo a campo con DuckDB. Tarda unos 3 minutos, más la compilación de Iceberg si cambia su imagen.
+
+Sobre el stack levantado (**sin probar** tras T-072; las salidas son las esperadas):
+
 ```bash
 curl -s localhost:8083/
 ```
 ```text
-{"version":"8.4.0-ccs","commit":"...","kafka_cluster_id":"..."}
+{"version":"8.1.0-ccs","commit":"...","kafka_cluster_id":"..."}
 ```
 
 El plugin está cargado:
@@ -80,25 +85,21 @@ El plugin está cargado:
 curl -s localhost:8083/connector-plugins
 ```
 ```text
-[{"class":"org.apache.iceberg.connect.IcebergSinkConnector","type":"sink","version":"1.13.0-SNAPSHOT"}, ...]
+[{"class":"org.apache.iceberg.connect.IcebergSinkConnector","type":"sink","version":"1.12.0"}, ...]
 ```
 
-Conectores registrados. En el stack comprobado, anterior a T-012:
+El conector está registrado, y tanto él como su tarea salen `RUNNING`:
 
 ```bash
-curl -s localhost:8083/connectors
+curl -s localhost:8083/connectors/iceberg-sink/status
 ```
-```text
-[]
-```
-
-Con el stack actual verás `["iceberg-sink"]`. Su estado se consulta en `/connectors/iceberg-sink/status`: hoy el conector sale `RUNNING` y su tarea, `FAILED`.
 
 ## Qué puede fallar
 
-- **`connect-init` termina con error.** Si falta una variable de `.env`, [`register.sh`](../../../connect/register.sh) para. Mira `docker compose logs connect-init`.
+- **`connect-init` termina con error.** Si falta una variable de `.env` o Connect rechaza la configuración, [`register.sh`](../../../connect/register.sh) para. Mientras Connect arranca (sin respuesta, 404, 409 o 5xx) reintenta durante unos 2 minutos. Mira `docker compose logs connect-init`.
 - **El primer `up` tarda varios minutos.** Compila Iceberg entero, y requiere acceso a GitHub.
-- **La tarea pasa a `FAILED`.** Es el estado actual (T-072). El motivo está en el campo `trace` de `/connectors/iceberg-sink/status`.
+- **La tarea pasa a `FAILED`.** El motivo está en el campo `trace` de `/connectors/iceberg-sink/status`.
+- **La tarea sale `RUNNING` y la tabla no aparece.** Los commits van cada 30 s, así que espera un poco. Si no, mira [la guía de diagnóstico](../04-operacion.md#la-tarea-sale-running-pero-la-tabla-no-aparece).
 - **Cambias el esquema y deja de escribir.** Es lo buscado, con la evolución apagada.
 - **`up` sigue sin registrar el conector.** Contenedores anteriores a T-012: `./mk up` debe crear `connect-init`.
 
