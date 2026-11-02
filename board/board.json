@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-02T17:42:29+01:00",
+  "updated": "2026-11-02T17:59:42+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -627,6 +627,11 @@
           "t": "2026-11-02T17:40:06+01:00",
           "by": "consultor",
           "msg": "Importante: el tester debe mirar el resultado real de la ejecución en GitHub, no solo el YAML. La imagen del conector no se cachea: tarjeta aparte si CI resulta lenta."
+        },
+        {
+          "t": "2026-11-02T17:53:15+01:00",
+          "by": "consultor",
+          "msg": "Primera ejecución completa (run 41484128862): panel y scripts en verde; Java 8 min hasta fallar por DuckDbIcebergSpikeIT, de T-014, no por el workflow. Los IT del conector pasaron en GitHub. Falta una ejecución entera en verde para cerrar."
         }
       ]
     },
@@ -1004,6 +1009,11 @@
           "t": "2026-11-02T17:38:48+01:00",
           "by": "investigador",
           "msg": "Empiezo: experimento DuckDB+Iceberg"
+        },
+        {
+          "t": "2026-11-02T17:53:15+01:00",
+          "by": "consultor",
+          "msg": "CI en develop falla por esta prueba: DuckDbIcebergSpikeIT.explore da 'SQL Statement was closed' (run 41484128862) y tumba la suite. Un experimento de investigación no debe romper el build: arréglalo, o sácalo de la suite (etiqueta o perfil) antes de cerrar la tarjeta."
         }
       ]
     },
@@ -2695,7 +2705,7 @@
       "id": "T-072",
       "title": "Hacer que el conector de Iceberg funcione de verdad",
       "owner": "desarrollador",
-      "status": "review",
+      "status": "done",
       "priority": "alta",
       "estimate_min": 45.0,
       "actual_min": 34.6,
@@ -2706,7 +2716,7 @@
         "T-090"
       ],
       "created": "2026-11-02T16:45:27+01:00",
-      "updated": "2026-11-02T17:34:55+01:00",
+      "updated": "2026-11-02T17:59:42+01:00",
       "started_at": "2026-11-02T17:00:21+01:00",
       "finished_at": "2026-11-02T17:34:55+01:00",
       "log": [
@@ -2749,6 +2759,16 @@
           "t": "2026-11-02T17:37:28+01:00",
           "by": "tú",
           "msg": "✓ permiso concedido: docker *"
+        },
+        {
+          "t": "2026-11-02T17:42:34+01:00",
+          "by": "tester",
+          "msg": "verificando"
+        },
+        {
+          "t": "2026-11-02T17:59:42+01:00",
+          "by": "tester",
+          "msg": "DONE: Conector verificado: tarea sin fallos y fila leída en `IcebergSinkFlowIT`, suites en verde y `./mk up` sin error sobre el stack existente; arranque desde cero y evento en el stack real quedan sin probar (T-089 cubre el arranque)."
         }
       ],
       "runs": [
@@ -2761,8 +2781,19 @@
           "tokens": 537408,
           "cost_usd": 2.03465,
           "verdict": "review"
+        },
+        {
+          "agent": "tester",
+          "mode": "verify",
+          "at": "2026-11-02T17:59:42+01:00",
+          "min": 17.1,
+          "turns": 26,
+          "tokens": 662833,
+          "cost_usd": 1.2758904,
+          "verdict": "done"
         }
-      ]
+      ],
+      "verify_started": "2026-11-02T17:42:34+01:00"
     },
     {
       "id": "T-073",
@@ -2790,6 +2821,11 @@
           "t": "2026-11-02T16:45:52+01:00",
           "by": "consultor",
           "msg": "Evita que develop vuelva a quedar sin compilar"
+        },
+        {
+          "t": "2026-11-02T17:53:25+01:00",
+          "by": "consultor",
+          "msg": "Segundo síntoma del mismo código (commit_own): el commit de T-013 (6897776, carril medir) se llevó DuckDbIcebergSpikeIT, trabajo a medias de T-014 (carril pensar), porque cambió durante su ejecución; CI falló por ello. Con dos carriles en la misma copia, comparar snapshots no basta: una tarjeta debe confirmar solo lo suyo. También hay que averiguar quién subió 6897776 a origin: el runner no debería hacer push."
         }
       ]
     },
@@ -3287,6 +3323,11 @@
           "t": "2026-11-02T17:34:39+01:00",
           "by": "consultor",
           "msg": "descripción reescrita"
+        },
+        {
+          "t": "2026-11-02T17:59:15+01:00",
+          "by": "consultor",
+          "msg": "Tester (T-072): ./mk up ejecutado sobre el stack ya existente, sin borrar volúmenes: código 0, imagen de Connect reconstruida en 8.1.0, connect-init respondió 200 y el log del worker no tiene errores. Sigue pendiente: mirar el estado RUNNING en /connectors/iceberg-sink/status, y comprobar un arranque desde cero (no se borraron datos)."
         }
       ]
     },
@@ -3585,14 +3626,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-013",
-      "message": "tester con T-013",
+      "current": "T-072",
+      "message": "tester con T-072",
       "pid": 6932,
-      "heartbeat": "2026-11-02T17:35:00+01:00",
+      "heartbeat": "2026-11-02T17:42:34+01:00",
       "enabled": true,
       "agent": "tester",
-      "started": "2026-11-02T17:35:00+01:00",
-      "live": "live-T-013-tester-20261102-173500.jsonl"
+      "started": "2026-11-02T17:42:34+01:00",
+      "live": "live-T-072-tester-20261102-174234.jsonl"
     }
   }
 }

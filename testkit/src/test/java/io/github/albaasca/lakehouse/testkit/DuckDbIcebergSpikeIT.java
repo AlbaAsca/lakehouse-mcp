@@ -1,266 +1,524 @@
 package io.github.albaasca.lakehouse.testkit;
 
-import java.io.PrintWriter;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.List;
+import org.duckdb.DuckDBConnection;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
-/** Exploration pass: records what each statement does, to decide the assertions. */
+/**
+ * What DuckDB 2.0 really does with Iceberg through Polaris without STS. Each test answers a question of
+ * docs/spike-duckdb-iceberg.md, so a DuckDB upgrade that changes an answer breaks here first.
+ */
 class DuckDbIcebergSpikeIT {
 
-    private static final String T = "lh.spike.events";
-    private PrintWriter out;
-    private Statement st;
+    private static final String DAY_1 = "TIMESTAMP '2026-01-01 10:00:00'";
+    private static final String DAY_2 = "TIMESTAMP '2026-01-02 10:00:00'";
+    private static final String READ_ONLY_REFUSAL = "read-only mode";
+
+    private static LakehouseStack stack;
+    private static Connection writer;
+
+    @BeforeAll
+    static void attach() throws Exception {
+        stack = LakehouseStack.shared();
+        writer = DriverManager.getConnection("jdbc:duckdb:");
+        stack.attachDuckDb(writer);
+        exec("CREATE SCHEMA IF NOT EXISTS lh.spike");
+    }
+
+    @AfterAll
+    static void close() throws Exception {
+        writer.close();
+    }
+
+    // Question 1: INSERT into a table partitioned by day(ts), event_type.
 
     @Test
-    void explore() throws Exception {
-        LakehouseStack stack = LakehouseStack.shared();
-        Files.createDirectories(Path.of("target"));
-        try (PrintWriter writer = new PrintWriter(Files.newBufferedWriter(Path.of("target/spike-probe.txt")), true);
-                Connection c = DriverManager.getConnection("jdbc:duckdb:");
-                Statement s = c.createStatement()) {
-            out = writer;
-            st = s;
-            stack.attachDuckDb(c);
-            run();
-            readOnly(stack);
-        }
+    void insertWritesOneFilePerPartition() throws Exception {
+        String t = events("q1");
+
+        exec("INSERT INTO " + t + " VALUES (1, " + DAY_1 + ", 'view', 100), (2, " + DAY_1 + ", 'cart', 100), (3, "
+                + DAY_2 + ", 'view', 200)");
+
+        assertThat(rows("SELECT event_id, event_type, user_id FROM " + t + " ORDER BY event_id"))
+                .containsExactly("1|view|100", "2|cart|100", "3|view|200");
+        assertThat(rows("SELECT transform, source_column FROM iceberg_partition_specs(" + t + ") ORDER BY field_id"))
+                .containsExactly("day|ts", "identity|event_type");
+        List<String> files = rows("SELECT file_path FROM iceberg_metadata(" + t + ") WHERE content = 'DATA'");
+        assertThat(files).hasSize(3);
+        assertThat(files).filteredOn(f -> f.contains("=20454/") && f.contains("=cart/")).hasSize(1);
+        assertThat(files).filteredOn(f -> f.contains("=20454/") && f.contains("=view/")).hasSize(1);
+        assertThat(files).filteredOn(f -> f.contains("=20455/") && f.contains("=view/")).hasSize(1);
     }
 
-    private void run() throws Exception {
-        p("SELECT version()");
-        p("SELECT extension_name, extension_version FROM duckdb_extensions() WHERE extension_name IN ('iceberg','httpfs')");
-        p("CREATE SCHEMA lh.spike");
-        // Q1
-        p("CREATE TABLE " + T + " (event_id BIGINT, ts TIMESTAMP, event_type VARCHAR, user_id BIGINT, price DOUBLE)"
-                + " PARTITIONED BY (day(ts), event_type)");
-        p("INSERT INTO " + T + " VALUES (1, TIMESTAMP '2026-01-01 10:00:00', 'view', 100, 1.0),"
-                + "(2, TIMESTAMP '2026-01-01 11:00:00', 'cart', 100, 2.0),"
-                + "(3, TIMESTAMP '2026-01-02 10:00:00', 'view', 200, 3.0)");
-        p("SELECT * FROM " + T + " ORDER BY event_id");
-        p("SELECT * FROM iceberg_partition_stats(" + T + ")");
-        p("SELECT * FROM iceberg_partition_specs(" + T + ")");
-        p("SELECT * FROM iceberg_table_properties(" + T + ")");
-        // TIMESTAMPTZ variant, the type a sink would use for an instant
-        p("CREATE TABLE lh.spike.events_tz (event_id BIGINT, ts TIMESTAMPTZ, event_type VARCHAR) PARTITIONED BY (day(ts), event_type)");
-        p("INSERT INTO lh.spike.events_tz VALUES (1, TIMESTAMPTZ '2026-01-01 10:00:00+00', 'view')");
-        p("SELECT * FROM lh.spike.events_tz");
-        // Q3
-        p("SELECT * FROM iceberg_snapshots(" + T + ")");
-        p("SELECT * FROM iceberg_snapshots('" + T + "')");
-        p("SELECT * FROM iceberg_metadata(" + T + ")");
-        p("SELECT * FROM iceberg_files(" + T + ")");
-        p("SELECT * FROM iceberg_history(" + T + ")");
-        p("SELECT * FROM iceberg_load_table_response(" + T + ")");
-        String first = one("SELECT snapshot_id FROM iceberg_snapshots(" + T + ") ORDER BY sequence_number DESC LIMIT 1");
-        p("INSERT INTO " + T + " VALUES (4, TIMESTAMP '2026-01-02 12:00:00', 'cart', 200, 4.0)");
-        // Q2
-        p("SELECT count(*) FROM " + T);
-        p("SELECT count(*) FROM " + T + " AT (VERSION => " + first + ")");
-        p("SELECT count(*) FROM iceberg_scan('" + T + "', snapshot_from_id = " + first + ")");
-        p("SELECT count(*) FROM iceberg_scan(" + T + ", snapshot_from_id = " + first + ")");
-        String ms = one("SELECT timestamp_ms FROM iceberg_snapshots(" + T + ") WHERE snapshot_id = " + first);
-        p("SELECT count(*) FROM " + T + " AT (TIMESTAMP => TIMESTAMP '" + ms + "')");
-        p("SELECT count(*) FROM " + T + " AT (VERSION => 12345)");
-        p("SELECT count(*) FROM " + T + " AT (VERSION => " + first + "::BIGINT)");
-        // Q4: virtual columns
-        p("SELECT file_path, file_row_number, event_id FROM " + T + " ORDER BY event_id");
-        p("SELECT filename, file_row_number, event_id FROM " + T + " ORDER BY event_id");
-        p("SELECT rowid, event_id FROM " + T + " ORDER BY event_id");
-        p("DELETE FROM " + T + " WHERE event_id = 4");
-        p("SELECT event_id FROM " + T + " ORDER BY event_id");
-        p("SELECT * FROM iceberg_snapshots(" + T + ")");
-        p("SELECT * FROM iceberg_files(" + T + ")");
-        p("SELECT count(*) FROM " + T + " AT (VERSION => " + first + ")");
-        // Q4: delete a whole partition
-        p("DELETE FROM " + T + " WHERE ts >= TIMESTAMP '2026-01-02' AND ts < TIMESTAMP '2026-01-03'");
-        p("SELECT event_id FROM " + T + " ORDER BY event_id");
-        // Q4: duplicates in the same file
-        p("INSERT INTO " + T + " VALUES (9, TIMESTAMP '2026-01-05 10:00:00', 'view', 900, 9.0),"
-                + "(9, TIMESTAMP '2026-01-05 10:00:00', 'view', 900, 9.0)");
-        p("SELECT file_path, file_row_number, event_id FROM " + T + " WHERE event_id = 9");
-        p("DELETE FROM " + T + " WHERE event_id = 9 AND file_row_number = 1");
-        p("SELECT file_path, file_row_number, event_id FROM " + T + " WHERE event_id = 9");
-        // Q4: duplicates in different files
-        p("INSERT INTO " + T + " VALUES (10, TIMESTAMP '2026-01-06 10:00:00', 'view', 900, 9.0)");
-        p("INSERT INTO " + T + " VALUES (10, TIMESTAMP '2026-01-06 10:00:00', 'view', 900, 9.0)");
-        p("SELECT file_path, file_row_number, event_id FROM " + T + " WHERE event_id = 10");
-        String keep = one("SELECT max(file_path) FROM " + T + " WHERE event_id = 10");
-        p("DELETE FROM " + T + " WHERE event_id = 10 AND file_path = '" + keep + "' AND file_row_number = 0");
-        p("SELECT file_path, file_row_number, event_id FROM " + T + " WHERE event_id = 10");
-        // Q4: rowid based and generic duplicate removal, three copies
-        p("INSERT INTO " + T + " VALUES (11, TIMESTAMP '2026-01-07 10:00:00', 'view', 900, 9.0)");
-        p("INSERT INTO " + T + " VALUES (11, TIMESTAMP '2026-01-07 10:00:00', 'view', 900, 9.0),(11, TIMESTAMP '2026-01-07 10:00:00', 'view', 900, 9.0)");
-        p("SELECT rowid, file_path, file_row_number FROM " + T + " WHERE event_id = 11");
-        p("DELETE FROM " + T + " WHERE event_id = 11 AND (file_path, file_row_number) IN ("
-                + "SELECT file_path, file_row_number FROM (SELECT file_path, file_row_number, row_number() OVER"
-                + " (PARTITION BY event_id ORDER BY file_path, file_row_number) rn FROM " + T + " WHERE event_id = 11) WHERE rn > 1)");
-        p("SELECT rowid, file_path, file_row_number FROM " + T + " WHERE event_id = 11");
-        // Q4: rewrite of a partition in a transaction
-        p("INSERT INTO " + T + " VALUES (12, TIMESTAMP '2026-01-08 10:00:00', 'view', 900, 9.0),(12, TIMESTAMP '2026-01-08 10:00:00', 'view', 900, 9.0)");
-        String before = one("SELECT count(*) FROM iceberg_snapshots(" + T + ")");
-        p("BEGIN");
-        p("CREATE TEMP TABLE keep AS SELECT DISTINCT * FROM " + T + " WHERE ts >= TIMESTAMP '2026-01-08' AND ts < TIMESTAMP '2026-01-09'");
-        p("DELETE FROM " + T + " WHERE ts >= TIMESTAMP '2026-01-08' AND ts < TIMESTAMP '2026-01-09'");
-        p("INSERT INTO " + T + " SELECT * FROM keep");
-        p("COMMIT");
-        p("SELECT event_id FROM " + T + " WHERE event_id = 12");
-        out.println("snapshots before rewrite: " + before + " after: "
-                + one("SELECT count(*) FROM iceberg_snapshots(" + T + ")"));
-        p("SELECT * FROM iceberg_metadata(" + T + ")");
-        // Table created over REST, like a table not created by DuckDB: no write.delete.mode, spec from the catalog
-        restTable();
-        // Q6
-        for (String sql : List.of(
-                "SELECT 1",
-                "SELECT 1; SELECT 2",
-                "DROP TABLE x",
-                "INSERT INTO x VALUES (1)",
-                "DELETE FROM x",
-                "UPDATE x SET a = 1",
-                "CREATE TABLE x (a INT)",
-                "CREATE TABLE x AS SELECT 1",
-                "COPY x TO 'y.csv'",
-                "ATTACH 'x.db'",
-                "SET enable_external_access = true",
-                "PRAGMA version",
-                "CALL pragma_version()",
-                "INSTALL x",
-                "LOAD x",
-                "EXPLAIN SELECT 1",
-                "DESCRIBE x",
-                "SHOW TABLES",
-                "SUMMARIZE x",
-                "VALUES (1)",
-                "FROM x",
-                "PIVOT x ON a USING sum(b)",
-                "WITH c AS (SELECT 1) SELECT * FROM c",
-                "SELECT * FROM read_csv('/etc/passwd')",
-                "FROM read_csv('/etc/passwd')",
-                "SELECT * FROM '/etc/passwd'",
-                "SELECT * FROM 's3://b/x.parquet'",
-                "SELECT * FROM glob('*')",
-                "SELECT * FROM query('SELECT 1')",
-                "SELECT * FROM query_table('x')",
-                "SELECT * FROM lh.spike.events AT (VERSION => 1)",
-                "SELECT * FROM iceberg_snapshots(lh.spike.events)",
-                "SELECT * FROM (SELECT * FROM read_text('/etc/passwd')) t",
-                "SELECT (SELECT content FROM read_text('/etc/passwd'))",
-                "SELECT getenv('HOME')",
-                "SELECT * FROM x, LATERAL read_csv(a)",
-                "SELECT 1 UNION ALL SELECT * FROM read_csv('a')")) {
-            out.println("--- json_serialize_sql: " + sql);
-            p("SELECT json_serialize_sql('" + sql.replace("'", "''") + "')");
-        }
-        // Q7
-        p("SET VARIABLE salt = 'pepper'");
-        p("CREATE TEMP VIEW events_masked AS SELECT event_id, ts, event_type, md5('pepper' || user_id::VARCHAR) AS user_id, price FROM " + T);
-        p("SELECT * FROM events_masked ORDER BY event_id LIMIT 3");
-        p("SELECT user_id, count(*) FROM events_masked GROUP BY 1 ORDER BY 2 DESC");
-        p("SELECT * FROM temp.main.events_masked LIMIT 1");
-        p("SELECT * FROM events_masked AT (VERSION => " + first + ")");
-        p("SELECT json_serialize_sql('SELECT * FROM events_masked')");
-        p("EXPLAIN SELECT event_type FROM events_masked WHERE event_type = 'view'");
-        p("CREATE VIEW lh.spike.events_catalog_view AS SELECT event_id FROM " + T);
-        p("SELECT * FROM lh.spike.events_catalog_view LIMIT 1");
-        // Bonus: operations the architecture assigns elsewhere
-        p("SELECT count(*) FROM " + T);
-        p("CALL iceberg_rollback_to_snapshot('" + T + "', " + first + ")");
-        p("SELECT * FROM iceberg_rollback_to_snapshot('" + T + "', " + first + ")");
-        p("SELECT count(*) FROM " + T);
-        p("CALL iceberg_rewrite_data_files('" + T + "')");
-        p("SELECT * FROM iceberg_rewrite_data_files('" + T + "')");
-        p("SELECT * FROM iceberg_files(" + T + ")");
+    // Question 2: time travel.
+
+    @Test
+    void timeTravelWorksWithAtClauseAndWithSnapshotFromId() throws Exception {
+        String t = events("q2");
+        exec("INSERT INTO " + t + " VALUES (1, " + DAY_1 + ", 'view', 100)");
+        String old = latestSnapshot(t);
+        String oldTime = value("SELECT timestamp_ms FROM iceberg_snapshots(" + t + ") WHERE snapshot_id = " + old);
+        exec("INSERT INTO " + t + " VALUES (2, " + DAY_1 + ", 'view', 100)");
+        exec("DELETE FROM " + t + " WHERE event_id = 1");
+
+        assertThat(rows("SELECT event_id FROM " + t)).containsExactly("2");
+        assertThat(rows("SELECT event_id FROM " + t + " AT (VERSION => " + old + ")")).containsExactly("1");
+        assertThat(rows("SELECT event_id FROM " + t + " AT (TIMESTAMP => TIMESTAMP '" + oldTime + "')"))
+                .containsExactly("1");
+        assertThat(rows("SELECT event_id FROM iceberg_scan(" + t + ", snapshot_from_id = " + old + ")"))
+                .containsExactly("1");
+        assertThat(rows("SELECT event_id FROM iceberg_scan('" + t + "', snapshot_from_id = " + old + ")"))
+                .containsExactly("1");
+        assertThatThrownBy(() -> rows("SELECT event_id FROM " + t + " AT (VERSION => 12345)"))
+                .hasMessageContaining("Could not find snapshot with id 12345");
     }
 
-    private void restTable() throws Exception {
-        LakehouseStack stack = LakehouseStack.shared();
-        String body = """
-                {"name":"rest_events","schema":{"type":"struct","schema-id":0,"fields":[
-                 {"id":1,"name":"event_id","required":false,"type":"long"},
-                 {"id":2,"name":"ts","required":false,"type":"timestamptz"},
-                 {"id":3,"name":"event_type","required":false,"type":"string"}]},
-                 "partition-spec":{"spec-id":0,"fields":[
-                 {"source-id":2,"field-id":1000,"name":"ts_day","transform":"day"},
-                 {"source-id":3,"field-id":1001,"name":"event_type","transform":"identity"}]}}""";
-        var response = java.net.http.HttpClient.newHttpClient().send(
-                java.net.http.HttpRequest.newBuilder(java.net.URI.create(
-                                stack.polarisUrl() + "/api/catalog/v1/lakehouse/namespaces/spike/tables"))
+    // Question 3: iceberg_snapshots and iceberg_metadata.
+
+    @Test
+    void snapshotsAndMetadataDescribeEachCommit() throws Exception {
+        String t = events("q3");
+        exec("INSERT INTO " + t + " VALUES (1, " + DAY_1 + ", 'view', 100), (2, " + DAY_1 + ", 'view', 100)");
+        exec("DELETE FROM " + t + " WHERE event_id = 1");
+
+        assertThat(rows("SELECT sequence_number, parent_id IS NULL, operation FROM iceberg_snapshots(" + t
+                + ") ORDER BY sequence_number")).containsExactly("1|true|append", "2|false|delete");
+        assertThat(rows("SELECT manifest_content, status, content, record_count FROM iceberg_metadata(" + t
+                + ") ORDER BY manifest_sequence_number")).containsExactly(
+                "DATA|ADDED|DATA|2", "DELETE|ADDED|POSITION_DELETES|1");
+        assertThat(value("SELECT count(*) FROM iceberg_snapshots('" + t + "')")).isEqualTo("2");
+    }
+
+    // Question 4: DELETE in a partitioned table, and removing one of two identical rows.
+
+    @Test
+    void deleteByPartitionRangeLeavesTheOtherPartitions() throws Exception {
+        String t = events("q4_range");
+        exec("INSERT INTO " + t + " VALUES (1, " + DAY_1 + ", 'view', 100), (2, " + DAY_2 + ", 'view', 100), (3, "
+                + DAY_2 + ", 'cart', 100)");
+
+        assertThat(update("DELETE FROM " + t + " WHERE ts >= " + DAY_2 + " AND ts < TIMESTAMP '2026-01-03'"))
+                .isEqualTo(2);
+
+        assertThat(rows("SELECT event_id FROM " + t)).containsExactly("1");
+    }
+
+    @Test
+    void removesOneOfTwoIdenticalRowsInTheSameFile() throws Exception {
+        String t = events("q4_same_file");
+        exec("INSERT INTO " + t + " VALUES (9, " + DAY_1 + ", 'view', 900), (9, " + DAY_1 + ", 'view', 900)");
+        assertThat(rows("SELECT file_row_number FROM " + t + " ORDER BY 1")).containsExactly("0", "1");
+
+        assertThat(update("DELETE FROM " + t + " WHERE event_id = 9 AND file_row_number = 1")).isEqualTo(1);
+
+        assertThat(rows("SELECT file_row_number, event_id FROM " + t)).containsExactly("0|9");
+    }
+
+    @Test
+    void removesOneOfTwoIdenticalRowsInDifferentFiles() throws Exception {
+        String t = events("q4_two_files");
+        exec("INSERT INTO " + t + " VALUES (10, " + DAY_1 + ", 'view', 900)");
+        exec("INSERT INTO " + t + " VALUES (10, " + DAY_1 + ", 'view', 900)");
+        List<String> files = rows("SELECT filename FROM " + t + " ORDER BY 1");
+        assertThat(files).hasSize(2).doesNotHaveDuplicates();
+
+        assertThat(update("DELETE FROM " + t + " WHERE filename = '" + files.get(1) + "' AND file_row_number = 0"))
+                .isEqualTo(1);
+
+        assertThat(rows("SELECT filename FROM " + t)).containsExactly(files.get(0));
+    }
+
+    /** The statement a repair would use: no file names known in advance, whichever files the copies are in. */
+    @Test
+    void windowFunctionKeepsOneCopyOfEachDuplicate() throws Exception {
+        String t = events("q4_window");
+        exec("INSERT INTO " + t + " VALUES (11, " + DAY_1 + ", 'view', 900), (12, " + DAY_1 + ", 'view', 900)");
+        exec("INSERT INTO " + t + " VALUES (11, " + DAY_1 + ", 'view', 900), (11, " + DAY_1 + ", 'view', 900)");
+
+        assertThat(update(dedupe(t))).isEqualTo(2);
+
+        assertThat(rows("SELECT event_id FROM " + t + " ORDER BY 1")).containsExactly("11", "12");
+    }
+
+    @Test
+    void repeatedDeletesOnTheSameFileAccumulate() throws Exception {
+        String t = events("q4_twice");
+        exec("INSERT INTO " + t + " VALUES (1, " + DAY_1 + ", 'view', 1), (2, " + DAY_1 + ", 'view', 2), (3, " + DAY_1
+                + ", 'view', 3)");
+
+        exec("DELETE FROM " + t + " WHERE event_id = 2");
+        exec("DELETE FROM " + t + " WHERE event_id = 3");
+
+        assertThat(rows("SELECT event_id FROM " + t)).containsExactly("1");
+        assertThat(value("SELECT count(*) FROM iceberg_metadata(" + t + ") WHERE content = 'POSITION_DELETES'"))
+                .isEqualTo("2");
+    }
+
+    /** The real table comes from the sink, not from DuckDB: spec and properties are the ones the catalog defaults to. */
+    @Test
+    void deletesInATableCreatedThroughTheCatalogApi() throws Exception {
+        String t = "lh.spike.q4_rest";
+        HttpResponse<String> created = HttpClient.newHttpClient().send(
+                HttpRequest.newBuilder(URI.create(stack.polarisUrl() + "/api/catalog/v1/lakehouse/namespaces/spike/tables"))
                         .header("Authorization", "Bearer " + stack.polarisToken())
                         .header("Polaris-Realm", LakehouseStack.REALM)
                         .header("Content-Type", "application/json")
-                        .POST(java.net.http.HttpRequest.BodyPublishers.ofString(body))
+                        .POST(HttpRequest.BodyPublishers.ofString("""
+                                {"name":"q4_rest","schema":{"type":"struct","schema-id":0,"fields":[
+                                 {"id":1,"name":"event_id","required":false,"type":"long"},
+                                 {"id":2,"name":"event_time","required":false,"type":"timestamptz"},
+                                 {"id":3,"name":"event_type","required":false,"type":"string"}]},
+                                 "partition-spec":{"spec-id":0,"fields":[
+                                 {"source-id":2,"field-id":1000,"name":"event_time_day","transform":"day"},
+                                 {"source-id":3,"field-id":1001,"name":"event_type","transform":"identity"}]}}"""))
                         .build(),
-                java.net.http.HttpResponse.BodyHandlers.ofString());
-        out.println("REST create: " + response.statusCode() + " " + response.body().substring(0, Math.min(600, response.body().length())));
-        String r = "lh.spike.rest_events";
-        p("SELECT * FROM iceberg_table_properties(" + r + ")");
-        p("INSERT INTO " + r + " VALUES (1, TIMESTAMPTZ '2026-01-01 10:00:00+00', 'view'),(1, TIMESTAMPTZ '2026-01-01 10:00:00+00', 'view'),(2, TIMESTAMPTZ '2026-01-02 10:00:00+00', 'cart')");
-        p("SELECT file_path, file_row_number, event_id FROM " + r + " ORDER BY 3,2");
-        p("DELETE FROM " + r + " WHERE event_id = 1 AND file_row_number = 1");
-        p("DELETE FROM " + r + " WHERE event_id = 2");
-        p("SELECT file_path, file_row_number, event_id FROM " + r + " ORDER BY 3,2");
+                HttpResponse.BodyHandlers.ofString());
+        assertThat(created.statusCode()).as(created.body()).isEqualTo(200);
+        String instant = "TIMESTAMPTZ '2026-01-01 10:00:00+00'";
+        exec("INSERT INTO " + t + " VALUES (1, " + instant + ", 'view'), (1, " + instant + ", 'view'), (2, " + instant
+                + ", 'cart')");
+
+        assertThat(update("DELETE FROM " + t + " WHERE event_id = 1 AND file_row_number = 1")).isEqualTo(1);
+        assertThat(update("DELETE FROM " + t + " WHERE event_type = 'cart'")).isEqualTo(1);
+
+        assertThat(rows("SELECT event_id, file_row_number FROM " + t)).containsExactly("1|0");
     }
 
-    private void readOnly(LakehouseStack stack) throws Exception {
-        p("ATTACH 'lakehouse' AS ro (TYPE iceberg, READ_ONLY, URI '" + stack.polarisUrl()
-                + "/api/catalog', SECRET lakehouse_polaris, ACCESS_DELEGATION_MODE 'none')");
-        p("SELECT database_name, readonly FROM duckdb_databases() WHERE database_name IN ('lh','ro')");
-        p("SELECT count(*) FROM ro.spike.events");
-        String snap = one("SELECT snapshot_id FROM iceberg_snapshots(ro.spike.events) ORDER BY sequence_number LIMIT 1");
-        p("SELECT count(*) FROM ro.spike.events AT (VERSION => " + snap + ")");
-        p("INSERT INTO ro.spike.events (event_id) VALUES (99)");
-        p("DELETE FROM ro.spike.events");
-        p("UPDATE ro.spike.events SET price = 0");
-        p("DROP TABLE ro.spike.events");
-        p("CREATE TABLE ro.spike.x (a INT)");
-        p("CREATE SCHEMA ro.spike2");
-        p("ALTER TABLE ro.spike.events ADD COLUMN z INT");
-        p("CALL set_iceberg_table_properties('ro.spike.events', {'a': 'b'})");
-        p("CALL iceberg_rollback_to_snapshot('ro.spike.events', " + snap + ")");
-        p("SELECT * FROM iceberg_rollback_to_snapshot('ro.spike.events', " + snap + ")");
-        p("SELECT count(*) FROM ro.spike.events");
-        p("CREATE TEMP VIEW ro_masked AS SELECT event_id, md5(user_id::VARCHAR) u FROM ro.spike.events");
-        p("SELECT * FROM ro_masked LIMIT 1");
+    /** The way out if row-level deletes were not an option. Two snapshots: the intermediate one has the partition empty. */
+    @Test
+    void rewritingAPartitionInATransactionLeavesTwoSnapshots() throws Exception {
+        String t = events("q4_rewrite");
+        exec("INSERT INTO " + t + " VALUES (12, " + DAY_1 + ", 'view', 900), (12, " + DAY_1 + ", 'view', 900)");
+        String where = " WHERE ts >= " + DAY_1 + " AND ts < " + DAY_2;
+
+        exec("BEGIN");
+        exec("CREATE TEMP TABLE rewrite_keep AS SELECT DISTINCT * FROM " + t + where);
+        exec("DELETE FROM " + t + where);
+        exec("INSERT INTO " + t + " SELECT * FROM rewrite_keep");
+        exec("COMMIT");
+
+        assertThat(rows("SELECT event_id FROM " + t)).containsExactly("12");
+        List<String> snapshots =
+                rows("SELECT snapshot_id FROM iceberg_snapshots(" + t + ") ORDER BY sequence_number");
+        assertThat(snapshots).hasSize(3);
+        assertThat(rows("SELECT event_id FROM " + t + " AT (VERSION => " + snapshots.get(1) + ")")).isEmpty();
     }
 
-    private void p(String sql) {
-        out.println(">>> " + sql);
-        try (ResultSet rs = st.execute(sql) ? st.getResultSet() : null) {
-            if (rs == null) {
-                out.println("OK, updates=" + st.getUpdateCount());
-                return;
+    // Question 5: ATTACH ... READ_ONLY.
+
+    @Test
+    void readOnlyAttachReadsAndRefusesEveryWrite() throws Exception {
+        String t = events("q5");
+        exec("INSERT INTO " + t + " VALUES (1, " + DAY_1 + ", 'view', 100)");
+        String snapshot = latestSnapshot(t);
+        try (Connection reader = readOnlyConnection()) {
+            String ro = "ro.spike.q5";
+            assertThat(rows(reader, "SELECT readonly FROM duckdb_databases() WHERE database_name = 'ro'"))
+                    .containsExactly("true");
+            assertThat(rows(reader, "SELECT event_id FROM " + ro + " AT (VERSION => " + snapshot + ")"))
+                    .containsExactly("1");
+
+            for (String write : List.of(
+                    "INSERT INTO " + ro + " (event_id) VALUES (2)",
+                    "DELETE FROM " + ro,
+                    "UPDATE " + ro + " SET user_id = 0",
+                    "DROP TABLE " + ro,
+                    "CREATE TABLE ro.spike.q5_new (a INT)",
+                    "ALTER TABLE " + ro + " ADD COLUMN z INT",
+                    "CALL set_iceberg_table_properties('" + ro + "', {'a': 'b'})",
+                    "CALL iceberg_rollback_to_snapshot('" + ro + "', " + snapshot + ")",
+                    "SELECT * FROM iceberg_rollback_to_snapshot('" + ro + "', " + snapshot + ")")) {
+                assertThatThrownBy(() -> rows(reader, write)).as(write).hasMessageContaining(READ_ONLY_REFUSAL);
             }
-            int n = rs.getMetaData().getColumnCount();
-            StringBuilder header = new StringBuilder();
-            for (int i = 1; i <= n; i++) {
-                header.append(rs.getMetaData().getColumnName(i)).append(" | ");
-            }
-            out.println(header);
-            for (int row = 0; rs.next() && row < 30; row++) {
-                StringBuilder line = new StringBuilder();
-                for (int i = 1; i <= n; i++) {
-                    String v = String.valueOf(rs.getObject(i));
-                    line.append(v.length() > 1500 ? v.substring(0, 1500) + "..." : v).append(" | ");
-                }
-                out.println(line);
-            }
-        } catch (SQLException e) {
-            String m = e.getMessage();
-            out.println("ERROR: " + (m.length() > 500 ? m.substring(0, 500) + "..." : m));
+            assertThat(rows(reader, "SELECT event_id FROM " + ro)).containsExactly("1");
         }
     }
 
-    private String one(String sql) throws SQLException {
-        try (ResultSet rs = st.executeQuery(sql)) {
-            rs.next();
-            return rs.getString(1);
+    /** The server keeps one reader open while the sink and the repairs commit from elsewhere. */
+    @Test
+    void readOnlyAttachSeesLaterCommitsFromAnotherInstance() throws Exception {
+        String t = events("q5_fresh");
+        exec("INSERT INTO " + t + " VALUES (1, " + DAY_1 + ", 'view', 100)");
+        try (Connection reader = readOnlyConnection()) {
+            String ro = "ro.spike.q5_fresh";
+            assertThat(rows(reader, "SELECT event_id FROM " + ro)).containsExactly("1");
+
+            exec("INSERT INTO " + t + " VALUES (2, " + DAY_1 + ", 'view', 100)");
+
+            assertThat(rows(reader, "SELECT event_id FROM " + ro + " ORDER BY 1")).containsExactly("1", "2");
+        }
+    }
+
+    // Question 6: json_serialize_sql as the validator's parser.
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+        "DROP TABLE x", "INSERT INTO x VALUES (1)", "DELETE FROM x", "UPDATE x SET a = 1", "CREATE TABLE x (a INT)",
+        "CREATE TABLE x AS SELECT 1", "COPY x TO 'y.csv'", "ATTACH 'x.db'", "SET enable_external_access = true",
+        "PRAGMA version", "CALL pragma_version()", "INSTALL x", "LOAD x", "EXPLAIN SELECT 1",
+        "PIVOT x ON a USING sum(b)"
+    })
+    void serializerRejectsWhatIsNotASelect(String sql) throws Exception {
+        assertThat(serialize(sql)).contains("\"error\":true", "Only SELECT statements can be serialized to json!");
+    }
+
+    /** All of these come back as plain selects, so rejecting them is the validator's job: this is the node to look at. */
+    @ParameterizedTest
+    @CsvSource(delimiter = '#', quoteCharacter = '~', value = {
+        "SELECT * FROM read_csv('/etc/passwd') # \"type\":\"TABLE_FUNCTION\"",
+        "FROM read_csv('/etc/passwd') # \"type\":\"TABLE_FUNCTION\"",
+        "SELECT * FROM glob('*') # \"type\":\"TABLE_FUNCTION\"",
+        "SELECT * FROM query('SELECT 1') # \"type\":\"TABLE_FUNCTION\"",
+        "SELECT * FROM query_table('x') # \"type\":\"TABLE_FUNCTION\"",
+        "SELECT * FROM iceberg_rollback_to_snapshot('t', 1) # \"type\":\"TABLE_FUNCTION\"",
+        "SELECT * FROM (SELECT * FROM read_text('/etc/passwd')) t # \"type\":\"TABLE_FUNCTION\"",
+        "SELECT (SELECT content FROM read_text('/etc/passwd')) # \"type\":\"TABLE_FUNCTION\"",
+        "SELECT 1 UNION ALL SELECT * FROM read_csv('a') # \"type\":\"TABLE_FUNCTION\"",
+        "SELECT * FROM x, LATERAL read_csv(a) # \"type\":\"TABLE_FUNCTION\"",
+        "WITH c AS (SELECT * FROM read_csv('a')) SELECT * FROM c # \"type\":\"TABLE_FUNCTION\"",
+        "SELECT * FROM '/etc/passwd' # \"table_name\":\"/etc/passwd\"",
+        "SELECT * FROM 's3://b/x.parquet' # \"table_name\":\"s3://b/x.parquet\"",
+        "DESCRIBE x # \"type\":\"SHOW_REF\"",
+        "SUMMARIZE x # \"type\":\"SHOW_REF\"",
+        "SHOW TABLES # \"type\":\"SHOW_REF\"",
+        "SELECT getenv('HOME') # \"function_name\":\"getenv\"",
+        "SELECT * FROM t AT (VERSION => 1) # \"at_clause\":{\"unit\":\"VERSION\"",
+        "SELECT 1; SELECT 2 # },{\"node\":"
+    })
+    void serializerAcceptsThemAndTheNodeGivesThemAway(String sql, String node) throws Exception {
+        assertThat(serialize(sql)).contains("\"error\":false", node);
+    }
+
+    /** The reason for the "no table functions at all" rule: this select changes the table. */
+    @Test
+    void aSelectCanRollBackATableWhenTheCatalogIsWritable() throws Exception {
+        String t = events("q6_rollback");
+        exec("INSERT INTO " + t + " VALUES (1, " + DAY_1 + ", 'view', 100)");
+        String first = latestSnapshot(t);
+        exec("INSERT INTO " + t + " VALUES (2, " + DAY_1 + ", 'view', 100)");
+
+        rows("SELECT * FROM iceberg_rollback_to_snapshot('" + t + "', " + first + ")");
+
+        assertThat(rows("SELECT event_id FROM " + t)).containsExactly("1");
+    }
+
+    // Question 7: masking views over Iceberg tables.
+
+    @Test
+    void temporaryViewHashesTheUserAndKeepsGroupsOverAReadOnlyCatalog() throws Exception {
+        String t = events("q7");
+        exec("INSERT INTO " + t + " VALUES (1, " + DAY_1 + ", 'view', 100), (2, " + DAY_1 + ", 'cart', 100), (3, "
+                + DAY_2 + ", 'view', 200)");
+        try (Connection reader = readOnlyConnection()) {
+            exec(reader, "CREATE TEMP VIEW q7_masked AS SELECT event_id, event_type,"
+                    + " md5('salt' || user_id::VARCHAR) AS user_id FROM ro.spike.q7");
+
+            assertThat(rows(reader, "SELECT user_id FROM q7_masked ORDER BY event_id")).containsExactly(
+                    md5Of(reader, "salt100"), md5Of(reader, "salt100"), md5Of(reader, "salt200"));
+            assertThat(rows(reader, "SELECT count(*) AS n FROM q7_masked GROUP BY user_id ORDER BY n"))
+                    .containsExactly("1", "2");
+            assertThat(rows(reader, "EXPLAIN SELECT event_type FROM q7_masked WHERE event_type = 'view'").toString())
+                    .contains("Iceberg Scan", "Filters: event_type = 'view'");
+        }
+    }
+
+    /** A pool cannot share a temporary view: it needs one per connection, or a view in the local database. */
+    @Test
+    void temporaryViewBelongsToItsConnectionAndALocalViewToTheInstance() throws Exception {
+        String t = events("q7_scope");
+        exec("INSERT INTO " + t + " VALUES (1, " + DAY_1 + ", 'view', 100)");
+        try (Connection reader = readOnlyConnection();
+                Connection sibling = reader.unwrap(DuckDBConnection.class).duplicate()) {
+            exec(reader, "CREATE TEMP VIEW q7_temp AS SELECT event_id FROM ro.spike.q7_scope");
+            exec(reader, "CREATE VIEW memory.main.q7_local AS SELECT event_id FROM ro.spike.q7_scope");
+
+            assertThatThrownBy(() -> rows(sibling, "SELECT * FROM q7_temp")).hasMessageContaining("q7_temp");
+            assertThat(rows(sibling, "SELECT * FROM memory.main.q7_local")).containsExactly("1");
+            assertThat(rows(sibling, "SELECT event_id FROM ro.spike.q7_scope")).containsExactly("1");
+        }
+    }
+
+    /** Time travel does not go through a view, but a view can be pinned to a snapshot. */
+    @Test
+    void viewsCannotTimeTravelButCanBePinnedToASnapshot() throws Exception {
+        String t = events("q7_travel");
+        exec("INSERT INTO " + t + " VALUES (1, " + DAY_1 + ", 'view', 100)");
+        String old = latestSnapshot(t);
+        exec("INSERT INTO " + t + " VALUES (2, " + DAY_1 + ", 'view', 100)");
+        exec("CREATE TEMP VIEW q7_now AS SELECT event_id FROM " + t);
+        exec("CREATE TEMP VIEW q7_old AS SELECT event_id FROM " + t + " AT (VERSION => " + old + ")");
+
+        assertThatThrownBy(() -> rows("SELECT * FROM q7_now AT (VERSION => " + old + ")"))
+                .hasMessageContaining("does not support time travel");
+        assertThat(rows("SELECT * FROM q7_old")).containsExactly("1");
+    }
+
+    @Test
+    void viewInTheCatalogIsAlsoPossible() throws Exception {
+        String t = events("q7_catalog");
+        exec("INSERT INTO " + t + " VALUES (1, " + DAY_1 + ", 'view', 100)");
+        exec("CREATE VIEW lh.spike.q7_catalog_view AS SELECT event_id FROM " + t);
+
+        assertThat(rows("SELECT * FROM lh.spike.q7_catalog_view")).containsExactly("1");
+    }
+
+    // Beyond the questions: decisions 5 and 6 of docs/architecture.md give these to other tools.
+
+    @Test
+    void rollbackThroughDuckDb() throws Exception {
+        String t = events("x_rollback");
+        exec("INSERT INTO " + t + " VALUES (1, " + DAY_1 + ", 'view', 100)");
+        String first = latestSnapshot(t);
+        exec("INSERT INTO " + t + " VALUES (2, " + DAY_1 + ", 'view', 100)");
+
+        assertThat(rows("CALL iceberg_rollback_to_snapshot('" + t + "', " + first + ")").get(0)).endsWith("|" + first);
+
+        assertThat(rows("SELECT event_id FROM " + t)).containsExactly("1");
+    }
+
+    @Test
+    void addColumnThroughDuckDbKeepsOldRows() throws Exception {
+        String t = events("x_add_column");
+        exec("INSERT INTO " + t + " VALUES (1, " + DAY_1 + ", 'view', 100)");
+        String old = latestSnapshot(t);
+
+        exec("ALTER TABLE " + t + " ADD COLUMN channel VARCHAR");
+        exec("INSERT INTO " + t + " VALUES (2, " + DAY_1 + ", 'view', 100, 'web')");
+
+        assertThat(rows("SELECT event_id, channel FROM " + t + " ORDER BY 1")).containsExactly("1|null", "2|web");
+        assertThat(rows("SELECT event_id FROM " + t + " AT (VERSION => " + old + ")")).containsExactly("1");
+    }
+
+    @Test
+    void compactionThroughDuckDbAppliesDeletesAndMergesFiles() throws Exception {
+        String t = events("x_rewrite");
+        exec("INSERT INTO " + t + " VALUES (1, " + DAY_1 + ", 'view', 100)");
+        exec("INSERT INTO " + t + " VALUES (2, " + DAY_1 + ", 'view', 100)");
+        exec("INSERT INTO " + t + " VALUES (3, " + DAY_1 + ", 'view', 100)");
+        String beforeDelete = latestSnapshot(t);
+        exec("DELETE FROM " + t + " WHERE event_id = 2");
+
+        // By default it needs 5 candidate files per partition and does nothing with fewer.
+        assertThat(rows("CALL iceberg_rewrite_data_files('" + t + "')").get(0)).isEqualTo("0|0|0");
+        String result = rows("CALL iceberg_rewrite_data_files('" + t + "', min_input_files => 2)").get(0);
+
+        assertThat(result).startsWith("3|1|");
+        assertThat(rows("SELECT event_id FROM " + t + " ORDER BY 1")).containsExactly("1", "3");
+        // One data file, but the delete file stays registered: the docs announce a count of removed ones that this
+        // version of the extension does not return.
+        assertThat(rows("SELECT content FROM iceberg_files(" + t + ")")).containsExactlyInAnyOrder("0", "1");
+        assertThat(rows("SELECT event_id FROM " + t + " AT (VERSION => " + beforeDelete + ") ORDER BY 1"))
+                .containsExactly("1", "2", "3");
+    }
+
+    @Test
+    void noFunctionExpiresSnapshots() throws Exception {
+        assertThat(rows("SELECT DISTINCT function_name FROM duckdb_functions() WHERE function_name LIKE 'iceberg%'"))
+                .contains("iceberg_rollback_to_snapshot", "iceberg_rewrite_data_files")
+                .noneMatch(name -> name.contains("expire"));
+    }
+
+    // Driver behaviour that T-016 has to know about.
+
+    @Test
+    void aFailedStatementClosesItsJdbcStatementButNotTheConnection() throws Exception {
+        try (Statement statement = writer.createStatement()) {
+            assertThatThrownBy(() -> statement.execute("SELECT * FROM does_not_exist")).isInstanceOf(SQLException.class);
+            assertThatThrownBy(() -> statement.execute("SELECT 1")).hasMessageContaining("Statement was closed");
+        }
+        assertThat(value("SELECT 1")).isEqualTo("1");
+    }
+
+    private static String dedupe(String table) {
+        return "DELETE FROM " + table + " WHERE (filename, file_row_number) IN (SELECT filename, file_row_number FROM"
+                + " (SELECT filename, file_row_number, row_number() OVER (PARTITION BY event_id, ts, event_type, user_id"
+                + " ORDER BY filename, file_row_number) AS copy FROM " + table + ") WHERE copy > 1)";
+    }
+
+    private static String events(String name) throws SQLException {
+        String table = "lh.spike." + name;
+        exec("CREATE TABLE " + table + " (event_id BIGINT, ts TIMESTAMP, event_type VARCHAR, user_id BIGINT)"
+                + " PARTITIONED BY (day(ts), event_type)");
+        return table;
+    }
+
+    /** An instance that has only the read-only catalog: `jdbc:duckdb:` opens a new database every time. */
+    private static Connection readOnlyConnection() throws SQLException {
+        Connection connection = DriverManager.getConnection("jdbc:duckdb:");
+        stack.attachDuckDb(connection);
+        exec(connection, "DETACH lh");
+        exec(connection, "ATTACH '" + LakehouseStack.CATALOG + "' AS ro (TYPE iceberg, READ_ONLY, URI '"
+                + stack.polarisUrl() + "/api/catalog', SECRET lakehouse_polaris, ACCESS_DELEGATION_MODE 'none')");
+        return connection;
+    }
+
+    private static String latestSnapshot(String table) throws SQLException {
+        return value("SELECT snapshot_id FROM iceberg_snapshots(" + table + ") ORDER BY sequence_number DESC LIMIT 1");
+    }
+
+    private static String serialize(String sql) throws SQLException {
+        return value("SELECT json_serialize_sql('" + sql.replace("'", "''") + "')");
+    }
+
+    private static String md5Of(Connection connection, String text) throws SQLException {
+        return rows(connection, "SELECT md5('" + text + "')").get(0);
+    }
+
+    private static String value(String sql) throws SQLException {
+        return rows(sql).get(0);
+    }
+
+    private static List<String> rows(String sql) throws SQLException {
+        return rows(writer, sql);
+    }
+
+    private static void exec(String sql) throws SQLException {
+        exec(writer, sql);
+    }
+
+    private static long update(String sql) throws SQLException {
+        try (Statement statement = writer.createStatement()) {
+            return statement.executeUpdate(sql);
+        }
+    }
+
+    private static void exec(Connection connection, String sql) throws SQLException {
+        try (Statement statement = connection.createStatement()) {
+            statement.execute(sql);
+        }
+    }
+
+    /** Each row as its columns joined with |. A new statement each time: one that fails is closed by the driver. */
+    private static List<String> rows(Connection connection, String sql) throws SQLException {
+        try (Statement statement = connection.createStatement(); ResultSet result = statement.executeQuery(sql)) {
+            List<String> rows = new ArrayList<>();
+            int columns = result.getMetaData().getColumnCount();
+            while (result.next()) {
+                StringBuilder row = new StringBuilder(String.valueOf(result.getString(1)));
+                for (int i = 2; i <= columns; i++) {
+                    row.append('|').append(result.getString(i));
+                }
+                rows.add(row.toString());
+            }
+            return rows;
         }
     }
 }

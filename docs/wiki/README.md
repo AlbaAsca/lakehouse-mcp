@@ -34,7 +34,7 @@ Cada página empieza en lenguaje llano y avanza hasta el detalle técnico. Puede
 | ✅ | Imagen `tools` con JDK, Maven, make, DuckDB y Kaggle | Versiones comprobadas |
 | ✅ | Muestra sintética de 50.000 filas para tests | `testdata/synthetic-events.csv.gz` |
 | 🚧 | Productor Java (T-008, T-011, T-013) | Lectura, muestreo, orden y envío a Kafka con tests en verde sobre la muestra sintética. Falta probar `./mk seed` con el CSV real. [Detalle](componentes/productor.md) |
-| ✅ | Conector hacia Iceberg (T-012, T-072) | La tarea sale `RUNNING` y un evento llega a la tabla, comprobado en contenedores. **Sin probar:** `./mk up` en el stack completo y el mes real. [Detalle](componentes/kafka-connect.md) |
+| ✅ | Conector hacia Iceberg (T-012, T-072) | La tarea sale `RUNNING` y un evento llega a la tabla, comprobado en contenedores; `./mk up` sobre un stack ya existente termina sin error. **Sin probar:** `./mk up` desde cero, un evento en el stack de `compose.yaml` y el mes real. [Detalle](componentes/kafka-connect.md) |
 | ⬜ | Ingesta de eventos reales de principio a fin (T-015, T-018) | Hoy no hay eventos reales ni tabla `ecommerce.events` |
 | ⬜ | [Servidor MCP](componentes/servidor-mcp.md), [capa semántica](componentes/capa-semantica.md), [agente](componentes/agente.md) | Solo existen sus `pom.xml` |
 | ⬜ | Chaos y self-healing, evals, benchmark, RBAC y auditoría | Planificado. `./mk evals`, `chaos`, `bench` y `demo` responden «not implemented yet» |
@@ -57,7 +57,7 @@ Leyenda: ✅ funciona · 🚧 en curso · ⬜ planificado.
 |---|---|---|---|
 | ✅ [Kafka](componentes/kafka.md) | ✅ [Iceberg](componentes/iceberg.md) | ✅ [DuckDB](componentes/duckdb.md) | ✅ [Imagen tools](componentes/imagen-tools.md) |
 | ✅ [Schema Registry](componentes/schema-registry.md) | ✅ [Polaris](componentes/polaris.md) | ⬜ [Servidor MCP](componentes/servidor-mcp.md) | ✅ [agent-board](componentes/agent-board.md) |
-| 🚧 [Kafka Connect e Iceberg sink](componentes/kafka-connect.md) | ✅ [Postgres](componentes/postgres.md) | ⬜ [Capa semántica](componentes/capa-semantica.md) | |
+| ✅ [Kafka Connect e Iceberg sink](componentes/kafka-connect.md) | ✅ [Postgres](componentes/postgres.md) | ⬜ [Capa semántica](componentes/capa-semantica.md) | |
 | 🚧 [Productor](componentes/productor.md) | ✅ [SeaweedFS](componentes/seaweedfs.md) | ⬜ [Agente](componentes/agente.md) | |
 | | | ⬜ [Trino](componentes/trino.md) | |
 

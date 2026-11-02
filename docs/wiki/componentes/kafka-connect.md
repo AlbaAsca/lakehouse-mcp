@@ -1,6 +1,6 @@
 # Kafka Connect y el sink de Iceberg
 
-**Estado:** ✅ La tarea sale `RUNNING` y un evento acaba como fila de la tabla: lo comprueba `IcebergSinkFlowIT` en contenedores (T-072). **Sin probar:** `./mk up` en el stack completo y el mes real con `./mk seed`.
+**Estado:** ✅ La tarea sale `RUNNING` y un evento acaba como fila de la tabla: lo comprueba `IcebergSinkFlowIT` en contenedores (T-072). `./mk up` sobre un stack ya existente termina sin error y el log del worker no muestra errores. **Sin probar:** `./mk up` desde cero, un evento llegando a la tabla en el stack de `compose.yaml` y el mes real con `./mk seed`.
 
 [Portada](../README.md) · [Glosario](../01-conceptos.md)
 

@@ -113,7 +113,7 @@ docker compose exec -T seaweedfs curl -s -o /dev/null -w '%{http_code}\n' -X DEL
 
 ### La tarea sale `RUNNING` pero la tabla no aparece
 
-**Síntoma:** en el log de `connect` se repite `Commit timeout reached` seguido de `committed to 0 table(s)`, cada 30 s.
+**Síntoma:** en el log de `connect` se repite `Commit timeout reached` seguido de `committed to 0 table(s)`, cada 30 s, **aunque el topic tiene eventos**. Con el topic vacío esas dos líneas son normales: compruébalo con `docker compose exec -T kafka /opt/kafka/bin/kafka-get-offsets.sh --bootstrap-server localhost:9092 --topic ecommerce.events` (`ecommerce.events:0:0` es que está vacío; desde Git Bash, empieza la ruta con `//opt`).
 
 **Causa probable:** con el topic parado, la tarea solo se despierta en cada `offset.flush.interval.ms`, 60 s por defecto, y es entonces cuando lee su topic de control. Así no llega a responder dentro de la ventana de commit de 30 s. Se deduce del log, no del código del sink: el aviso de rebalanceo del consumidor de control caía justo en ese ciclo de 60 s. Lo comprobado es el efecto: con 60 s, `IcebergSinkFlowIT` no recibe la fila, y con 1 s, sí.
 
