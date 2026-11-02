@@ -17,13 +17,20 @@ import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.images.builder.ImageFromDockerfile;
 import org.testcontainers.images.builder.Transferable;
 
-/** The Kafka Connect worker of compose.yaml on the network of a stack, and the real one-shot job that registers the sink. */
-public final class ConnectWorker implements AutoCloseable {
+/**
+ * The Kafka Connect worker of compose.yaml on the network of a stack, and the real one-shot job that registers the sink.
+ *
+ * <p>One worker per JVM, like the stack: it costs most of the wait of a test class, and Testcontainers removes it when
+ * the JVM exits. A test class removes the connector it registers with {@link #deleteConnector(String)}.
+ */
+public final class ConnectWorker {
 
     private static final Duration STARTUP_TIMEOUT = Duration.ofMinutes(3);
     private static final Path CONNECT_DIR = LakehouseStack.repositoryRoot().resolve("connect");
     private static final String COMMIT_INTERVAL = "\"iceberg.control.commit.interval-ms\": \"\\d+\"";
     private static final HttpClient HTTP = HttpClient.newHttpClient();
+
+    private static ConnectWorker shared;
 
     private final LakehouseStack stack;
     private final GenericContainer<?> container;
@@ -33,8 +40,16 @@ public final class ConnectWorker implements AutoCloseable {
         this.container = container;
     }
 
-    /** Needs the catalog and streaming of the stack already started. */
-    public static ConnectWorker start(LakehouseStack stack) {
+    /** The worker of this JVM, started on the first call along with the catalog and streaming of the stack. */
+    public static synchronized ConnectWorker shared() {
+        if (shared == null) {
+            LakehouseStack.shared();
+            shared = start(LakehouseStack.sharedStreaming());
+        }
+        return shared;
+    }
+
+    private static ConnectWorker start(LakehouseStack stack) {
         GenericContainer<?> container = new GenericContainer<>(LakehouseStack.image("connect"))
                 .withNetwork(stack.network())
                 .withNetworkAliases("connect")
@@ -96,13 +111,26 @@ public final class ConnectWorker implements AutoCloseable {
 
     /** Body of a GET to the REST API; anything but 200 fails. */
     public String get(String path) throws IOException, InterruptedException {
-        URI uri = URI.create("http://" + container.getHost() + ":" + container.getMappedPort(8083) + path);
         HttpResponse<String> response =
-                HTTP.send(HttpRequest.newBuilder(uri).build(), HttpResponse.BodyHandlers.ofString());
+                HTTP.send(HttpRequest.newBuilder(url(path)).build(), HttpResponse.BodyHandlers.ofString());
         if (response.statusCode() != 200) {
             throw new AssertionError(path + ": " + response.statusCode() + " " + response.body());
         }
         return response.body();
+    }
+
+    /** Address of a path of the REST API from the test JVM. */
+    public URI url(String path) {
+        return URI.create("http://" + container.getHost() + ":" + container.getMappedPort(8083) + path);
+    }
+
+    /** Removes the connector if it exists, so that the next test class on this worker does not find it running. */
+    public void deleteConnector(String name) throws IOException, InterruptedException {
+        HttpResponse<String> response = HTTP.send(
+                HttpRequest.newBuilder(url("/connectors/" + name)).DELETE().build(), HttpResponse.BodyHandlers.ofString());
+        if (response.statusCode() != 204 && response.statusCode() != 404) {
+            throw new AssertionError("Deleting " + name + ": " + response.statusCode() + " " + response.body());
+        }
     }
 
     /** Fails at once if the task is FAILED. */
@@ -135,10 +163,5 @@ public final class ConnectWorker implements AutoCloseable {
 
     private String status() throws IOException, InterruptedException {
         return get("/connectors/iceberg-sink/status");
-    }
-
-    @Override
-    public void close() {
-        container.stop();
     }
 }

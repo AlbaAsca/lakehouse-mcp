@@ -51,6 +51,8 @@ class ProducerIT {
     private static final int SAMPLE_ROWS = 50_000;
     private static final Duration CONSUME_TIMEOUT = Duration.ofMinutes(2);
     private static final Duration JAR_TIMEOUT = Duration.ofMinutes(3);
+    /** Its own topic, because IngestE2EIT sends the sample through the real one on the same broker. */
+    private static final String TOPIC = "producer_it.events";
 
     private static LakehouseStack stack;
     private static JarRun seedRun;
@@ -63,6 +65,7 @@ class ProducerIT {
         seedRun = runJar(
                 "--input", SAMPLE.toString(),
                 "--speedup", "1e12",
+                "--topic", TOPIC,
                 "--bootstrap-servers", stack.kafkaBootstrapServers(),
                 "--schema-registry-url", stack.schemaRegistryUrl());
         consumed = consumeTopic();
@@ -92,6 +95,7 @@ class ProducerIT {
         JarRun run = runJar(
                 "--input", SAMPLE.toString(),
                 "--speedup", "1e12",
+                "--topic", TOPIC,
                 "--bootstrap-servers", stack.kafkaBootstrapServers(),
                 "--schema-registry-url", "http://localhost:1");
 
@@ -170,7 +174,7 @@ class ProducerIT {
     void theSchemaIsRegisteredUnderTheTopicValueSubject() throws Exception {
         HttpResponse<String> response = HttpClient.newHttpClient().send(
                 HttpRequest.newBuilder(URI.create(
-                        stack.schemaRegistryUrl() + "/subjects/" + KafkaEventSink.TOPIC + "-value/versions/latest"))
+                        stack.schemaRegistryUrl() + "/subjects/" + TOPIC + "-value/versions/latest"))
                         .build(),
                 HttpResponse.BodyHandlers.ofString());
 
@@ -181,10 +185,10 @@ class ProducerIT {
 
     @Test
     void preparingTheTopicAgainChangesNothing() throws Exception {
-        KafkaEventSink.ensureTopic(stack.kafkaBootstrapServers());
+        KafkaEventSink.ensureTopic(stack.kafkaBootstrapServers(), TOPIC);
 
         try (KafkaConsumer<String, GenericRecord> consumer = consumer()) {
-            assertThat(consumer.partitionsFor(KafkaEventSink.TOPIC)).hasSize(KafkaEventSink.PARTITIONS);
+            assertThat(consumer.partitionsFor(TOPIC)).hasSize(KafkaEventSink.PARTITIONS);
         }
         assertThat(consumeTopic()).hasSize(SAMPLE_ROWS);
     }
@@ -193,7 +197,7 @@ class ProducerIT {
     private static List<ConsumerRecord<String, GenericRecord>> consumeTopic() {
         List<ConsumerRecord<String, GenericRecord>> records = new ArrayList<>();
         try (KafkaConsumer<String, GenericRecord> consumer = consumer()) {
-            List<TopicPartition> partitions = consumer.partitionsFor(KafkaEventSink.TOPIC).stream()
+            List<TopicPartition> partitions = consumer.partitionsFor(TOPIC).stream()
                     .map(info -> new TopicPartition(info.topic(), info.partition()))
                     .toList();
             consumer.assign(partitions);

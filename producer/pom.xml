@@ -56,14 +56,6 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
       </plugin>
-      <!-- One JVM, so one stack, per IT: ProducerIT and IngestE2EIT each count the whole fixed topic. -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-failsafe-plugin</artifactId>
-        <configuration>
-          <reuseForks>false</reuseForks>
-        </configuration>
-      </plugin>
     </plugins>
   </build>
 </project>

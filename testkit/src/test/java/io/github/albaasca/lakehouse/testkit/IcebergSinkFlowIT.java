@@ -41,14 +41,13 @@ class IcebergSinkFlowIT {
 
     @BeforeAll
     static void startWorker() {
-        LakehouseStack.shared();
+        connect = ConnectWorker.shared();
         stack = LakehouseStack.sharedStreaming();
-        connect = ConnectWorker.start(stack);
     }
 
     @AfterAll
-    static void stopWorker() {
-        connect.close();
+    static void removeConnector() throws Exception {
+        connect.deleteConnector("iceberg-sink");
     }
 
     @Test

@@ -51,9 +51,8 @@ class IngestE2EIT {
 
     @BeforeAll
     static void sendTheSampleThroughThePipeline() throws Exception {
-        LakehouseStack.shared();
+        connect = ConnectWorker.shared();
         stack = LakehouseStack.sharedStreaming();
-        connect = ConnectWorker.start(stack);
         connect.register(COMMIT_INTERVAL);
         connect.awaitRunningTask();
 
@@ -72,12 +71,12 @@ class IngestE2EIT {
     }
 
     @AfterAll
-    static void stop() throws SQLException {
+    static void stop() throws Exception {
         if (duckDb != null) {
             duckDb.close();
         }
         if (connect != null) {
-            connect.close();
+            connect.deleteConnector("iceberg-sink");
         }
     }
 

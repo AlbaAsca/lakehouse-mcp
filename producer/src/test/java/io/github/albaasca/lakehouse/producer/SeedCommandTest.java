@@ -44,6 +44,14 @@ class SeedCommandTest {
     }
 
     @Test
+    void theTopicIsTheOneOfTheSinkUnlessAnotherIsGiven() {
+        String input = SAMPLE.toString();
+
+        assertThat(SeedCommand.Args.parse(new String[] {"--input", input}).topic()).isEqualTo("ecommerce.events");
+        assertThat(SeedCommand.Args.parse(new String[] {"--input", input, "--topic", "other"}).topic()).isEqualTo("other");
+    }
+
+    @Test
     void theSampleRateSelectsTheSameRowsAsTheSampler() throws Exception {
         int exit = seed("--input", SAMPLE.toString(), "--speedup", TOO_FAST, "--sample-rate", "0.1");
 

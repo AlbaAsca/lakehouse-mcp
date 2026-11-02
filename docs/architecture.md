@@ -104,7 +104,7 @@ Propuesta en orden; decide la responsable. Quitar una tarjeta exige retirarla ta
 Los agentes solo ejecutan `./mk test|test-board|evals`, `python`, git de lectura y `docker compose ps|logs`. `./mvnw` no sirve en el host porque no hay JDK.
 
 - **Lo normal:** Testcontainers dentro de `./mk test`, con un kit común (módulo nuevo `testkit`) que levanta imágenes construidas desde `infra/`.
-- **Tiempo:** `./mk test MODULE=<módulo>` prueba un solo módulo sin los tests de sus dependencias; la suite completa la pasa la CI. Tests unitarios con surefire, integración con failsafe, contenedores compartidos por módulo.
+- **Tiempo:** `./mk test MODULE=<módulo>` prueba un solo módulo sin los tests de sus dependencias; la suite completa la pasa la CI. Tests unitarios con surefire, integración con failsafe, contenedores compartidos por módulo: un stack y un worker de Connect por JVM, con topic y conector propios en cada clase de test que los necesite. No se usa `testcontainers.reuse.enable`, para que cada ejecución parta de limpio.
 - **Memoria:** ejecutar `./mk test` con el stack apagado si el test levanta Connect o Trino.
 - **Stack completo (`up`, `seed`, `chaos`, `bench`, `demo`):** tarjetas `--manual` de dueño `consultor`, que el runner no ejecuta.
 

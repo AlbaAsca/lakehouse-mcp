@@ -33,6 +33,13 @@ class KafkaEventSinkTest {
     }
 
     @Test
+    void eventsGoToTheTopicItWasOpenedWith() throws IOException {
+        new KafkaEventSink(producer, "other.topic").accept(event("a"));
+
+        assertThat(producer.history().get(0).topic()).isEqualTo("other.topic");
+    }
+
+    @Test
     void onlyConfirmedEventsCount() throws IOException {
         sink.accept(event("a"));
         sink.accept(event("b"));

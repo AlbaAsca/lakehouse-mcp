@@ -27,8 +27,9 @@ import org.testcontainers.images.builder.Transferable;
  * SeaweedFS, Postgres and Polaris with the images and configuration of compose.yaml, ready for Iceberg tables.
  *
  * <p>One stack per JVM (so one per Maven module): it starts on the first {@link #shared()} and Testcontainers removes
- * it when the JVM exits. Every test class in the module sees the same catalog, so use your own namespace. A module
- * whose tests need a clean stack each sets failsafe's {@code reuseForks} to false, as producer/pom.xml does.
+ * it when the JVM exits. Every test class in the module sees the same catalog and broker, so use your own namespace,
+ * topic and connector, and leave no connector running. Failsafe's {@code reuseForks} stays at its default: turned off,
+ * each class would pay for a stack of its own.
  *
  * <p>Kafka and Schema Registry start only with {@link #sharedStreaming()}, on the same network: a test can ask for the
  * catalog, for streaming or for both, and pays only for what it asks.

@@ -20,7 +20,7 @@ public final class SeedCommand {
     private static final int INTERRUPTED = 130;
     private static final String USAGE = """
             Usage: --input <file.csv|file.csv.gz> [--sample-rate <0-1> | --max-rows <n>] [--speedup <x>] \
-            [--rewrite-timestamp] [--bootstrap-servers <host:port>] [--schema-registry-url <url>]""";
+            [--rewrite-timestamp] [--bootstrap-servers <host:port>] [--schema-registry-url <url>] [--topic <name>]""";
     private static final Logger log = LoggerFactory.getLogger(SeedCommand.class);
 
     private SeedCommand() {
@@ -39,8 +39,8 @@ public final class SeedCommand {
             return BAD_ARGUMENTS;
         }
         try {
-            KafkaEventSink.ensureTopic(args.bootstrapServers());
-            KafkaEventSink sink = KafkaEventSink.open(args.bootstrapServers(), args.schemaRegistryUrl());
+            KafkaEventSink.ensureTopic(args.bootstrapServers(), args.topic());
+            KafkaEventSink sink = KafkaEventSink.open(args.bootstrapServers(), args.schemaRegistryUrl(), args.topic());
             int exit;
             try (sink) {
                 exit = seed(args, sink, Clock.systemUTC());
@@ -84,7 +84,8 @@ public final class SeedCommand {
             double speedup,
             boolean rewriteTimestamp,
             String bootstrapServers,
-            String schemaRegistryUrl) {
+            String schemaRegistryUrl,
+            String topic) {
 
         /** Rejects everything that can be known to be wrong before touching the file or Kafka. */
         static Args parse(String[] argv) {
@@ -96,6 +97,7 @@ public final class SeedCommand {
             // The names of the services in compose.yaml: the command runs inside the tools container.
             String bootstrapServers = "kafka:9092";
             String schemaRegistryUrl = "http://schema-registry:8081";
+            String topic = KafkaEventSink.TOPIC;
             for (int i = 0; i < argv.length; i++) {
                 String name = argv[i];
                 if (name.equals("--rewrite-timestamp")) {
@@ -113,6 +115,7 @@ public final class SeedCommand {
                     case "--speedup" -> speedup = Double.parseDouble(value);
                     case "--bootstrap-servers" -> bootstrapServers = value;
                     case "--schema-registry-url" -> schemaRegistryUrl = value;
+                    case "--topic" -> topic = value;
                     default -> throw new IllegalArgumentException("Unknown option: " + name);
                 }
             }
@@ -131,7 +134,8 @@ public final class SeedCommand {
             if (maxRows != null && maxRows <= 0) {
                 throw new IllegalArgumentException("Max rows must be positive: " + maxRows);
             }
-            Args args = new Args(input, sampleRate, maxRows, speedup, rewriteTimestamp, bootstrapServers, schemaRegistryUrl);
+            Args args = new Args(
+                    input, sampleRate, maxRows, speedup, rewriteTimestamp, bootstrapServers, schemaRegistryUrl, topic);
             args.options(SessionSampler.all());
             return args;
         }

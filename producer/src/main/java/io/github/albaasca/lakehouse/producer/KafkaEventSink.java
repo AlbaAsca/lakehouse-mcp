@@ -38,37 +38,45 @@ public final class KafkaEventSink implements EventReplay.EventSink, Closeable {
     private static final Logger log = LoggerFactory.getLogger(KafkaEventSink.class);
 
     private final Producer<String, GenericRecord> producer;
+    private final String topic;
     private final AtomicReference<Exception> failure = new AtomicReference<>();
     private final AtomicLong confirmed = new AtomicLong();
 
     KafkaEventSink(Producer<String, GenericRecord> producer) {
-        this.producer = producer;
+        this(producer, TOPIC);
     }
 
-    public static KafkaEventSink open(String bootstrapServers, String schemaRegistryUrl) {
-        return new KafkaEventSink(new KafkaProducer<>(Map.of(
-                ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers,
-                ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class,
-                ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, KafkaAvroSerializer.class,
-                AbstractKafkaSchemaSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG, schemaRegistryUrl)));
+    KafkaEventSink(Producer<String, GenericRecord> producer, String topic) {
+        this.producer = producer;
+        this.topic = topic;
+    }
+
+    public static KafkaEventSink open(String bootstrapServers, String schemaRegistryUrl, String topic) {
+        return new KafkaEventSink(
+                new KafkaProducer<>(Map.of(
+                        ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers,
+                        ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class,
+                        ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, KafkaAvroSerializer.class,
+                        AbstractKafkaSchemaSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG, schemaRegistryUrl)),
+                topic);
     }
 
     /** Creates the topic if it is missing. An existing topic is left as it is, whatever its number of partitions. */
-    public static void ensureTopic(String bootstrapServers) throws IOException, InterruptedException {
+    public static void ensureTopic(String bootstrapServers, String name) throws IOException, InterruptedException {
         try (Admin admin = Admin.create(Map.of(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers))) {
-            NewTopic topic = new NewTopic(TOPIC, Optional.of(PARTITIONS), Optional.empty());
+            NewTopic topic = new NewTopic(name, Optional.of(PARTITIONS), Optional.empty());
             try {
                 admin.createTopics(List.of(topic)).all().get();
-                log.info("Created topic {} with {} partitions", TOPIC, PARTITIONS);
+                log.info("Created topic {} with {} partitions", name, PARTITIONS);
             } catch (ExecutionException e) {
                 if (!(e.getCause() instanceof TopicExistsException)) {
                     throw e;
                 }
-                int partitions = admin.describeTopics(List.of(TOPIC)).allTopicNames().get().get(TOPIC).partitions().size();
-                log.info("Topic {} already exists with {} partitions", TOPIC, partitions);
+                int partitions = admin.describeTopics(List.of(name)).allTopicNames().get().get(name).partitions().size();
+                log.info("Topic {} already exists with {} partitions", name, partitions);
             }
         } catch (ExecutionException e) {
-            throw new IOException("Cannot prepare topic " + TOPIC + " on " + bootstrapServers, e.getCause());
+            throw new IOException("Cannot prepare topic " + name + " on " + bootstrapServers, e.getCause());
         }
     }
 
@@ -77,7 +85,7 @@ public final class KafkaEventSink implements EventReplay.EventSink, Closeable {
         throwIfFailed();
         Object session = event.get("user_session");
         String key = session != null ? session.toString() : null;
-        producer.send(new ProducerRecord<>(TOPIC, key, event), (metadata, exception) -> {
+        producer.send(new ProducerRecord<>(topic, key, event), (metadata, exception) -> {
             if (exception != null) {
                 failure.compareAndSet(null, exception);
             } else {
