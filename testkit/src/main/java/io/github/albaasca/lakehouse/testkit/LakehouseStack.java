@@ -275,7 +275,7 @@ public final class LakehouseStack {
     }
 
     /** Tests run from their module directory, so the root is the closest parent that holds infra/. */
-    static Path repositoryRoot() {
+    public static Path repositoryRoot() {
         for (Path dir = Path.of("").toAbsolutePath(); dir != null; dir = dir.getParent()) {
             if (Files.isDirectory(dir.resolve("infra"))) {
                 return dir;

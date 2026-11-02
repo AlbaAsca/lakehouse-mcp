@@ -23,6 +23,18 @@
       "why": "concedido automáticamente a tester (T-013): solo lectura dentro del proyecto",
       "by": "runner",
       "at": "2026-11-02T17:42:29+01:00"
+    },
+    {
+      "pattern": "gh *",
+      "why": "concedido por el responsable desde el panel",
+      "by": "responsable",
+      "at": "2026-11-02T18:14:23+01:00"
+    },
+    {
+      "pattern": "git check-ignore -v*",
+      "why": "concedido por el responsable desde el panel",
+      "by": "responsable",
+      "at": "2026-11-02T18:14:30+01:00"
     }
   ],
   "denied": []

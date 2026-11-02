@@ -6,7 +6,7 @@ Cada proyecto es una cadena de renuncias. Aquí se resume qué se eligió y qué
 
 ## La restricción que explica casi todo
 
-Todo debe caber en unos 7,6 GB de memoria de Docker y ejecutarse con un comando. Por eso no hay Flink ni Spark, hay un solo broker, y Trino solo se enciende a demanda.
+Todo debe caber en unos 7,6 GB de memoria de Docker y ejecutarse con un comando. Por eso no hay Flink ni Spark, hay un solo broker, y Trino, si se queda ([T-087](../architecture.md#qué-se-puede-recortar-si-falta-cupo)), solo se enciende a demanda.
 
 ## Las que ya están construidas
 
@@ -16,7 +16,7 @@ Todo debe caber en unos 7,6 GB de memoria de Docker y ejecutarse con un comando.
 | Sin bind mounts fuera de `tools` | `make up` corre dentro de un contenedor, y sus rutas no existen fuera | Cambiar una configuración exige reconstruir la imagen | ✅ |
 | Catálogo en Postgres ([1](../architecture.md#decisiones)) | En memoria se perdía | Un servicio más y un bootstrap de un solo uso | ✅ |
 | Conector compilado desde git | No hay zip publicado | Minutos en el primer `up`; dependencia de GitHub | ✅ |
-| DuckDB para SQL ([4](../architecture.md#decisiones)) | Trino necesitaría varios GB siempre | Capacidades sobre Iceberg por confirmar (T-014) | ✅ como CLI, ⬜ embebido |
+| DuckDB para SQL ([4](../architecture.md#decisiones)) | Trino necesitaría varios GB siempre | [Comprobado en T-014](../spike-duckdb-iceberg.md) sobre ficheros de DuckDB; sin probar sobre los del sink | ✅ como CLI, ⬜ embebido |
 | Avro con compatibilidad `BACKWARD` ([13](../architecture.md#decisiones)) | Encaja con Connect y Schema Registry | Solo se comprueba contra la última versión | ✅ Registry, ⬜ test |
 | Muestra de CI sintética ([15](../architecture.md#decisiones)) | La licencia del dataset impide copiarlo | Puede no parecerse a los datos reales (T-010) | ✅ |
 
@@ -37,9 +37,12 @@ MinIO quedó descartado porque su repositorio comunitario está archivado. Seawe
 | Decisión | Para qué | Estado |
 |---|---|---|
 | Sink oficial con evolución de esquema apagada ([3](../architecture.md#decisiones)) | El *schema drift* es un fallo reparable | 🚧 T-012 |
-| Iceberg Java API para el catálogo ([5](../architecture.md#decisiones)) | Rollback, snapshots, añadir columna | ⬜ T-017 |
-| Compactación con Trino ([6](../architecture.md#decisiones)) | No reimplementar algo delicado | ⬜ T-047 |
-| Validar SQL con el parser de DuckDB ([7](../architecture.md#decisiones)) | Mismo dialecto que el motor | ⬜ T-019 |
+| Catálogo por DuckDB, sin Iceberg Java API en el servidor ([5](../architecture.md#decisiones)) | Rollback, snapshots y añadir columna ya funcionan, sin otra dependencia | ⬜ T-017, T-026, T-045 |
+| Compactar con DuckDB ([6](../architecture.md#decisiones)) | No hace falta encender otro servicio | ⬜ T-047 |
+| Expirar snapshots con Trino o con un proceso aparte ([6](../architecture.md#decisiones)) | DuckDB no sabe; depende de si Trino se queda | ⬜ T-105, pendiente de T-087 |
+| Validar SQL con el parser de DuckDB, con seis reglas ([7](../architecture.md#decisiones)) | Mismo dialecto que el motor, y acepta solo lo que conoce | ⬜ T-019 |
+| Dos instancias de DuckDB, una sin poder escribir ([20](../architecture.md#decisiones)) | Si el validador falla, una consulta sigue sin poder cambiar el catálogo. No protege los ficheros de S3 | ⬜ T-106 |
+| Viaje en el tiempo solo por `time_travel` ([21](../architecture.md#decisiones)) | El analista consulta el pasado con el mismo enmascarado | ⬜ T-021, T-054 |
 | Métricas en YAML ([8](../architecture.md#decisiones)) | Sin servicio de más por cuatro métricas | ⬜ T-031 |
 | Arreglos de catálogo cerrado con aprobación externa ([9](../architecture.md#decisiones)) | El modelo no puede autoaprobarse | ⬜ T-026 |
 | Dos claves de API, enmascarado por vistas ([11 y 12](../architecture.md#decisiones)) | RBAC sin Keycloak | ⬜ T-050, T-054 |
@@ -56,7 +59,6 @@ Diferencias entre documentos y realidad, comprobadas el 2 de noviembre de 2026 e
 | README | «Los módulos Java aún no tienen código ni tests propios» | `producer` y `testkit` los tienen |
 | [`architecture.md`](../architecture.md#pruebas-qué-puede-verificar-cada-quién) | `./mvnw` «no sirve en el host porque no hay JDK» | [`mvnw`](../../mvnw) lanza Maven dentro de `tools` |
 | [`architecture.md`](../architecture.md#riesgos-abiertos) | Riesgo: el bootstrap repetido podría fallar | Sale bien: `already bootstrapped; skipping` |
-| `architecture.md` | Time travel con `snapshot_from_id` | Funciona, y también `AT (VERSION => id)`. T-014 recomienda `AT` ([detalle](../spike-duckdb-iceberg.md)); falta que lo decida el arquitecto |
 | [`architecture.svg`](../img/architecture.svg) | No muestra Postgres ni Trino | Postgres está en el stack; Trino, declarado |
 | [`smoke.sh`](../../infra/smoke.sh) | «every service answers» | Comprueba Registry y Connect por HTTP, y DuckDB, Polaris y SeaweedFS de punta a punta. Kafka solo por su healthcheck. Además, deja ficheros y el namespace `smoke` |
 | [`brief.md`](../brief.md) | README en inglés con Mermaid | Hoy en español y con SVG. Pendiente en T-055 |

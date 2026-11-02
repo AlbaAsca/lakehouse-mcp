@@ -65,8 +65,8 @@ Lo comprobado para esta wiki sobre una tabla de prueba:
 |---|---|---|
 | Listar snapshots | `iceberg_snapshots('lh.ns.tabla')` | ✅ |
 | Ver ficheros | `iceberg_metadata('lh.ns.tabla')` | ✅ |
-| Time travel | `... AT (VERSION => id)` | ✅ |
-| Time travel | `iceberg_scan('lh.ns.tabla', snapshot_from_id=id)` | ✅ |
+| Time travel, la forma elegida ([decisión 5](../../architecture.md#decisiones)) | `... AT (VERSION => id)` | ✅ |
+| Time travel, descartada | `iceberg_scan('lh.ns.tabla', snapshot_from_id=id)` | ✅ |
 
 T-014 comprobó además, con tests en `DuckDbIcebergSpikeIT`:
 
@@ -78,9 +78,9 @@ T-014 comprobó además, con tests en `DuckDbIcebergSpikeIT`:
 | Rechazar lo que no es `SELECT` | `json_serialize_sql(...)` | ✅ |
 | Vista sobre tabla Iceberg | `CREATE TEMP VIEW`, `CREATE VIEW memory.main.v` | ✅, sin `AT` a través de la vista |
 
-**Cuidado:** `SELECT * FROM iceberg_rollback_to_snapshot(...)` cambia la tabla si el catálogo es escribible. Detalle y fuentes en [`spike-duckdb-iceberg.md`](../../spike-duckdb-iceberg.md).
+**Cuidado:** `SELECT * FROM iceberg_rollback_to_snapshot(...)` cambia la tabla si el catálogo es escribible. Detalle y fuentes en [`spike-duckdb-iceberg.md`](../../spike-duckdb-iceberg.md). Por eso el servidor MCP tendrá dos instancias, y la del modelo solo adjunta el catálogo con `READ_ONLY` ([decisión 20](../../architecture.md#decisiones), ⬜ T-106).
 
-**Sin comprobar:** borrar sobre ficheros escritos por el sink real o mientras el sink hace commit, y que Trino lea los ficheros de borrado de DuckDB.
+**Sin comprobar:** borrar, hacer rollback, añadir columna o compactar sobre ficheros escritos por el sink real o mientras el sink hace commit, y que Trino lea los ficheros de borrado de DuckDB.
 
 ## Qué puede fallar
 

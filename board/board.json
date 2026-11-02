@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-02T18:10:48+01:00",
+  "updated": "2026-11-02T18:16:31+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -674,6 +674,11 @@
           "t": "2026-11-02T18:08:19+01:00",
           "by": "runner",
           "msg": "se reintentará con los permisos resueltos"
+        },
+        {
+          "t": "2026-11-02T18:14:23+01:00",
+          "by": "tú",
+          "msg": "✓ permiso concedido: gh *"
         }
       ],
       "verify_started": "2026-11-02T17:59:50+01:00",
@@ -1085,6 +1090,11 @@
           "t": "2026-11-02T18:06:39+01:00",
           "by": "runner",
           "msg": "? permiso solicitado: git check-ignore -v* (T-103); la tarjeta espera la decisión"
+        },
+        {
+          "t": "2026-11-02T18:14:30+01:00",
+          "by": "tú",
+          "msg": "✓ permiso concedido: git check-ignore -v*"
         }
       ],
       "runs": [
@@ -1175,6 +1185,11 @@
           "t": "2026-11-02T18:08:24+01:00",
           "by": "runner",
           "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-02T18:14:44+01:00",
+          "by": "consultor",
+          "msg": "T-101: la decisión 20 pide dos instancias de DuckDB. Esta tarjeta sigue igual; la separación va en T-106. Conviene que LakehouseSession reciba el modo de ATTACH como parámetro y use un Statement nuevo por consulta."
         }
       ]
     },
@@ -1188,12 +1203,12 @@
       "actual_min": null,
       "auto": true,
       "manual": null,
-      "desc": "Para describir tablas, ver el último snapshot y más adelante deshacer cambios hace falta hablar directamente con el catálogo. Se usa la API Java de Iceberg, que es la que cubre estas operaciones.\nCómo sabremos si funciona: tras varias escrituras de prueba, el código devuelve el esquema, las particiones y la lista de snapshots esperados, en orden.\n\n## Técnico\n- mcp-server: IcebergCatalogClient sobre RESTCatalog (URI Polaris, OAuth2 client credentials, S3FileIO con endpoint y path-style, claves estáticas).\n- Dependencia iceberg-core y iceberg-aws en 1.12.0 (igual que infra/connect/Dockerfile); revisar conflicto de versiones con Spring Boot 4.\n- Métodos: listTables, describe, snapshots. Rollback y addColumn se añaden en sus tarjetas.\n- Verificación: IT con LakehouseStack en ./mk test.",
+      "desc": "Para describir tablas y ver el último snapshot hace falta leer los datos del catálogo. Se había previsto una biblioteca aparte, pero la prueba ha demostrado que el motor de consulta ya da casi todo esto, así que se evita una dependencia pesada.\nCómo sabremos si funciona: tras varias escrituras de prueba, el código devuelve el esquema, las particiones y la lista de snapshots esperados, en orden.\n\n## Técnico\nDecisión 5 de docs/architecture.md: sin iceberg-core ni iceberg-aws en mcp-server.\n- mcp-server: CatalogReader sobre la conexión de LakehouseSession (T-016). Métodos: listTables, describe, snapshots.\n- Snapshots: iceberg_snapshots('lh.ns.t'), pasando el nombre como texto. Esquema: DESCRIBE o information_schema.\n- Particiones: probar primero iceberg_partition_specs, documentada pero no comprobada en esta versión (la documentación va por delante de la extensión). Si no existe, GET /api/catalog/v1/lakehouse/namespaces/{ns}/tables/{t} de Polaris con java.net.http. Anotar en docs/architecture.md, decisión 5, cuál se usó.\n- Verificación: IT con LakehouseStack en ./mk test. Depende de T-016 (cambio de dependencia propuesto al consultor).",
       "deps": [
         "T-006"
       ],
       "created": "2026-11-02T11:36:37+01:00",
-      "updated": "2026-11-02T17:37:16+01:00",
+      "updated": "2026-11-02T18:14:49+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -1206,6 +1221,11 @@
           "t": "2026-11-02T17:37:16+01:00",
           "by": "arquitecto",
           "msg": "Recorrido mínimo. Prioridad media: propongo subirla a alta en el panel, porque con media va detrás de todas las alta de Próximo y frena T-020"
+        },
+        {
+          "t": "2026-11-02T18:14:49+01:00",
+          "by": "consultor",
+          "msg": "descripción reescrita"
         }
       ]
     },
@@ -1256,12 +1276,12 @@
       "actual_min": null,
       "auto": true,
       "manual": null,
-      "desc": "El agente va a mandar SQL, y un SELECT mal vigilado podría leer ficheros del disco o escribir datos. Se propone apoyarse en el propio analizador de DuckDB en vez de en expresiones regulares, que son fáciles de esquivar.\nCómo sabremos si funciona: una batería de intentos de ataque es rechazada caso a caso y las consultas legítimas pasan, con el límite de filas aplicado.\n\n## Técnico\n- mcp-server: SqlGuard. Usa json_serialize_sql para parsear y recorre el AST (según docs/spike-duckdb-iceberg.md): una sola sentencia SELECT, solo tablas de lh y vistas permitidas, ninguna función de tabla (read_csv, read_parquet, glob, iceberg_scan...), sin COPY, ATTACH, SET, PRAGMA ni INSTALL.\n- Límite de filas por envoltura: SELECT * FROM (q) LIMIT n+1, para detectar truncado. Timeout de LakehouseSession.\n- Test parametrizado con al menos 30 casos: comentarios, mayúsculas, CTE con función de tabla, subconsultas, varias sentencias. Sin contenedor: se puede usar DuckDB en memoria. ./mk test.",
+      "desc": "El agente va a mandar SQL, y un SELECT mal vigilado podría leer ficheros del disco o escribir datos. Se propone apoyarse en el propio analizador de DuckDB en vez de en expresiones regulares, que son fáciles de esquivar. La prueba ha demostrado que el analizador deja pasar más de lo que parece, así que el validador debe aceptar solo lo que conoce.\nCómo sabremos si funciona: una batería de intentos de ataque es rechazada caso a caso y las consultas legítimas pasan, con el límite de filas aplicado.\n\n## Técnico\n- mcp-server: SqlGuard con json_serialize_sql y las seis reglas de la decisión 7 (detalle en docs/spike-duckdb-iceberg.md, pregunta 6):\n  1. Exactamente un elemento en statements.\n  2. Recorrer todo el árbol: la raíz puede ser SET_OPERATION_NODE, y hay subconsultas, UNION, LATERAL y CTE.\n  3. Lista de permitidos: tipos de from_table y tablas conocidas. TABLE_FUNCTION y SHOW_REF, rechazados. Una ruta como '/etc/passwd' llega como BASE_TABLE. Comparar catálogo y esquema, para que duckdb_views o sqlite_master no pasen.\n  4. Un nombre de CTE solo se admite en un cte_map de su ámbito, y se valida también su cuerpo.\n  5. Lista de funciones escalares y de agregación permitidas: getenv, getvariable y current_setting quedan fuera. Error claro con el nombre de la función, para ampliarla.\n  6. at_clause rechazado siempre: el time travel lo construye el servidor (decisión 21).\n- La lista de tablas permitidas se recibe como parámetro: la usan los roles (T-054) y time_travel (T-021).\n- Límite de filas por envoltura: SELECT * FROM (q) LIMIT n+1, para detectar truncado. Timeout de LakehouseSession.\n- Test parametrizado con al menos 30 casos, con los de la tabla de la pregunta 6, comentarios, mayúsculas y varias sentencias. Sin contenedor: DuckDB en memoria. ./mk test.",
       "deps": [
         "T-016"
       ],
       "created": "2026-11-02T11:36:53+01:00",
-      "updated": "2026-11-02T17:37:17+01:00",
+      "updated": "2026-11-02T18:14:55+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -1279,6 +1299,11 @@
           "t": "2026-11-02T18:05:31+01:00",
           "by": "consultor",
           "msg": "T-014: json_serialize_sql deja pasar rutas como BASE_TABLE, SHOW_REF, varias sentencias y un SELECT que hace rollback. Seis reglas del validador en docs/spike-duckdb-iceberg.md, pregunta 6."
+        },
+        {
+          "t": "2026-11-02T18:14:55+01:00",
+          "by": "consultor",
+          "msg": "descripción reescrita"
         }
       ]
     },
@@ -1324,13 +1349,13 @@
       "actual_min": null,
       "auto": true,
       "manual": null,
-      "desc": "Son las herramientas con las que el agente lee datos, hoy o en el pasado. Ambas pasan por el validador, de modo que el time travel no se convierte en una puerta trasera.\nCómo sabremos si funciona: el test modifica la tabla, y consultar el snapshot anterior devuelve las filas de antes; un SQL prohibido da error claro por ambas vías.\n\n## Técnico\n- run_query(sql, max_rows): columnas, filas, truncated. time_travel(table, snapshot_id o timestamp, sql o columnas), con la sintaxis comprobada en docs/spike-duckdb-iceberg.md.\n- Tests por MCP real comparando filas una a una. ./mk test.",
+      "desc": "Son las herramientas con las que el agente lee datos, hoy o en el pasado. Ambas pasan por el validador y por la conexión que no puede escribir, de modo que el time travel no se convierte en una puerta trasera. El modelo nunca escribe él mismo a qué versión viajar: elige tabla y versión, y el servidor monta el resto.\nCómo sabremos si funciona: el test modifica la tabla, y consultar el snapshot anterior devuelve las filas de antes; un SQL prohibido da error claro por ambas vías.\n\n## Técnico\nDecisiones 20 y 21 de docs/architecture.md. Ambas por la instancia de lectura de T-106.\n- run_query(sql, max_rows): columnas, filas, truncated.\n- time_travel(table, snapshot_id o instant, sql, max_rows): tabla contra la lista conocida; CREATE OR REPLACE TEMP VIEW at_snapshot AS SELECT <proyección> FROM lh.ns.t AT (VERSION => id), con id numérico; sql por SqlGuard con at_snapshot como única tabla permitida; DROP en finally, con la conexión reservada durante toda la llamada.\n- instant con zona obligatoria (ISO-8601): se resuelve al último snapshot con timestamp_ms anterior o igual, por iceberg_snapshots. Sin AT (TIMESTAMP): su zona horaria está sin verificar. Id inexistente: error legible.\n- Comprobar la combinación aún sin probar: vista temporal con AT sobre catálogo READ_ONLY y sobre un snapshot con esquema anterior. Si falla, anotarlo en Riesgos abiertos de docs/architecture.md.\n- Tests por MCP real comparando filas una a una. ./mk test.",
       "deps": [
         "T-019",
         "T-020"
       ],
       "created": "2026-11-02T11:37:13+01:00",
-      "updated": "2026-11-02T17:37:18+01:00",
+      "updated": "2026-11-02T18:15:01+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -1348,6 +1373,11 @@
           "t": "2026-11-02T18:05:33+01:00",
           "by": "consultor",
           "msg": "T-014: time travel con AT (VERSION => id), que no necesita función de tabla. No funciona a través de una vista; se puede fijar con CREATE TEMP VIEW v AS SELECT ... FROM t AT (VERSION => id). Ver docs/spike-duckdb-iceberg.md."
+        },
+        {
+          "t": "2026-11-02T18:15:01+01:00",
+          "by": "consultor",
+          "msg": "descripción reescrita"
         }
       ]
     },
@@ -1472,12 +1502,12 @@
       "actual_min": null,
       "auto": true,
       "manual": null,
-      "desc": "El agente puede proponer arreglos, pero solo se aplican si una persona los aprueba. Para que eso sea real y no una formalidad, los arreglos son de una lista cerrada y la aprobación entra por una vía a la que el modelo no tiene acceso. Esta tarjeta deja el mecanismo y un primer arreglo.\nCómo sabremos si funciona: aplicar sin aprobar falla y no cambia nada; tras aprobar, se aplica una vez; repetirlo no lo aplica de nuevo.\n\n## Técnico\n- Base ops en Postgres (decisión 10): fix_proposals con id, acción, parámetros, motivo, efecto esperado, estado, approved_by, timestamps. Flyway o SQL de arranque.\n- propose_fix(action, params, reason) con enum cerrado; apply_fix(proposal_id) idempotente.\n- REST con HATEOAS: GET /fix-proposals, GET /fix-proposals/{id}, POST /fix-proposals/{id}/approvals, con links a las acciones disponibles. La credencial se añade de verdad en la tarjeta de RBAC; aquí, deja el punto de corte listo y documentado.\n- Primer arreglo: ROLLBACK_SNAPSHOT vía Iceberg API (manageSnapshots().rollbackTo). Interfaz FixAction para añadir los demás.\n- IT: flujo completo sobre LakehouseStack. ./mk test.",
+      "desc": "El agente puede proponer arreglos, pero solo se aplican si una persona los aprueba. Para que eso sea real y no una formalidad, los arreglos son de una lista cerrada y la aprobación entra por una vía a la que el modelo no tiene acceso. Esta tarjeta deja el mecanismo y un primer arreglo.\nCómo sabremos si funciona: aplicar sin aprobar falla y no cambia nada; tras aprobar, se aplica una vez; repetirlo no lo aplica de nuevo.\n\n## Técnico\n- Base ops en Postgres (decisión 10): fix_proposals con id, acción, parámetros, motivo, efecto esperado, estado, approved_by, timestamps. Flyway o SQL de arranque.\n- propose_fix(action, params, reason) con enum cerrado; apply_fix(proposal_id) idempotente.\n- REST con HATEOAS: GET /fix-proposals, GET /fix-proposals/{id}, POST /fix-proposals/{id}/approvals, con links a las acciones disponibles. La credencial se añade de verdad en la tarjeta de RBAC; aquí, deja el punto de corte listo y documentado.\n- Primer arreglo: ROLLBACK_SNAPSHOT con CALL iceberg_rollback_to_snapshot('t', id), por la instancia de reparación de T-106 (decisiones 5 y 20). Interfaz FixAction para añadir los demás.\n- IT: flujo completo sobre LakehouseStack. ./mk test.",
       "deps": [
         "T-021"
       ],
       "created": "2026-11-02T11:37:33+01:00",
-      "updated": "2026-11-02T11:37:33+01:00",
+      "updated": "2026-11-02T18:15:05+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -1485,6 +1515,11 @@
           "t": "2026-11-02T11:37:33+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T18:15:05+01:00",
+          "by": "consultor",
+          "msg": "descripción reescrita"
         }
       ]
     },
@@ -1933,7 +1968,7 @@
       "actual_min": null,
       "auto": true,
       "manual": null,
-      "desc": "El productor empieza a mandar un campo nuevo, compatible con el contrato, y como la evolución automática está apagada, Iceberg lo ignora sin avisar: se pierden datos en silencio. El chequeo debe compararlo con Schema Registry y el arreglo añade la columna sin reprocesar. De los cuatro, este es el de más incertidumbre.\nCómo sabremos si funciona: tras el arreglo aprobado, los eventos nuevos traen la columna rellena y las filas antiguas siguen intactas con ella en nulo.\n\n## Técnico\n- Inyección: producer con esquema v2 (campo nullable con default).\n- Detección: columnas en Registry que no están en Iceberg (T-025).\n- FixAction ADD_COLUMN por Iceberg API (updateSchema). Comprobar si el sink toma la columna sin reiniciar; si no, reiniciar la tarea como parte del arreglo. Si con evolve apagado no se comporta así, ir a blocked con la alternativa.\n- Los eventos entre la deriva y el arreglo no recuperan el campo: documentarlo.\n- IT sobre stack completo. ./mk test.",
+      "desc": "El productor empieza a mandar un campo nuevo, compatible con el contrato, y como la evolución automática está apagada, Iceberg lo ignora sin avisar: se pierden datos en silencio. El chequeo debe compararlo con Schema Registry y el arreglo añade la columna sin reprocesar. De los cuatro, este es el de más incertidumbre.\nCómo sabremos si funciona: tras el arreglo aprobado, los eventos nuevos traen la columna rellena y las filas antiguas siguen intactas con ella en nulo.\n\n## Técnico\n- Inyección: producer con esquema v2 (campo nullable con default).\n- Detección: columnas en Registry que no están en Iceberg (T-025).\n- FixAction ADD_COLUMN con ALTER TABLE ... ADD COLUMN por la instancia de reparación (decisiones 5 y 20; comprobado en T-014 solo sobre tablas escritas por DuckDB). Comprobar si el sink toma la columna sin reiniciar; si no, reiniciar la tarea como parte del arreglo. Si con evolve apagado no se comporta así, ir a blocked con la alternativa.\n- Los eventos entre la deriva y el arreglo no recuperan el campo: documentarlo.\n- IT sobre stack completo. ./mk test.",
       "deps": [
         "T-037",
         "T-025",
@@ -1941,7 +1976,7 @@
         "T-015"
       ],
       "created": "2026-11-02T11:38:51+01:00",
-      "updated": "2026-11-02T11:38:51+01:00",
+      "updated": "2026-11-02T18:15:08+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -1954,6 +1989,11 @@
           "t": "2026-11-02T13:14:42+01:00",
           "by": "consultor",
           "msg": "De T-012: por el código de RecordConverter (Iceberg 1.12.0, leído por encima, sin probar), con evolve-schema apagado una columna nueva parece ignorarse sin error en vez de fallar. La decisión 3 de docs/architecture.md cuenta con que el drift sea un fallo detectable: confirmarlo con un caso real antes de diseñar la detección."
+        },
+        {
+          "t": "2026-11-02T18:15:08+01:00",
+          "by": "consultor",
+          "msg": "descripción reescrita"
         }
       ]
     },
@@ -2021,12 +2061,12 @@
       "actual_min": null,
       "auto": true,
       "manual": null,
-      "desc": "Trino se usará para compactar y para el benchmark, pero con 7,6 GB no puede estar siempre encendido. Hay que configurarlo dentro de su imagen, sin STS, para que lea por Polaris las mismas tablas que DuckDB.\nCómo sabremos si funciona: Trino en un test lee por Polaris la muestra cargada y su recuento y sumas coinciden con DuckDB columna a columna.\n\n## Técnico\n- infra/trino/Dockerfile (trinodb/trino:484) con catalog/lakehouse.properties: connector iceberg, catalog.type=rest, OAuth2, vended-credentials desactivado, fs.native-s3, endpoint y path-style; JVM -Xmx2g. Sigue en perfil bench en compose.\n- Sin secretos en la imagen: propiedades con ${ENV:...}.\n- TrinoCatalogIT con Testcontainers, stack apagado. ./mk test.",
+      "desc": "Trino se usará para el benchmark y, si se queda, para expirar snapshots; compactar ya no lo necesita. Con 7,6 GB no puede estar siempre encendido. Hay que configurarlo dentro de su imagen, sin STS, para que lea por Polaris las mismas tablas que DuckDB. Si se decide quitar el benchmark, esta tarjeta sobra.\nCómo sabremos si funciona: Trino en un test lee por Polaris la muestra cargada y su recuento y sumas coinciden con DuckDB columna a columna.\n\n## Técnico\n- Pendiente de T-087.\n- infra/trino/Dockerfile (trinodb/trino:484) con catalog/lakehouse.properties: connector iceberg, catalog.type=rest, OAuth2, vended-credentials desactivado, fs.native-s3, endpoint y path-style; JVM -Xmx2g. Sigue en perfil bench en compose.\n- Sin secretos en la imagen: propiedades con ${ENV:...}.\n- TrinoCatalogIT con Testcontainers, stack apagado. ./mk test.",
       "deps": [
         "T-016"
       ],
       "created": "2026-11-02T11:39:12+01:00",
-      "updated": "2026-11-02T11:39:12+01:00",
+      "updated": "2026-11-02T18:15:12+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -2034,6 +2074,11 @@
           "t": "2026-11-02T11:39:12+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T18:15:12+01:00",
+          "by": "consultor",
+          "msg": "descripción reescrita"
         }
       ]
     },
@@ -2047,13 +2092,13 @@
       "actual_min": null,
       "auto": true,
       "manual": null,
-      "desc": "El brief pide demostrar que Iceberg permite cambiar el esquema sin reescribir datos. La prueba tiene que enseñarlo de forma comprobable: los ficheros existentes son exactamente los mismos antes y después.\nCómo sabremos si funciona: tras añadir la columna, la lista de ficheros de datos no cambia, las filas viejas la leen en nulo y las nuevas con valor.\n\n## Técnico\nIcebergCatalogClient.addColumn (compartir con ADD_COLUMN de T-041 si ya existe). IT que compara iceberg_metadata antes y después, y time travel al snapshot previo con el esquema antiguo. Texto de demostración en docs/. ./mk test.",
+      "desc": "El brief pide demostrar que Iceberg permite cambiar el esquema sin reescribir datos. La prueba tiene que enseñarlo de forma comprobable: los ficheros existentes son exactamente los mismos antes y después.\nCómo sabremos si funciona: tras añadir la columna, la lista de ficheros de datos no cambia, las filas viejas la leen en nulo y las nuevas con valor.\n\n## Técnico\nALTER TABLE t ADD COLUMN por la instancia de reparación de T-106 (decisiones 5 y 20; compartir con ADD_COLUMN de T-041 si ya existe). IT que compara iceberg_metadata antes y después, y time travel al snapshot previo con el esquema antiguo. Texto de demostración en docs/. ./mk test.",
       "deps": [
         "T-017",
         "T-016"
       ],
       "created": "2026-11-02T11:39:13+01:00",
-      "updated": "2026-11-02T11:39:13+01:00",
+      "updated": "2026-11-02T18:15:14+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -2061,6 +2106,11 @@
           "t": "2026-11-02T11:39:13+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T18:15:14+01:00",
+          "by": "consultor",
+          "msg": "descripción reescrita"
         }
       ]
     },
@@ -2106,12 +2156,12 @@
       "actual_min": null,
       "auto": true,
       "manual": null,
-      "desc": "La ingesta en streaming deja muchos ficheros pequeños, que hacen lentas las lecturas. Se compacta y se expiran los snapshots viejos con Trino, que ya está para el benchmark y gestiona bien los borrados. Lo importante es probar que cambian los ficheros, pero no los datos.\nCómo sabremos si funciona: tras compactar hay muchos menos ficheros y las filas son idénticas una a una; tras expirar, quedan solo los snapshots dentro de la retención.\n\n## Técnico\n- ALTER TABLE ... EXECUTE optimize y expire_snapshots (iceberg.expire-snapshots.min-retention ajustado en el catálogo).\n- Makefile: maintain (arranca Trino en perfil bench, ejecuta y lo para). Para agentes, solo por IT; el target queda para el responsable.\n- Debe funcionar con ficheros de borrado escritos por DuckDB: caso en el test.\n- MaintenanceIT con conteo de ficheros por iceberg_metadata y comparación fila a fila. ./mk test.",
+      "desc": "La ingesta en streaming deja muchos ficheros pequeños, que hacen lentas las lecturas. La prueba ha demostrado que el propio motor de consulta los junta y aplica los borrados, sin encender otro servicio. Lo importante es probar que cambian los ficheros, pero no los datos. Expirar snapshots viejos pasa a otra tarjeta, porque este motor no sabe hacerlo.\nCómo sabremos si funciona: tras compactar hay muchos menos ficheros de datos, las filas son idénticas una a una y se puede seguir consultando el pasado.\n\n## Técnico\nDecisión 6 de docs/architecture.md. La expiración está en T-105.\n- CALL iceberg_rewrite_data_files('t', min_input_files => n) por la instancia de reparación de T-106. Siempre con n explícito: por defecto (5) devuelve 0|0|0 sin error; ese caso se informa como «nada que compactar», no como éxito.\n- Esta extensión devuelve tres columnas, no las cinco documentadas: rewritten_data_files, added_data_files, rewritten_bytes.\n- Contar solo ficheros de datos (content = DATA): el fichero de borrado sigue registrado tras compactar.\n- Casos: ficheros escritos por el sink, con borrados de DuckDB, y compactar mientras el sink hace commit. Si hay conflicto, documentar cómo se manifiesta.\n- Anotar la memoria usada: 256 MB es una estimación sin medir.\n- Makefile: maintain. Para agentes, solo por IT; el target queda para el responsable.\n- MaintenanceIT con conteo por iceberg_metadata y comparación fila a fila. ./mk test.",
       "deps": [
         "T-044"
       ],
       "created": "2026-11-02T11:39:41+01:00",
-      "updated": "2026-11-02T11:39:41+01:00",
+      "updated": "2026-11-02T18:15:20+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -2124,6 +2174,11 @@
           "t": "2026-11-02T18:05:36+01:00",
           "by": "consultor",
           "msg": "T-014: sin comprobar que Trino lea los ficheros de borrado de DuckDB; cubrirlo aquí. DuckDB también compacta (iceberg_rewrite_data_files, min_input_files por defecto 5) pero no expira snapshots. Ver docs/spike-duckdb-iceberg.md."
+        },
+        {
+          "t": "2026-11-02T18:15:20+01:00",
+          "by": "consultor",
+          "msg": "descripción reescrita"
         }
       ]
     },
@@ -2296,13 +2351,13 @@
       "actual_min": null,
       "auto": true,
       "manual": null,
-      "desc": "El analista debe poder contar usuarios y agrupar por ellos sin ver quiénes son. Se le da acceso a través de vistas con el identificador convertido en un hash con sal y se le impide tocar la tabla base. El rol admin sigue viendo el valor original.\nCómo sabremos si funciona: el recuento de usuarios distintos es igual en ambos roles, y ninguna fila del analista contiene un user_id real, ni por run_query ni por time_travel.\n\n## Técnico\n- Vistas en esquema safe de cada sesión DuckDB (según docs/spike-duckdb-iceberg.md); sal por .env (MASKING_SALT).\n- SqlGuard por rol: analyst solo safe.*. time_travel y get_metric también pasan por enmascarado: revisar que no expongan user_id.\n- IT comparando con los user_id de la muestra. ./mk test.",
+      "desc": "El analista debe poder contar usuarios y agrupar por ellos sin ver quiénes son. Se le da acceso a través de vistas con el identificador convertido en un hash con sal y se le impide tocar la tabla base. Las vistas no permiten consultar el pasado, así que para eso el servidor aplica el mismo hash al preparar la consulta. El rol admin sigue viendo el valor original.\nCómo sabremos si funciona: el recuento de usuarios distintos es igual en ambos roles, y ninguna fila del analista contiene un user_id real, ni por run_query ni por time_travel.\n\n## Técnico\nDecisiones 12 y 21 de docs/architecture.md.\n- Vistas con CREATE VIEW memory.main.<v> en la instancia de lectura, creadas una vez por instancia; sal por .env (MASKING_SALT). Una sola expresión de hash, compartida con la proyección de time_travel.\n- SqlGuard por rol: analyst solo memory.main.<v>; en time_travel, at_snapshot. Comprobar catálogo y esquema de cada tabla.\n- La sal va en el texto de la vista: no debe salir por duckdb_views(), mensajes de error ni auditoría (T-053). get_metric también pasa por enmascarado.\n- Si T-021 dejó anotado que la vista temporal no funciona así, analyst recibe un error claro en time_travel.\n- IT comparando con los user_id de la muestra, en todas las conexiones del pool. ./mk test.",
       "deps": [
         "T-050",
         "T-019"
       ],
       "created": "2026-11-02T11:40:09+01:00",
-      "updated": "2026-11-02T11:40:09+01:00",
+      "updated": "2026-11-02T18:15:24+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -2315,6 +2370,11 @@
           "t": "2026-11-02T18:05:38+01:00",
           "by": "consultor",
           "msg": "T-014: la vista TEMP solo existe en su conexión; con pool usar CREATE VIEW memory.main.v. La vista sobre catálogo READ_ONLY funciona. Sin AT a través de la vista. Ver docs/spike-duckdb-iceberg.md, pregunta 7."
+        },
+        {
+          "t": "2026-11-02T18:15:24+01:00",
+          "by": "consultor",
+          "msg": "descripción reescrita"
         }
       ]
     },
@@ -2401,6 +2461,11 @@
           "t": "2026-11-02T11:40:31+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T18:15:25+01:00",
+          "by": "consultor",
+          "msg": "T-101: añadir a la batería duckdb_views, sqlite_master, rutas como tabla ('/etc/passwd', 's3://...'), AT escrito por el modelo y SELECT de rollback (decisiones 7, 20 y 21)."
         }
       ]
     },
@@ -2976,6 +3041,11 @@
           "t": "2026-11-02T17:53:25+01:00",
           "by": "consultor",
           "msg": "Segundo síntoma del mismo código (commit_own): el commit de T-013 (6897776, carril medir) se llevó DuckDbIcebergSpikeIT, trabajo a medias de T-014 (carril pensar), porque cambió durante su ejecución; CI falló por ello. Con dos carriles en la misma copia, comparar snapshots no basta: una tarjeta debe confirmar solo lo suyo. También hay que averiguar quién subió 6897776 a origin: el runner no debería hacer push."
+        },
+        {
+          "t": "2026-11-02T18:16:12+01:00",
+          "by": "consultor",
+          "msg": "Aclarado: el push de 6897776 lo hace el propio runner (board/runner.py, línea 547, al terminar). No es un problema; lo que sigue pendiente es que confirme trabajo de otro carril."
         }
       ]
     },
@@ -3273,6 +3343,11 @@
           "t": "2026-11-02T17:40:08+01:00",
           "by": "tú",
           "msg": "si, pon tarea"
+        },
+        {
+          "t": "2026-11-02T18:15:57+01:00",
+          "by": "consultor",
+          "msg": "La responsable dijo sí en el panel. run-agents-scheduled.bat ya retoma tarjetas sin rondas de aportación. El permiso de Claude Code no me deja crear la tarea programada: la instala ella con scripts/install-schedule.ps1."
         }
       ]
     },
@@ -3416,6 +3491,11 @@
           "t": "2026-11-02T17:30:59+01:00",
           "by": "consultor",
           "msg": "Decisión de alcance de la responsable"
+        },
+        {
+          "t": "2026-11-02T18:15:27+01:00",
+          "by": "consultor",
+          "msg": "T-101: compactar ya no depende de Trino. Lo que cambia con esta decisión es expirar snapshots (T-105): si Trino se queda, unos 15 min sobre T-044; si se va, se ahorra T-044 (40 min) y T-105 pasa a un proceso de un solo uso con la API Java de Iceberg (unos 40 min). También se puede sacar la expiración del alcance, aunque el brief la pide."
         }
       ]
     },
@@ -3792,10 +3872,10 @@
       "id": "T-101",
       "title": "Revisar cuatro decisiones de arquitectura con lo comprobado en DuckDB",
       "owner": "arquitecto",
-      "status": "backlog",
+      "status": "blocked",
       "priority": "alta",
       "estimate_min": 20.0,
-      "actual_min": null,
+      "actual_min": 5.7,
       "auto": true,
       "manual": null,
       "desc": "La prueba de DuckDB con Iceberg confirma lo esencial del diseño, pero cambia varias cosas. Una consulta de lectura puede dar marcha atrás a una tabla, y los analistas no pueden viajar en el tiempo a través de sus vistas. Además, DuckDB ya hace operaciones que el diseño encarga a otras herramientas. Se propone actualizar las decisiones afectadas antes de construir encima, para no programar lo que luego haya que rehacer.\nCómo sabremos si funciona: el documento de arquitectura dice qué forma de viaje en el tiempo se usa, cómo se protege el catálogo y qué puede hacer un analista con snapshots antiguos, sin contradecir lo comprobado.\n\n## Técnico\nHechos y tests en docs/spike-duckdb-iceberg.md, sección «Efecto en las decisiones». Decisión 5: AT (VERSION => id) en vez de snapshot_from_id; valorar quitar Iceberg Java API. Decisión 6: iceberg_rewrite_data_files compacta (min_input_files por defecto 5), pero no hay función de expirar; relacionado con T-087. Decisión 7: añadir las seis reglas del validador. Decisión 12: vista en memory.main para el pool, time travel del analista por decidir. Nueva: dos instancias DuckDB, la del agente solo con ATTACH READ_ONLY. Afecta a T-016, T-019, T-021, T-047, T-054. Actualizar también docs/wiki/05-decisiones.md.",
@@ -3803,14 +3883,51 @@
         "T-014"
       ],
       "created": "2026-11-02T18:05:29+01:00",
-      "updated": "2026-11-02T18:05:29+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-02T18:16:31+01:00",
+      "started_at": "2026-11-02T18:10:51+01:00",
+      "finished_at": "2026-11-02T18:16:31+01:00",
       "log": [
         {
           "t": "2026-11-02T18:05:29+01:00",
           "by": "investigador",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T18:10:51+01:00",
+          "by": "runner",
+          "msg": "empieza arquitecto"
+        },
+        {
+          "t": "2026-11-02T18:10:55+01:00",
+          "by": "arquitecto",
+          "msg": "Inicio revisión de decisiones"
+        },
+        {
+          "t": "2026-11-02T18:16:31+01:00",
+          "by": "arquitecto",
+          "msg": "BLOCKED: Decisiones 5, 6, 7 y 12 revisadas y 20 y 21 añadidas en la arquitectura, con wiki y tarjetas actualizadas y T-105 y T-106 creadas; el consultor debe ajustar en el panel las dependencias de T-017, T-021 y T-047."
+        },
+        {
+          "t": "2026-11-02T18:16:31+01:00",
+          "by": "arquitecto",
+          "msg": "⚠ 1 comandos denegados: python board/board.py add \"Mantenimiento: expirar snapshots viejos\" --owner desa"
+        },
+        {
+          "t": "2026-11-02T18:16:31+01:00",
+          "by": "runner",
+          "msg": "✗ «python board/board.py add \"Mantenimiento: expirar snapshots viejos\" --owner desarrollador »: borrar o mover ficheros: usa Write/Edit"
+        }
+      ],
+      "runs": [
+        {
+          "agent": "arquitecto",
+          "mode": "work",
+          "at": "2026-11-02T18:16:31+01:00",
+          "min": 5.7,
+          "turns": 72,
+          "tokens": 762715,
+          "cost_usd": 1.6059885999999999,
+          "verdict": "blocked"
         }
       ]
     },
@@ -3842,7 +3959,7 @@
       "id": "T-103",
       "title": "Solicitud de permiso: git check-ignore -v*",
       "owner": "consultor",
-      "status": "human",
+      "status": "done",
       "priority": "media",
       "estimate_min": 2,
       "actual_min": null,
@@ -3851,7 +3968,7 @@
       "desc": "El agente «investigador» necesitaba un comando que no está en su lista de permitidos y se lo bloquearon mientras hacía T-014. No es de solo lectura ni está prohibido, así que lo tiene que validar una persona.\n\nPara qué lo quería: (no lo explicó)\n\nCómo decidir: concede si es seguro repetirlo sin supervisión dentro del proyecto; deniega si escribe fuera, publica, borra o usa la red.\n\n## Técnico\n- Comando: git check-ignore -v testkit/src/test/java/io/github/albaasca/lakehouse/testkit/DuckDbIcebe\n- Patrón que se concedería: git check-ignore -v*\n- Tarjeta: T-014",
       "deps": [],
       "created": "2026-11-02T18:06:39+01:00",
-      "updated": "2026-11-02T18:06:39+01:00",
+      "updated": "2026-11-02T18:14:30+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -3859,6 +3976,11 @@
           "t": "2026-11-02T18:06:39+01:00",
           "by": "runner",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T18:14:30+01:00",
+          "by": "tú",
+          "msg": "✓ Concedido: git check-ignore -v*"
         }
       ],
       "kind": "permiso",
@@ -3874,7 +3996,7 @@
       "id": "T-104",
       "title": "Solicitud de permiso: gh *",
       "owner": "consultor",
-      "status": "human",
+      "status": "done",
       "priority": "media",
       "estimate_min": 2,
       "actual_min": null,
@@ -3883,7 +4005,7 @@
       "desc": "El agente «tester» necesitaba un comando que no está en su lista de permitidos y se lo bloquearon mientras hacía T-009. No es de solo lectura ni está prohibido, así que lo tiene que validar una persona.\n\nPara qué lo quería: ver si hay una ejecución de CI entera en verde y cuánto tarda, que es el criterio de cierre de T-009.\n\nCómo decidir: concede si es seguro repetirlo sin supervisión dentro del proyecto; deniega si escribe fuera, publica, borra o usa la red.\n\n## Técnico\n- Comando: gh run list --workflow ci.yml --limit 10\n- Patrón que se concedería: gh *\n- Tarjeta: T-009",
       "deps": [],
       "created": "2026-11-02T18:08:19+01:00",
-      "updated": "2026-11-02T18:08:19+01:00",
+      "updated": "2026-11-02T18:14:23+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -3891,6 +4013,11 @@
           "t": "2026-11-02T18:08:19+01:00",
           "by": "runner",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T18:14:23+01:00",
+          "by": "tú",
+          "msg": "✓ Concedido: gh *"
         }
       ],
       "kind": "permiso",
@@ -3901,19 +4028,95 @@
         "task": "T-009",
         "why": "ver si hay una ejecución de CI entera en verde y cuánto tarda, que es el criterio de cierre de T-009."
       }
+    },
+    {
+      "id": "T-105",
+      "title": "Mantenimiento: expirar snapshots viejos",
+      "owner": "desarrollador",
+      "status": "blocked",
+      "priority": "media",
+      "estimate_min": 40.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Cada escritura deja un snapshot y sus ficheros, y con el tiempo ocupan cada vez más. El motor de consulta compacta, pero no sabe expirar, así que hace falta otra herramienta. Cuál depende de si Trino se queda en el proyecto: si se queda, basta con usarlo; si se va, se añade un proceso pequeño que solo se ejecuta cuando se pide.\nCómo sabremos si funciona: tras expirar quedan solo los snapshots dentro de la retención, las filas actuales son idénticas una a una y los ficheros que ya nadie usa desaparecen del almacén.\n\n## Técnico\nBloqueada por T-087. Decisión 6 de docs/architecture.md.\n- Si Trino se queda: ALTER TABLE ... EXECUTE expire_snapshots sobre T-044, ajustando iceberg.expire-snapshots.min-retention (7 días por defecto). Unos 15 min.\n- Si Trino se va: módulo o imagen de un solo uso con iceberg-core e iceberg-aws 1.12.0 (RESTCatalog, table.expireSnapshots()), nunca dentro de mcp-server. Unos 40 min.\n- Caso obligatorio: tabla con ficheros de borrado escritos por DuckDB y compactada por T-047. Comprobar en SeaweedFS que los ficheros de datos y de borrado sin referencias desaparecen, no solo que baje el recuento de iceberg_snapshots.\n- IT con ./mk test.",
+      "deps": [
+        "T-087"
+      ],
+      "created": "2026-11-02T18:14:35+01:00",
+      "updated": "2026-11-02T18:14:35+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T18:14:35+01:00",
+          "by": "arquitecto",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-106",
+      "title": "Consulta: separar la conexión de lectura de la de reparación",
+      "owner": "desarrollador",
+      "status": "next",
+      "priority": "alta",
+      "estimate_min": 25.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Se ha comprobado que una simple consulta de lectura puede dar marcha atrás a una tabla si la conexión permite escribir. Hoy solo el validador lo impediría, y un fallo suyo cambiaría datos. Se propone que todo lo que venga del modelo vaya por una conexión que no puede escribir en el catálogo, y que las reparaciones aprobadas usen otra aparte.\nCómo sabremos si funciona: sin pasar por el validador, la consulta que da marcha atrás falla en cualquier conexión de lectura y la tabla no cambia; la misma operación, lanzada por la vía de reparación, sí se aplica.\n\n## Técnico\nDecisión 20 de docs/architecture.md. Sobre LakehouseSession de T-016.\n- Instancia de lectura: pool con duplicate(), ATTACH con READ_ONLY, memory_limit 400MB. Sin ningún catálogo escribible.\n- Instancia de reparación: conexión única, escribible, memory_limit 256MB; se abre al usarla y se cierra al terminar. Interfaz que acepta plantillas con parámetros, no SQL libre.\n- Statement nuevo por consulta (un error cierra el Statement JDBC).\n- IT en cada conexión del pool: SELECT * FROM iceberg_rollback_to_snapshot(...), INSERT, DELETE y CALL rechazados con 'attached in read-only mode', snapshot actual sin cambiar; la instancia de lectura ve el commit de la de reparación sin volver a adjuntar. ./mk test.",
+      "deps": [
+        "T-016"
+      ],
+      "created": "2026-11-02T18:14:43+01:00",
+      "updated": "2026-11-02T18:14:43+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T18:14:43+01:00",
+          "by": "arquitecto",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-107",
+      "title": "Que un comentario en Te necesita llegue a quien debe leerlo",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "alta",
+      "estimate_min": 30.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "La responsable contestó en T-083 y nadie lo leyó durante horas: el runner no coge tarjetas de Te necesita y el consultor no recibe aviso. Se propone que comentar una de esas tarjetas la haga avanzar, o que se vea claramente como contestada. Cómo sabremos si funciona: al comentar una tarjeta de agente, vuelve a la cola con el comentario en su historial; en una de consultor, el panel y board.py list la marcan como respondida.\n\n## Técnico\nboard/server.py (endpoint de nota) y board/runner.py: el historial de los últimos 8 registros ya llega al prompt al trabajar la tarjeta. Mover de human a next si el dueño es un agente y el autor es tú. Añadir marca para las de consultor. Test en tests/test_board.py. En CLAUDE.md: el consultor revisa las respuestas de Te necesita al empezar cada turno.",
+      "deps": [],
+      "created": "2026-11-02T18:15:58+01:00",
+      "updated": "2026-11-02T18:15:58+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T18:15:58+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ]
     }
   ],
   "runners": {
     "think": {
       "state": "working",
-      "current": "T-027",
-      "message": "arquitecto con T-027",
+      "current": "T-101",
+      "message": "arquitecto con T-101",
       "pid": 21744,
-      "heartbeat": "2026-11-02T18:06:45+01:00",
+      "heartbeat": "2026-11-02T18:10:51+01:00",
       "enabled": true,
       "agent": "arquitecto",
-      "started": "2026-11-02T18:06:45+01:00",
-      "live": "live-T-027-arquitecto-20261102-180645.jsonl",
+      "started": "2026-11-02T18:10:51+01:00",
+      "live": "live-T-101-arquitecto-20261102-181051.jsonl",
       "contrib_at": "2026-11-02T11:46:22+01:00",
       "contrib_agent": "investigador"
     },

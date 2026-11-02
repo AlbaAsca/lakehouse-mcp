@@ -1,6 +1,6 @@
 # Trino
 
-**Estado:** ⬜ planificado. El servicio está declarado en `compose.yaml`, pero sin catálogo configurado: hoy no sabría leer las tablas. No se ha arrancado para esta wiki. Tarjetas T-044, T-047, T-049 y T-052.
+**Estado:** ⬜ planificado. El servicio está declarado en `compose.yaml`, pero sin catálogo configurado: hoy no sabría leer las tablas. No se ha arrancado para esta wiki. Tarjetas T-044, T-049, T-052 y quizá T-105. Si se queda o no, lo decide T-087.
 
 [Portada](../README.md) · [Glosario](../01-conceptos.md)
 
@@ -12,10 +12,10 @@ Si [DuckDB](duckdb.md) es una calculadora potente, Trino es una oficina entera d
 
 Dos encargos puntuales, con la memoria justa para encenderlo solo a demanda:
 
-1. **Mantenimiento:** compactar ficheros y expirar snapshots ([decisión 6](../../architecture.md#decisiones)).
-2. **Benchmark:** comparar las mismas consultas en DuckDB y Trino ([brief](../../brief.md#funcionalidades-clave)).
+1. **Benchmark:** comparar las mismas consultas en DuckDB y Trino ([brief](../../brief.md#funcionalidades-clave)).
+2. **Expirar snapshots,** si se queda por el benchmark ([decisión 6](../../architecture.md#decisiones)). Compactar ya no es encargo suyo: lo hace [DuckDB](duckdb.md).
 
-Sin él, la compactación habría que reimplementarla o traer Spark.
+Sin él no hay benchmark, y expirar necesitaría un proceso aparte con la API Java de Iceberg (T-105).
 
 ## Cómo se conectará
 
@@ -56,7 +56,7 @@ tools
 
 ## Qué puede fallar
 
-Riesgos de diseño: memoria justa con todo encendido, y una decisión pendiente sobre cómo compactar ficheros de borrado posicional, que son los que escribe DuckDB.
+Riesgo de diseño: memoria justa con todo encendido.
 
 ## Para saber más
 

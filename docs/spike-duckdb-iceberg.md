@@ -164,7 +164,7 @@ Dos avisos sobre la compactación:
 
 ## Efecto en las decisiones
 
-Ninguna decisión queda invalidada en lo esencial, pero cuatro necesitan revisión. **El arquitecto decide**; aquí solo se aportan los hechos.
+Ninguna decisión queda invalidada en lo esencial, pero cuatro necesitan revisión. Aquí solo se aportan los hechos. **Lo decidido está en [`architecture.md`](architecture.md#decisiones)** (T-101: decisiones 5, 6, 7, 12, 20 y 21).
 
 | Decisión | Dice hoy | Hecho comprobado | Propuesta |
 |---|---|---|---|

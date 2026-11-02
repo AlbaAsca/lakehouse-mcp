@@ -17,8 +17,8 @@ Limita lo que puede hacer un modelo. Sin él, el agente necesitaría acceso dire
 | Dirección | Quién | Puerto |
 |---|---|---|
 | Entrada | [Agente](agente.md), Claude Desktop | HTTP, por decidir (T-028) |
-| Salida | [DuckDB](duckdb.md), embebido | mismo proceso |
-| Salida | [Polaris](polaris.md), con la Iceberg Java API | 8181 |
+| Salida | [DuckDB](duckdb.md), embebido: una instancia de lectura y otra de reparación | mismo proceso |
+| Salida | [Polaris](polaris.md), a través de DuckDB | 8181 |
 | Salida | [Postgres](postgres.md), base `ops` | 5432 |
 | Salida | [Kafka](kafka.md), para medir lag | 9092 |
 
@@ -36,7 +36,7 @@ Las herramientas previstas, del [brief](../../brief.md#servidor-mcp-tools):
 | `propose_fix`, `apply_fix` | Propone y aplica un arreglo solo con aprobación humana | T-026 |
 | `get_metric` | Métricas de la [capa semántica](capa-semantica.md) | T-033 |
 
-Reglas de diseño, en [`docs/architecture.md`](../../architecture.md#decisiones): validar SQL con el parser de DuckDB (7), arreglos de catálogo cerrado cuya aprobación llega por `POST /fix-proposals/{id}/approvals` con una credencial que el modelo nunca recibe (9), roles por clave de API (11) y enmascarado de `user_id` por vistas (12).
+Reglas de diseño, en [`docs/architecture.md`](../../architecture.md#decisiones): validar SQL con el parser de DuckDB (7), arreglos de catálogo cerrado cuya aprobación llega por `POST /fix-proposals/{id}/approvals` con una credencial que el modelo nunca recibe (9), roles por clave de API (11), enmascarado de `user_id` por vistas (12), dos instancias de DuckDB (20) y `time_travel` como única vía al pasado, también para analyst (21).
 
 ## Cómo estará configurado
 
@@ -54,8 +54,8 @@ Todavía no se puede. No hay servicio en `compose.yaml` ni código que ejecutar.
 
 Riesgos de diseño conocidos, no observados:
 
-- **Un fallo del validador.** Sería la única barrera entre una consulta y los ficheros del contenedor. [`NOTAS-investigador.md`](../../NOTAS-investigador.md) propone una segunda barrera con los ajustes de seguridad de DuckDB, aún sin tarjeta.
-- **Capacidades de DuckDB sobre Iceberg.** Pendientes de T-014.
+- **Un fallo del validador.** La instancia `READ_ONLY` protege el catálogo, pero el validador seguiría siendo la única barrera entre una consulta y los ficheros del contenedor o de S3. [`NOTAS-investigador.md`](../../NOTAS-investigador.md) propone una segunda barrera con los ajustes de seguridad de DuckDB, aún sin tarjeta.
+- **DuckDB sobre ficheros del sink.** [T-014](../../spike-duckdb-iceberg.md) lo comprobó con ficheros escritos por DuckDB; sobre los del sink falta probarlo.
 
 ## Para saber más
 

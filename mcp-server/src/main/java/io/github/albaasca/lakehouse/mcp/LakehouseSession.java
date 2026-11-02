@@ -1,0 +1,246 @@
+package io.github.albaasca.lakehouse.mcp;
+
+import java.nio.file.Path;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.SQLTimeoutException;
+import java.sql.Statement;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+import org.duckdb.DuckDBConnection;
+
+/**
+ * Read-only access to the Iceberg catalog through one embedded DuckDB instance and a small pool of its connections.
+ *
+ * <p>The catalog is attached {@code READ_ONLY} so that even a {@code SELECT} cannot change a table, whatever the SQL
+ * validator lets through (docs/spike-duckdb-iceberg.md, question 5). Repairs will need an instance of their own.
+ */
+public final class LakehouseSession implements AutoCloseable {
+
+    /** Name of the catalog in the SQL this session runs: {@code lh.<namespace>.<table>}. */
+    public static final String CATALOG_ALIAS = "lh";
+
+    /** Iceberg loads avro by itself, so it has to be installed as well for the session to start without internet. */
+    private static final List<String> EXTENSIONS = List.of("httpfs", "avro", "iceberg");
+
+    /** Polaris catalog. {@code uri} is the base URL, without a trailing slash. */
+    public record Catalog(String name, String uri, String clientId, String clientSecret) {}
+
+    /** S3 store. {@code endpoint} is {@code host:port}, plain HTTP with path-style addresses as SeaweedFS needs. */
+    public record Storage(String endpoint, String accessKey, String secretKey, String region) {}
+
+    /**
+     * @param extensionDirectory where DuckDB keeps its extensions; null for its default, under the home directory
+     * @param installExtensions false never touches the network: the extensions must already be in the directory
+     */
+    public record Settings(Catalog catalog, Storage storage, int poolSize, Duration queryTimeout, String memoryLimit,
+            Path extensionDirectory, boolean installExtensions) {
+
+        public static Settings of(Catalog catalog, Storage storage) {
+            return new Settings(catalog, storage, 4, Duration.ofSeconds(30), "512MB", null, true);
+        }
+
+        public Settings withPoolSize(int size) {
+            return new Settings(catalog, storage, size, queryTimeout, memoryLimit, extensionDirectory, installExtensions);
+        }
+
+        public Settings withQueryTimeout(Duration timeout) {
+            return new Settings(catalog, storage, poolSize, timeout, memoryLimit, extensionDirectory, installExtensions);
+        }
+
+        public Settings withMemoryLimit(String limit) {
+            return new Settings(catalog, storage, poolSize, queryTimeout, limit, extensionDirectory, installExtensions);
+        }
+
+        public Settings withExtensions(Path directory, boolean install) {
+            return new Settings(catalog, storage, poolSize, queryTimeout, memoryLimit, directory, install);
+        }
+    }
+
+    /** Turns the rows of a query into a value. They are only valid inside this call. */
+    @FunctionalInterface
+    public interface RowReader<T> {
+        T read(ResultSet rows) throws SQLException;
+    }
+
+    private final Settings settings;
+    private final DuckDBConnection root;
+    private final BlockingQueue<Connection> idle;
+    private final ScheduledExecutorService watchdog;
+
+    /** Opens the instance and attaches the catalog: throws if Polaris or the extensions are not available. */
+    public LakehouseSession(Settings settings) throws SQLException {
+        if (settings.poolSize() < 1) {
+            throw new IllegalArgumentException("poolSize must be at least 1: " + settings.poolSize());
+        }
+        this.settings = settings;
+        this.idle = new ArrayBlockingQueue<>(settings.poolSize());
+        // jdbc:duckdb: opens a new database on every call, so siblings of one instance only come from duplicate().
+        this.root = DriverManager.getConnection("jdbc:duckdb:").unwrap(DuckDBConnection.class);
+        this.watchdog = Executors.newSingleThreadScheduledExecutor(runnable -> {
+            Thread thread = new Thread(runnable, "duckdb-query-timeout");
+            thread.setDaemon(true);
+            return thread;
+        });
+        try {
+            try (Statement statement = root.createStatement()) {
+                for (String sql : startup(settings)) {
+                    statement.execute(sql);
+                }
+            }
+            for (int i = 0; i < settings.poolSize(); i++) {
+                idle.add(root.duplicate());
+            }
+        } catch (SQLException | RuntimeException e) {
+            close();
+            throw e;
+        }
+    }
+
+    private static List<String> startup(Settings settings) {
+        Catalog catalog = settings.catalog();
+        Storage storage = settings.storage();
+        List<String> sql = new ArrayList<>();
+        if (settings.extensionDirectory() != null) {
+            sql.add("SET extension_directory = " + quote(settings.extensionDirectory().toString()));
+        }
+        if (settings.installExtensions()) {
+            EXTENSIONS.forEach(extension -> sql.add("INSTALL " + extension));
+        } else {
+            sql.add("SET autoinstall_known_extensions = false");
+        }
+        EXTENSIONS.forEach(extension -> sql.add("LOAD " + extension));
+        sql.add("SET memory_limit = " + quote(settings.memoryLimit()));
+        // Without this, an in-memory database spills to ./.tmp and the limit only moves the problem to the disk.
+        sql.add("SET temp_directory = ''");
+        sql.add("CREATE SECRET lakehouse_s3 (TYPE s3, KEY_ID " + quote(storage.accessKey()) + ", SECRET "
+                + quote(storage.secretKey()) + ", REGION " + quote(storage.region()) + ", ENDPOINT "
+                + quote(storage.endpoint()) + ", URL_STYLE 'path', USE_SSL false)");
+        sql.add("CREATE SECRET lakehouse_polaris (TYPE iceberg, CLIENT_ID " + quote(catalog.clientId())
+                + ", CLIENT_SECRET " + quote(catalog.clientSecret()) + ", OAUTH2_SERVER_URI "
+                + quote(catalog.uri() + "/api/catalog/v1/oauth/tokens") + ", OAUTH2_SCOPE 'PRINCIPAL_ROLE:ALL')");
+        sql.add("ATTACH " + quote(catalog.name()) + " AS " + CATALOG_ALIAS + " (TYPE iceberg, READ_ONLY, URI "
+                + quote(catalog.uri() + "/api/catalog") + ", SECRET lakehouse_polaris, ACCESS_DELEGATION_MODE 'none')");
+        return sql;
+    }
+
+    private static String quote(String value) {
+        return "'" + value.replace("'", "''") + "'";
+    }
+
+    /**
+     * Runs one statement on a free connection.
+     *
+     * @throws SQLTimeoutException if it exceeds the query timeout, or no connection frees up within that time
+     * @throws SQLException if DuckDB rejects it; the connection stays usable for the next query
+     */
+    public <T> T query(String sql, RowReader<T> reader) throws SQLException {
+        Connection connection = borrow();
+        try {
+            // One Statement per query: after an error the driver closes it, not just the failed query.
+            try (Statement statement = connection.createStatement();
+                    Timeout timeout = new Timeout(statement)) {
+                try (ResultSet rows = statement.executeQuery(sql)) {
+                    return reader.read(rows);
+                } catch (SQLException e) {
+                    if (timeout.fired()) {
+                        throw new SQLTimeoutException("Query exceeded " + settings.queryTimeout() + ": " + sql, e);
+                    }
+                    throw e;
+                }
+            }
+        } finally {
+            release(connection);
+        }
+    }
+
+    private Connection borrow() throws SQLException {
+        try {
+            Connection connection = idle.poll(settings.queryTimeout().toMillis(), TimeUnit.MILLISECONDS);
+            if (connection == null) {
+                throw new SQLTimeoutException("All " + settings.poolSize() + " connections stayed busy for "
+                        + settings.queryTimeout());
+            }
+            return connection;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new SQLException("Interrupted while waiting for a connection", e);
+        }
+    }
+
+    private void release(Connection connection) throws SQLException {
+        if (watchdog.isShutdown()) {
+            connection.close();
+        } else {
+            idle.add(connection);
+        }
+    }
+
+    /** Waits for nothing: a query still running ends with its own connection, when it returns it. */
+    @Override
+    public void close() throws SQLException {
+        watchdog.shutdownNow();
+        List<Connection> connections = new ArrayList<>();
+        idle.drainTo(connections);
+        connections.add(root);
+        SQLException failure = null;
+        for (Connection connection : connections) {
+            try {
+                connection.close();
+            } catch (SQLException e) {
+                failure = e;
+            }
+        }
+        if (failure != null) {
+            throw failure;
+        }
+    }
+
+    /**
+     * Interrupts a statement when its time is up. The lock makes sure the interrupt cannot land after the query has
+     * ended, when the connection may already be running someone else's query.
+     */
+    private final class Timeout implements AutoCloseable {
+
+        private final Statement statement;
+        private final ScheduledFuture<?> task;
+        private boolean finished;
+        private boolean fired;
+
+        Timeout(Statement statement) {
+            this.statement = statement;
+            this.task = watchdog.schedule(this::fire, settings.queryTimeout().toMillis(), TimeUnit.MILLISECONDS);
+        }
+
+        private synchronized void fire() {
+            if (finished) {
+                return;
+            }
+            fired = true;
+            try {
+                statement.cancel();
+            } catch (SQLException e) {
+                // Already closed: the query has just ended by itself, so there is nothing left to interrupt.
+            }
+        }
+
+        synchronized boolean fired() {
+            return fired;
+        }
+
+        @Override
+        public synchronized void close() {
+            finished = true;
+            task.cancel(false);
+        }
+    }
+}
