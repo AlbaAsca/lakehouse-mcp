@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-03T00:01:54+01:00",
+  "updated": "2026-11-03T00:14:19+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -3822,7 +3822,7 @@
       "id": "T-080",
       "title": "Reutilizar contenedores para acortar la suite de tests",
       "owner": "desarrollador",
-      "status": "review",
+      "status": "next",
       "priority": "alta",
       "estimate_min": 40.0,
       "actual_min": 21.6,
@@ -3831,7 +3831,7 @@
       "desc": "La suite completa pasa de 15 minutos porque varios tests levantan sus propios contenedores. Se propone compartir un único stack durante cada ejecución, sin que los tests se pisen entre ellos. Cómo sabremos si funciona: la suite tarda bastante menos, medido antes y después en el mismo equipo, y sigue en verde al ejecutarla dos veces seguidas.\n\n## Técnico\ntestkit/src/main/java/.../LakehouseStack.java: arrancar una sola vez por JVM (patrón singleton de Testcontainers, cerrado por Ryuk) y hacer que IcebergSinkConfigIT, IcebergSinkFlowIT, LakehouseStackIT y ProducerIT lo reutilicen; aislar con nombres únicos de topic, namespace y conector. Revisar forkCount de surefire/failsafe y si cada módulo necesita su propia JVM. No activar testcontainers.reuse.enable, para que CI parta siempre de limpio. Anotar tiempos en la tarjeta. Coordinar con T-077.",
       "deps": [],
       "created": "2026-11-02T17:30:26+01:00",
-      "updated": "2026-11-03T00:01:54+01:00",
+      "updated": "2026-11-03T00:14:19+01:00",
       "started_at": "2026-11-02T23:40:21+01:00",
       "finished_at": "2026-11-03T00:01:54+01:00",
       "log": [
@@ -3864,6 +3864,21 @@
           "t": "2026-11-03T00:01:54+01:00",
           "by": "desarrollador",
           "msg": "REVIEW: Stack y worker de Connect compartidos por JVM con nombres aislados: tests de integración un 20-24 % más rápidos (582 s → 445-465 s) y en verde dos veces seguidas en `testkit` y `producer`, sin medir aún la suite completa en CI."
+        },
+        {
+          "t": "2026-11-03T00:01:58+01:00",
+          "by": "tester",
+          "msg": "verificando"
+        },
+        {
+          "t": "2026-11-03T00:14:02+01:00",
+          "by": "consultor",
+          "msg": "Tester: testkit y producer en verde (./mk test MODULE=..., una pasada cada uno). Falla tests/test_connect_config.py:22, que busca ConnectWorker.start( y rompe board-and-scripts en CI (41542155817). Tiempos en CI, una ejecución de cada lado: testkit 8:01 a 6:40, producer 2:32 a 2:04, total hasta el fallo de mcp-server 10:54 a 9:23 (-14 %). El rojo del trabajo java es el de T-127. Añadidos: ProducerIT.aSeedWithItsOwnTopicLeavesTheRealTopicAlone, IcebergSinkConfigIT.removingAConnectorThatDoesNotExistIsNotAnError y dos comprobaciones de aislamiento en registrationReplacesSecretsAndCanRunTwice."
+        },
+        {
+          "t": "2026-11-03T00:14:19+01:00",
+          "by": "tester",
+          "msg": "FAIL: El código funciona y `testkit` y `producer` están en verde, pero T-080 rompe `tests/test_connect_config.py:22` y deja `board-and-scripts` en rojo; se reproduce con `python -m pytest tests -q -k test_the_stack_flushes_as_often_as_the_flow_test`."
         }
       ],
       "runs": [
@@ -3876,8 +3891,19 @@
           "tokens": 1365804,
           "cost_usd": 2.2297472000000003,
           "verdict": "review"
+        },
+        {
+          "agent": "tester",
+          "mode": "verify",
+          "at": "2026-11-03T00:14:19+01:00",
+          "min": 12.3,
+          "turns": 50,
+          "tokens": 768452,
+          "cost_usd": 1.2804472000000002,
+          "verdict": "fail"
         }
-      ]
+      ],
+      "verify_started": "2026-11-03T00:01:58+01:00"
     },
     {
       "id": "T-081",
@@ -5586,6 +5612,30 @@
           "msg": "creada"
         }
       ]
+    },
+    {
+      "id": "T-132",
+      "title": "La integración continua está en rojo: un test del panel sigue buscando la forma antigua de arrancar el conector",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "alta",
+      "estimate_min": 5.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Al compartir el conector entre pruebas (T-080), una comprobación de los tests del panel se quedó buscando el texto de la forma antigua de arrancarlo. El código funciona, pero la comprobación falla y deja en rojo la integración continua. Se propone que compruebe la forma nueva, sin perder lo que vigila: que la prueba del flujo use el mismo conector cuya frecuencia de guardado se comprueba. Si el arreglo llega con el reintento de T-080, esta tarjeta se cierra sin más trabajo.\nCómo sabremos si funciona: los tests del panel vuelven a pasar, también en la integración continua.\n## Técnico\nDónde: tests/test_connect_config.py:22, test_the_stack_flushes_as_often_as_the_flow_test, busca 'ConnectWorker.start(' en IcebergSinkFlowIT.java; desde T-080 ese método es privado y el test llama a ConnectWorker.shared().\nSíntoma: AssertionError 'IcebergSinkFlowIT no longer uses ConnectWorker'. CI 41542155817, trabajo board-and-scripts: 1 failed, 141 passed; en 41539233829, anterior a T-080, ese trabajo estaba en verde.\nReproducir: python -m pytest tests -q -k test_the_stack_flushes_as_often_as_the_flow_test\nCriterio: ./mk test-board en verde y board-and-scripts en verde en CI. El trabajo java sigue en rojo por otro motivo, cubierto por T-127.",
+      "deps": [],
+      "created": "2026-11-03T00:13:59+01:00",
+      "updated": "2026-11-03T00:13:59+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-03T00:13:59+01:00",
+          "by": "tester",
+          "msg": "creada"
+        }
+      ]
     }
   ],
   "runners": {
@@ -5605,13 +5655,13 @@
     "measure": {
       "state": "working",
       "current": "T-080",
-      "message": "desarrollador con T-080",
+      "message": "tester con T-080",
       "pid": 25284,
-      "heartbeat": "2026-11-02T23:40:21+01:00",
+      "heartbeat": "2026-11-03T00:01:58+01:00",
       "enabled": true,
-      "agent": "desarrollador",
-      "started": "2026-11-02T23:40:21+01:00",
-      "live": "live-T-080-desarrollador-20261102-234021.jsonl"
+      "agent": "tester",
+      "started": "2026-11-03T00:01:58+01:00",
+      "live": "live-T-080-tester-20261103-000158.jsonl"
     }
   }
 }

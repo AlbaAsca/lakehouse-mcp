@@ -94,9 +94,17 @@ class IcebergSinkConfigIT {
         assertThat(value(registered, "iceberg.catalog.s3.secret-access-key")).isEqualTo("test-secret");
         assertThat(value(registered, "iceberg.catalog.client.region")).isEqualTo("us-east-1");
         assertThat(value(registered, "iceberg.catalog.header.Polaris-Realm")).isEqualTo("POLARIS");
+        // Nothing of the real sink, which IcebergSinkFlowIT runs on this same worker.
+        assertThat(registered).doesNotContain("ecommerce.events");
+        assertThat(connect.get("/connectors")).doesNotContain("\"iceberg-sink\"");
 
         connect.deleteConnector(CONNECTOR);
         assertThat(connect.get("/connectors")).doesNotContain(CONNECTOR);
+    }
+
+    @Test
+    void removingAConnectorThatDoesNotExistIsNotAnError() throws Exception {
+        connect.deleteConnector("no-such-connector");
     }
 
     @Test

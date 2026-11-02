@@ -33,6 +33,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.StreamSupport;
 import java.util.zip.GZIPInputStream;
 import org.apache.avro.generic.GenericRecord;
+import org.apache.kafka.clients.admin.Admin;
+import org.apache.kafka.clients.admin.AdminClientConfig;
+import org.apache.kafka.clients.admin.ListOffsetsResult;
+import org.apache.kafka.clients.admin.OffsetSpec;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -57,11 +61,13 @@ class ProducerIT {
     private static LakehouseStack stack;
     private static JarRun seedRun;
     private static List<ConsumerRecord<String, GenericRecord>> consumed;
+    private static long realTopicEndBeforeTheSeed;
 
     /** Through the packaged jar, as `make seed` does: on the test classpath a dependency missing from it would not show. */
     @BeforeAll
     static void seedTheTopic() throws Exception {
         stack = LakehouseStack.sharedStreaming();
+        realTopicEndBeforeTheSeed = realTopicEnd();
         seedRun = runJar(
                 "--input", SAMPLE.toString(),
                 "--speedup", "1e12",
@@ -191,6 +197,28 @@ class ProducerIT {
             assertThat(consumer.partitionsFor(TOPIC)).hasSize(KafkaEventSink.PARTITIONS);
         }
         assertThat(consumeTopic()).hasSize(SAMPLE_ROWS);
+    }
+
+    /** The isolation that lets this class share a broker with IngestE2EIT, in whichever order they run. */
+    @Test
+    void aSeedWithItsOwnTopicLeavesTheRealTopicAlone() throws Exception {
+        assertThat(realTopicEnd()).isEqualTo(realTopicEndBeforeTheSeed);
+    }
+
+    /** Sum of the end offsets of the real topic, 0 if it does not exist. Through Admin, which never creates it. */
+    private static long realTopicEnd() throws Exception {
+        try (Admin admin = Admin.create(Map.of(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, stack.kafkaBootstrapServers()))) {
+            String real = KafkaEventSink.TOPIC;
+            if (!admin.listTopics().names().get().contains(real)) {
+                return 0;
+            }
+            Map<TopicPartition, OffsetSpec> latest = new HashMap<>();
+            admin.describeTopics(List.of(real)).allTopicNames().get().get(real).partitions()
+                    .forEach(info -> latest.put(new TopicPartition(real, info.partition()), OffsetSpec.latest()));
+            return admin.listOffsets(latest).all().get().values().stream()
+                    .mapToLong(ListOffsetsResult.ListOffsetsResultInfo::offset)
+                    .sum();
+        }
     }
 
     /** Everything in the topic: reads up to the end offsets, so extra rows would show up as well as missing ones. */
