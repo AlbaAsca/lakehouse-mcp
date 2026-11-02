@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-02T18:06:39+01:00",
+  "updated": "2026-11-02T18:08:19+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -53,8 +53,8 @@
       "name": "Arquitecto",
       "role": "Diseña la solución y trocea en tareas estimadas",
       "color": "#bb9af7",
-      "status": "idle",
-      "current": null
+      "status": "working",
+      "current": "T-027"
     },
     {
       "id": "desarrollador",
@@ -69,8 +69,8 @@
       "name": "Tester",
       "role": "Verifica, escribe tests y busca fallos",
       "color": "#9ece6a",
-      "status": "working",
-      "current": "T-009"
+      "status": "idle",
+      "current": null
     },
     {
       "id": "investigador",
@@ -591,10 +591,12 @@
       "manual": null,
       "desc": "El proyecto pide CI sin Kaggle y hoy no hay ninguna. Se propone un workflow que compile y pase toda la suite en cada push y PR, usando solo la muestra sintética. Las evals van aparte, en su propia tarjeta.\nCómo sabremos si funciona: la primera ejecución tras subir la rama termina en verde, sin secretos ni acceso a Kaggle.\n\n## Técnico\n- .github/workflows/ci.yml: temurin 25, caché de ~/.m2, mvn -B verify, pytest de tests/. Sin imagen tools: el runner ya tiene Docker.\n- Crear .env a partir de .env.example si algún test lo necesita.\n- Runner hospedado de GitHub (repo público, sin coste); caché de capas para la imagen de Connect si el tiempo lo pide.\n- El consultor sube la rama y comprueba la ejecución al integrar; si tarda más de 20 min, anotar los pasos lentos.",
       "deps": [
-        "T-006"
+        "T-006",
+        "T-103",
+        "T-104"
       ],
       "created": "2026-11-02T11:35:56+01:00",
-      "updated": "2026-11-02T17:40:06+01:00",
+      "updated": "2026-11-02T18:08:19+01:00",
       "started_at": "2026-11-02T17:33:19+01:00",
       "finished_at": "2026-11-02T17:40:06+01:00",
       "log": [
@@ -637,9 +639,56 @@
           "t": "2026-11-02T17:59:50+01:00",
           "by": "tester",
           "msg": "verificando"
+        },
+        {
+          "t": "2026-11-02T18:08:04+01:00",
+          "by": "consultor",
+          "msg": "Tester: local en verde (pytest 115; mvn verify exit 0, 69 IT sin fallos, DuckDbIcebergSpikeIT incluido). Sin ver GitHub: gh denegado. Riesgo pendiente de tarjeta, porque su creación se denegó: cancel-in-progress true en ci.yml y el push del runner tras cada tarjeta (runner.py:547) pueden cancelar las ejecuciones de develop; propuesta: cancelar solo en pull_request. Al cerrar, quitar de docs/wiki/04-operacion.md el aviso de Sin probar sobre la ejecución en GitHub y anotar la duración real."
+        },
+        {
+          "t": "2026-11-02T18:08:19+01:00",
+          "by": "tester",
+          "msg": "BLOCKED: Tests locales en verde y test del workflow añadido, pero falta confirmar en GitHub una ejecución completa en verde porque `gh` está denegado."
+        },
+        {
+          "t": "2026-11-02T18:08:19+01:00",
+          "by": "tester",
+          "msg": "⚠ 3 comandos denegados: gh run list --workflow ci.yml --limit 10 | python board/board.py add \"CI: los pushes del runner cancelan la ejecución en cu | git check-ignore -v tests/test_ci_workflow.py"
+        },
+        {
+          "t": "2026-11-02T18:08:19+01:00",
+          "by": "runner",
+          "msg": "? permiso solicitado: gh * (T-104); la tarjeta espera la decisión"
+        },
+        {
+          "t": "2026-11-02T18:08:19+01:00",
+          "by": "runner",
+          "msg": "✗ «python board/board.py add \"CI: los pushes del runner cancelan la ejecución en curso de dev»: git que escribe: los commits y tags los hace el runner"
+        },
+        {
+          "t": "2026-11-02T18:08:19+01:00",
+          "by": "runner",
+          "msg": "? permiso solicitado: git check-ignore -v* (T-103); la tarjeta espera la decisión"
+        },
+        {
+          "t": "2026-11-02T18:08:19+01:00",
+          "by": "runner",
+          "msg": "se reintentará con los permisos resueltos"
         }
       ],
-      "verify_started": "2026-11-02T17:59:50+01:00"
+      "verify_started": "2026-11-02T17:59:50+01:00",
+      "runs": [
+        {
+          "agent": "tester",
+          "mode": "verify",
+          "at": "2026-11-02T18:08:19+01:00",
+          "min": 8.5,
+          "turns": 16,
+          "tokens": 215990,
+          "cost_usd": 0.7260534000000001,
+          "verdict": "blocked"
+        }
+      ]
     },
     {
       "id": "T-010",
@@ -1438,7 +1487,7 @@
       "id": "T-027",
       "title": "Semántica: definir en palabras las cuatro métricas",
       "owner": "arquitecto",
-      "status": "backlog",
+      "status": "doing",
       "priority": "alta",
       "estimate_min": 15.0,
       "actual_min": null,
@@ -1449,14 +1498,19 @@
         "T-004"
       ],
       "created": "2026-11-02T11:37:34+01:00",
-      "updated": "2026-11-02T11:37:34+01:00",
-      "started_at": null,
+      "updated": "2026-11-02T18:06:44+01:00",
+      "started_at": "2026-11-02T18:06:44+01:00",
       "finished_at": null,
       "log": [
         {
           "t": "2026-11-02T11:37:34+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T18:06:44+01:00",
+          "by": "runner",
+          "msg": "empieza arquitecto"
         }
       ]
     },
@@ -3694,6 +3748,11 @@
           "t": "2026-11-02T18:02:36+01:00",
           "by": "tester",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T18:08:01+01:00",
+          "by": "consultor",
+          "msg": "Reproducido otra vez en vivo: tests/test_ci_workflow.py, escrito por el tester en T-009, entró en el commit 042910e de T-014, del investigador."
         }
       ]
     },
@@ -3778,19 +3837,51 @@
         "task": "T-014",
         "why": ""
       }
+    },
+    {
+      "id": "T-104",
+      "title": "Solicitud de permiso: gh *",
+      "owner": "consultor",
+      "status": "human",
+      "priority": "media",
+      "estimate_min": 2,
+      "actual_min": null,
+      "auto": false,
+      "manual": "Abre la tarjeta y pulsa «Conceder» o «Denegar».",
+      "desc": "El agente «tester» necesitaba un comando que no está en su lista de permitidos y se lo bloquearon mientras hacía T-009. No es de solo lectura ni está prohibido, así que lo tiene que validar una persona.\n\nPara qué lo quería: ver si hay una ejecución de CI entera en verde y cuánto tarda, que es el criterio de cierre de T-009.\n\nCómo decidir: concede si es seguro repetirlo sin supervisión dentro del proyecto; deniega si escribe fuera, publica, borra o usa la red.\n\n## Técnico\n- Comando: gh run list --workflow ci.yml --limit 10\n- Patrón que se concedería: gh *\n- Tarjeta: T-009",
+      "deps": [],
+      "created": "2026-11-02T18:08:19+01:00",
+      "updated": "2026-11-02T18:08:19+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T18:08:19+01:00",
+          "by": "runner",
+          "msg": "creada"
+        }
+      ],
+      "kind": "permiso",
+      "perm": {
+        "pattern": "gh *",
+        "command": "gh run list --workflow ci.yml --limit 10",
+        "agent": "tester",
+        "task": "T-009",
+        "why": "ver si hay una ejecución de CI entera en verde y cuánto tarda, que es el criterio de cierre de T-009."
+      }
     }
   ],
   "runners": {
     "think": {
       "state": "working",
-      "current": "T-014",
-      "message": "investigador con T-014",
+      "current": "T-027",
+      "message": "arquitecto con T-027",
       "pid": 21744,
-      "heartbeat": "2026-11-02T17:38:42+01:00",
+      "heartbeat": "2026-11-02T18:06:45+01:00",
       "enabled": true,
-      "agent": "investigador",
-      "started": "2026-11-02T17:38:42+01:00",
-      "live": "live-T-014-investigador-20261102-173842.jsonl",
+      "agent": "arquitecto",
+      "started": "2026-11-02T18:06:45+01:00",
+      "live": "live-T-027-arquitecto-20261102-180645.jsonl",
       "contrib_at": "2026-11-02T11:46:22+01:00",
       "contrib_agent": "investigador"
     },
