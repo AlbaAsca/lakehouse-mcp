@@ -27,4 +27,15 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+  <build>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+      </resource>
+      <!-- The schema is read at runtime as a generic record: no code generation. -->
+      <resource>
+        <directory>src/main/avro</directory>
+      </resource>
+    </resources>
+  </build>
 </project>

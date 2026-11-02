@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-02T12:31:43+01:00",
+  "updated": "2026-11-02T12:39:10+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -504,10 +504,10 @@
       "id": "T-008",
       "title": "Productor: esquema Avro y lectura tolerante del CSV",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "review",
       "priority": "alta",
       "estimate_min": 30.0,
-      "actual_min": null,
+      "actual_min": 7.3,
       "auto": true,
       "manual": null,
       "desc": "El productor tiene que leer el CSV sin perder las filas sucias, porque son justo los casos de calidad que queremos conservar. Se propone definir el esquema Avro y un lector que acepte nulos y formatos raros sin descartar nada.\nCómo sabremos si funciona: cada fila de la muestra sintética se convierte en un evento con los mismos valores, incluidas las sucias.\n\n## Técnico\n- producer/src/main/avro/event.avsc, nullable en category_code, brand, user_session; event_time como timestamp-micros.\n- Formato de fecha del origen: 2019-10-01 00:00:00 UTC (confirmar con docs/data-profile.md si ya existe).\n- Soporte de .csv y .csv.gz en streaming, sin cargar en memoria (fichero real de varios GB).\n- Las filas ilegibles se cuentan y se registran; no paran el proceso.\n- Tests unitarios elemento a elemento contra testdata/synthetic-events.csv.gz. Verificación: ./mk test.",
@@ -515,14 +515,36 @@
         "T-004"
       ],
       "created": "2026-11-02T11:35:34+01:00",
-      "updated": "2026-11-02T11:35:34+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-02T12:39:10+01:00",
+      "started_at": "2026-11-02T12:31:49+01:00",
+      "finished_at": "2026-11-02T12:39:10+01:00",
       "log": [
         {
           "t": "2026-11-02T11:35:34+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T12:31:49+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-02T12:39:10+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: Esquema Avro y lector tolerante de CSV y gzip en streaming, con las 50.000 filas de la muestra verificadas campo a campo y `./mk test` en verde."
+        }
+      ],
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-02T12:39:10+01:00",
+          "min": 7.3,
+          "turns": 38,
+          "tokens": 405225,
+          "cost_usd": 1.1567872000000001,
+          "verdict": "review"
         }
       ]
     },
@@ -2245,14 +2267,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-006",
-      "message": "tester con T-006",
+      "current": "T-008",
+      "message": "desarrollador con T-008",
       "pid": 25568,
-      "heartbeat": "2026-11-02T12:13:06+01:00",
+      "heartbeat": "2026-11-02T12:31:50+01:00",
       "enabled": true,
-      "agent": "tester",
-      "started": "2026-11-02T12:13:06+01:00",
-      "live": "live-T-006-tester-20261102-121306.jsonl"
+      "agent": "desarrollador",
+      "started": "2026-11-02T12:31:49+01:00",
+      "live": "live-T-008-desarrollador-20261102-123150.jsonl"
     }
   }
 }
