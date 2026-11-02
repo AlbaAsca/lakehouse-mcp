@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-02T19:19:13+01:00",
+  "updated": "2026-11-02T19:19:24+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -1169,7 +1169,7 @@
       "id": "T-015",
       "title": "Ingesta: prueba completa de CSV sintético a tabla Iceberg",
       "owner": "desarrollador",
-      "status": "review",
+      "status": "blocked",
       "priority": "alta",
       "estimate_min": 45.0,
       "actual_min": 19.6,
@@ -1181,7 +1181,7 @@
         "T-013"
       ],
       "created": "2026-11-02T11:36:36+01:00",
-      "updated": "2026-11-02T19:19:13+01:00",
+      "updated": "2026-11-02T19:19:24+01:00",
       "started_at": "2026-11-02T18:59:36+01:00",
       "finished_at": "2026-11-02T19:19:13+01:00",
       "log": [
@@ -1224,6 +1224,16 @@
           "t": "2026-11-02T19:19:13+01:00",
           "by": "runner",
           "msg": "✗ «powershell -NoProfile -Command \"Measure-Command { docker compose run --rm tools make test »: varios comandos, tuberías, redirecciones o heredoc: lanza cada comando por separado y crea ficheros con Write/Edit"
+        },
+        {
+          "t": "2026-11-02T19:19:18+01:00",
+          "by": "tester",
+          "msg": "verificando"
+        },
+        {
+          "t": "2026-11-02T19:19:24+01:00",
+          "by": "tester",
+          "msg": "BLOCKED: s\\\\io\\\\github\\\\albaasca\\\\lakehouse\\\\producer\\\\IngestE2EIT.class\"],\"durationMs\":121,\"numFiles\":2,\"truncated\":false,\"totalMatches\":2,\"countIsComplete\":true},\"tool_result_meta\":[{\"id\":\"toolu_018dDtqKWrQvZ3r5twEvBWhh\",\"permission_decision\":{\"decision\":\"accept\",\"source\":\"config\",\"reason_type\":\"rule\"}}]}"
         }
       ],
       "runs": [
@@ -1236,8 +1246,19 @@
           "tokens": 1651663,
           "cost_usd": 1.9241124,
           "verdict": "review"
+        },
+        {
+          "agent": "tester",
+          "mode": "verify",
+          "at": "2026-11-02T19:19:24+01:00",
+          "min": 0.1,
+          "turns": null,
+          "tokens": null,
+          "cost_usd": null,
+          "verdict": "blocked"
         }
-      ]
+      ],
+      "verify_started": "2026-11-02T19:19:18+01:00"
     },
     {
       "id": "T-016",
@@ -4610,13 +4631,13 @@
     "measure": {
       "state": "working",
       "current": "T-015",
-      "message": "desarrollador con T-015",
+      "message": "tester con T-015",
       "pid": 6932,
-      "heartbeat": "2026-11-02T18:59:36+01:00",
+      "heartbeat": "2026-11-02T19:19:19+01:00",
       "enabled": true,
-      "agent": "desarrollador",
-      "started": "2026-11-02T18:59:36+01:00",
-      "live": "live-T-015-desarrollador-20261102-185936.jsonl"
+      "agent": "tester",
+      "started": "2026-11-02T19:19:18+01:00",
+      "live": "live-T-015-tester-20261102-191918.jsonl"
     }
   }
 }
