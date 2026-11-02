@@ -133,7 +133,7 @@ public final class LakehouseSession implements AutoCloseable {
         return sql;
     }
 
-    private static String quote(String value) {
+    static String quote(String value) {
         return "'" + value.replace("'", "''") + "'";
     }
 

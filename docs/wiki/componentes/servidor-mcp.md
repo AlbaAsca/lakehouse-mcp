@@ -1,6 +1,6 @@
 # Servidor MCP
 
-**Estado:** ⬜ planificado. Solo existen la [conexión con DuckDB](duckdb.md#dentro-del-servidor-mcp) y el [validador de SQL](#el-validador-de-sql), probados por sus tests: todavía no hay aplicación, herramientas ni comandos que enseñar. Tarjetas T-020 a T-028.
+**Estado:** ⬜ planificado. Solo existen la [conexión con DuckDB y la lectura del catálogo](duckdb.md#dentro-del-servidor-mcp) y el [validador de SQL](#el-validador-de-sql), probados por sus tests: todavía no hay aplicación, herramientas ni comandos que enseñar. Tarjetas T-020 a T-028.
 
 [Portada](../README.md) · [Glosario](../01-conceptos.md)
 

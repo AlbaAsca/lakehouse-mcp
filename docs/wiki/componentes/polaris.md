@@ -119,6 +119,7 @@ Devuelve los namespaces. `smoke` aparece después de ejecutar `./mk smoke`. El s
 ## Qué puede fallar
 
 - **`HTTP 400 Credential vending was requested`.** Te falta `ACCESS_DELEGATION_MODE 'none'` en el ATTACH. [Detalle](../04-operacion.md#error-400-de-credential-vending).
+- **HTTP 500 al crear una tabla llamada `snapshots`** (`invalid_path_key_for_passthrough_resolved_path`). Comprobado con ese nombre. Parece que Polaris lo toma por una tabla de metadatos de Iceberg, así que otros nombres de ese tipo, como `files` o `history`, podrían fallar igual: sin probar.
 - **404 del catálogo tras reiniciar.** Contenedores de antes de T-002. [Remedio](../04-operacion.md#polaris-pierde-el-catálogo-al-reiniciar).
 - **`POLARIS_CLIENT_SECRET` cambiado en `.env`.** El bootstrap omite un realm ya creado, así que el secreto viejo sigue vigente. Deducido del log `already bootstrapped; skipping`, sin probar.
 - **`lakehouse-init` en error.** `check` en [`init.sh`](../../../infra/polaris/init.sh) imprime el código y el cuerpo. `catalog: 409` es normal.

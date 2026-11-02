@@ -60,6 +60,20 @@ Para los tests, [`SyntheticLoader`](../../../testkit/src/main/java/io/github/alb
 
 Lo demuestra `LakehouseSessionIT`, en `./mk test`.
 
+[`CatalogReader`](../../../mcp-server/src/main/java/io/github/albaasca/lakehouse/mcp/CatalogReader.java) lee el catálogo con esa conexión, sin ninguna biblioteca de Iceberg. `CatalogReaderIT` compara lo que devuelve con la API REST de Polaris.
+
+| Método | Consulta | Devuelve |
+|---|---|---|
+| `listTables` | `information_schema.tables` | Namespace y tabla, en orden |
+| `describe` | `DESCRIBE`, `iceberg_partition_specs(...) WHERE is_default` | Columnas con su tipo y particiones actuales |
+| `snapshots` | `iceberg_snapshots(...)` | Del más antiguo al último, con padre, fecha, operación y totales |
+
+Tres cosas comprobadas con la versión actual de la extensión:
+
+- **`information_schema.columns` no sirve.** En una sesión que aún no ha leído la tabla devuelve una sola columna llamada `__`, y luego no ve las columnas añadidas. `DESCRIBE` acierta siempre, también con la sesión ya abierta.
+- **DuckDB dice que toda columna admite nulos**, aunque Iceberg la tenga como obligatoria. Por eso `describe` no da ese dato: para saberlo hay que preguntar a Polaris.
+- **Los nombres distinguen mayúsculas**, y una tabla que no existe da `NoSuchElementException`. Sin esa comprobación previa, `iceberg_snapshots` responde con un error engañoso sobre `version-hint`.
+
 ## Cómo probarlo tú mismo
 
 El tutorial lo hace paso a paso: [crear una tabla](../03-probarlo.md#paso-5-crea-una-tabla). Una comprobación rápida:
