@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-02T13:14:56+01:00",
+  "updated": "2026-11-02T13:15:21+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -710,7 +710,7 @@
       "id": "T-012",
       "title": "Ingesta: configurar y registrar el conector hacia Iceberg",
       "owner": "desarrollador",
-      "status": "review",
+      "status": "blocked",
       "priority": "alta",
       "estimate_min": 35.0,
       "actual_min": 14.5,
@@ -721,7 +721,7 @@
         "T-002"
       ],
       "created": "2026-11-02T11:35:58+01:00",
-      "updated": "2026-11-02T13:14:56+01:00",
+      "updated": "2026-11-02T13:15:21+01:00",
       "started_at": "2026-11-02T13:00:28+01:00",
       "finished_at": "2026-11-02T13:14:56+01:00",
       "log": [
@@ -754,6 +754,16 @@
           "t": "2026-11-02T13:14:56+01:00",
           "by": "desarrollador",
           "msg": "REVIEW: Conector configurado y registrable con `connect-init`, configuración válida contra un worker real y `./mk test` en verde; el estado RUNNING con datos queda para T-015."
+        },
+        {
+          "t": "2026-11-02T13:15:01+01:00",
+          "by": "tester",
+          "msg": "verificando"
+        },
+        {
+          "t": "2026-11-02T13:15:21+01:00",
+          "by": "tester",
+          "msg": "BLOCKED: 100,\"session_id\":\"24fe7028-9fc5-4d7c-8ae3-ec2f82e5056d\",\"uuid\":\"83be6c78-7a98-47cd-99d1-0ae8c06a0fdd\"}\n{\"type\":\"system\",\"subtype\":\"thinking_tokens\",\"estimated_tokens\":1100,\"estimated_tokens_delta\":150,\"session_id\":\"24fe7028-9fc5-4d7c-8ae3-ec2f82e5056d\",\"uuid\":\"c7a6e441-7b86-49e4-8a4d-2f764dad8db3\"}"
         }
       ],
       "runs": [
@@ -766,8 +776,19 @@
           "tokens": 205224,
           "cost_usd": 1.2227626000000003,
           "verdict": "review"
+        },
+        {
+          "agent": "tester",
+          "mode": "verify",
+          "at": "2026-11-02T13:15:21+01:00",
+          "min": 0.3,
+          "turns": null,
+          "tokens": null,
+          "cost_usd": null,
+          "verdict": "blocked"
         }
-      ]
+      ],
+      "verify_started": "2026-11-02T13:15:01+01:00"
     },
     {
       "id": "T-013",
@@ -2464,13 +2485,13 @@
     "measure": {
       "state": "working",
       "current": "T-012",
-      "message": "desarrollador con T-012",
+      "message": "tester con T-012",
       "pid": 25568,
-      "heartbeat": "2026-11-02T13:00:29+01:00",
+      "heartbeat": "2026-11-02T13:15:02+01:00",
       "enabled": true,
-      "agent": "desarrollador",
-      "started": "2026-11-02T13:00:29+01:00",
-      "live": "live-T-012-desarrollador-20261102-130029.jsonl"
+      "agent": "tester",
+      "started": "2026-11-02T13:15:02+01:00",
+      "live": "live-T-012-tester-20261102-131502.jsonl"
     }
   }
 }
