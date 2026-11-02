@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-02T11:48:32+01:00",
+  "updated": "2026-11-02T11:52:24+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -210,23 +210,45 @@
       "id": "T-004",
       "title": "Infra: muestra sintética para CI, sin datos reales",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "review",
       "priority": "alta",
       "estimate_min": 35.0,
-      "actual_min": null,
+      "actual_min": 3.8,
       "auto": true,
       "manual": null,
       "desc": "CI y casi todos los tests necesitan datos, y la licencia del dataset impide usar un extracto real. Se propone un generador con semilla fija que invente eventos con el mismo esquema, incluya los tipos de suciedad del origen y una caída de compras plantada para que el agente tenga algo que explicar.\nCómo sabremos si funciona: dos ejecuciones dan un fichero idéntico byte a byte, cada caso sucio aparece, y ningún valor proviene del dataset real.\n\n## Técnico\n- infra/synthetic/generate.py (solo biblioteca estándar; salida UTF-8) --seed --rows --out. Fichero versionado testdata/synthetic-events.csv.gz, ~50k filas, 14 días (gzip con mtime=0 para reproducibilidad; .gitignore no excluye .csv.gz).\n- Esquema: event_time, event_type, product_id, category_id, category_code, brand, price, user_id, user_session.\n- Sesiones coherentes view->cart->purchase. Casos sucios: category_code y brand nulos, user_session nulo, price 0 o negativo, duplicados exactos.\n- Día con caída plantada de compras (documentar qué día y por qué marca o categoría en infra/synthetic/README.md).\n- Valores claramente inventados (marcas ficticias, ids en rango propio), nunca derivados del CSV real.\n- Tests en tests/ (./mk test-board): determinismo, esquema, presencia de cada caso, guarda contra CSV sin comprimir o de más de 5 MB en el repo.",
       "deps": [],
       "created": "2026-11-02T11:35:11+01:00",
-      "updated": "2026-11-02T11:35:11+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-02T11:52:24+01:00",
+      "started_at": "2026-11-02T11:48:37+01:00",
+      "finished_at": "2026-11-02T11:52:24+01:00",
       "log": [
         {
           "t": "2026-11-02T11:35:11+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T11:48:37+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-02T11:52:24+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: Generador determinista y muestra de 50.000 filas con casos sucios y caída plantada; 46 tests en verde en Windows, falta pasarlos en el contenedor con `./mk test-board`."
+        }
+      ],
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-02T11:52:24+01:00",
+          "min": 3.8,
+          "turns": 26,
+          "tokens": 219046,
+          "cost_usd": 0.7592933999999999,
+          "verdict": "review"
         }
       ]
     },
@@ -1961,14 +1983,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-002",
-      "message": "desarrollador con T-002",
+      "current": "T-004",
+      "message": "desarrollador con T-004",
       "pid": 25568,
-      "heartbeat": "2026-11-02T11:43:16+01:00",
+      "heartbeat": "2026-11-02T11:48:37+01:00",
       "enabled": true,
       "agent": "desarrollador",
-      "started": "2026-11-02T11:43:16+01:00",
-      "live": "live-T-002-desarrollador-20261102-114316.jsonl"
+      "started": "2026-11-02T11:48:37+01:00",
+      "live": "live-T-004-desarrollador-20261102-114837.jsonl"
     }
   }
 }
