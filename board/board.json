@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-02T12:39:10+01:00",
+  "updated": "2026-11-02T12:45:37+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -504,7 +504,7 @@
       "id": "T-008",
       "title": "Productor: esquema Avro y lectura tolerante del CSV",
       "owner": "desarrollador",
-      "status": "review",
+      "status": "done",
       "priority": "alta",
       "estimate_min": 30.0,
       "actual_min": 7.3,
@@ -515,7 +515,7 @@
         "T-004"
       ],
       "created": "2026-11-02T11:35:34+01:00",
-      "updated": "2026-11-02T12:39:10+01:00",
+      "updated": "2026-11-02T12:45:37+01:00",
       "started_at": "2026-11-02T12:31:49+01:00",
       "finished_at": "2026-11-02T12:39:10+01:00",
       "log": [
@@ -533,6 +533,16 @@
           "t": "2026-11-02T12:39:10+01:00",
           "by": "desarrollador",
           "msg": "REVIEW: Esquema Avro y lector tolerante de CSV y gzip en streaming, con las 50.000 filas de la muestra verificadas campo a campo y `./mk test` en verde."
+        },
+        {
+          "t": "2026-11-02T12:39:14+01:00",
+          "by": "tester",
+          "msg": "verificando"
+        },
+        {
+          "t": "2026-11-02T12:45:37+01:00",
+          "by": "tester",
+          "msg": "DONE: Diff leído, suite en verde y las 50.000 filas coinciden columna a columna con una referencia independiente en Python; añadidos 8 tests de regresión y casos adversos."
         }
       ],
       "runs": [
@@ -545,8 +555,19 @@
           "tokens": 405225,
           "cost_usd": 1.1567872000000001,
           "verdict": "review"
+        },
+        {
+          "agent": "tester",
+          "mode": "verify",
+          "at": "2026-11-02T12:45:37+01:00",
+          "min": 6.4,
+          "turns": 22,
+          "tokens": 309138,
+          "cost_usd": 0.8321656,
+          "verdict": "done"
         }
-      ]
+      ],
+      "verify_started": "2026-11-02T12:39:14+01:00"
     },
     {
       "id": "T-009",
@@ -2268,13 +2289,13 @@
     "measure": {
       "state": "working",
       "current": "T-008",
-      "message": "desarrollador con T-008",
+      "message": "tester con T-008",
       "pid": 25568,
-      "heartbeat": "2026-11-02T12:31:50+01:00",
+      "heartbeat": "2026-11-02T12:39:15+01:00",
       "enabled": true,
-      "agent": "desarrollador",
-      "started": "2026-11-02T12:31:49+01:00",
-      "live": "live-T-008-desarrollador-20261102-123150.jsonl"
+      "agent": "tester",
+      "started": "2026-11-02T12:39:15+01:00",
+      "live": "live-T-008-tester-20261102-123915.jsonl"
     }
   }
 }
