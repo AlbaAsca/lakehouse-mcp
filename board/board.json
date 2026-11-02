@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-03T00:14:19+01:00",
+  "updated": "2026-11-03T00:16:14+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -3822,18 +3822,18 @@
       "id": "T-080",
       "title": "Reutilizar contenedores para acortar la suite de tests",
       "owner": "desarrollador",
-      "status": "next",
+      "status": "review",
       "priority": "alta",
       "estimate_min": 40.0,
-      "actual_min": 21.6,
+      "actual_min": 23.5,
       "auto": true,
       "manual": null,
       "desc": "La suite completa pasa de 15 minutos porque varios tests levantan sus propios contenedores. Se propone compartir un único stack durante cada ejecución, sin que los tests se pisen entre ellos. Cómo sabremos si funciona: la suite tarda bastante menos, medido antes y después en el mismo equipo, y sigue en verde al ejecutarla dos veces seguidas.\n\n## Técnico\ntestkit/src/main/java/.../LakehouseStack.java: arrancar una sola vez por JVM (patrón singleton de Testcontainers, cerrado por Ryuk) y hacer que IcebergSinkConfigIT, IcebergSinkFlowIT, LakehouseStackIT y ProducerIT lo reutilicen; aislar con nombres únicos de topic, namespace y conector. Revisar forkCount de surefire/failsafe y si cada módulo necesita su propia JVM. No activar testcontainers.reuse.enable, para que CI parta siempre de limpio. Anotar tiempos en la tarjeta. Coordinar con T-077.",
       "deps": [],
       "created": "2026-11-02T17:30:26+01:00",
-      "updated": "2026-11-03T00:14:19+01:00",
-      "started_at": "2026-11-02T23:40:21+01:00",
-      "finished_at": "2026-11-03T00:01:54+01:00",
+      "updated": "2026-11-03T00:16:14+01:00",
+      "started_at": "2026-11-03T00:14:22+01:00",
+      "finished_at": "2026-11-03T00:16:14+01:00",
       "log": [
         {
           "t": "2026-11-02T17:30:26+01:00",
@@ -3879,6 +3879,16 @@
           "t": "2026-11-03T00:14:19+01:00",
           "by": "tester",
           "msg": "FAIL: El código funciona y `testkit` y `producer` están en verde, pero T-080 rompe `tests/test_connect_config.py:22` y deja `board-and-scripts` en rojo; se reproduce con `python -m pytest tests -q -k test_the_stack_flushes_as_often_as_the_flow_test`."
+        },
+        {
+          "t": "2026-11-03T00:14:22+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-03T00:16:14+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: Corregida la comprobación de `tests/test_connect_config.py` que dejaba `board-and-scripts` en rojo, con los tests del panel en verde en local (141 pasados, 1 omitido), pendiente de confirmar en CI."
         }
       ],
       "runs": [
@@ -3901,6 +3911,16 @@
           "tokens": 768452,
           "cost_usd": 1.2804472000000002,
           "verdict": "fail"
+        },
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-03T00:16:14+01:00",
+          "min": 1.9,
+          "turns": 6,
+          "tokens": 51459,
+          "cost_usd": 0.1374684,
+          "verdict": "review"
         }
       ],
       "verify_started": "2026-11-03T00:01:58+01:00"
@@ -5655,13 +5675,13 @@
     "measure": {
       "state": "working",
       "current": "T-080",
-      "message": "tester con T-080",
+      "message": "desarrollador con T-080",
       "pid": 25284,
-      "heartbeat": "2026-11-03T00:01:58+01:00",
+      "heartbeat": "2026-11-03T00:14:23+01:00",
       "enabled": true,
-      "agent": "tester",
-      "started": "2026-11-03T00:01:58+01:00",
-      "live": "live-T-080-tester-20261103-000158.jsonl"
+      "agent": "desarrollador",
+      "started": "2026-11-03T00:14:23+01:00",
+      "live": "live-T-080-desarrollador-20261103-001423.jsonl"
     }
   }
 }

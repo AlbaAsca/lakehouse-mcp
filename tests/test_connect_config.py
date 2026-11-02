@@ -19,7 +19,7 @@ def test_the_stack_flushes_as_often_as_the_flow_test():
     tested = re.search(r'"CONNECT_OFFSET_FLUSH_INTERVAL_MS", "(\d+)"', WORKER.read_text(encoding="utf-8"))
 
     assert tested, "ConnectWorker no longer sets the flush interval"
-    assert "ConnectWorker.start(" in FLOW_IT.read_text(encoding="utf-8"), "IcebergSinkFlowIT no longer uses ConnectWorker"
+    assert "ConnectWorker.shared(" in FLOW_IT.read_text(encoding="utf-8"), "IcebergSinkFlowIT no longer uses ConnectWorker"
     assert compose_value("CONNECT_OFFSET_FLUSH_INTERVAL_MS") == tested.group(1) == "1000"
 
 
