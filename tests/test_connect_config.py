@@ -1,9 +1,11 @@
-"""IcebergSinkFlowIT builds its own worker: these pins keep what it proves true of the real stack (T-072)."""
+"""IcebergSinkFlowIT runs on the testkit's own worker: these pins keep what it proves true of the real stack (T-072)."""
 import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-FLOW_IT = ROOT / "testkit/src/test/java/io/github/albaasca/lakehouse/testkit/IcebergSinkFlowIT.java"
+TESTKIT = ROOT / "testkit/src"
+FLOW_IT = TESTKIT / "test/java/io/github/albaasca/lakehouse/testkit/IcebergSinkFlowIT.java"
+WORKER = TESTKIT / "main/java/io/github/albaasca/lakehouse/testkit/ConnectWorker.java"
 
 
 def compose_value(name):
@@ -14,9 +16,10 @@ def compose_value(name):
 
 def test_the_stack_flushes_as_often_as_the_flow_test():
     """At the default 60 s an idle sink misses every 30 s commit window and writes nothing."""
-    tested = re.search(r'"CONNECT_OFFSET_FLUSH_INTERVAL_MS", "(\d+)"', FLOW_IT.read_text(encoding="utf-8"))
+    tested = re.search(r'"CONNECT_OFFSET_FLUSH_INTERVAL_MS", "(\d+)"', WORKER.read_text(encoding="utf-8"))
 
-    assert tested, "IcebergSinkFlowIT no longer sets the flush interval"
+    assert tested, "ConnectWorker no longer sets the flush interval"
+    assert "ConnectWorker.start(" in FLOW_IT.read_text(encoding="utf-8"), "IcebergSinkFlowIT no longer uses ConnectWorker"
     assert compose_value("CONNECT_OFFSET_FLUSH_INTERVAL_MS") == tested.group(1) == "1000"
 
 

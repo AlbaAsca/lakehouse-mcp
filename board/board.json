@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-02T22:05:38+01:00",
+  "updated": "2026-11-02T22:14:53+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -61,8 +61,8 @@
       "name": "Desarrollador",
       "role": "Implementa las tareas",
       "color": "#7aa2f7",
-      "status": "working",
-      "current": "T-019"
+      "status": "idle",
+      "current": null
     },
     {
       "id": "tester",
@@ -1169,7 +1169,7 @@
       "id": "T-015",
       "title": "Ingesta: prueba completa de CSV sintético a tabla Iceberg",
       "owner": "desarrollador",
-      "status": "review",
+      "status": "done",
       "priority": "alta",
       "estimate_min": 45.0,
       "actual_min": 19.6,
@@ -1181,7 +1181,7 @@
         "T-013"
       ],
       "created": "2026-11-02T11:36:36+01:00",
-      "updated": "2026-11-02T21:24:42+01:00",
+      "updated": "2026-11-02T22:14:53+01:00",
       "started_at": "2026-11-02T18:59:36+01:00",
       "finished_at": "2026-11-02T19:19:13+01:00",
       "log": [
@@ -1244,6 +1244,16 @@
           "t": "2026-11-02T21:59:57+01:00",
           "by": "consultor",
           "msg": "Falla test_connect_config.py: el commit 9a30ddc quitó CONNECT_OFFSET_FLUSH_INTERVAL_MS de IcebergSinkFlowIT o lo movió, y la prueba de deriva ya no lo encuentra. No relajes la prueba: que vuelva a vigilar el mismo valor donde esté ahora. CI de develop en rojo por esto. Hay que pasar también ./mk test-board."
+        },
+        {
+          "t": "2026-11-02T22:05:44+01:00",
+          "by": "tester",
+          "msg": "verificando"
+        },
+        {
+          "t": "2026-11-02T22:14:53+01:00",
+          "by": "tester",
+          "msg": "DONE: IngestE2EIT verifica fila a fila y por particiones la muestra del CSV a Iceberg, y la prueba de deriva que tenía la CI en rojo queda reparada a la espera de subirse."
         }
       ],
       "runs": [
@@ -1266,9 +1276,19 @@
           "tokens": null,
           "cost_usd": null,
           "verdict": "blocked"
+        },
+        {
+          "agent": "tester",
+          "mode": "verify",
+          "at": "2026-11-02T22:14:53+01:00",
+          "min": 9.1,
+          "turns": 40,
+          "tokens": 492162,
+          "cost_usd": 0.7956334000000002,
+          "verdict": "done"
         }
       ],
-      "verify_started": "2026-11-02T19:19:18+01:00"
+      "verify_started": "2026-11-02T22:05:44+01:00"
     },
     {
       "id": "T-016",
@@ -1436,10 +1456,10 @@
       "id": "T-019",
       "title": "Consulta: validador de SQL que solo deja pasar lecturas",
       "owner": "desarrollador",
-      "status": "doing",
+      "status": "next",
       "priority": "alta",
       "estimate_min": 40.0,
-      "actual_min": 41.6,
+      "actual_min": 41.7,
       "auto": true,
       "manual": null,
       "desc": "El agente va a mandar SQL, y un SELECT mal vigilado podría leer ficheros del disco o escribir datos. Se propone apoyarse en el propio analizador de DuckDB en vez de en expresiones regulares, que son fáciles de esquivar. La prueba ha demostrado que el analizador deja pasar más de lo que parece, así que el validador debe aceptar solo lo que conoce.\nCómo sabremos si funciona: una batería de intentos de ataque es rechazada caso a caso y las consultas legítimas pasan, con el límite de filas aplicado.\n\n## Técnico\n- mcp-server: SqlGuard con json_serialize_sql y las seis reglas de la decisión 7 (detalle en docs/spike-duckdb-iceberg.md, pregunta 6):\n  1. Exactamente un elemento en statements.\n  2. Recorrer todo el árbol: la raíz puede ser SET_OPERATION_NODE, y hay subconsultas, UNION, LATERAL y CTE.\n  3. Lista de permitidos: tipos de from_table y tablas conocidas. TABLE_FUNCTION y SHOW_REF, rechazados. Una ruta como '/etc/passwd' llega como BASE_TABLE. Comparar catálogo y esquema, para que duckdb_views o sqlite_master no pasen.\n  4. Un nombre de CTE solo se admite en un cte_map de su ámbito, y se valida también su cuerpo.\n  5. Lista de funciones escalares y de agregación permitidas: getenv, getvariable y current_setting quedan fuera. Error claro con el nombre de la función, para ampliarla.\n  6. at_clause rechazado siempre: el time travel lo construye el servidor (decisión 21).\n- La lista de tablas permitidas se recibe como parámetro: la usan los roles (T-054) y time_travel (T-021).\n- Límite de filas por envoltura: SELECT * FROM (q) LIMIT n+1, para detectar truncado. Timeout de LakehouseSession.\n- Test parametrizado con al menos 30 casos, con los de la tabla de la pregunta 6, comentarios, mayúsculas y varias sentencias. Sin contenedor: DuckDB en memoria. ./mk test.",
@@ -1447,9 +1467,9 @@
         "T-016"
       ],
       "created": "2026-11-02T11:36:53+01:00",
-      "updated": "2026-11-02T22:05:38+01:00",
+      "updated": "2026-11-02T22:05:44+01:00",
       "started_at": "2026-11-02T22:05:38+01:00",
-      "finished_at": null,
+      "finished_at": "2026-11-02T22:05:44+01:00",
       "log": [
         {
           "t": "2026-11-02T11:36:53+01:00",
@@ -1500,6 +1520,11 @@
           "t": "2026-11-02T22:05:38+01:00",
           "by": "tú",
           "msg": "lleva bastante tiempo no?"
+        },
+        {
+          "t": "2026-11-02T22:05:44+01:00",
+          "by": "runner",
+          "msg": "interrumpida (runner reiniciado); se reintentará"
         }
       ],
       "runs": [
@@ -4788,8 +4813,8 @@
     "think": {
       "state": "stopped",
       "current": null,
-      "message": "Runner parado",
-      "pid": 15036,
+      "message": "Runner parado (pid muerto)",
+      "pid": null,
       "heartbeat": "2026-11-02T21:24:17+01:00",
       "enabled": true,
       "agent": "arquitecto",
@@ -4800,14 +4825,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-019",
-      "message": "desarrollador con T-019",
-      "pid": 13408,
-      "heartbeat": "2026-11-02T21:24:18+01:00",
+      "current": "T-015",
+      "message": "tester con T-015",
+      "pid": 18772,
+      "heartbeat": "2026-11-02T22:05:44+01:00",
       "enabled": true,
-      "agent": "desarrollador",
-      "started": "2026-11-02T21:24:18+01:00",
-      "live": "live-T-019-desarrollador-20261102-212418.jsonl"
+      "agent": "tester",
+      "started": "2026-11-02T22:05:44+01:00",
+      "live": "live-T-015-tester-20261102-220544.jsonl"
     }
   }
 }
