@@ -45,6 +45,31 @@ def timeout(job_text):
     return int(match.group(1)) if match else None
 
 
+def cancels_only_on_pull_requests(workflow):
+    """Every finished card pushes to develop: cancelling there would stop the build from ever finishing."""
+    text = code(workflow)
+    grouped_by_ref = re.search(r"^concurrency:\n  group: ci-\$\{\{ github\.ref \}\}$", text, re.M)
+    only_prs = re.search(r"^  cancel-in-progress: \$\{\{ github\.event_name == 'pull_request' \}\}$", text, re.M)
+    return bool(grouped_by_ref and only_prs)
+
+
+def test_only_pull_requests_cancel_a_running_build():
+    assert cancels_only_on_pull_requests(CI)
+
+
+@pytest.mark.parametrize(
+    "old, new",
+    [
+        ("cancel-in-progress: ${{ github.event_name == 'pull_request' }}", "cancel-in-progress: true"),
+        ("event_name == 'pull_request'", "event_name != 'pull_request'"),
+        ("group: ci-${{ github.ref }}", "group: ci"),
+    ],
+)
+def test_detects_builds_cancelled_on_develop_or_across_branches(old, new):
+    assert old in CI
+    assert not cancels_only_on_pull_requests(CI.replace(old, new))
+
+
 def test_runs_on_every_push_to_develop_and_main_and_on_pull_requests():
     assert push_branches(CI) == {"develop", "main"}
     assert re.search(r"^  pull_request:", on_block(CI), re.M)

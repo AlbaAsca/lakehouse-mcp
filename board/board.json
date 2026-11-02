@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-02T18:56:25+01:00",
+  "updated": "2026-11-02T18:59:31+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -583,7 +583,7 @@
       "id": "T-009",
       "title": "Infra: GitHub Actions con build y tests",
       "owner": "desarrollador",
-      "status": "review",
+      "status": "done",
       "priority": "media",
       "estimate_min": 20.0,
       "actual_min": 6.8,
@@ -596,7 +596,7 @@
         "T-104"
       ],
       "created": "2026-11-02T11:35:56+01:00",
-      "updated": "2026-11-02T18:08:19+01:00",
+      "updated": "2026-11-02T18:59:31+01:00",
       "started_at": "2026-11-02T17:33:19+01:00",
       "finished_at": "2026-11-02T17:40:06+01:00",
       "log": [
@@ -689,9 +689,19 @@
           "t": "2026-11-02T18:47:18+01:00",
           "by": "consultor",
           "msg": "Primera ejecución completa en verde: run 41492653907, commit 49dfc13, Java 10 min, panel y scripts en segundos. Compruébalo en GitHub y cierra."
+        },
+        {
+          "t": "2026-11-02T18:56:31+01:00",
+          "by": "tester",
+          "msg": "verificando"
+        },
+        {
+          "t": "2026-11-02T18:59:31+01:00",
+          "by": "tester",
+          "msg": "DONE: CI en verde en GitHub sin secretos propios ni Kaggle, 197 tests Java cotejados clase a clase y 119 de pytest en local, con test nuevo de la regla de cancelación y wiki desactualizada registrada en T-113."
         }
       ],
-      "verify_started": "2026-11-02T17:59:50+01:00",
+      "verify_started": "2026-11-02T18:56:31+01:00",
       "runs": [
         {
           "agent": "tester",
@@ -702,6 +712,16 @@
           "tokens": 215990,
           "cost_usd": 0.7260534000000001,
           "verdict": "blocked"
+        },
+        {
+          "agent": "tester",
+          "mode": "verify",
+          "at": "2026-11-02T18:59:31+01:00",
+          "min": 3.0,
+          "turns": 26,
+          "tokens": 255698,
+          "cost_usd": 0.4454902,
+          "verdict": "done"
         }
       ]
     },
@@ -4481,6 +4501,30 @@
           "msg": "creada"
         }
       ]
+    },
+    {
+      "id": "T-113",
+      "title": "La guía de operación aún dice que la integración continua está sin probar",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "baja",
+      "estimate_min": 5.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "La guía afirma que la ejecución en GitHub está sin probar, pero ya ha terminado en verde varias veces. Tampoco explica que en develop y main no se cancela una ejecución en curso, solo en pull requests. Se propone actualizar ese párrafo con lo medido para que quien la lea no dude de algo ya comprobado.\nCómo sabremos si funciona: la guía da como probada la ejecución en GitHub, con su duración real, y explica cuándo se cancelan las ejecuciones.\n\n## Técnico\n- docs/wiki/04-operacion.md, línea 153 («Sin probar: la ejecución en GitHub, y mvn -B -ntp verify fuera de la imagen tools»), sección Integración continua.\n- Medido: run 41492653907 (49dfc13), java 10 min; run 41494026662 (3c213dc), java 8,5 min, 197 tests Java y 115 de pytest, sin omitidos.\n- Criterio: quitar «sin probar» de ambas cosas, sustituir la previsión por los tiempos medidos y documentar cancel-in-progress solo en pull_request.",
+      "deps": [],
+      "created": "2026-11-02T18:59:05+01:00",
+      "updated": "2026-11-02T18:59:05+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T18:59:05+01:00",
+          "by": "tester",
+          "msg": "creada"
+        }
+      ]
     }
   ],
   "runners": {
@@ -4499,14 +4543,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-016",
-      "message": "tester con T-016",
+      "current": "T-009",
+      "message": "tester con T-009",
       "pid": 6932,
-      "heartbeat": "2026-11-02T18:44:41+01:00",
+      "heartbeat": "2026-11-02T18:56:31+01:00",
       "enabled": true,
       "agent": "tester",
-      "started": "2026-11-02T18:44:41+01:00",
-      "live": "live-T-016-tester-20261102-184441.jsonl"
+      "started": "2026-11-02T18:56:31+01:00",
+      "live": "live-T-009-tester-20261102-185631.jsonl"
     }
   }
 }
