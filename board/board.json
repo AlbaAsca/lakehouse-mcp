@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-02T12:51:51+01:00",
+  "updated": "2026-11-02T13:00:22+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -313,7 +313,7 @@
       "id": "T-005",
       "title": "Infra: comprobar la persistencia del catálogo en el stack real",
       "owner": "consultor",
-      "status": "backlog",
+      "status": "done",
       "priority": "alta",
       "estimate_min": 10.0,
       "actual_min": null,
@@ -324,7 +324,7 @@
         "T-002"
       ],
       "created": "2026-11-02T11:35:32+01:00",
-      "updated": "2026-11-02T11:35:32+01:00",
+      "updated": "2026-11-02T12:55:29+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -332,6 +332,11 @@
           "t": "2026-11-02T11:35:32+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T12:55:29+01:00",
+          "by": "consultor",
+          "msg": "up, restart de polaris, smoke y up de nuevo: todo en verde; el init devuelve 409, el catálogo sobrevive"
         }
       ]
     },
@@ -631,7 +636,7 @@
       "id": "T-011",
       "title": "Productor: muestreo, orden temporal, aceleración y hora actual",
       "owner": "desarrollador",
-      "status": "review",
+      "status": "done",
       "priority": "alta",
       "estimate_min": 40.0,
       "actual_min": 6.1,
@@ -642,7 +647,7 @@
         "T-008"
       ],
       "created": "2026-11-02T11:35:57+01:00",
-      "updated": "2026-11-02T12:51:51+01:00",
+      "updated": "2026-11-02T13:00:22+01:00",
       "started_at": "2026-11-02T12:45:43+01:00",
       "finished_at": "2026-11-02T12:51:51+01:00",
       "log": [
@@ -665,6 +670,16 @@
           "t": "2026-11-02T12:51:51+01:00",
           "by": "desarrollador",
           "msg": "REVIEW: Muestreo por sesión, orden con ventana acotada, aceleración y hora actual hechos con reloj simulado y suite en verde; falta contrastar la ventana con el perfil real (T-007)."
+        },
+        {
+          "t": "2026-11-02T12:51:58+01:00",
+          "by": "tester",
+          "msg": "verificando"
+        },
+        {
+          "t": "2026-11-02T13:00:22+01:00",
+          "by": "tester",
+          "msg": "DONE: Muestreo, orden, aceleración y hora actual coinciden fila a fila con una referencia independiente en 20 escenarios y las suites están en verde; el desorden real queda pendiente en T-070."
         }
       ],
       "runs": [
@@ -677,8 +692,19 @@
           "tokens": 421752,
           "cost_usd": 1.1579548,
           "verdict": "review"
+        },
+        {
+          "agent": "tester",
+          "mode": "verify",
+          "at": "2026-11-02T13:00:22+01:00",
+          "min": 8.4,
+          "turns": 31,
+          "tokens": 638397,
+          "cost_usd": 1.2013924,
+          "verdict": "done"
         }
-      ]
+      ],
+      "verify_started": "2026-11-02T12:51:58+01:00"
     },
     {
       "id": "T-012",
@@ -745,6 +771,11 @@
           "t": "2026-11-02T11:36:18+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T13:00:01+01:00",
+          "by": "consultor",
+          "msg": "Del tester (T-011): con max-rows hay que abrir el fichero dos veces, una para SessionSampler.ofMaxRows y otra para EventReplay.run, porque ofMaxRows consume la fuente. Si maxRows es menor que la primera cubeta con filas, la muestra sale vacía sin error: conviene avisar en el comando seed."
         }
       ]
     },
@@ -2281,6 +2312,11 @@
           "t": "2026-11-02T12:06:11+01:00",
           "by": "consultor",
           "msg": "descripción reescrita"
+        },
+        {
+          "t": "2026-11-02T12:55:29+01:00",
+          "by": "consultor",
+          "msg": "Pista del consultor: el 2-nov a las 12:50 el stack aún corría con contenedores anteriores a T-002 y no tenía Postgres porque nadie lo había recreado; tras ./mk up Postgres aparece sano. Falta comprobar si el healthcheck de Polaris detecta la caída de la base de datos."
         }
       ]
     },
@@ -2288,7 +2324,7 @@
       "id": "T-069",
       "title": "Reparar la comprobación de Polaris que rompió el kit de pruebas",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "done",
       "priority": "alta",
       "estimate_min": 5.0,
       "actual_min": null,
@@ -2297,7 +2333,7 @@
       "desc": "Al mover la configuración de Polaris al kit de pruebas común, la comprobación que vigila que el arranque real y el de los tests usen la misma persistencia sigue buscándola en el fichero antiguo, y falla. Mientras esté rota, nadie se enteraría si el arranque real perdiera la persistencia. Se propone apuntarla al kit nuevo, sin relajar ninguna de sus condiciones.\nCómo sabremos si funciona: los tests del panel vuelven a verde y la comprobación sigue detectando cada cambio indebido en la configuración.\n\n## Técnico\n- Dónde: tests/test_polaris_persistence_config.py, líneas 1-5 y 14 (constante IT). Roto por bcbdef3 (T-006).\n- Síntoma: ./mk test-board da 13 fallos en ese fichero, ValueError: substring not found en it_persistence (línea 35), porque PERSISTENCE = Map.of( ya no está en PolarisPersistenceIT.java.\n- Arreglo probado en una copia fuera del repo: leer testkit/src/main/java/io/github/albaasca/lakehouse/testkit/LakehouseStack.java da 15 passed sin más cambios.\n- Criterio: ./mk test-board sin fallos, sin borrar ni aflojar casos de test_each_drift_is_detected, y docstring actualizado.",
       "deps": [],
       "created": "2026-11-02T12:09:31+01:00",
-      "updated": "2026-11-02T12:09:31+01:00",
+      "updated": "2026-11-02T12:55:29+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -2310,6 +2346,42 @@
           "t": "2026-11-02T12:12:48+01:00",
           "by": "consultor",
           "msg": "El arreglo ya está hecho dentro de T-006 (la constante IT apunta a LakehouseStack.java y el docstring está actualizado; no se ha tocado ningún caso de test_each_drift_is_detected). ./mk test-board: 88 passed. Esta tarjeta sigue abierta: al cogerla solo hay que comprobarlo y cerrarla."
+        },
+        {
+          "t": "2026-11-02T12:55:29+01:00",
+          "by": "consultor",
+          "msg": "./mk test-board: 88 passed; el arreglo ya estaba en T-006"
+        }
+      ]
+    },
+    {
+      "id": "T-070",
+      "title": "Productor: comprobar con el CSV real que la ventana de orden basta",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "media",
+      "estimate_min": 10.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "La reproducción reordena los eventos con una ventana de 100 000, elegida sin conocer el fichero real porque su perfil aún no existe. Si el desorden real es mayor, parte de los eventos saldrán tarde y fuera de orden; si no hay desorden, la ventana gasta memoria sin necesidad. Se propone ajustar el valor cuando el perfil esté hecho.\nCómo sabremos si funciona: el valor elegido está justificado con el desorden medido y, al reproducir el mes real, casi ningún evento sale tarde.\n## Técnico\nEventReplay.DEFAULT_REORDER_WINDOW y decisión 18 de docs/architecture.md, contra docs/data-profile.md (T-007). La ventana cuenta eventos ya muestreados: con sample-rate bajo cubre más tiempo. Criterio: Result.late() medido en la reproducción real y anotado en la tarjeta. Si cambia el valor, EventReplayReferenceTest usa la constante y debe seguir en verde.",
+      "deps": [
+        "T-007"
+      ],
+      "created": "2026-11-02T13:00:00+01:00",
+      "updated": "2026-11-02T13:00:08+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T13:00:00+01:00",
+          "by": "tester",
+          "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T13:00:08+01:00",
+          "by": "consultor",
+          "msg": "descripción reescrita"
         }
       ]
     }
@@ -2331,13 +2403,13 @@
     "measure": {
       "state": "working",
       "current": "T-011",
-      "message": "desarrollador con T-011",
+      "message": "tester con T-011",
       "pid": 25568,
-      "heartbeat": "2026-11-02T12:45:43+01:00",
+      "heartbeat": "2026-11-02T12:51:59+01:00",
       "enabled": true,
-      "agent": "desarrollador",
-      "started": "2026-11-02T12:45:43+01:00",
-      "live": "live-T-011-desarrollador-20261102-124543.jsonl"
+      "agent": "tester",
+      "started": "2026-11-02T12:51:59+01:00",
+      "live": "live-T-011-tester-20261102-125159.jsonl"
     }
   }
 }
