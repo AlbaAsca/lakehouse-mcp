@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-02T16:50:50+01:00",
+  "updated": "2026-11-02T17:00:16+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -807,11 +807,12 @@
       "manual": null,
       "desc": "Falta unir la lógica de reproducción con Kafka y dar un comando para lanzarlo. El responsable lanzará seed sobre el CSV real, y los tests lo harán sobre la muestra sintética.\nCómo sabremos si funciona: un test envía la muestra a Kafka y Schema Registry en contenedores, consume el topic y compara evento a evento con el CSV.\n\n## Técnico\n- Añadir Kafka y Schema Registry a testkit LakehouseStack (arrancan solo si se piden).\n- Topic ecommerce.events; clave user_session para conservar el orden por sesión; creación idempotente del topic con varias particiones.\n- CLI: --input --sample-rate --max-rows --speedup --rewrite-timestamp; métricas de progreso al log.\n- Makefile: seed con variables MONTH, SAMPLE y SPEEDUP, y compilación del jar. Sigue siendo target solo para el responsable.\n- Verificación: ProducerIT en ./mk test.",
       "deps": [
+        "T-006",
         "T-011",
-        "T-006"
+        "T-076"
       ],
       "created": "2026-11-02T11:36:18+01:00",
-      "updated": "2026-11-02T16:50:50+01:00",
+      "updated": "2026-11-02T17:00:16+01:00",
       "started_at": "2026-11-02T16:45:54+01:00",
       "finished_at": "2026-11-02T16:50:50+01:00",
       "log": [
@@ -844,6 +845,36 @@
           "t": "2026-11-02T16:50:50+01:00",
           "by": "desarrollador",
           "msg": "REVIEW: Envío a Kafka y comando seed verificados con ProducerIT en contenedores (5/5) y wiki actualizada; falta probar `./mk seed` con el CSV real."
+        },
+        {
+          "t": "2026-11-02T16:50:55+01:00",
+          "by": "tester",
+          "msg": "verificando"
+        },
+        {
+          "t": "2026-11-02T17:00:16+01:00",
+          "by": "tester",
+          "msg": "BLOCKED: Envío a Kafka y comando seed verificados con el jar real en contenedores comparando con el CSV (ProducerIT 8/8, suites en verde); `./mk seed` con el CSV real sigue sin probar y queda en T-018."
+        },
+        {
+          "t": "2026-11-02T17:00:16+01:00",
+          "by": "tester",
+          "msg": "⚠ 2 comandos denegados: ./mk -n seed MONTH=2019-Nov SAMPLE=0.05 SPEEDUP=60 | python board/board.py add \"El README presenta «./mk seed» como si ya se hubiera "
+        },
+        {
+          "t": "2026-11-02T17:00:16+01:00",
+          "by": "runner",
+          "msg": "? permiso solicitado: ./mk * (T-076); la tarjeta espera la decisión"
+        },
+        {
+          "t": "2026-11-02T17:00:16+01:00",
+          "by": "runner",
+          "msg": "✗ «python board/board.py add \"El README presenta «./mk seed» como si ya se hubiera probado\" -»: borrar o mover ficheros: usa Write/Edit"
+        },
+        {
+          "t": "2026-11-02T17:00:16+01:00",
+          "by": "runner",
+          "msg": "se reintentará con los permisos resueltos"
         }
       ],
       "runs": [
@@ -856,8 +887,19 @@
           "tokens": 333058,
           "cost_usd": 0.6919725999999999,
           "verdict": "review"
+        },
+        {
+          "agent": "tester",
+          "mode": "verify",
+          "at": "2026-11-02T17:00:16+01:00",
+          "min": 9.4,
+          "turns": 42,
+          "tokens": 494508,
+          "cost_usd": 1.0080492,
+          "verdict": "blocked"
         }
-      ]
+      ],
+      "verify_started": "2026-11-02T16:50:55+01:00"
     },
     {
       "id": "T-014",
@@ -2566,6 +2608,96 @@
           "msg": "Evita que develop vuelva a quedar sin compilar"
         }
       ]
+    },
+    {
+      "id": "T-074",
+      "title": "Publicar la wiki en la pestaña Wiki de GitHub",
+      "owner": "consultor",
+      "status": "done",
+      "priority": "media",
+      "estimate_min": 20.0,
+      "actual_min": null,
+      "auto": false,
+      "manual": "Crear la primera página en la pestaña Wiki del repo (basta guardarla en blanco).",
+      "desc": "La pestaña Wiki da una navegación cómoda, pero una copia a mano quedaría desfasada. Se publica sola desde docs/wiki al subir a main. Cómo sabremos si funciona: la pestaña Wiki muestra las páginas con barra lateral y sus enlaces llevan a páginas y ficheros reales.",
+      "deps": [],
+      "created": "2026-11-02T16:51:12+01:00",
+      "updated": "2026-11-02T16:53:04+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T16:51:12+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T16:51:52+01:00",
+          "by": "consultor",
+          "msg": "Workflow listo; falta crear la primera página en la pestaña Wiki"
+        },
+        {
+          "t": "2026-11-02T16:53:04+01:00",
+          "by": "consultor",
+          "msg": "Publicada con el workflow: run 41475865461, 21 páginas"
+        }
+      ]
+    },
+    {
+      "id": "T-075",
+      "title": "El README presenta «./mk seed» como si ya se hubiera probado",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "baja",
+      "estimate_min": 3.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "El README da dos órdenes para lanzar el productor sin avisar de que nunca se han ejecutado con el CSV real. La norma del proyecto pide marcar como «sin probar» todo comando que no se haya ejecutado, y la página del productor en la wiki sí lo hace. Se propone añadir el mismo aviso al README y quitarlo cuando el responsable lance el comando.\nCómo sabremos si funciona: quien lea el README ve que el comando está sin probar, igual que en la wiki.\n## Técnico\nREADME.md líneas 101-102, filas de la tabla con ./mk seed. Añadir «sin probar». Detectado al verificar T-013.",
+      "deps": [],
+      "created": "2026-11-02T17:00:03+01:00",
+      "updated": "2026-11-02T17:00:03+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T17:00:03+01:00",
+          "by": "tester",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-076",
+      "title": "Solicitud de permiso: ./mk *",
+      "owner": "consultor",
+      "status": "human",
+      "priority": "media",
+      "estimate_min": 2,
+      "actual_min": null,
+      "auto": false,
+      "manual": "Abre la tarjeta y pulsa «Conceder» o «Denegar».",
+      "desc": "El agente «tester» necesitaba un comando que no está en su lista de permitidos y se lo bloquearon mientras hacía T-013. No es de solo lectura ni está prohibido, así que lo tiene que validar una persona.\n\nPara qué lo quería: (no lo explicó)\n\nCómo decidir: concede si es seguro repetirlo sin supervisión dentro del proyecto; deniega si escribe fuera, publica, borra o usa la red.\n\n## Técnico\n- Comando: ./mk -n seed MONTH=2019-Nov SAMPLE=0.05 SPEEDUP=60\n- Patrón que se concedería: ./mk *\n- Tarjeta: T-013",
+      "deps": [],
+      "created": "2026-11-02T17:00:16+01:00",
+      "updated": "2026-11-02T17:00:16+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T17:00:16+01:00",
+          "by": "runner",
+          "msg": "creada"
+        }
+      ],
+      "kind": "permiso",
+      "perm": {
+        "pattern": "./mk *",
+        "command": "./mk -n seed MONTH=2019-Nov SAMPLE=0.05 SPEEDUP=60",
+        "agent": "tester",
+        "task": "T-013",
+        "why": ""
+      }
     }
   ],
   "runners": {
@@ -2585,13 +2717,13 @@
     "measure": {
       "state": "working",
       "current": "T-013",
-      "message": "desarrollador con T-013",
+      "message": "tester con T-013",
       "pid": 6932,
-      "heartbeat": "2026-11-02T16:45:55+01:00",
+      "heartbeat": "2026-11-02T16:50:55+01:00",
       "enabled": true,
-      "agent": "desarrollador",
-      "started": "2026-11-02T16:45:55+01:00",
-      "live": "live-T-013-desarrollador-20261102-164555.jsonl"
+      "agent": "tester",
+      "started": "2026-11-02T16:50:55+01:00",
+      "live": "live-T-013-tester-20261102-165055.jsonl"
     }
   }
 }

@@ -15,6 +15,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -28,6 +29,8 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.StreamSupport;
 import java.util.zip.GZIPInputStream;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -47,27 +50,82 @@ class ProducerIT {
     private static final Path SAMPLE = Path.of("../testdata/synthetic-events.csv.gz");
     private static final int SAMPLE_ROWS = 50_000;
     private static final Duration CONSUME_TIMEOUT = Duration.ofMinutes(2);
+    private static final Duration JAR_TIMEOUT = Duration.ofMinutes(3);
 
     private static LakehouseStack stack;
-    private static int exitCode;
+    private static JarRun seedRun;
     private static List<ConsumerRecord<String, GenericRecord>> consumed;
 
+    /** Through the packaged jar, as `make seed` does: on the test classpath a dependency missing from it would not show. */
     @BeforeAll
     static void seedTheTopic() throws Exception {
         stack = LakehouseStack.sharedStreaming();
-        exitCode = SeedCommand.execute(new String[] {
-            "--input", SAMPLE.toString(),
-            "--speedup", "1e12",
-            "--bootstrap-servers", stack.kafkaBootstrapServers(),
-            "--schema-registry-url", stack.schemaRegistryUrl()
-        });
+        seedRun = runJar(
+                "--input", SAMPLE.toString(),
+                "--speedup", "1e12",
+                "--bootstrap-servers", stack.kafkaBootstrapServers(),
+                "--schema-registry-url", stack.schemaRegistryUrl());
         consumed = consumeTopic();
     }
 
     @Test
     void theCommandSucceedsAndTheTopicHoldsEveryRow() {
-        assertThat(exitCode).isEqualTo(SeedCommand.OK);
+        assertThat(seedRun.exitCode()).as(seedRun.output()).isEqualTo(SeedCommand.OK);
         assertThat(consumed).hasSize(SAMPLE_ROWS);
+    }
+
+    @Test
+    void theJarReportsWhatKafkaConfirmed() {
+        assertThat(seedRun.output()).contains("Kafka confirmed " + SAMPLE_ROWS + " events");
+    }
+
+    @Test
+    void theJarRejectsWrongArgumentsWithItsOwnExitCode() throws Exception {
+        JarRun run = runJar("--input", "does-not-exist.csv");
+
+        assertThat(run.exitCode()).as(run.output()).isEqualTo(SeedCommand.BAD_ARGUMENTS);
+        assertThat(run.output()).contains("Input file not found").contains("Usage:");
+    }
+
+    @Test
+    void anUnreachableRegistryFailsTheRunAndAddsNothingToTheTopic() throws Exception {
+        JarRun run = runJar(
+                "--input", SAMPLE.toString(),
+                "--speedup", "1e12",
+                "--bootstrap-servers", stack.kafkaBootstrapServers(),
+                "--schema-registry-url", "http://localhost:1");
+
+        assertThat(run.exitCode()).as(run.output()).isEqualTo(SeedCommand.FAILED);
+        assertThat(run.output()).contains("Seed failed");
+        assertThat(consumeTopic()).hasSize(SAMPLE_ROWS);
+    }
+
+    private record JarRun(int exitCode, String output) {}
+
+    private static JarRun runJar(String... args) throws IOException, InterruptedException {
+        List<Path> jars;
+        // The same pattern as `make seed`: more than one match would break its `java -jar`.
+        try (DirectoryStream<Path> matches = Files.newDirectoryStream(Path.of("target"), "producer-*.jar")) {
+            jars = StreamSupport.stream(matches.spliterator(), false).toList();
+        }
+        assertThat(jars).hasSize(1);
+        List<String> command = new ArrayList<>(List.of(
+                Path.of(System.getProperty("java.home"), "bin", "java").toString(), "-jar", jars.getFirst().toString()));
+        command.addAll(List.of(args));
+        Path log = Files.createTempFile("seed", ".log");
+        try {
+            Process process = new ProcessBuilder(command)
+                    .redirectErrorStream(true)
+                    .redirectOutput(log.toFile())
+                    .start();
+            if (!process.waitFor(JAR_TIMEOUT.toSeconds(), TimeUnit.SECONDS)) {
+                process.destroyForcibly();
+                throw new AssertionError("The jar did not finish in " + JAR_TIMEOUT + ":\n" + Files.readString(log));
+            }
+            return new JarRun(process.exitValue(), Files.readString(log));
+        } finally {
+            Files.delete(log);
+        }
     }
 
     @Test

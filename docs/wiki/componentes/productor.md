@@ -57,12 +57,7 @@ Comprueba que compila y que sus tests pasan (forma parte de la suite completa):
 ./mk test
 ```
 
-Termina con código 0 si todo va bien. Entre sus tests, `ProducerIT` envía la muestra a Kafka y Schema Registry en contenedores, lee el topic y lo compara sesión a sesión con el CSV. En el log se ve:
-
-```text
-SeedCommand - Read 50000 rows (0 unreadable), sent 50000 events, 0 late, in PT4.600112137S
-SeedCommand - Kafka confirmed 50000 events
-```
+Termina con código 0 si todo va bien. Entre sus tests, `ProducerIT` lanza el jar empaquetado, el mismo que usa `make seed`: envía la muestra a Kafka y Schema Registry en contenedores, lee el topic y lo compara sesión a sesión con el CSV. También comprueba los códigos de salida con argumentos incorrectos (2) y con Schema Registry inalcanzable (1). La salida del jar solo se muestra si el test falla.
 
 **Sin probar:** `./mk seed` con el stack levantado. Necesita el CSV real, y el conector aún falla (T-072).
 
