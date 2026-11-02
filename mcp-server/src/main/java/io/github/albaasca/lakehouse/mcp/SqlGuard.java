@@ -26,7 +26,7 @@ public final class SqlGuard {
 
     /** Which rule refused the SQL. */
     public enum Rule {
-        /** DuckDB could not parse it, or it is too deep to walk. */
+        /** DuckDB could not parse it, or it is too long or too deep to hand over or to walk. */
         SYNTAX,
         /** Parses, but is not a {@code SELECT}: {@code DROP}, {@code COPY}, {@code SET}... */
         NOT_A_SELECT,
@@ -128,8 +128,10 @@ public final class SqlGuard {
             "abs", "ceil", "ceiling", "exp", "floor", "greatest", "least", "ln", "log", "log10", "log2", "mod", "pow",
             "power", "round", "sign", "sqrt", "trunc",
             // Text.
-            "concat", "concat_ws", "contains", "ends_with", "left", "length", "lower", "lpad", "ltrim", "nullif",
-            "regexp_extract", "regexp_matches", "regexp_replace", "replace", "right", "rpad", "rtrim", "split_part",
+            // Out: lpad, rpad, replace and regexp_replace. They build one cell of any size past memory_limit and the row
+            // limit (T-019: 4.8 GB of memory with a limit of 256 MB, even if only its length comes out). || does not.
+            "concat", "concat_ws", "contains", "ends_with", "left", "length", "lower", "ltrim", "nullif",
+            "regexp_extract", "regexp_matches", "right", "rtrim", "split_part",
             "starts_with", "strpos", "substr", "substring", "trim", "upper",
             // Dates. INTERVAL 1 DAY arrives as to_days(trunc(...)).
             "date_add", "date_diff", "date_part", "date_sub", "date_trunc", "datediff", "datepart", "datesub", "datetrunc",
@@ -139,6 +141,14 @@ public final class SqlGuard {
             "to_years", "today", "try_strptime", "week", "year",
             // Operators.
             "+", "-", "*", "/", "//", "%", "^", "**", "||", "~~", "!~~", "~~*", "!~~*", "regexp_full_match");
+
+    /**
+     * Too much nesting does not fail in DuckDB's parser: it overflows the stack and takes the whole process down. Measured
+     * in T-019 with the worst shape, {@code FROM a,a,a...}: a stack of 256 KB survives 6,000 characters and dies at 8,000;
+     * one of 1 MB (the JVM's default) survives 16,000 and dies at 32,000. Length alone is enough: it also caps {@code FROM (}
+     * at 666 levels, and it needs no second parser to tell a parenthesis from one inside a string.
+     */
+    static final int MAX_SQL_LENGTH = 4_000;
 
     private static final JsonMapper JSON = JsonMapper.builder().build();
 
@@ -171,6 +181,9 @@ public final class SqlGuard {
         if (sql.indexOf('\0') >= 0) {
             // The native driver may end the text there: what gets parsed and what runs must be the same thing.
             throw new Rejected(Rule.SYNTAX, "The SQL contains a NUL character");
+        }
+        if (sql.length() > MAX_SQL_LENGTH) {
+            throw new Rejected(Rule.SYNTAX, "The SQL has " + sql.length() + " characters; the limit is " + MAX_SQL_LENGTH);
         }
         String json = serialize(sql);
         validate(json, tables);

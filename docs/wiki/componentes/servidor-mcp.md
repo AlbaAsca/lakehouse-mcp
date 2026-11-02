@@ -50,9 +50,12 @@ Reglas de diseño, en [`docs/architecture.md`](../../architecture.md#decisiones)
 | `TABLE` | Tablas que no están en la lista que recibe, también rutas | `FROM '/etc/passwd'`, `duckdb_views` |
 | `FUNCTION` | Funciones fuera de la lista `SqlGuard.FUNCTIONS` | `getenv('HOME')` |
 | `TIME_TRAVEL` | `AT (...)`: el pasado solo se consulta con `time_travel` | `t AT (VERSION => 1)` |
-| `SYNTAX` | Lo que DuckDB no entiende | `SELECT FROM` |
+| `SYNTAX` | Lo que DuckDB no entiende, y lo que pasa de 4.000 caracteres | `SELECT FROM` |
 
-Tres cosas que conviene saber:
+Cinco cosas que conviene saber:
+
+- **La longitud se comprueba antes de preguntar a DuckDB.** Un anidamiento excesivo no da un error: desborda la pila y tumba el proceso entero. Comprobado con el peor caso, `FROM a,a,a...`: con la pila de 1 MB de la JVM aguanta 16.000 caracteres y cae en 32.000; con una de 256 KB, aguanta 6.000 y cae en 8.000. Por eso el límite se cuenta en Java y es de 4.000.
+- **Hay funciones de texto que se saltan el límite de memoria.** `lpad`, `rpad`, `replace` y `regexp_replace` construyen una celda de cualquier tamaño: `replace` anidado llegó a 4,8 GB con `memory_limit` de 256 MB, aunque solo se pidiera su longitud. Por eso no están en la lista. `||` sí se frena: da un error de memoria, aunque el proceso llegó a ocupar 1,2 GB antes.
 
 - **Una CTE no protege su propio nombre.** Comprobado: en `WITH t AS (SELECT * FROM t) SELECT * FROM t`, el `t` de dentro es la tabla real, y podría ser una ruta. Por eso cada CTE solo ve las anteriores a ella. Los nombres de CTE se comparan distinguiendo mayúsculas: `WITH A ... FROM a` se rechaza aunque sea inofensivo.
 - **Lo que se ejecuta no es el texto original.** La consulta se reconstruye a partir del árbol validado, se envuelve con el límite de filas y se valida otra vez. Pide una fila más que el límite para saber si hubo recorte (`truncated`). Si una consulta necesita ampliar la lista, el error dice qué función falta.

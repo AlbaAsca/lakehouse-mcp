@@ -337,6 +337,73 @@ class SqlGuardTest {
         assertThatThrownBy(() -> TableName.of("ns.t")).isInstanceOf(IllegalArgumentException.class);
     }
 
+    /** Too long must be settled in Java: in the native parser too much nesting is a crash, not an error. */
+    @Test
+    void sqlOverTheLimitNeverReachesTheEngine() {
+        SqlGuard noEngine = new SqlGuard(new SqlGuard.Engine() {
+            @Override
+            public <T> T query(String ignored, LakehouseSession.RowReader<T> reader) {
+                throw new AssertionError("Reached the engine");
+            }
+        });
+        String sql = "SELECT 1 -- ";
+
+        assertThatThrownBy(() -> noEngine.guarded(sql + "x".repeat(SqlGuard.MAX_SQL_LENGTH - sql.length() + 1), ALLOWED, 1))
+                .isInstanceOfSatisfying(Rejected.class, e -> assertThat(e.rule()).isEqualTo(Rule.SYNTAX))
+                .hasMessage("The SQL has 4001 characters; the limit is 4000");
+    }
+
+    @Test
+    void sqlRightAtTheLimitIsJudgedAsUsual() throws SQLException {
+        String sql = "SELECT 1 -- ";
+
+        QueryResult result = guard.run(sql + "x".repeat(SqlGuard.MAX_SQL_LENGTH - sql.length()), ALLOWED, 1);
+
+        assertThat(result.rows()).hasToString("[[1]]");
+    }
+
+    /**
+     * The worst SQL the limit lets through, on a stack much smaller than the JVM's default. If the margin were wrong this
+     * would not fail: it would kill the test JVM. Whether it is refused does not matter, only that it comes back.
+     */
+    @ParameterizedTest
+    @MethodSource("worstAllowed")
+    void theWorstSqlAllowedSurvivesASmallStack(String sql) throws InterruptedException {
+        assertThat(sql.length()).isBetween(SqlGuard.MAX_SQL_LENGTH - 20, SqlGuard.MAX_SQL_LENGTH);
+        boolean[] cameBack = {false};
+        Thread thread = new Thread(null, () -> {
+            try {
+                guard.guarded(sql, ALLOWED, 1);
+            } catch (Rejected | SQLException e) {
+                // Either is an answer.
+            }
+            cameBack[0] = true;
+        }, "small-stack", 256 * 1024);
+
+        thread.start();
+        thread.join();
+
+        assertThat(cameBack[0]).isTrue();
+    }
+
+    private static Stream<String> worstAllowed() {
+        int limit = SqlGuard.MAX_SQL_LENGTH;
+        return Stream.of(
+                nested("FROM(", "SELECT 1", ")", limit),
+                nested("SELECT * FROM(", "SELECT 1", ")", limit),
+                nested("(", "SELECT 1", ")", limit),
+                nested("SELECT abs(", "1", ")", limit),
+                "SELECT 1 FROM a" + ",a".repeat((limit - 15) / 2),
+                "SELECT 1 FROM a" + " JOIN a ON true".repeat((limit - 15) / 15),
+                "SELECT 1" + " UNION ALL SELECT 1".repeat((limit - 8) / 19),
+                "SELECT " + "NOT ".repeat((limit - 11) / 4) + "true");
+    }
+
+    private static String nested(String open, String core, String close, int limit) {
+        int levels = (limit - core.length()) / (open.length() + close.length());
+        return open.repeat(levels) + core + close.repeat(levels);
+    }
+
     /** Against the engine's own catalogue: a typo in the list would pass unnoticed, and a table function must not be in. */
     @Test
     void everyAllowedFunctionExistsAndIsNotATableFunction() throws SQLException {

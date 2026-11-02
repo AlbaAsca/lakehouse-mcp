@@ -18,7 +18,6 @@ import java.util.List;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -86,7 +85,7 @@ class SqlGuardProbeTest {
                 arguments("SELECT '/* not a comment */'", "[[/* not a comment */]]"),
                 arguments("SELECT '-- not a comment'", "[[-- not a comment]]"),
                 arguments("SELECT $x$;DROP TABLE y$x$", "[[;DROP TABLE y]]"),
-                arguments("SELECT regexp_replace('a.b', '\\.', '-')", "[[a-b]]"),
+                arguments("SELECT regexp_extract('a.b', '\\.b')", "[[.b]]"),
                 arguments("SELECT 1 UNION ALL (SELECT 2 EXCEPT SELECT 2)", "[[1]]"),
                 arguments("(SELECT 1 UNION ALL SELECT 2) INTERSECT SELECT 2", "[[2]]"),
                 arguments("SELECT sum(id) FROM lh.ns.events", "[[55]]"),
@@ -219,8 +218,7 @@ class SqlGuardProbeTest {
                 .hasMessageContaining("was not found");
     }
 
-    /** Off until T-019 is fixed: as it stands it does not fail, it kills the test JVM (segmentation fault, 42 KB of SQL). */
-    @Disabled("T-019: the native parser overflows the stack before any rule runs")
+    /** Unguarded, this does not fail: it kills the JVM (segmentation fault, 42 KB of SQL). */
     @Test
     void deepNestingIsRejectedBeforeItReachesTheNativeParser() {
         String sql = "FROM (".repeat(6000) + "SELECT 1" + ")".repeat(6000);
@@ -228,10 +226,14 @@ class SqlGuardProbeTest {
         assertThatThrownBy(() -> guard.guarded(sql, ALLOWED, 10)).isInstanceOf(Rejected.class);
     }
 
-    /** Off until T-019 is fixed: run for real, a single cell of 2 GB gets the process killed despite the memory limit. */
-    @Disabled("T-019: lpad is allowed and builds cells of any size, outside memory_limit and the row limit")
+    /** Run for real, a single cell of 2 GB gets the process killed despite the memory limit. */
     @ParameterizedTest
-    @ValueSource(strings = {"SELECT lpad('a', 2000000000, 'x')", "SELECT rpad('a', 2000000000, 'x')"})
+    @ValueSource(strings = {
+        "SELECT lpad('a', 2000000000, 'x')",
+        "SELECT rpad('a', 2000000000, 'x')",
+        "SELECT length(replace(replace('xxxx', 'x', 'xxxx'), 'x', 'xxxx'))",
+        "SELECT length(regexp_replace(regexp_replace('xxxx', 'x', 'xxxx', 'g'), 'x', 'xxxx', 'g'))",
+    })
     void aSingleCellCannotTakeTheProcessDown(String sql) {
         assertThatThrownBy(() -> guard.guarded(sql, ALLOWED, 10)).isInstanceOf(Rejected.class);
     }

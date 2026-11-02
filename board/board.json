@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-02T22:35:28+01:00",
+  "updated": "2026-11-02T22:59:57+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -1456,10 +1456,10 @@
       "id": "T-019",
       "title": "Consulta: validador de SQL que solo deja pasar lecturas",
       "owner": "desarrollador",
-      "status": "next",
+      "status": "review",
       "priority": "alta",
       "estimate_min": 40.0,
-      "actual_min": 44.9,
+      "actual_min": 69.3,
       "auto": true,
       "manual": null,
       "desc": "El agente va a mandar SQL, y un SELECT mal vigilado podría leer ficheros del disco o escribir datos. Se propone apoyarse en el propio analizador de DuckDB en vez de en expresiones regulares, que son fáciles de esquivar. La prueba ha demostrado que el analizador deja pasar más de lo que parece, así que el validador debe aceptar solo lo que conoce.\nCómo sabremos si funciona: una batería de intentos de ataque es rechazada caso a caso y las consultas legítimas pasan, con el límite de filas aplicado.\n\n## Técnico\n- mcp-server: SqlGuard con json_serialize_sql y las seis reglas de la decisión 7 (detalle en docs/spike-duckdb-iceberg.md, pregunta 6):\n  1. Exactamente un elemento en statements.\n  2. Recorrer todo el árbol: la raíz puede ser SET_OPERATION_NODE, y hay subconsultas, UNION, LATERAL y CTE.\n  3. Lista de permitidos: tipos de from_table y tablas conocidas. TABLE_FUNCTION y SHOW_REF, rechazados. Una ruta como '/etc/passwd' llega como BASE_TABLE. Comparar catálogo y esquema, para que duckdb_views o sqlite_master no pasen.\n  4. Un nombre de CTE solo se admite en un cte_map de su ámbito, y se valida también su cuerpo.\n  5. Lista de funciones escalares y de agregación permitidas: getenv, getvariable y current_setting quedan fuera. Error claro con el nombre de la función, para ampliarla.\n  6. at_clause rechazado siempre: el time travel lo construye el servidor (decisión 21).\n- La lista de tablas permitidas se recibe como parámetro: la usan los roles (T-054) y time_travel (T-021).\n- Límite de filas por envoltura: SELECT * FROM (q) LIMIT n+1, para detectar truncado. Timeout de LakehouseSession.\n- Test parametrizado con al menos 30 casos, con los de la tabla de la pregunta 6, comentarios, mayúsculas y varias sentencias. Sin contenedor: DuckDB en memoria. ./mk test.",
@@ -1467,9 +1467,9 @@
         "T-016"
       ],
       "created": "2026-11-02T11:36:53+01:00",
-      "updated": "2026-11-02T22:35:28+01:00",
-      "started_at": "2026-11-02T22:14:57+01:00",
-      "finished_at": "2026-11-02T22:18:06+01:00",
+      "updated": "2026-11-02T22:59:57+01:00",
+      "started_at": "2026-11-02T22:35:32+01:00",
+      "finished_at": "2026-11-02T22:59:57+01:00",
       "log": [
         {
           "t": "2026-11-02T11:36:53+01:00",
@@ -1560,6 +1560,26 @@
           "t": "2026-11-02T22:35:28+01:00",
           "by": "runner",
           "msg": "✓ permiso concedido automáticamente: git log -4* (solo lectura dentro del proyecto); se reintenta"
+        },
+        {
+          "t": "2026-11-02T22:35:32+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-02T22:59:33+01:00",
+          "by": "consultor",
+          "msg": "Pasó de 1,5× (unos 90 min frente a 40). Causa: medir antes de fijar los límites; las pruebas se alargaron con cruces de tablas y hubo que relanzarlas. Nueva previsión: terminada. Sin arreglar: los tests con pila de 256 KB cubren el parser, no la ejecución; el riesgo de memoria de lo que sigue en la lista queda en T-117. Limpieza pendiente: TmpGuardMeasureTest.java vacío y mcp-server/.tmp (800 MB, ya ignorado): rm denegado."
+        },
+        {
+          "t": "2026-11-02T22:59:40+01:00",
+          "by": "consultor",
+          "msg": "Corrección: los «90 min» de la nota anterior son una estimación mía, no una medida; el tiempo real es el que registra el panel."
+        },
+        {
+          "t": "2026-11-02T22:59:57+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: SqlGuard rechaza en Java el SQL de más de 4.000 caracteres y ya no admite lpad, rpad, replace ni regexp_replace, con tests del módulo en verde; el riesgo de memoria del resto de funciones queda en T-117."
         }
       ],
       "runs": [
@@ -1592,6 +1612,16 @@
           "tokens": 1813474,
           "cost_usd": 2.4048772,
           "verdict": "fail"
+        },
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-02T22:59:57+01:00",
+          "min": 24.4,
+          "turns": 77,
+          "tokens": 1656743,
+          "cost_usd": 1.9502139999999997,
+          "verdict": "review"
         }
       ],
       "verify_started": "2026-11-02T22:18:09+01:00"
@@ -4892,6 +4922,35 @@
           "msg": "descripción reescrita"
         }
       ]
+    },
+    {
+      "id": "T-117",
+      "title": "Consulta: comprobar que ninguna función permitida agote la memoria del servidor",
+      "owner": "tester",
+      "status": "backlog",
+      "priority": "media",
+      "estimate_min": 25.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Al arreglar el validador se vio que algunas funciones de texto se saltan el límite de memoria de DuckDB y pueden tumbar el servidor con una sola consulta. Se han quitado las cuatro que se han podido demostrar, pero no se ha probado toda la lista, y una concatenación repetida también llegó a ocupar 1,2 GB antes de dar error, más que el GB previsto para el servidor. Se propone probar la lista completa con el servidor limitado a su memoria real.\n\nCómo sabremos si funciona: cada función permitida, llevada al extremo, termina en un error normal y el proceso sigue vivo con 1 GB.\n\n## Técnico\nSqlGuard.FUNCTIONS, sobre todo concat, concat_ws, string_agg, regexp_extract, strftime y left. Medido en T-019 con memory_limit 256MB y -Xmx1g (VmHWM): replace anidado 4,8 GB, regexp_replace 2,1 GB, || en subconsultas 1,17 GB y luego Out of Memory. Probar con LakehouseSession y un contenedor con el límite de docs/architecture.md. Si || mata el proceso con 1 GB, no se arregla con la lista: decidir entre bajar memory_limit, ajustar -Xmx o reinicio automático. T-116 no debe volver a admitir lpad, rpad, replace ni regexp_replace. Revisar también el disco: un cruce de tablas sin filtro dejó unos 800 MB de temporales en el directorio de trabajo; valorar max_temp_directory_size.",
+      "deps": [],
+      "created": "2026-11-02T22:59:15+01:00",
+      "updated": "2026-11-02T22:59:28+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T22:59:15+01:00",
+          "by": "desarrollador",
+          "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T22:59:28+01:00",
+          "by": "consultor",
+          "msg": "descripción reescrita"
+        }
+      ]
     }
   ],
   "runners": {
@@ -4911,13 +4970,13 @@
     "measure": {
       "state": "working",
       "current": "T-019",
-      "message": "tester con T-019",
+      "message": "desarrollador con T-019",
       "pid": 18772,
-      "heartbeat": "2026-11-02T22:18:09+01:00",
+      "heartbeat": "2026-11-02T22:35:32+01:00",
       "enabled": true,
-      "agent": "tester",
-      "started": "2026-11-02T22:18:09+01:00",
-      "live": "live-T-019-tester-20261102-221809.jsonl"
+      "agent": "desarrollador",
+      "started": "2026-11-02T22:35:32+01:00",
+      "live": "live-T-019-desarrollador-20261102-223532.jsonl"
     }
   }
 }
