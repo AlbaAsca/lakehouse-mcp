@@ -215,6 +215,34 @@ def test_run_claude_apunta_lo_que_escribe_el_agente_al_momento(repo, tmp_path, m
     assert runner.claims() == {"T-1": {"mio.py"}}
 
 
+def test_agente_real_muere_a_medias_y_el_reintento_guarda_su_fichero(repo, tmp_path, monkeypatch):
+    """T-073 con un proceso de verdad: escribe, muere sin resultado y el reintento no vuelve a tocar el fichero."""
+    root, g = repo
+    fake = tmp_path / "fake_claude.py"
+    fake.write_text(
+        "import json, os, sys\n"
+        "print(json.dumps({'type': 'assistant', 'message': {'content': [{'type': 'tool_use', 'id': 'a', 'name': 'Write',"
+        " 'input': {'file_path': sys.argv[1]}}]}}), flush=True)\n"
+        "open(sys.argv[1], 'w').write('x')\n"
+        "os._exit(137)\n", encoding="utf-8")
+    real_popen = subprocess.Popen
+    monkeypatch.setattr(runner, "LOGDIR", tmp_path)
+    monkeypatch.setattr(runner, "set_runner", lambda **kw: None)
+    with monkeypatch.context() as m:  # solo durante el agente: git() también pasa por Popen
+        m.setattr(runner.subprocess, "Popen",
+                  lambda cmd, **kw: real_popen([sys.executable, str(fake), str(root / "mio.py")], **kw))
+        r = runner.run_claude("claude", "prompt", "desarrollador", 60, tag="T-1")
+    assert r["is_error"] and r["code"] == 137
+    assert runner.claims() == {"T-1": {"mio.py"}}  # ha sobrevivido a la muerte del agente
+
+    before = runner.snapshot()  # reintento: el fichero ya está aquí y no volverá a cambiar
+    assert "mio.py" in before
+    (root / "board/board.json").write_text("1", encoding="utf-8")
+    runner.commit_own(before, "chore: retry", "T-1")
+    assert _committed(g) == ["board/board.json", "mio.py"]
+    assert "mio.py" not in g("status", "--porcelain") and runner.claims() == {}
+
+
 def test_limpia_carriles_con_pid_muerto():
     b = {"runner": {"pid": os.getpid(), "state": "working"},
          "runners": {"think": {"pid": 99999999, "state": "working", "current": "T-32"},

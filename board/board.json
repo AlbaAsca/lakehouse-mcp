@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-02T23:36:00+01:00",
+  "updated": "2026-11-02T23:40:17+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -3443,7 +3443,7 @@
       "id": "T-073",
       "title": "El runner dejó sin subir el código de una tarjeta terminada",
       "owner": "desarrollador",
-      "status": "review",
+      "status": "done",
       "priority": "alta",
       "estimate_min": 25.0,
       "actual_min": 5.8,
@@ -3453,10 +3453,11 @@
       "deps": [
         "T-119",
         "T-120",
-        "T-121"
+        "T-121",
+        "T-130"
       ],
       "created": "2026-11-02T16:45:28+01:00",
-      "updated": "2026-11-02T23:14:58+01:00",
+      "updated": "2026-11-02T23:40:17+01:00",
       "started_at": "2026-11-02T23:09:13+01:00",
       "finished_at": "2026-11-02T23:14:58+01:00",
       "log": [
@@ -3534,6 +3535,26 @@
           "t": "2026-11-02T23:21:45+01:00",
           "by": "tú",
           "msg": "✓ permiso concedido: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\tests\\test_runner.py *"
+        },
+        {
+          "t": "2026-11-02T23:36:09+01:00",
+          "by": "tester",
+          "msg": "verificando"
+        },
+        {
+          "t": "2026-11-02T23:40:17+01:00",
+          "by": "tester",
+          "msg": "DONE: El corte y reintento guarda los ficheros de la tarjeta (probado con un proceso real y test añadido); los casos límite quedan en T-128 y T-129, y la CI en rojo, ajena a este cambio, en T-127."
+        },
+        {
+          "t": "2026-11-02T23:40:17+01:00",
+          "by": "tester",
+          "msg": "⚠ 1 comandos denegados: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\board\\runner.py"
+        },
+        {
+          "t": "2026-11-02T23:40:17+01:00",
+          "by": "runner",
+          "msg": "? permiso solicitado: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\board\\runner.py * (T-130); la tarjeta espera la decisión"
         }
       ],
       "runs": [
@@ -3546,8 +3567,19 @@
           "tokens": 762867,
           "cost_usd": 1.432039,
           "verdict": "review"
+        },
+        {
+          "agent": "tester",
+          "mode": "verify",
+          "at": "2026-11-02T23:40:17+01:00",
+          "min": 4.1,
+          "turns": 46,
+          "tokens": 519319,
+          "cost_usd": 1.0034944,
+          "verdict": "done"
         }
-      ]
+      ],
+      "verify_started": "2026-11-02T23:36:09+01:00"
     },
     {
       "id": "T-074",
@@ -5399,6 +5431,110 @@
         "task": "T-077",
         "why": "comprobar que `mk.cmd` pasa el argumento y devuelve el error"
       }
+    },
+    {
+      "id": "T-127",
+      "title": "La integración continua está en rojo: un test del validador de SQL tumba la máquina de pruebas",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "alta",
+      "estimate_min": 20.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Desde que se cerró el validador de SQL, cada subida a develop falla: una clase de pruebas del validador provoca un fallo grave de memoria que mata todo el proceso de tests, y los módulos siguientes ni se ejecutan. Lo más probable es que venga de las pruebas añadidas al cerrar esa tarjeta, que ejecutan consultas muy anidadas con muy poca memoria de pila. Hay que averiguar si el fallo es solo de la prueba o si una consulta aceptada por el validador puede tumbar también el servidor, porque esto segundo sería un agujero real.\nCómo sabremos si funciona: la integración continua de develop vuelve a verde y ejecuta todos los módulos, sin haber borrado la comprobación sin explicar por qué.\n## Técnico\nCI: runs 41534768076 (09c5187, primer rojo) y 41535625552 (7165f70); job java, mvn verify. SqlGuardProbeTest: 'Segmentation fault (core dumped)', exit 139, unos 10 s tras empezar la clase; SqlGuardTest (162) pasa; agent, semantic, evals y bench quedan SKIPPED. El último verde, 48ea90c, no tenía los 79 tests añadidos en 09c5187. Sospechoso sin confirmar: theDeepestAllowedQueriesRunOnASmallStack (hilo de 256 KB). Comentario del test: si el margen fuera malo, mataría la JVM. Criterio: mvn verify en verde en CI; si la causa es el margen, ajustar los límites de SqlGuard (producción), no solo el test.",
+      "deps": [],
+      "created": "2026-11-02T23:40:03+01:00",
+      "updated": "2026-11-02T23:40:03+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T23:40:03+01:00",
+          "by": "tester",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-128",
+      "title": "El runner guarda en una tarjeta un fichero que su agente no llegó a cambiar",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "media",
+      "estimate_min": 15.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Ahora el runner apunta un fichero en cuanto el agente intenta escribirlo, aunque el permiso se deniegue o la edición falle. Si ese fichero tenía cambios a medias de otra persona, acaban en el commit de una tarjeta que no los hizo. Proponemos apuntar solo las escrituras que hayan salido bien.\nCómo sabremos si funciona: una edición denegada sobre un fichero a medias lo deja sin confirmar.\n## Técnico\nboard/runner.py run_claude llama a claim(tag, tool_paths(line)) al ver el tool_use, antes del tool_result. Reproducido con proceso real: dirty.txt modificado antes de la tarjeta, tool_use Edit sin cambio real; commit_own devuelve ['board/board.json', 'dirty.txt']. Ocurre con denegaciones reales (T-124 y T-125 son Edit denegados). Introducido en T-073. Criterio: test con tool_use seguido de tool_result con is_error o DENIED_MARK: el fichero no se apunta; los cortes entre tool_use y tool_result siguen sin perder ficheros.",
+      "deps": [],
+      "created": "2026-11-02T23:40:03+01:00",
+      "updated": "2026-11-02T23:40:03+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T23:40:03+01:00",
+          "by": "tester",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-129",
+      "title": "Si falla el último guardado de una tarjeta, su código se queda sin subir",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "media",
+      "estimate_min": 20.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Cuando el guardado falla, el runner conserva la lista de ficheros para el siguiente intento de esa tarjeta. Pero si era su último paso, por ejemplo al darla por hecha, ya no habrá otro intento: la tarjeta queda terminada y su código sin confirmar, que es justo el problema de T-011, aunque ahora quede un aviso en el historial. Proponemos que el runner, al arrancar y entre tarjetas, recoja lo pendiente de tarjetas que ya no van a volver a ejecutarse.\nCómo sabremos si funciona: tras un guardado fallido en una tarjeta hecha, el siguiente ciclo del runner sube sus ficheros sin intervención.\n## Técnico\nboard/runner.py save() captura GitError y deja board/runs/claims/<tid>.txt; solo commit_own con ese tid lo consume. Reproducido: save de T-3 con .git/index.lock devuelve False; al quitarlo, commit_own de T-4 no incluye tardio.py y claims() sigue con T-3. git_retry solo espera unos 4 s. Además, los ficheros creados por un comando (Bash) en un primer intento cortado tampoco están apuntados y quedan fuera al reintentar (generado.txt en la misma prueba). Criterio: tests de ambos casos elemento a elemento sobre el commit.",
+      "deps": [],
+      "created": "2026-11-02T23:40:03+01:00",
+      "updated": "2026-11-02T23:40:03+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T23:40:03+01:00",
+          "by": "tester",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-130",
+      "title": "Solicitud de permiso: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\board\\runner.py *",
+      "owner": "consultor",
+      "status": "human",
+      "priority": "media",
+      "estimate_min": 2,
+      "actual_min": null,
+      "auto": false,
+      "manual": "Abre la tarjeta y pulsa «Conceder» o «Denegar».",
+      "desc": "El agente «tester» necesitaba un comando que no está en su lista de permitidos y se lo bloquearon mientras hacía T-073. No es de solo lectura ni está prohibido, así que lo tiene que validar una persona.\n\nPara qué lo quería: (no lo explicó)\n\nCómo decidir: concede si es seguro repetirlo sin supervisión dentro del proyecto; deniega si escribe fuera, publica, borra o usa la red.\n\n## Técnico\n- Comando: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\board\\runner.py\n- Patrón que se concedería: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\board\\runner.py *\n- Tarjeta: T-073",
+      "deps": [],
+      "created": "2026-11-02T23:40:17+01:00",
+      "updated": "2026-11-02T23:40:17+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T23:40:17+01:00",
+          "by": "runner",
+          "msg": "creada"
+        }
+      ],
+      "kind": "permiso",
+      "perm": {
+        "pattern": "C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\board\\runner.py *",
+        "command": "C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\board\\runner.py",
+        "agent": "tester",
+        "task": "T-073",
+        "why": ""
+      }
     }
   ],
   "runners": {
@@ -5417,14 +5553,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-077",
-      "message": "desarrollador con T-077",
+      "current": "T-073",
+      "message": "tester con T-073",
       "pid": 25284,
-      "heartbeat": "2026-11-02T23:15:02+01:00",
+      "heartbeat": "2026-11-02T23:36:09+01:00",
       "enabled": true,
-      "agent": "desarrollador",
-      "started": "2026-11-02T23:15:02+01:00",
-      "live": "live-T-077-desarrollador-20261102-231502.jsonl"
+      "agent": "tester",
+      "started": "2026-11-02T23:36:09+01:00",
+      "live": "live-T-073-tester-20261102-233609.jsonl"
     }
   }
 }
