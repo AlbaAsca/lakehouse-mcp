@@ -1,6 +1,6 @@
 # Servidor MCP
 
-**Estado:** ⬜ planificado. Solo existe la [conexión con DuckDB](duckdb.md#dentro-del-servidor-mcp), probada por sus tests: todavía no hay aplicación, herramientas ni comandos que enseñar. Tarjetas T-020 a T-028.
+**Estado:** ⬜ planificado. Solo existen la [conexión con DuckDB](duckdb.md#dentro-del-servidor-mcp) y el [validador de SQL](#el-validador-de-sql), probados por sus tests: todavía no hay aplicación, herramientas ni comandos que enseñar. Tarjetas T-020 a T-028.
 
 [Portada](../README.md) · [Glosario](../01-conceptos.md)
 
@@ -38,6 +38,26 @@ Las herramientas previstas, del [brief](../../brief.md#servidor-mcp-tools):
 
 Reglas de diseño, en [`docs/architecture.md`](../../architecture.md#decisiones): validar SQL con el parser de DuckDB (7), arreglos de catálogo cerrado cuya aprobación llega por `POST /fix-proposals/{id}/approvals` con una credencial que el modelo nunca recibe (9), roles por clave de API (11), enmascarado de `user_id` por vistas (12), dos instancias de DuckDB (20) y `time_travel` como única vía al pasado, también para analyst (21).
 
+### El validador de SQL
+
+`SqlGuard` ya existe, aunque ninguna herramienta lo usa todavía. Es el portero de `run_query` y `time_travel`: le pide a DuckDB que analice la consulta, sin ejecutarla, y recorre el resultado entero. Solo deja pasar lo que está en sus listas, así que lo que no conoce se rechaza.
+
+| Regla | Qué rechaza | Ejemplo |
+|---|---|---|
+| `NOT_A_SELECT` | Lo que no es una lectura | `DROP`, `COPY`, `SET` |
+| `NOT_ONE_STATEMENT` | Cero sentencias o varias | `SELECT 1; SELECT 2` |
+| `NODE` | Funciones de tabla, `DESCRIBE`, `PIVOT`, CTE recursivas, parámetros y lambdas | `read_csv('/etc/passwd')` |
+| `TABLE` | Tablas que no están en la lista que recibe, también rutas | `FROM '/etc/passwd'`, `duckdb_views` |
+| `FUNCTION` | Funciones fuera de la lista `SqlGuard.FUNCTIONS` | `getenv('HOME')` |
+| `TIME_TRAVEL` | `AT (...)`: el pasado solo se consulta con `time_travel` | `t AT (VERSION => 1)` |
+| `SYNTAX` | Lo que DuckDB no entiende | `SELECT FROM` |
+
+Tres cosas que conviene saber:
+
+- **Una CTE no protege su propio nombre.** Comprobado: en `WITH t AS (SELECT * FROM t) SELECT * FROM t`, el `t` de dentro es la tabla real, y podría ser una ruta. Por eso cada CTE solo ve las anteriores a ella. Los nombres de CTE se comparan distinguiendo mayúsculas: `WITH A ... FROM a` se rechaza aunque sea inofensivo.
+- **Lo que se ejecuta no es el texto original.** La consulta se reconstruye a partir del árbol validado, se envuelve con el límite de filas y se valida otra vez. Pide una fila más que el límite para saber si hubo recorte (`truncated`). Si una consulta necesita ampliar la lista, el error dice qué función falta.
+- **Sigue siendo la única barrera ante los ficheros.** Mientras no se haga T-115, un fallo aquí daría acceso a los ficheros del contenedor.
+
 ## Cómo estará configurado
 
 Dependencias ya declaradas en el `pom.xml`: `spring-ai-starter-mcp-server-webmvc`, `duckdb_jdbc`, Actuator y Spring Security. Spring AI 2.0.2.
@@ -54,7 +74,7 @@ Todavía no se puede. No hay servicio en `compose.yaml` ni código que ejecutar.
 
 Riesgos de diseño conocidos, no observados:
 
-- **Un fallo del validador.** La instancia `READ_ONLY` protege el catálogo, pero el validador seguiría siendo la única barrera entre una consulta y los ficheros del contenedor o de S3. [`NOTAS-investigador.md`](../../NOTAS-investigador.md) propone una segunda barrera con los ajustes de seguridad de DuckDB, aún sin tarjeta.
+- **Un fallo del validador.** La instancia `READ_ONLY` protege el catálogo, pero el validador seguiría siendo la única barrera entre una consulta y los ficheros del contenedor o de S3. [`NOTAS-investigador.md`](../../NOTAS-investigador.md) propone una segunda barrera con los ajustes de seguridad de DuckDB (T-115).
 - **DuckDB sobre ficheros del sink.** [T-014](../../spike-duckdb-iceberg.md) lo comprobó con ficheros escritos por DuckDB; sobre los del sink falta probarlo.
 
 ## Para saber más

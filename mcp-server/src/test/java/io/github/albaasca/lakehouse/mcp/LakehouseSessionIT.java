@@ -212,6 +212,26 @@ class LakehouseSessionIT {
     }
 
     @Test
+    void theValidatorRunsOnTheCatalogWithTheLimitAndTheTimeoutOfTheSession() throws Exception {
+        List<SqlGuard.TableName> allowed = List.of(SqlGuard.TableName.of(TABLE));
+        // Table functions are off limits here, so slow means a cross join. More tables hit the memory limit first.
+        String heavy = "SELECT sum(a.product_id + b.product_id + c.product_id) FROM "
+                + TABLE + " a, " + TABLE + " b, " + TABLE + " c";
+        try (LakehouseSession session = new LakehouseSession(
+                settings().withPoolSize(1).withQueryTimeout(Duration.ofSeconds(1)))) {
+            SqlGuard guard = new SqlGuard(session::query);
+
+            SqlGuard.QueryResult count = guard.run("SELECT count(*) FROM " + TABLE, allowed, 10);
+            SqlGuard.QueryResult cut = guard.run("SELECT event_type FROM " + TABLE, allowed, 1);
+
+            assertThat(count.rows()).containsExactly(List.of(loaded));
+            assertThat(cut.rows()).hasSize(1);
+            assertThat(cut.truncated()).isTrue();
+            assertThatThrownBy(() -> guard.run(heavy, allowed, 10)).isInstanceOf(SQLTimeoutException.class);
+        }
+    }
+
+    @Test
     void aFailedQueryDoesNotBreakTheNextOneNorCountsAsATimeout() throws Exception {
         try (LakehouseSession session = new LakehouseSession(settings().withPoolSize(1))) {
             assertThatThrownBy(() -> strings(session, "SELECT * FROM lh.session_it.missing"))

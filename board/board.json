@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-02T19:19:50+01:00",
+  "updated": "2026-11-02T22:05:38+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -61,8 +61,8 @@
       "name": "Desarrollador",
       "role": "Implementa las tareas",
       "color": "#7aa2f7",
-      "status": "idle",
-      "current": null
+      "status": "working",
+      "current": "T-019"
     },
     {
       "id": "tester",
@@ -1169,7 +1169,7 @@
       "id": "T-015",
       "title": "Ingesta: prueba completa de CSV sintético a tabla Iceberg",
       "owner": "desarrollador",
-      "status": "blocked",
+      "status": "review",
       "priority": "alta",
       "estimate_min": 45.0,
       "actual_min": 19.6,
@@ -1181,7 +1181,7 @@
         "T-013"
       ],
       "created": "2026-11-02T11:36:36+01:00",
-      "updated": "2026-11-02T19:19:24+01:00",
+      "updated": "2026-11-02T21:24:42+01:00",
       "started_at": "2026-11-02T18:59:36+01:00",
       "finished_at": "2026-11-02T19:19:13+01:00",
       "log": [
@@ -1234,6 +1234,16 @@
           "t": "2026-11-02T19:19:24+01:00",
           "by": "tester",
           "msg": "BLOCKED: s\\\\io\\\\github\\\\albaasca\\\\lakehouse\\\\producer\\\\IngestE2EIT.class\"],\"durationMs\":121,\"numFiles\":2,\"truncated\":false,\"totalMatches\":2,\"countIsComplete\":true},\"tool_result_meta\":[{\"id\":\"toolu_018dDtqKWrQvZ3r5twEvBWhh\",\"permission_decision\":{\"decision\":\"accept\",\"source\":\"config\",\"reason_type\":\"rule\"}}]}"
+        },
+        {
+          "t": "2026-11-02T21:24:42+01:00",
+          "by": "consultor",
+          "msg": "El bloqueo es un corte por el límite de uso, no un fallo real (mismo caso que T-012, ver T-084). Verifícala de nuevo."
+        },
+        {
+          "t": "2026-11-02T21:59:57+01:00",
+          "by": "consultor",
+          "msg": "Falla test_connect_config.py: el commit 9a30ddc quitó CONNECT_OFFSET_FLUSH_INTERVAL_MS de IcebergSinkFlowIT o lo movió, y la prueba de deriva ya no lo encuentra. No relajes la prueba: que vuelva a vigilar el mismo valor donde esté ahora. CI de develop en rojo por esto. Hay que pasar también ./mk test-board."
         }
       ],
       "runs": [
@@ -1426,10 +1436,10 @@
       "id": "T-019",
       "title": "Consulta: validador de SQL que solo deja pasar lecturas",
       "owner": "desarrollador",
-      "status": "next",
+      "status": "doing",
       "priority": "alta",
       "estimate_min": 40.0,
-      "actual_min": 0.3,
+      "actual_min": 41.6,
       "auto": true,
       "manual": null,
       "desc": "El agente va a mandar SQL, y un SELECT mal vigilado podría leer ficheros del disco o escribir datos. Se propone apoyarse en el propio analizador de DuckDB en vez de en expresiones regulares, que son fáciles de esquivar. La prueba ha demostrado que el analizador deja pasar más de lo que parece, así que el validador debe aceptar solo lo que conoce.\nCómo sabremos si funciona: una batería de intentos de ataque es rechazada caso a caso y las consultas legítimas pasan, con el límite de filas aplicado.\n\n## Técnico\n- mcp-server: SqlGuard con json_serialize_sql y las seis reglas de la decisión 7 (detalle en docs/spike-duckdb-iceberg.md, pregunta 6):\n  1. Exactamente un elemento en statements.\n  2. Recorrer todo el árbol: la raíz puede ser SET_OPERATION_NODE, y hay subconsultas, UNION, LATERAL y CTE.\n  3. Lista de permitidos: tipos de from_table y tablas conocidas. TABLE_FUNCTION y SHOW_REF, rechazados. Una ruta como '/etc/passwd' llega como BASE_TABLE. Comparar catálogo y esquema, para que duckdb_views o sqlite_master no pasen.\n  4. Un nombre de CTE solo se admite en un cte_map de su ámbito, y se valida también su cuerpo.\n  5. Lista de funciones escalares y de agregación permitidas: getenv, getvariable y current_setting quedan fuera. Error claro con el nombre de la función, para ampliarla.\n  6. at_clause rechazado siempre: el time travel lo construye el servidor (decisión 21).\n- La lista de tablas permitidas se recibe como parámetro: la usan los roles (T-054) y time_travel (T-021).\n- Límite de filas por envoltura: SELECT * FROM (q) LIMIT n+1, para detectar truncado. Timeout de LakehouseSession.\n- Test parametrizado con al menos 30 casos, con los de la tabla de la pregunta 6, comentarios, mayúsculas y varias sentencias. Sin contenedor: DuckDB en memoria. ./mk test.",
@@ -1437,9 +1447,9 @@
         "T-016"
       ],
       "created": "2026-11-02T11:36:53+01:00",
-      "updated": "2026-11-02T19:19:50+01:00",
-      "started_at": "2026-11-02T19:19:29+01:00",
-      "finished_at": "2026-11-02T19:19:50+01:00",
+      "updated": "2026-11-02T22:05:38+01:00",
+      "started_at": "2026-11-02T22:05:38+01:00",
+      "finished_at": null,
       "log": [
         {
           "t": "2026-11-02T11:36:53+01:00",
@@ -1470,6 +1480,38 @@
           "t": "2026-11-02T19:19:50+01:00",
           "by": "desarrollador",
           "msg": "límite de uso, reintenta tras el reset"
+        },
+        {
+          "t": "2026-11-02T21:24:17+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-02T22:05:38+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: SqlGuard aplica las seis reglas con límite de filas y timeout, y `./mk test` está en verde (147 casos del validador); falta verificar y conectarlo a las herramientas en T-021."
+        },
+        {
+          "t": "2026-11-02T22:05:38+01:00",
+          "by": "tú",
+          "msg": "→ En curso"
+        },
+        {
+          "t": "2026-11-02T22:05:38+01:00",
+          "by": "tú",
+          "msg": "lleva bastante tiempo no?"
+        }
+      ],
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-02T22:05:38+01:00",
+          "min": 41.3,
+          "turns": 5,
+          "tokens": 299085,
+          "cost_usd": 2.8062932,
+          "verdict": "review"
         }
       ]
     },
@@ -1478,7 +1520,7 @@
       "title": "MCP: servidor con list_tables y describe_table",
       "owner": "desarrollador",
       "status": "next",
-      "priority": "alta",
+      "priority": "media",
       "estimate_min": 40.0,
       "actual_min": null,
       "auto": true,
@@ -1502,6 +1544,11 @@
           "t": "2026-11-02T17:37:18+01:00",
           "by": "arquitecto",
           "msg": "Recorrido mínimo: ver docs/architecture.md"
+        },
+        {
+          "t": "2026-11-02T22:01:38+01:00",
+          "by": "tú",
+          "msg": "editada: priority"
         }
       ]
     },
@@ -1510,7 +1557,7 @@
       "title": "MCP: run_query y time_travel",
       "owner": "desarrollador",
       "status": "next",
-      "priority": "alta",
+      "priority": "media",
       "estimate_min": 30.0,
       "actual_min": null,
       "auto": true,
@@ -1544,6 +1591,11 @@
           "t": "2026-11-02T18:15:01+01:00",
           "by": "consultor",
           "msg": "descripción reescrita"
+        },
+        {
+          "t": "2026-11-02T22:01:40+01:00",
+          "by": "tú",
+          "msg": "editada: priority"
         }
       ]
     },
@@ -3292,6 +3344,11 @@
           "t": "2026-11-02T18:16:12+01:00",
           "by": "consultor",
           "msg": "Aclarado: el push de 6897776 lo hace el propio runner (board/runner.py, línea 547, al terminar). No es un problema; lo que sigue pendiente es que confirme trabajo de otro carril."
+        },
+        {
+          "t": "2026-11-02T22:01:59+01:00",
+          "by": "consultor",
+          "msg": "Prioridad máxima a petición de la responsable: acelerar el resto de tarjetas. Va antes que el MVP."
         }
       ]
     },
@@ -3416,6 +3473,16 @@
           "t": "2026-11-02T17:25:22+01:00",
           "by": "consultor",
           "msg": "Prioridad: acorta la espera de todas las tarjetas siguientes"
+        },
+        {
+          "t": "2026-11-02T21:59:11+01:00",
+          "by": "consultor",
+          "msg": "La responsable aprobó tests por niveles (CLAUDE.md). Cuando exista MODULE, sustituye el MAVEN_ARGS provisional en CLAUDE.md y desarrollador.md, y mide el tiempo antes y después."
+        },
+        {
+          "t": "2026-11-02T22:02:00+01:00",
+          "by": "consultor",
+          "msg": "Prioridad máxima a petición de la responsable: acelerar el resto de tarjetas. Va antes que el MVP."
         }
       ]
     },
@@ -3497,6 +3564,11 @@
           "t": "2026-11-02T17:30:27+01:00",
           "by": "consultor",
           "msg": "Acorta la espera de todas las tarjetas"
+        },
+        {
+          "t": "2026-11-02T22:02:00+01:00",
+          "by": "consultor",
+          "msg": "Prioridad máxima a petición de la responsable: acelerar el resto de tarjetas. Va antes que el MVP."
         }
       ]
     },
@@ -3529,7 +3601,7 @@
       "title": "Arrancar el carril de pensar sin rondas de aportación",
       "owner": "desarrollador",
       "status": "next",
-      "priority": "alta",
+      "priority": "media",
       "estimate_min": 20.0,
       "actual_min": null,
       "auto": true,
@@ -3550,6 +3622,11 @@
           "t": "2026-11-02T17:30:59+01:00",
           "by": "consultor",
           "msg": "Prioridad: protege o desatasca el trabajo del runner"
+        },
+        {
+          "t": "2026-11-02T22:01:42+01:00",
+          "by": "tú",
+          "msg": "editada: priority"
         }
       ]
     },
@@ -3628,6 +3705,11 @@
           "t": "2026-11-02T18:34:57+01:00",
           "by": "consultor",
           "msg": "También: un RESULT blocked legítimo cuenta como fallo y, a los 3 seguidos (MAX_FAILS), el carril se pausa solo (board/runner.py:556) y el mensaje acaba como «En pausa», sin motivo. Le pasó al carril de pensar el 2-nov con T-027 y T-088. Un bloqueo no debe contar como fallo, y el panel debe mostrar por qué se pausó."
+        },
+        {
+          "t": "2026-11-02T22:02:00+01:00",
+          "by": "consultor",
+          "msg": "Prioridad máxima a petición de la responsable: acelerar el resto de tarjetas. Va antes que el MVP."
         }
       ]
     },
@@ -3636,7 +3718,7 @@
       "title": "Prohibir siempre los comandos destructivos, aunque haya un permiso amplio",
       "owner": "desarrollador",
       "status": "next",
-      "priority": "alta",
+      "priority": "media",
       "estimate_min": 20.0,
       "actual_min": null,
       "auto": true,
@@ -3657,6 +3739,11 @@
           "t": "2026-11-02T17:30:59+01:00",
           "by": "consultor",
           "msg": "Prioridad: protege o desatasca el trabajo del runner"
+        },
+        {
+          "t": "2026-11-02T22:01:44+01:00",
+          "by": "tú",
+          "msg": "editada: priority"
         }
       ]
     },
@@ -3911,7 +3998,7 @@
       "title": "Cargar la muestra sintética con un solo comando",
       "owner": "desarrollador",
       "status": "next",
-      "priority": "alta",
+      "priority": "media",
       "estimate_min": 15.0,
       "actual_min": null,
       "auto": true,
@@ -3929,6 +4016,11 @@
           "t": "2026-11-02T17:36:40+01:00",
           "by": "arquitecto",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T22:01:46+01:00",
+          "by": "tú",
+          "msg": "editada: priority"
         }
       ]
     },
@@ -3937,7 +4029,7 @@
       "title": "Calcular por separado la respuesta correcta de la pregunta de la demo",
       "owner": "tester",
       "status": "next",
-      "priority": "alta",
+      "priority": "media",
       "estimate_min": 15.0,
       "actual_min": null,
       "auto": true,
@@ -3955,6 +4047,11 @@
           "t": "2026-11-02T17:36:44+01:00",
           "by": "arquitecto",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T22:01:48+01:00",
+          "by": "tú",
+          "msg": "editada: priority"
         }
       ]
     },
@@ -3963,7 +4060,7 @@
       "title": "MCP: poner el servidor dentro del stack en cuanto sepa consultar",
       "owner": "desarrollador",
       "status": "next",
-      "priority": "alta",
+      "priority": "media",
       "estimate_min": 30.0,
       "actual_min": null,
       "auto": true,
@@ -3986,6 +4083,11 @@
           "t": "2026-11-02T18:19:41+01:00",
           "by": "consultor",
           "msg": "De T-016: la imagen del servidor debe llevar httpfs, avro e iceberg ya instaladas en un directorio y arrancar con installExtensions=false (LakehouseSessionIT demuestra que así no descarga nada). Sin probar: precargarlas desde la imagen; el directorio del test lo llena el propio driver JDBC 2.0.0.1."
+        },
+        {
+          "t": "2026-11-02T22:01:50+01:00",
+          "by": "tú",
+          "msg": "editada: priority"
         }
       ]
     },
@@ -3994,7 +4096,7 @@
       "title": "Agente: primera versión que contesta consultando los datos",
       "owner": "desarrollador",
       "status": "next",
-      "priority": "alta",
+      "priority": "media",
       "estimate_min": 45.0,
       "actual_min": null,
       "auto": true,
@@ -4017,6 +4119,11 @@
           "t": "2026-11-02T18:22:55+01:00",
           "by": "consultor",
           "msg": "descripción reescrita"
+        },
+        {
+          "t": "2026-11-02T22:01:53+01:00",
+          "by": "tú",
+          "msg": "editada: priority"
         }
       ]
     },
@@ -4049,7 +4156,7 @@
       "title": "Agente: un comando para hacerle preguntas desde el stack",
       "owner": "desarrollador",
       "status": "next",
-      "priority": "alta",
+      "priority": "media",
       "estimate_min": 25.0,
       "actual_min": null,
       "auto": true,
@@ -4068,6 +4175,11 @@
           "t": "2026-11-02T17:37:05+01:00",
           "by": "arquitecto",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T22:01:55+01:00",
+          "by": "tú",
+          "msg": "editada: priority"
         }
       ]
     },
@@ -4112,7 +4224,7 @@
       "title": "README: enseñar el recorrido que ya funciona, con su GIF",
       "owner": "arquitecto",
       "status": "next",
-      "priority": "alta",
+      "priority": "media",
       "estimate_min": 15.0,
       "actual_min": null,
       "auto": true,
@@ -4130,6 +4242,11 @@
           "t": "2026-11-02T17:37:35+01:00",
           "by": "arquitecto",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T22:01:57+01:00",
+          "by": "tú",
+          "msg": "editada: priority"
         }
       ]
     },
@@ -4159,6 +4276,11 @@
           "t": "2026-11-02T17:41:28+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T21:59:11+01:00",
+          "by": "consultor",
+          "msg": "Incluir también Tests por niveles en la plantilla, cuando la medición confirme que ahorra tiempo."
         }
       ]
     },
@@ -4393,7 +4515,7 @@
       "title": "Consulta: separar la conexión de lectura de la de reparación",
       "owner": "desarrollador",
       "status": "next",
-      "priority": "alta",
+      "priority": "media",
       "estimate_min": 25.0,
       "actual_min": null,
       "auto": true,
@@ -4411,6 +4533,11 @@
           "t": "2026-11-02T18:14:43+01:00",
           "by": "arquitecto",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T22:01:59+01:00",
+          "by": "tú",
+          "msg": "editada: priority"
         }
       ]
     },
@@ -4622,6 +4749,39 @@
           "msg": "descripción reescrita"
         }
       ]
+    },
+    {
+      "id": "T-115",
+      "title": "Consulta: que DuckDB tampoco pueda salirse aunque falle el validador",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "media",
+      "estimate_min": 30.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Hoy solo el validador impide que una consulta del agente lea ficheros del contenedor o cambie ajustes del motor. Se propone activar también los ajustes de seguridad de DuckDB, para que un fallo del validador no baste. La documentación no aclara si Iceberg sigue funcionando con todo bloqueado: lo decide la prueba.\nCómo sabremos si funciona: con el validador desactivado, leer un fichero local o cambiar un ajuste falla en el propio motor, y las consultas a Iceberg devuelven las mismas filas.\n\n## Técnico\nPropuesta completa en docs/NOTAS-investigador.md (2026-11-02, Aislar DuckDB dentro del motor), que no pudo crear la tarjeta. Ajustes en LakehouseSession, en el orden documentado: LOAD httpfs, allowed_directories, enable_external_access=false, disabled_filesystems=LocalFileSystem, lock_configuration=true. Test sin SqlGuard en cada conexión del pool: read_csv('/etc/passwd'), glob('/*'), COPY a fichero local, ATTACH de fichero, SET lock_configuration=false e INSTALL deben fallar; SELECT sobre lh devuelve las filas esperadas. Si no se puede bloquear todo, documentar qué queda en docs/architecture.md. ./mk test.",
+      "deps": [
+        "T-014",
+        "T-016",
+        "T-019"
+      ],
+      "created": "2026-11-02T21:32:48+01:00",
+      "updated": "2026-11-02T21:32:58+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T21:32:48+01:00",
+          "by": "desarrollador",
+          "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T21:32:58+01:00",
+          "by": "consultor",
+          "msg": "descripción reescrita"
+        }
+      ]
     }
   ],
   "runners": {
@@ -4629,8 +4789,8 @@
       "state": "stopped",
       "current": null,
       "message": "Runner parado",
-      "pid": 21744,
-      "heartbeat": "2026-11-02T18:35:47+01:00",
+      "pid": 15036,
+      "heartbeat": "2026-11-02T21:24:17+01:00",
       "enabled": true,
       "agent": "arquitecto",
       "started": "2026-11-02T18:35:01+01:00",
@@ -4642,12 +4802,12 @@
       "state": "working",
       "current": "T-019",
       "message": "desarrollador con T-019",
-      "pid": 6932,
-      "heartbeat": "2026-11-02T19:19:30+01:00",
+      "pid": 13408,
+      "heartbeat": "2026-11-02T21:24:18+01:00",
       "enabled": true,
       "agent": "desarrollador",
-      "started": "2026-11-02T19:19:30+01:00",
-      "live": "live-T-019-desarrollador-20261102-191930.jsonl"
+      "started": "2026-11-02T21:24:18+01:00",
+      "live": "live-T-019-desarrollador-20261102-212418.jsonl"
     }
   }
 }
