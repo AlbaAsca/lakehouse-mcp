@@ -1,0 +1,11 @@
+{
+  "allowed": [
+    {
+      "pattern": "docker *",
+      "why": "concedido por el responsable desde el panel",
+      "by": "responsable",
+      "at": "2026-11-02T11:53:12+01:00"
+    }
+  ],
+  "denied": []
+}

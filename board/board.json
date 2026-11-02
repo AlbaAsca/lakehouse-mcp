@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-02T11:52:24+01:00",
+  "updated": "2026-11-02T11:56:28+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -167,6 +167,11 @@
           "t": "2026-11-02T11:48:32+01:00",
           "by": "runner",
           "msg": "? permiso solicitado: docker * (T-066); la tarjeta espera la decisión"
+        },
+        {
+          "t": "2026-11-02T11:53:12+01:00",
+          "by": "tú",
+          "msg": "✓ permiso concedido: docker *"
         }
       ],
       "runs": [
@@ -210,7 +215,7 @@
       "id": "T-004",
       "title": "Infra: muestra sintética para CI, sin datos reales",
       "owner": "desarrollador",
-      "status": "review",
+      "status": "done",
       "priority": "alta",
       "estimate_min": 35.0,
       "actual_min": 3.8,
@@ -219,7 +224,7 @@
       "desc": "CI y casi todos los tests necesitan datos, y la licencia del dataset impide usar un extracto real. Se propone un generador con semilla fija que invente eventos con el mismo esquema, incluya los tipos de suciedad del origen y una caída de compras plantada para que el agente tenga algo que explicar.\nCómo sabremos si funciona: dos ejecuciones dan un fichero idéntico byte a byte, cada caso sucio aparece, y ningún valor proviene del dataset real.\n\n## Técnico\n- infra/synthetic/generate.py (solo biblioteca estándar; salida UTF-8) --seed --rows --out. Fichero versionado testdata/synthetic-events.csv.gz, ~50k filas, 14 días (gzip con mtime=0 para reproducibilidad; .gitignore no excluye .csv.gz).\n- Esquema: event_time, event_type, product_id, category_id, category_code, brand, price, user_id, user_session.\n- Sesiones coherentes view->cart->purchase. Casos sucios: category_code y brand nulos, user_session nulo, price 0 o negativo, duplicados exactos.\n- Día con caída plantada de compras (documentar qué día y por qué marca o categoría en infra/synthetic/README.md).\n- Valores claramente inventados (marcas ficticias, ids en rango propio), nunca derivados del CSV real.\n- Tests en tests/ (./mk test-board): determinismo, esquema, presencia de cada caso, guarda contra CSV sin comprimir o de más de 5 MB en el repo.",
       "deps": [],
       "created": "2026-11-02T11:35:11+01:00",
-      "updated": "2026-11-02T11:52:24+01:00",
+      "updated": "2026-11-02T11:56:28+01:00",
       "started_at": "2026-11-02T11:48:37+01:00",
       "finished_at": "2026-11-02T11:52:24+01:00",
       "log": [
@@ -237,6 +242,26 @@
           "t": "2026-11-02T11:52:24+01:00",
           "by": "desarrollador",
           "msg": "REVIEW: Generador determinista y muestra de 50.000 filas con casos sucios y caída plantada; 46 tests en verde en Windows, falta pasarlos en el contenedor con `./mk test-board`."
+        },
+        {
+          "t": "2026-11-02T11:52:30+01:00",
+          "by": "tester",
+          "msg": "verificando"
+        },
+        {
+          "t": "2026-11-02T11:56:28+01:00",
+          "by": "tester",
+          "msg": "DONE: Muestra determinista, con todos los casos sucios y la caída plantada verificados, sin valores del dataset real, y 73 tests en verde en Windows y en el contenedor."
+        },
+        {
+          "t": "2026-11-02T11:56:28+01:00",
+          "by": "tester",
+          "msg": "⚠ 1 comandos denegados: docker compose --profile tools run --rm -T tools duckdb -csv -c \"SELECT count(*)"
+        },
+        {
+          "t": "2026-11-02T11:56:28+01:00",
+          "by": "runner",
+          "msg": "✗ «docker compose --profile tools run --rm -T tools duckdb -csv -c \"SELECT count(*) n, count(»: varios comandos, tuberías, redirecciones o heredoc: lanza cada comando por separado y crea ficheros con Write/Edit"
         }
       ],
       "runs": [
@@ -249,8 +274,19 @@
           "tokens": 219046,
           "cost_usd": 0.7592933999999999,
           "verdict": "review"
+        },
+        {
+          "agent": "tester",
+          "mode": "verify",
+          "at": "2026-11-02T11:56:28+01:00",
+          "min": 4.0,
+          "turns": 32,
+          "tokens": 329175,
+          "cost_usd": 0.7272744,
+          "verdict": "done"
         }
-      ]
+      ],
+      "verify_started": "2026-11-02T11:52:30+01:00"
     },
     {
       "id": "T-005",
@@ -1938,7 +1974,7 @@
       "id": "T-066",
       "title": "Solicitud de permiso: docker *",
       "owner": "consultor",
-      "status": "human",
+      "status": "done",
       "priority": "media",
       "estimate_min": 2,
       "actual_min": null,
@@ -1947,7 +1983,7 @@
       "desc": "El agente «desarrollador» necesitaba un comando que no está en su lista de permitidos y se lo bloquearon mientras hacía T-002. No es de solo lectura ni está prohibido, así que lo tiene que validar una persona.\n\nPara qué lo quería: validar la sintaxis y las variables de compose.yaml sin imprimir secretos\n\nCómo decidir: concede si es seguro repetirlo sin supervisión dentro del proyecto; deniega si escribe fuera, publica, borra o usa la red.\n\n## Técnico\n- Comando: docker compose config --quiet\n- Patrón que se concedería: docker *\n- Tarjeta: T-002",
       "deps": [],
       "created": "2026-11-02T11:48:32+01:00",
-      "updated": "2026-11-02T11:48:32+01:00",
+      "updated": "2026-11-02T11:53:12+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -1955,6 +1991,11 @@
           "t": "2026-11-02T11:48:32+01:00",
           "by": "runner",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T11:53:12+01:00",
+          "by": "tú",
+          "msg": "✓ Concedido: docker *"
         }
       ],
       "kind": "permiso",
@@ -1965,6 +2006,35 @@
         "task": "T-002",
         "why": "validar la sintaxis y las variables de compose.yaml sin imprimir secretos"
       }
+    },
+    {
+      "id": "T-067",
+      "title": "README: esquema de arquitectura animado",
+      "owner": "consultor",
+      "status": "done",
+      "priority": "media",
+      "estimate_min": 15.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "El README mostraba la arquitectura con Mermaid; se sustituye por un esquema animado con el estilo de la portada. Cómo sabremos si funciona: en GitHub se ve el esquema con movimiento.",
+      "deps": [],
+      "created": "2026-11-02T11:55:03+01:00",
+      "updated": "2026-11-02T11:55:46+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T11:55:03+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T11:55:46+01:00",
+          "by": "consultor",
+          "msg": "Esquema animado visto en GitHub en develop"
+        }
+      ]
     }
   ],
   "runners": {
@@ -1984,13 +2054,13 @@
     "measure": {
       "state": "working",
       "current": "T-004",
-      "message": "desarrollador con T-004",
+      "message": "tester con T-004",
       "pid": 25568,
-      "heartbeat": "2026-11-02T11:48:37+01:00",
+      "heartbeat": "2026-11-02T11:52:31+01:00",
       "enabled": true,
-      "agent": "desarrollador",
-      "started": "2026-11-02T11:48:37+01:00",
-      "live": "live-T-004-desarrollador-20261102-114837.jsonl"
+      "agent": "tester",
+      "started": "2026-11-02T11:52:31+01:00",
+      "live": "live-T-004-tester-20261102-115231.jsonl"
     }
   }
 }
