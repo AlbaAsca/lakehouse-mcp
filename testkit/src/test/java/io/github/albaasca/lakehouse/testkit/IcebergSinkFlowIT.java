@@ -33,6 +33,7 @@ class IcebergSinkFlowIT {
     private static final Duration STARTUP_TIMEOUT = Duration.ofMinutes(3);
     /** Waits for the commit interval of connect/iceberg-sink.json (30 s) a few times over. */
     private static final Duration ROW_TIMEOUT = Duration.ofMinutes(3);
+    private static final String KAFKA_IMAGE = "apache/kafka:4.4.0";
     private static final Path ROOT = LakehouseStack.repositoryRoot();
     private static final HttpClient HTTP = HttpClient.newHttpClient();
     private static final long EVENT_TIME_MICROS = 1_570_000_000_000_000L;
@@ -97,6 +98,50 @@ class IcebergSinkFlowIT {
 
         awaitRunningTask();
         awaitRow();
+        assertTableIsPartitionedByDayAndEventType();
+    }
+
+    /** The promise of T-012: a message that cannot be read goes aside, with its reason, and the sink carries on. */
+    @Test
+    void anUnreadableMessageGoesToTheDeadLetterTopicAndTheTaskKeepsRunning() throws Exception {
+        String garbage = "not-an-avro-message";
+        runOnce(new GenericContainer<>(KAFKA_IMAGE)
+                .withCopyToContainer(Transferable.of(garbage + "\n"), "/tmp/garbage.txt")
+                .withCommand("sh", "-c", "/opt/kafka/bin/kafka-console-producer.sh --bootstrap-server kafka:9092"
+                        + " --topic ecommerce.events < /tmp/garbage.txt"));
+        register();
+
+        String deadLetters = runOnce(new GenericContainer<>(KAFKA_IMAGE)
+                .withCommand("sh", "-c", "/opt/kafka/bin/kafka-console-consumer.sh --bootstrap-server kafka:9092"
+                        + " --topic ecommerce.events.dlq --from-beginning --max-messages 1 --timeout-ms 150000"
+                        + " --formatter-property print.headers=true"));
+
+        assertThat(deadLetters).contains(garbage).contains("__connect.errors.exception.class.name");
+        List<String> states = JsonPath.read(get("/connectors/iceberg-sink/status"), "$.tasks[*].state");
+        assertThat(states).containsExactly("RUNNING");
+    }
+
+    /** Compared with the brief, not with connect/iceberg-sink.json: the auto-created table is what has to obey. */
+    private static void assertTableIsPartitionedByDayAndEventType() throws Exception {
+        HttpResponse<String> response = HTTP.send(
+                HttpRequest.newBuilder(URI.create(
+                                stack.polarisUrl() + "/api/catalog/v1/lakehouse/namespaces/ecommerce/tables/events"))
+                        .header("Authorization", "Bearer " + stack.polarisToken())
+                        .header("Polaris-Realm", LakehouseStack.REALM)
+                        .build(),
+                HttpResponse.BodyHandlers.ofString());
+        assertThat(response.statusCode()).as(response.body()).isEqualTo(200);
+
+        String metadata = response.body();
+        String fields = "$.metadata['partition-specs'][0].fields";
+        List<Integer> sourceIds = JsonPath.read(metadata, fields + "[*]['source-id']");
+        List<String> sources = sourceIds.stream()
+                .map(id -> JsonPath.<List<String>>read(metadata, "$.metadata.schemas[0].fields[?(@.id==" + id + ")].name").get(0))
+                .toList();
+        List<String> transforms = JsonPath.read(metadata, fields + "[*].transform");
+
+        assertThat(sources).containsExactly("event_time", "event_type");
+        assertThat(transforms).containsExactly("day", "identity");
     }
 
     private static void produceEvent() throws Exception {
@@ -122,12 +167,13 @@ class IcebergSinkFlowIT {
                 "POLARIS_CLIENT_SECRET", LakehouseStack.CLIENT_SECRET)));
     }
 
-    /** Starting throws unless the container exits with code 0. */
-    private static void runOnce(GenericContainer<?> container) {
+    /** Starting throws unless the container exits with code 0. Returns what it printed. */
+    private static String runOnce(GenericContainer<?> container) {
         try (container) {
             container.withNetwork(stack.network())
                     .withStartupCheckStrategy(new OneShotStartupCheckStrategy().withTimeout(STARTUP_TIMEOUT))
                     .start();
+            return container.getLogs();
         }
     }
 

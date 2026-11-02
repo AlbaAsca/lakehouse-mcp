@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-02T18:35:44+01:00",
+  "updated": "2026-11-02T18:44:34+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -69,8 +69,8 @@
       "name": "Tester",
       "role": "Verifica, escribe tests y busca fallos",
       "color": "#9ece6a",
-      "status": "working",
-      "current": "T-012"
+      "status": "idle",
+      "current": null
     },
     {
       "id": "investigador",
@@ -679,6 +679,11 @@
           "t": "2026-11-02T18:14:23+01:00",
           "by": "tú",
           "msg": "✓ permiso concedido: gh *"
+        },
+        {
+          "t": "2026-11-02T18:40:32+01:00",
+          "by": "consultor",
+          "msg": "La responsable pidió no cancelar ejecuciones en develop y main: solo en pull requests."
         }
       ],
       "verify_started": "2026-11-02T17:59:50+01:00",
@@ -800,7 +805,7 @@
       "id": "T-012",
       "title": "Ingesta: configurar y registrar el conector hacia Iceberg",
       "owner": "desarrollador",
-      "status": "review",
+      "status": "done",
       "priority": "alta",
       "estimate_min": 35.0,
       "actual_min": 14.5,
@@ -811,7 +816,7 @@
         "T-002"
       ],
       "created": "2026-11-02T11:35:58+01:00",
-      "updated": "2026-11-02T18:18:43+01:00",
+      "updated": "2026-11-02T18:44:34+01:00",
       "started_at": "2026-11-02T13:00:28+01:00",
       "finished_at": "2026-11-02T13:14:56+01:00",
       "log": [
@@ -874,6 +879,11 @@
           "t": "2026-11-02T18:26:53+01:00",
           "by": "tester",
           "msg": "verificando"
+        },
+        {
+          "t": "2026-11-02T18:44:34+01:00",
+          "by": "tester",
+          "msg": "DONE: Configuración válida contra un worker real, registro repetible y evento hasta Iceberg comprobados, con dos tests nuevos (cola de ilegibles y particionado) y `./mk test` en verde."
         }
       ],
       "runs": [
@@ -896,6 +906,16 @@
           "tokens": null,
           "cost_usd": null,
           "verdict": "blocked"
+        },
+        {
+          "agent": "tester",
+          "mode": "verify",
+          "at": "2026-11-02T18:44:34+01:00",
+          "min": 17.7,
+          "turns": 44,
+          "tokens": 408698,
+          "cost_usd": 0.8723620000000001,
+          "verdict": "done"
         }
       ],
       "verify_started": "2026-11-02T18:26:53+01:00"
@@ -4391,11 +4411,11 @@
   ],
   "runners": {
     "think": {
-      "state": "working",
-      "current": "T-027",
-      "message": "arquitecto con T-027",
+      "state": "stopped",
+      "current": null,
+      "message": "Runner parado",
       "pid": 21744,
-      "heartbeat": "2026-11-02T18:35:01+01:00",
+      "heartbeat": "2026-11-02T18:35:47+01:00",
       "enabled": true,
       "agent": "arquitecto",
       "started": "2026-11-02T18:35:01+01:00",
