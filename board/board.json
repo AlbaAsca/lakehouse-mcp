@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-10-14T11:57:27+02:00",
+  "updated": "2026-11-02T11:29:13+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -89,5 +89,30 @@
       "current": null
     }
   ],
-  "tasks": []
+  "tasks": [
+    {
+      "id": "T-001",
+      "title": "Fase 0: dejar el entorno levantado",
+      "owner": "consultor",
+      "status": "backlog",
+      "priority": "alta",
+      "estimate_min": 45.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Repositorio, imágenes Docker, dependencias Maven y datos listos para que los agentes trabajen sin instalar nada. Cómo sabremos si funciona: ./mk up y ./mk smoke terminan bien.",
+      "deps": [],
+      "created": "2026-11-02T11:29:13+01:00",
+      "updated": "2026-11-02T11:29:13+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T11:29:13+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ]
+    }
+  ]
 }

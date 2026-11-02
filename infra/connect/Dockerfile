@@ -1,10 +1,11 @@
 # The Iceberg project publishes no connector zip: its docs say to build it from source.
+# A git clone, not the tarball: the build reads version and properties from .git.
 FROM eclipse-temurin:21-jdk AS build
 ARG ICEBERG_VERSION=1.12.0
-RUN apt-get update && apt-get install -y --no-install-recommends curl unzip && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends curl unzip git && rm -rf /var/lib/apt/lists/*
+RUN git clone --depth 1 --branch "apache-iceberg-${ICEBERG_VERSION}" https://github.com/apache/iceberg.git /src
 WORKDIR /src
-RUN curl -fsSL "https://github.com/apache/iceberg/archive/refs/tags/apache-iceberg-${ICEBERG_VERSION}.tar.gz" | tar xz --strip-components=1 \
- && ./gradlew --no-daemon -x test -x integrationTest :iceberg-kafka-connect:iceberg-kafka-connect-runtime:distZip \
+RUN ./gradlew --no-daemon -x test -x integrationTest :iceberg-kafka-connect:iceberg-kafka-connect-runtime:distZip \
  && mkdir /out && unzip -q kafka-connect/kafka-connect-runtime/build/distributions/iceberg-kafka-connect-runtime-*.zip -d /out
 
 FROM confluentinc/cp-kafka-connect:8.4.0

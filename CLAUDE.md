@@ -1,7 +1,7 @@
 # lakehouse-mcp — instrucciones para Claude Code
 
 Qué es: demo de portfolio: lakehouse local (Kafka, Iceberg/Polaris sobre SeaweedFS, DuckDB) que un agente Spring AI consulta, vigila y repara vía MCP. Alcance completo: `docs/brief.md`.
-Arranque: `./mk up` (`mk.cmd` en Windows). **Todo corre en Docker**: JDK, Maven, make y Kaggle viven en la imagen `tools`; no se instala nada en el host. Panel: `python board/server.py` → http://localhost:8020
+Arranque: `./mk up` (`mk.cmd` en Windows). **Todo corre en Docker**: JDK, Maven, make y Kaggle viven en la imagen `tools`; no se instala nada en el host. Si Docker no responde: `powershell -NoProfile -ExecutionPolicy Bypass -File ..\docker-start.ps1`. Panel: `python board/server.py` → http://localhost:8020
 Tests: `./mk test` (Java), `./mk test-board` (panel). Verifica versiones y APIs en la documentación oficial; si algo no existe o falla, a «Te necesita» con alternativa.
 
 ## Tu papel: consultor
