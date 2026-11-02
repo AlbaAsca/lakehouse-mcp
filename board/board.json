@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-02T12:02:21+01:00",
+  "updated": "2026-11-02T12:06:25+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -339,10 +339,10 @@
       "id": "T-006",
       "title": "Infra: kit de pruebas que levanta el lakehouse en contenedores",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "review",
       "priority": "alta",
       "estimate_min": 40.0,
-      "actual_min": null,
+      "actual_min": 4.0,
       "auto": true,
       "manual": null,
       "desc": "Casi todo lo que viene se tiene que probar contra un lakehouse de verdad, y los agentes no pueden levantar el stack. Se propone un kit común que arranque SeaweedFS, Postgres y Polaris desde las mismas imágenes de infra/ y los comparta entre tests, para no repetirlo en cada módulo ni disparar los tiempos.\nCómo sabremos si funciona: un test escribe y lee una fila en Iceberg desde DuckDB a través de Polaris, igual que ./mk smoke, sin stack levantado.\n\n## Técnico\n- testkit: LakehouseStack (singleton; ImageFromDockerfile desde infra/seaweedfs, infra/postgres, infra/polaris; bootstrap + init.sh). Ampliable después con Kafka, Registry y Connect.\n- Dentro de tools se accede por TESTCONTAINERS_HOST_OVERRIDE=host.docker.internal con puertos mapeados.\n- Ayudante de ATTACH con ACCESS_DELEGATION_MODE none y secreto S3 propio, apuntando al puerto mapeado.\n- pom raíz: BOM de Testcontainers, surefire para unitarios, failsafe para *IT. Presupuesto: ./mk test completo en ~10 min (ver docs/architecture.md); si se pasa, anotarlo en la tarjeta.\n- Verificación: ./mk test con el stack apagado.",
@@ -350,14 +350,41 @@
         "T-002"
       ],
       "created": "2026-11-02T11:35:33+01:00",
-      "updated": "2026-11-02T11:35:33+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-02T12:06:25+01:00",
+      "started_at": "2026-11-02T12:02:26+01:00",
+      "finished_at": "2026-11-02T12:06:25+01:00",
       "log": [
         {
           "t": "2026-11-02T11:35:33+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T12:02:26+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-02T12:05:56+01:00",
+          "by": "consultor",
+          "msg": "Verificación parcial: ./mk test en verde (4 IT de testkit, 61 s; LakehouseStackIT escribe y lee con DuckDB por Polaris), pero con el stack de compose LEVANTADO, no apagado como pedía la tarjeta. No lo paré: no es mío y ./mk down no está en mis permisos. Los logs muestran que los tests usan solo sus contenedores y puertos mapeados (55333, 55338...), no 8181/8333. Falta para el tester: repetir ./mk test con el stack apagado."
+        },
+        {
+          "t": "2026-11-02T12:06:25+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: LakehouseStack y su test de DuckDB por Polaris en verde con `./mk test`, pero falta repetirlo con el stack apagado (anotado en la tarjeta)."
+        }
+      ],
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-02T12:06:25+01:00",
+          "min": 4.0,
+          "turns": 38,
+          "tokens": 313715,
+          "cost_usd": 0.759153,
+          "verdict": "review"
         }
       ]
     },
@@ -2056,6 +2083,35 @@
           "msg": "Esquema animado visto en GitHub en develop"
         }
       ]
+    },
+    {
+      "id": "T-068",
+      "title": "El stack levantado funciona sin su base de datos",
+      "owner": "tester",
+      "status": "backlog",
+      "priority": "media",
+      "estimate_min": 10.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Al terminar T-006, el stack de compose aparecía con el catálogo marcado como sano, pero el contenedor de su base de datos no estaba, ni siquiera parado. No sé por qué ni si el catálogo sigue funcionando; puede que alguien lo quitara a mano o que el estado de sano no detecte la falta de base de datos. Se propone reproducirlo y, si el estado de sano engaña, proponer una comprobación mejor.\nCómo sabremos si funciona: sabremos por qué desapareció y, si se cae la base de datos, el catálogo dejará de aparecer como sano.\n## Técnico\nVisto el 2026-11-02 con docker compose ps -a: faltan postgres y polaris-bootstrap; polaris Up (healthy) desde hace 36 min, lakehouse-init Exited (0). El healthcheck es curl a :8182/q/health. Causa sin investigar; la ejecución de ./mk test de T-006 solo usa contenedores propios de Testcontainers.",
+      "deps": [],
+      "created": "2026-11-02T12:06:04+01:00",
+      "updated": "2026-11-02T12:06:11+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T12:06:04+01:00",
+          "by": "desarrollador",
+          "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T12:06:11+01:00",
+          "by": "consultor",
+          "msg": "descripción reescrita"
+        }
+      ]
     }
   ],
   "runners": {
@@ -2074,14 +2130,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-002",
-      "message": "tester con T-002",
+      "current": "T-006",
+      "message": "desarrollador con T-006",
       "pid": 25568,
-      "heartbeat": "2026-11-02T11:56:34+01:00",
+      "heartbeat": "2026-11-02T12:02:26+01:00",
       "enabled": true,
-      "agent": "tester",
-      "started": "2026-11-02T11:56:34+01:00",
-      "live": "live-T-002-tester-20261102-115634.jsonl"
+      "agent": "desarrollador",
+      "started": "2026-11-02T12:02:26+01:00",
+      "live": "live-T-006-desarrollador-20261102-120226.jsonl"
     }
   }
 }

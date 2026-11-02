@@ -1,6 +1,6 @@
 name: lakehouse-mcp
 
-# Polaris server and admin tool must read the same metastore. testkit/PolarisPersistenceIT uses this same config.
+# Polaris server and admin tool must read the same metastore. testkit/LakehouseStack uses this same config.
 x-polaris-persistence: &polaris-persistence
   polaris.persistence.type: relational-jdbc
   quarkus.datasource.username: polaris
