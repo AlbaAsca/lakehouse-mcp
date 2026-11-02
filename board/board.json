@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-02T17:34:55+01:00",
+  "updated": "2026-11-02T17:38:39+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -53,8 +53,8 @@
       "name": "Arquitecto",
       "role": "Diseña la solución y trocea en tareas estimadas",
       "color": "#bb9af7",
-      "status": "working",
-      "current": "T-086"
+      "status": "idle",
+      "current": null
     },
     {
       "id": "desarrollador",
@@ -69,8 +69,8 @@
       "name": "Tester",
       "role": "Verifica, escribe tests y busca fallos",
       "color": "#9ece6a",
-      "status": "idle",
-      "current": null
+      "status": "working",
+      "current": "T-013"
     },
     {
       "id": "investigador",
@@ -784,6 +784,11 @@
           "t": "2026-11-02T16:45:28+01:00",
           "by": "consultor",
           "msg": "Queda parada: el tester se cortó por el límite y, al probar el stack, su tarea sale FAILED. El arreglo está en T-072."
+        },
+        {
+          "t": "2026-11-02T17:37:20+01:00",
+          "by": "arquitecto",
+          "msg": "Recorrido mínimo: T-015 necesita esta tarjeta en Hecho y sigue bloqueada. En cuanto T-072 quede verificada, pasarla a Revisión."
         }
       ],
       "runs": [
@@ -895,6 +900,11 @@
           "t": "2026-11-02T17:02:27+01:00",
           "by": "tú",
           "msg": "✓ permiso concedido: ./mk *"
+        },
+        {
+          "t": "2026-11-02T17:35:00+01:00",
+          "by": "tester",
+          "msg": "verificando"
         }
       ],
       "runs": [
@@ -919,13 +929,13 @@
           "verdict": "blocked"
         }
       ],
-      "verify_started": "2026-11-02T16:50:55+01:00"
+      "verify_started": "2026-11-02T17:35:00+01:00"
     },
     {
       "id": "T-014",
       "title": "Consulta: comprobar qué hace de verdad DuckDB con Iceberg",
       "owner": "investigador",
-      "status": "backlog",
+      "status": "next",
       "priority": "alta",
       "estimate_min": 40.0,
       "actual_min": null,
@@ -936,7 +946,7 @@
         "T-006"
       ],
       "created": "2026-11-02T11:36:19+01:00",
-      "updated": "2026-11-02T11:36:19+01:00",
+      "updated": "2026-11-02T17:37:14+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -944,6 +954,11 @@
           "t": "2026-11-02T11:36:19+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T17:37:14+01:00",
+          "by": "arquitecto",
+          "msg": "Recorrido mínimo: ver docs/architecture.md"
         }
       ]
     },
@@ -951,7 +966,7 @@
       "id": "T-015",
       "title": "Ingesta: prueba completa de CSV sintético a tabla Iceberg",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "next",
       "priority": "alta",
       "estimate_min": 45.0,
       "actual_min": null,
@@ -963,7 +978,7 @@
         "T-013"
       ],
       "created": "2026-11-02T11:36:36+01:00",
-      "updated": "2026-11-02T11:36:36+01:00",
+      "updated": "2026-11-02T17:37:14+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -976,6 +991,11 @@
           "t": "2026-11-02T13:14:41+01:00",
           "by": "consultor",
           "msg": "De T-012: comprobar elemento a elemento que event_time llega bien a la tabla. El conector usa TimestampConverter (micros a Timestamp) porque, según el código de AvroData (rama master, no la 8.4), timestamp-micros llega a Connect como long, y day() no podría particionarlo; sin el convertidor, RecordConverter además lo leería como milisegundos. Se pierde lo inferior al milisegundo. Solo está validada la configuración, no el dato real. Revisar también si hace falta crear antes el topic de control control-iceberg."
+        },
+        {
+          "t": "2026-11-02T17:37:14+01:00",
+          "by": "arquitecto",
+          "msg": "Recorrido mínimo: ver docs/architecture.md"
         }
       ]
     },
@@ -983,7 +1003,7 @@
       "id": "T-016",
       "title": "Consulta: conexión a DuckDB y carga rápida de datos de prueba",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "next",
       "priority": "alta",
       "estimate_min": 35.0,
       "actual_min": null,
@@ -994,7 +1014,7 @@
         "T-014"
       ],
       "created": "2026-11-02T11:36:36+01:00",
-      "updated": "2026-11-02T11:36:36+01:00",
+      "updated": "2026-11-02T17:37:15+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -1002,6 +1022,11 @@
           "t": "2026-11-02T11:36:36+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T17:37:15+01:00",
+          "by": "arquitecto",
+          "msg": "Recorrido mínimo: ver docs/architecture.md"
         }
       ]
     },
@@ -1009,7 +1034,7 @@
       "id": "T-017",
       "title": "Consulta: leer esquema, particiones y snapshots del catálogo",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "next",
       "priority": "media",
       "estimate_min": 30.0,
       "actual_min": null,
@@ -1020,7 +1045,7 @@
         "T-006"
       ],
       "created": "2026-11-02T11:36:37+01:00",
-      "updated": "2026-11-02T11:36:37+01:00",
+      "updated": "2026-11-02T17:37:16+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -1028,6 +1053,11 @@
           "t": "2026-11-02T11:36:37+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T17:37:16+01:00",
+          "by": "arquitecto",
+          "msg": "Recorrido mínimo. Prioridad media: propongo subirla a alta en el panel, porque con media va detrás de todas las alta de Próximo y frena T-020"
         }
       ]
     },
@@ -1060,6 +1090,11 @@
           "t": "2026-11-02T11:41:38+01:00",
           "by": "consultor",
           "msg": "El dato real está comprimido: /data/raw/2019-Oct.csv.zip en el volumen data (1,6 GB; 5,6 GB sin comprimir). Leerlo con unzip -p o descomprimir antes de muestrear."
+        },
+        {
+          "t": "2026-11-02T17:37:22+01:00",
+          "by": "arquitecto",
+          "msg": "Ya no bloquea la primera demo, que usa la muestra sintética. Sigue haciendo falta para la demo completa y el benchmark."
         }
       ]
     },
@@ -1067,7 +1102,7 @@
       "id": "T-019",
       "title": "Consulta: validador de SQL que solo deja pasar lecturas",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "next",
       "priority": "alta",
       "estimate_min": 40.0,
       "actual_min": null,
@@ -1078,7 +1113,7 @@
         "T-016"
       ],
       "created": "2026-11-02T11:36:53+01:00",
-      "updated": "2026-11-02T11:36:53+01:00",
+      "updated": "2026-11-02T17:37:17+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -1086,6 +1121,11 @@
           "t": "2026-11-02T11:36:53+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T17:37:17+01:00",
+          "by": "arquitecto",
+          "msg": "Recorrido mínimo: ver docs/architecture.md"
         }
       ]
     },
@@ -1093,7 +1133,7 @@
       "id": "T-020",
       "title": "MCP: servidor con list_tables y describe_table",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "next",
       "priority": "alta",
       "estimate_min": 40.0,
       "actual_min": null,
@@ -1105,7 +1145,7 @@
         "T-017"
       ],
       "created": "2026-11-02T11:36:54+01:00",
-      "updated": "2026-11-02T11:36:54+01:00",
+      "updated": "2026-11-02T17:37:18+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -1113,6 +1153,11 @@
           "t": "2026-11-02T11:36:54+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T17:37:18+01:00",
+          "by": "arquitecto",
+          "msg": "Recorrido mínimo: ver docs/architecture.md"
         }
       ]
     },
@@ -1120,7 +1165,7 @@
       "id": "T-021",
       "title": "MCP: run_query y time_travel",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "next",
       "priority": "alta",
       "estimate_min": 30.0,
       "actual_min": null,
@@ -1132,7 +1177,7 @@
         "T-020"
       ],
       "created": "2026-11-02T11:37:13+01:00",
-      "updated": "2026-11-02T11:37:13+01:00",
+      "updated": "2026-11-02T17:37:18+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -1140,6 +1185,11 @@
           "t": "2026-11-02T11:37:13+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T17:37:18+01:00",
+          "by": "arquitecto",
+          "msg": "Recorrido mínimo: ver docs/architecture.md"
         }
       ]
     },
@@ -1312,11 +1362,11 @@
       "owner": "desarrollador",
       "status": "backlog",
       "priority": "media",
-      "estimate_min": 30.0,
+      "estimate_min": 15.0,
       "actual_min": null,
       "auto": true,
       "manual": null,
-      "desc": "Hasta ahora el servidor solo corre en los tests. Tiene que formar parte del stack con su imagen, y Claude Desktop tiene que poder conectarse con una configuración de ejemplo.\nCómo sabremos si funciona: un test construye la imagen, la arranca y responde en el endpoint de salud y por MCP.\n\n## Técnico\n- infra/mcp-server/Dockerfile multi-etapa (contexto raíz), -Xmx según docs/architecture.md, extensiones DuckDB precargadas, healthcheck con Actuator. Puerto publicado, sin bind mounts.\n- docs/claude-desktop.md y ejemplo de configuración. Comprobar en la documentación actual cómo Claude Desktop conecta a un servidor HTTP local (conector remoto o puente stdio); si exige instalar algo en el host, decirlo.\n- Verificación: ImageFromDockerfile en ./mk test.",
+      "desc": "El servidor ya estará en el stack por una tarjeta anterior. Queda que Claude Desktop pueda conectarse a él con una configuración de ejemplo y que, con todas las herramientas ya hechas, la imagen siga funcionando.\nCómo sabremos si funciona: hay una guía con la configuración, y un test comprueba que el servidor del stack ofrece todas las herramientas previstas hasta aquí.\n\n## Técnico\nLa imagen y el servicio en compose salen en T-093. Aquí: docs/claude-desktop.md y ejemplo de configuración. Comprobar en la documentación actual cómo Claude Desktop conecta a un servidor HTTP local (conector remoto o puente stdio); si exige instalar algo en el host, decirlo. Ampliar el test de T-093 con la lista completa de herramientas. Verificación: ./mk test. Título pendiente de ajustar en el panel.",
       "deps": [
         "T-022",
         "T-024",
@@ -1324,7 +1374,7 @@
         "T-026"
       ],
       "created": "2026-11-02T11:37:44+01:00",
-      "updated": "2026-11-02T11:37:44+01:00",
+      "updated": "2026-11-02T17:37:13+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -1332,6 +1382,16 @@
           "t": "2026-11-02T11:37:44+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T17:37:07+01:00",
+          "by": "consultor",
+          "msg": "estimación 15 min"
+        },
+        {
+          "t": "2026-11-02T17:37:13+01:00",
+          "by": "arquitecto",
+          "msg": "descripción reescrita"
         }
       ]
     },
@@ -1471,17 +1531,17 @@
       "owner": "desarrollador",
       "status": "backlog",
       "priority": "alta",
-      "estimate_min": 40.0,
+      "estimate_min": 20.0,
       "actual_min": null,
       "auto": true,
       "manual": null,
-      "desc": "El agente es el protagonista de la demo: recibe una pregunta de negocio, usa las herramientas MCP y responde. Se prueba con un modelo simulado y un servidor MCP real, para no gastar cuota en cada test.\nCómo sabremos si funciona: con un modelo simulado que pide get_metric, el agente hace la llamada real y su resultado llega al modelo y a la respuesta.\n\n## Técnico\n- agent: ChatClient de Spring AI 2.0.2 con spring-ai-starter-model-anthropic y cliente MCP. CLI: ask pregunta. Comprobar la API en la doc oficial.\n- Modelo por configuración (AGENT_MODEL), sin nombre fijo en código. System prompt en recursos: prefiere get_metric sobre SQL; no inventar cifras, citar la herramienta.\n- ChatModel simulado con guion de tool calls; servidor MCP real en el test. ./mk test, sin clave de API.",
+      "desc": "Con la primera versión ya contestando por consultas, falta lo que hace fiable al agente: que para las preguntas de negocio use las métricas definidas, en vez de improvisar su propio cálculo.\nCómo sabremos si funciona: con un modelo simulado que pide una métrica, el agente hace la llamada real y su resultado llega al modelo y a la respuesta.\n\n## Técnico\nEl cliente, la entrada ask y el tope de iteraciones están en T-094. Aquí: system prompt en recursos que prefiere get_metric sobre SQL, y test con ChatModel simulado que pide get_metric contra servidor MCP real, en ./mk test y sin clave de API. Actualizar docs/wiki/componentes de agente. Título pendiente de ajustar en el panel: ver docs/architecture.md, sección Recorrido mínimo.",
       "deps": [
         "T-033",
         "T-021"
       ],
       "created": "2026-11-02T11:38:12+01:00",
-      "updated": "2026-11-02T11:38:12+01:00",
+      "updated": "2026-11-02T17:37:10+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -1489,6 +1549,16 @@
           "t": "2026-11-02T11:38:12+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T17:37:06+01:00",
+          "by": "consultor",
+          "msg": "estimación 20 min"
+        },
+        {
+          "t": "2026-11-02T17:37:10+01:00",
+          "by": "arquitecto",
+          "msg": "descripción reescrita"
         }
       ]
     },
@@ -2178,6 +2248,11 @@
           "t": "2026-11-02T11:40:32+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T17:37:21+01:00",
+          "by": "arquitecto",
+          "msg": "Este sigue siendo el GIF completo, con self-healing. El primer GIF, solo del recorrido mínimo, va en otra tarjeta y puede grabarse mucho antes. Ver docs/demo-grabacion.md."
         }
       ]
     },
@@ -2624,6 +2699,11 @@
           "t": "2026-11-02T17:34:55+01:00",
           "by": "runner",
           "msg": "? permiso solicitado: docker * (T-090); la tarjeta espera la decisión"
+        },
+        {
+          "t": "2026-11-02T17:37:28+01:00",
+          "by": "tú",
+          "msg": "✓ permiso concedido: docker *"
         }
       ],
       "runs": [
@@ -3022,18 +3102,18 @@
       "id": "T-086",
       "title": "Reordenar el plan para tener pronto una demo de principio a fin",
       "owner": "arquitecto",
-      "status": "doing",
+      "status": "done",
       "priority": "alta",
       "estimate_min": 30.0,
-      "actual_min": null,
+      "actual_min": 5.0,
       "auto": true,
       "manual": null,
       "desc": "Quedan muchas tarjetas y lo más vistoso, el agente respondiendo, llega tarde. Se propone adelantar un recorrido mínimo: datos en Iceberg, consulta por MCP y el agente contestando una pregunta, para que el repo público enseñe algo real pronto. Cómo sabremos si funciona: docs/architecture.md describe el recorrido, las tarjetas tienen ese orden y se indica qué se puede recortar.\n\n## Técnico\nRevisar deps de las tarjetas de ingesta, MCP y agente (T-015, T-018, T-030/T-034...). Sin tocar código. Si hay que reordenar algo que board.py no permite, proponerlo en una nota. Incluye dejar lista la grabación del GIF con ese recorrido.",
       "deps": [],
       "created": "2026-11-02T17:30:58+01:00",
-      "updated": "2026-11-02T17:33:45+01:00",
+      "updated": "2026-11-02T17:38:39+01:00",
       "started_at": "2026-11-02T17:33:40+01:00",
-      "finished_at": null,
+      "finished_at": "2026-11-02T17:38:39+01:00",
       "log": [
         {
           "t": "2026-11-02T17:30:58+01:00",
@@ -3054,6 +3134,23 @@
           "t": "2026-11-02T17:33:45+01:00",
           "by": "arquitecto",
           "msg": "Empiezo a revisar el plan"
+        },
+        {
+          "t": "2026-11-02T17:38:39+01:00",
+          "by": "arquitecto",
+          "msg": "DONE: Recorrido mínimo diseñado en docs/architecture.md, tarjetas reordenadas y creadas (T-091 a T-094, T-096 a T-098), recortes propuestos y guion del GIF listo sin probar."
+        }
+      ],
+      "runs": [
+        {
+          "agent": "arquitecto",
+          "mode": "work",
+          "at": "2026-11-02T17:38:39+01:00",
+          "min": 5.0,
+          "turns": 56,
+          "tokens": 720223,
+          "cost_usd": 1.3068148,
+          "verdict": "done"
         }
       ]
     },
@@ -3147,7 +3244,7 @@
       "id": "T-090",
       "title": "Solicitud de permiso: docker *",
       "owner": "consultor",
-      "status": "human",
+      "status": "done",
       "priority": "media",
       "estimate_min": 2,
       "actual_min": null,
@@ -3156,7 +3253,7 @@
       "desc": "El agente «desarrollador» necesitaba un comando que no está en su lista de permitidos y se lo bloquearon mientras hacía T-072. No es de solo lectura ni está prohibido, así que lo tiene que validar una persona.\n\nPara qué lo quería: (no lo explicó)\n\nCómo decidir: concede si es seguro repetirlo sin supervisión dentro del proyecto; deniega si escribe fuera, publica, borra o usa la red.\n\n## Técnico\n- Comando: docker compose images connect\n- Patrón que se concedería: docker *\n- Tarjeta: T-072",
       "deps": [],
       "created": "2026-11-02T17:34:55+01:00",
-      "updated": "2026-11-02T17:34:55+01:00",
+      "updated": "2026-11-02T17:37:28+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -3164,6 +3261,11 @@
           "t": "2026-11-02T17:34:55+01:00",
           "by": "runner",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T17:37:28+01:00",
+          "by": "tú",
+          "msg": "✓ Concedido: docker *"
         }
       ],
       "kind": "permiso",
@@ -3174,6 +3276,218 @@
         "task": "T-072",
         "why": ""
       }
+    },
+    {
+      "id": "T-091",
+      "title": "Cargar la muestra sintética con un solo comando",
+      "owner": "desarrollador",
+      "status": "next",
+      "priority": "alta",
+      "estimate_min": 15.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Hoy el comando de carga solo sabe leer el mes real, que exige cuenta de Kaggle y descarga. Se propone un comando que cargue la muestra sintética que ya está en el repo: así cualquiera que clone el proyecto puede ver la demo, y la grabación no depende de la licencia de los datos reales.\nCómo sabremos si funciona: con el stack levantado, el comando envía toda la muestra sin pedir ninguna descarga y dice cuántas filas ha enviado.\n\n## Técnico\nObjetivo seed-sample en Makefile (nombre publicado en mk y mk.cmd): producer con --input testdata/synthetic-events.csv.gz, --sample-rate 1 y sin espera (speedup alto, la muestra debe entrar en menos de 2 min). El lector ya admite .gz (CsvEventReader). Comprobar que tools ve testdata: compose solo monta bind en tools. Imprimir las filas enviadas y avisar de que repetir el comando duplica filas en la tabla. Añadirlo a README y docs/wiki/04-operacion.md. Verificación: ./mk test y una ejecución real si el stack está arriba, si no marcar sin probar. Diseño: docs/architecture.md, sección Recorrido mínimo.",
+      "deps": [
+        "T-013"
+      ],
+      "created": "2026-11-02T17:36:40+01:00",
+      "updated": "2026-11-02T17:36:40+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T17:36:40+01:00",
+          "by": "arquitecto",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-092",
+      "title": "Calcular por separado la respuesta correcta de la pregunta de la demo",
+      "owner": "tester",
+      "status": "next",
+      "priority": "alta",
+      "estimate_min": 15.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Un agente puede contestar con seguridad y equivocarse, así que la demo necesita una cifra con la que comparar. Se propone calcularla directamente desde la muestra, sin usar nada de la aplicación ni de la base de datos.\nCómo sabremos si funciona: hay un fichero con el total de filas y las cinco marcas con más ingresos por compras, y volver a calcularlo da lo mismo.\n\n## Técnico\nScript evals/demo/reference.py solo con biblioteca estándar: lee testdata/synthetic-events.csv.gz y escribe evals/demo/expected.json con total de filas y top 5 de brand por suma de price donde event_type = purchase. Sin quitar duplicados (T-015 exige que lleguen todas las filas) y excluyendo brand vacío. Documentar esas dos reglas en el fichero. Test pytest de dos ejecuciones iguales y de un caso a mano con un CSV mínimo. No mirar el código de mcp-server ni agent.",
+      "deps": [
+        "T-004"
+      ],
+      "created": "2026-11-02T17:36:44+01:00",
+      "updated": "2026-11-02T17:36:44+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T17:36:44+01:00",
+          "by": "arquitecto",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-093",
+      "title": "MCP: poner el servidor dentro del stack en cuanto sepa consultar",
+      "owner": "desarrollador",
+      "status": "next",
+      "priority": "alta",
+      "estimate_min": 30.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "El servidor solo entraba en el stack al final, cuando tuviera todas las herramientas, y eso retrasaba cualquier demo real. Se propone meterlo ya con lo que sepa hacer en ese momento: las demás herramientas aparecerán solas cuando se construyan.\nCómo sabremos si funciona: al levantar el stack, el servidor queda sano y un cliente MCP puede listar sus herramientas y consultar.\n\n## Técnico\nSale de T-028 (que queda solo para Claude Desktop). infra/mcp-server/Dockerfile multi-etapa, contexto raíz, -Xmx según la tabla de memoria (1 GB), extensiones DuckDB precargadas, healthcheck con Actuator, puerto publicado, sin bind mounts. Servicio en compose.yaml. Verificación: test con ImageFromDockerfile (salud y MCP) en ./mk test. Actualizar docs/wiki/componentes y el estado en docs/wiki/README.md.",
+      "deps": [
+        "T-021"
+      ],
+      "created": "2026-11-02T17:36:48+01:00",
+      "updated": "2026-11-02T17:36:48+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T17:36:48+01:00",
+          "by": "arquitecto",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-094",
+      "title": "Agente: primera versión que contesta consultando los datos",
+      "owner": "desarrollador",
+      "status": "next",
+      "priority": "alta",
+      "estimate_min": 45.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "El agente esperaba a que estuvieran hechas todas las métricas de negocio, un rodeo largo para enseñar lo esencial. Se propone una primera versión que conteste usando la consulta validada, y añadir las métricas después. Lleva desde el principio un tope de vueltas, para que un bucle no gaste sin control.\nCómo sabremos si funciona: con un modelo simulado que pide una consulta, el agente la lanza de verdad por MCP y la cifra devuelta llega a la respuesta; un modelo que nunca acaba se corta en el tope.\n\n## Técnico\nSale de T-034, que queda para la preferencia por get_metric. agent: ChatClient de Spring AI 2.0.2 con spring-ai-starter-model-anthropic y cliente MCP (comprobar la API en la doc oficial). Entrada: ask pregunta. AGENT_MODEL por configuración, sin nombre fijo en código. System prompt en recursos: no inventar cifras y citar la herramienta usada. Tope de iteraciones de herramientas por configuración, con mensaje claro; tokens y gasto siguen en T-035. Test con ChatModel simulado con guion y servidor MCP real, sin clave de API, en ./mk test. Crear docs/wiki/componentes/agente.md o actualizarla, y el estado en docs/wiki/README.md.",
+      "deps": [
+        "T-021"
+      ],
+      "created": "2026-11-02T17:36:54+01:00",
+      "updated": "2026-11-02T17:36:54+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T17:36:54+01:00",
+          "by": "arquitecto",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-095",
+      "title": "Que los permisos no confundan la palabra «del» con el comando de borrar",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "media",
+      "estimate_min": 10.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Al crear una tarjeta, el filtro de permisos rechaza el comando si el texto contiene la palabra española «del», porque la toma por el comando de borrar de Windows. Así se pierden tarjetas y notas sin motivo: es lo que le pasó a la tarjeta que acabó siendo T-075. Se propone mirar solo el comando real y no el texto entrecomillado.\nCómo sabremos si funciona: se puede crear una tarjeta con «del» en la descripción, y un borrado de verdad se sigue rechazando.\n\n## Técnico\nboard/permissions.py, lista NEVER, regla de borrar o mover: la expresión busca rm, del, cp, mv tras cualquier espacio de toda la línea. Afecta también a rm, cp y mv dentro de texto. Ignorar los argumentos entrecomillados, sin debilitar los comandos encadenados (coordinar con T-085). Causa de T-075 deducida de la regla y el log de T-013, sin reproducir aún. Tests en ./mk test-board con ambos casos.",
+      "deps": [],
+      "created": "2026-11-02T17:36:58+01:00",
+      "updated": "2026-11-02T17:36:58+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T17:36:58+01:00",
+          "by": "arquitecto",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-096",
+      "title": "Agente: un comando para hacerle preguntas desde el stack",
+      "owner": "desarrollador",
+      "status": "next",
+      "priority": "alta",
+      "estimate_min": 25.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "El agente tiene que poder usarse sin instalar Java ni compilar a mano, igual que el resto de la demo. Se propone un comando que arranque el agente en un contenedor solo cuando haga falta, le pase la pregunta y termine.\nCómo sabremos si funciona: con el stack levantado, el comando devuelve una respuesta del modelo simulado en los tests; sin clave de API, dice claramente que falta en vez de fallar con un error raro.\n\n## Técnico\ninfra/agent/Dockerfile multi-etapa y servicio agent en compose con perfil propio (a demanda, 1 GB, red del stack, ANTHROPIC_API_KEY y AGENT_MODEL desde .env). Objetivo ask en Makefile: ./mk ask Q=pregunta. Comprobar que las comillas y los espacios pasan bien por mk y mk.cmd, también en Windows. Test con ImageFromDockerfile en ./mk test, sin gastar API. Actualizar README, docs/wiki/04-operacion.md y docs/demo-grabacion.md si cambia la sintaxis.",
+      "deps": [
+        "T-093",
+        "T-094"
+      ],
+      "created": "2026-11-02T17:37:05+01:00",
+      "updated": "2026-11-02T17:37:05+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T17:37:05+01:00",
+          "by": "arquitecto",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-097",
+      "title": "Probar el recorrido completo con el modelo real y grabar el primer GIF",
+      "owner": "consultor",
+      "status": "backlog",
+      "priority": "alta",
+      "estimate_min": 20.0,
+      "actual_min": null,
+      "auto": false,
+      "manual": "Seguir docs/demo-grabacion.md: levantar el stack, cargar la muestra, hacer las dos preguntas con el modelo real, comparar con evals/demo/expected.json y, si cuadra, grabar y dejar el GIF en docs/media/ (menos de 10 MB).",
+      "desc": "Es la primera vez que todo se juntará con el modelo de verdad, y solo se puede hacer en el PC de la responsable, con su clave. Si la respuesta cuadra, esa misma ejecución se graba para enseñarla en el repo.\nCómo sabremos si funciona: el agente da las mismas cinco marcas y cifras que el cálculo independiente, y en el GIF no aparece ninguna clave.\n\n## Técnico\nGuion, tolerancias y qué hacer si falla en docs/demo-grabacion.md. Anotar en la tarjeta tokens, coste y duración. Si no cuadra, no grabar: abrir tarjeta para el desarrollador con la salida.",
+      "deps": [
+        "T-015",
+        "T-032",
+        "T-089",
+        "T-091",
+        "T-092",
+        "T-096"
+      ],
+      "created": "2026-11-02T17:37:29+01:00",
+      "updated": "2026-11-02T17:37:29+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T17:37:29+01:00",
+          "by": "arquitecto",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-098",
+      "title": "README: enseñar el recorrido que ya funciona, con su GIF",
+      "owner": "arquitecto",
+      "status": "next",
+      "priority": "alta",
+      "estimate_min": 15.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "El README dice que el servidor y el agente están planificados, y cuando funcionen tiene que enseñarlo. Se propone añadir el GIF arriba y los tres comandos para repetirlo, avisando de que usa datos sintéticos y de lo que todavía falta.\nCómo sabremos si funciona: alguien que entra al repo ve el agente contestando sin bajar nada, y sabe cómo repetirlo y qué está aún por hacer.\n\n## Técnico\nREADME.md: GIF de docs/media/, comandos ya ejecutados en T-097 (lo no ejecutado, sin probar), tabla Qué hay y qué falta al día, y coste real anotado en T-097. Estado en docs/wiki/README.md. La versión completa en inglés sigue en T-055, salvo que se adelante (propuesta en docs/architecture.md).",
+      "deps": [
+        "T-097"
+      ],
+      "created": "2026-11-02T17:37:35+01:00",
+      "updated": "2026-11-02T17:37:35+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T17:37:35+01:00",
+          "by": "arquitecto",
+          "msg": "creada"
+        }
+      ]
     }
   ],
   "runners": {
@@ -3192,14 +3506,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-072",
-      "message": "desarrollador con T-072",
+      "current": "T-013",
+      "message": "tester con T-013",
       "pid": 6932,
-      "heartbeat": "2026-11-02T17:00:22+01:00",
+      "heartbeat": "2026-11-02T17:35:00+01:00",
       "enabled": true,
-      "agent": "desarrollador",
-      "started": "2026-11-02T17:00:22+01:00",
-      "live": "live-T-072-desarrollador-20261102-170022.jsonl"
+      "agent": "tester",
+      "started": "2026-11-02T17:35:00+01:00",
+      "live": "live-T-013-tester-20261102-173500.jsonl"
     }
   }
 }

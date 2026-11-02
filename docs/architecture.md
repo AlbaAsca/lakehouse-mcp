@@ -36,6 +36,66 @@ agente Spring AI / Claude Desktop -> MCP -> mcp-server -> DuckDB (SQL) + Iceberg
 
 Los endpoints HTTP propios siguen HATEOAS, en plural y kebab-case.
 
+## Recorrido mínimo: la primera demo
+
+**Estado: planificado, nada de esto funciona aún de punta a punta** (T-086). Objetivo: que el repo público enseñe pronto al agente contestando una pregunta con datos de Iceberg.
+
+```
+./mk up -> ./mk seed-sample -> Kafka -> Connect -> tabla Iceberg
+./mk ask Q="..." -> agente -> MCP (run_query validado) -> DuckDB -> tabla Iceberg
+```
+
+Pregunta de la demo: las cinco marcas con más ingresos por compras. Se contrasta con un cálculo independiente sobre el CSV (T-092).
+
+| Decisión | Descartado y por qué |
+|----------|----------------------|
+| **Datos sintéticos en la primera demo.** Quien clone el repo la repite sin Kaggle, gasta menos memoria y evita dudas con la licencia. El GIF lo dice claramente. | Mes real: añade T-018 y una cuenta de Kaggle, y solo cambia los nombres de las marcas. Sigue en la demo completa. |
+| **Ingesta real por Kafka y Connect**, aunque sea lo más incierto. | `SyntheticLoader` directo a Iceberg: más rápido, pero enseñaría un camino que no es el del diagrama. Sí se usa en los tests de consulta. |
+| **Primera versión del agente solo con `run_query`** (T-094). | Esperar a `get_metric`: 4 tarjetas más de capa semántica (T-027, T-029, T-031, T-033). Decisión 8 aplazada, no anulada: T-034 la añade después. |
+| **Servidor MCP en el compose en cuanto consulta** (T-093). | Esperar a T-028 tal como estaba: arrastraba T-022, T-023, T-024, T-025 y T-026, ninguna necesaria aquí. |
+| **Validador SQL dentro del recorrido** (T-019). | Quitarlo para ir más rápido: un modelo con SQL libre en un repo público contradice el mensaje del proyecto. |
+| **Tope de iteraciones desde la primera versión** (T-094); tokens y gasto siguen en T-035. | Dejarlo todo para T-035: la primera ejecución real gastaría sin freno. Además, T-032 pide una clave con límite de gasto. |
+
+La pregunta «¿por qué cayeron las compras?» y el self-healing quedan fuera: siguen siendo el objetivo de la demo completa (T-036, T-042, T-046, T-059).
+
+### Orden
+
+Las ramas A y B no se esperan: los tests de consulta cargan la muestra sin Kafka.
+
+| Tramo | Tarjetas | Dueño |
+|-------|----------|-------|
+| A. Ingesta | T-090 (decidir permiso) → T-072 → T-012; T-012 + T-013 → T-015; T-072 → T-089 en el stack real | responsable y desarrollador |
+| B. Consulta y MCP | T-014 → T-016 → T-019; T-017; T-016 + T-017 → T-020; T-019 + T-020 → T-021 | investigador y desarrollador |
+| C. Agente | T-021 → T-093 y T-094 → T-096 | desarrollador |
+| D. Comando y referencia | T-091 y T-092 (independientes) | desarrollador y tester |
+| E. Demo | T-032 (clave) → T-097 (probar y grabar, [guion](demo-grabacion.md)) → T-098 (README) | responsable y arquitecto |
+
+Estimación: ~390 min de agente en las tarjetas automáticas (T-014, T-015, T-016, T-017, T-019, T-020, T-021, T-091 a T-094, T-096) y ~25 min de la responsable, sin contar T-089 ni lo que quede de T-072, T-012 y T-013. Los tiempos reales hasta ahora van muy por debajo de lo estimado, pero T-012 terminó en 14 min y su conector no funcionaba: la integración es donde puede desviarse.
+
+### Cómo aplica el panel este orden
+
+El runner toma Revisión → Próximo → Backlog y, dentro de cada estado, prioridad e id. El recorrido está en Próximo, así que va antes que el resto de Backlog. `board.py` no cambia prioridad, título ni dependencias de una tarjeta ya creada, pero el panel sí. Propuestas para el consultor:
+
+1. **T-017 a prioridad alta.** Con media, va detrás de todas las alta de Próximo y retiene T-020.
+2. **Títulos:** T-034 → «Agente: usar las métricas para preguntas de negocio»; T-028 → «MCP: configuración para Claude Desktop».
+3. **Decidir el orden frente a las tarjetas del runner.** Por id, T-015, T-016 y T-019 se adelantan a T-073, T-077, T-080, T-082, T-084 y T-085. Si T-073 (código sin subir) o T-085 (comandos destructivos) deben ir antes, conviene lanzarlas primero.
+4. **Opcional, T-055 con dependencia de T-097 en lugar de T-046**, para tener el README en inglés con la primera demo.
+
+### Qué se puede recortar si falta cupo
+
+Propuesta en orden; decide la responsable. Quitar una tarjeta exige retirarla también de las dependencias de T-046 y T-064 en el panel.
+
+| Orden | Recorte | Qué se pierde |
+|-------|---------|---------------|
+| 1 | Benchmark: T-049, T-052 (decisión en T-087). T-044 sigue si se mantiene la compactación con Trino | Una tabla del README y un punto del brief |
+| 2 | Claude Desktop: T-028, T-030 | Un segundo cliente; el agente ya demuestra MCP |
+| 3 | Pages: T-058, T-062 | Repite lo que ya está en el README y la wiki |
+| 4 | Mantenimiento: T-047, y T-044 si ya no hay benchmark | Compactación y expiración. Conviene conservar T-045 (añadir una columna), que es barata y vistosa |
+| 5 | Chaos: T-039 y T-041 | Se queda en dos fallos de cuatro (duplicados y consumidor caído) |
+| 6 | Métricas de herramientas: T-024 | Observabilidad, invisible en la demo |
+
+**No recortar:** el validador (T-019), la aprobación humana (T-026) ni una parte de las evals con referencia independiente (T-048, T-056). Son lo que distingue este proyecto de otra demo de un agente con SQL.
+
 ## Pruebas: qué puede verificar cada quién
 
 Los agentes solo ejecutan `./mk test|test-board|evals`, `python`, git de lectura y `docker compose ps|logs`. `./mvnw` no sirve en el host porque no hay JDK.

@@ -11,6 +11,12 @@
       "why": "concedido por el responsable desde el panel",
       "by": "responsable",
       "at": "2026-11-02T17:02:27+01:00"
+    },
+    {
+      "pattern": "docker *",
+      "why": "concedido por el responsable desde el panel",
+      "by": "responsable",
+      "at": "2026-11-02T17:37:28+01:00"
     }
   ],
   "denied": []

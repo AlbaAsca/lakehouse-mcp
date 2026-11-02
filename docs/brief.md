@@ -43,7 +43,7 @@ Kaggle `mkechinov/ecommerce-behavior-data-from-multi-category-store` (REES46).
 - GitHub Pages con arquitectura, demo y decisiones de diseño.
 
 ## Forma de trabajar
-- Fases: infra → productor → ingesta → consulta → MCP → semántica → agente → chaos/self-healing → contracts → mantenimiento Iceberg → evals → benchmark → seguridad → README/Pages.
+- Fases: infra → productor → ingesta → consulta → MCP → semántica → agente → chaos/self-healing → contracts → mantenimiento Iceberg → evals → benchmark → seguridad → README/Pages. Excepción: se adelanta un recorrido mínimo de principio a fin (`docs/architecture.md`).
 - El tester construye las respuestas de referencia de las evals sin mirar la implementación.
 - Commits en inglés con Conventional Commits y el id de tarea.
 - Si una versión o característica no existe o no funciona como se espera, a «Te necesita» con una alternativa propuesta.
