@@ -1,8 +1,8 @@
 """T-002: compose.yaml must keep the persistence that testkit/PolarisPersistenceIT proves.
 
-The integration test builds its containers from its own copy of the configuration, so it stays green
-if compose.yaml loses the persistence. These checks tie both together. Plain text on purpose: the
-tools image has no YAML parser.
+The integration test runs on LakehouseStack, which builds its containers from its own copy of the
+configuration, so it stays green if compose.yaml loses the persistence. These checks tie both
+together. Plain text on purpose: the tools image has no YAML parser.
 """
 import re
 from pathlib import Path
@@ -11,7 +11,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parent.parent
 COMPOSE = (ROOT / "compose.yaml").read_text(encoding="utf-8")
-IT = (ROOT / "testkit/src/test/java/io/github/albaasca/lakehouse/testkit/PolarisPersistenceIT.java").read_text(
+IT = (ROOT / "testkit/src/main/java/io/github/albaasca/lakehouse/testkit/LakehouseStack.java").read_text(
     encoding="utf-8"
 )
 EXPECTED = {

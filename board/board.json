@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-02T12:09:45+01:00",
+  "updated": "2026-11-02T12:13:00+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -339,10 +339,10 @@
       "id": "T-006",
       "title": "Infra: kit de pruebas que levanta el lakehouse en contenedores",
       "owner": "desarrollador",
-      "status": "next",
+      "status": "review",
       "priority": "alta",
       "estimate_min": 40.0,
-      "actual_min": 4.0,
+      "actual_min": 7.2,
       "auto": true,
       "manual": null,
       "desc": "Casi todo lo que viene se tiene que probar contra un lakehouse de verdad, y los agentes no pueden levantar el stack. Se propone un kit común que arranque SeaweedFS, Postgres y Polaris desde las mismas imágenes de infra/ y los comparta entre tests, para no repetirlo en cada módulo ni disparar los tiempos.\nCómo sabremos si funciona: un test escribe y lee una fila en Iceberg desde DuckDB a través de Polaris, igual que ./mk smoke, sin stack levantado.\n\n## Técnico\n- testkit: LakehouseStack (singleton; ImageFromDockerfile desde infra/seaweedfs, infra/postgres, infra/polaris; bootstrap + init.sh). Ampliable después con Kafka, Registry y Connect.\n- Dentro de tools se accede por TESTCONTAINERS_HOST_OVERRIDE=host.docker.internal con puertos mapeados.\n- Ayudante de ATTACH con ACCESS_DELEGATION_MODE none y secreto S3 propio, apuntando al puerto mapeado.\n- pom raíz: BOM de Testcontainers, surefire para unitarios, failsafe para *IT. Presupuesto: ./mk test completo en ~10 min (ver docs/architecture.md); si se pasa, anotarlo en la tarjeta.\n- Verificación: ./mk test con el stack apagado.",
@@ -350,9 +350,9 @@
         "T-002"
       ],
       "created": "2026-11-02T11:35:33+01:00",
-      "updated": "2026-11-02T12:09:45+01:00",
-      "started_at": "2026-11-02T12:02:26+01:00",
-      "finished_at": "2026-11-02T12:06:25+01:00",
+      "updated": "2026-11-02T12:13:00+01:00",
+      "started_at": "2026-11-02T12:09:50+01:00",
+      "finished_at": "2026-11-02T12:13:00+01:00",
       "log": [
         {
           "t": "2026-11-02T11:35:33+01:00",
@@ -383,6 +383,21 @@
           "t": "2026-11-02T12:09:45+01:00",
           "by": "tester",
           "msg": "FAIL: `./mk test-board` da 13 fallos porque T-006 movió la configuración que lee `tests/test_polaris_persistence_config.py` (reproducir con `./mk test-board`; arreglo en T-069), y aún falta repetir `./mk test` con el stack apagado."
+        },
+        {
+          "t": "2026-11-02T12:09:50+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-02T12:12:46+01:00",
+          "by": "consultor",
+          "msg": "Arreglada la regresión que marcó el tester: tests/test_polaris_persistence_config.py ahora lee LakehouseStack.java (mismo cambio que propone T-069). ./mk test-board: 88 passed. ./mk test: verde. SIGUE SIN VERIFICAR con el stack apagado: el stack de compose sigue levantado (visto con docker compose ps) y no lo he parado porque es compartido y T-068 necesita investigarlo en su estado actual, sin Postgres. Lo que sí hay: testkit/src no usa localhost ni puertos fijos del host, solo puertos mapeados por Testcontainers. Es indicio, no la prueba que pide la tarjeta."
+        },
+        {
+          "t": "2026-11-02T12:13:00+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: Regresión de `test-board` arreglada y ambas suites en verde, pero falta repetir `./mk test` con el stack apagado, que no he parado para no borrar el estado que necesita T-068."
         }
       ],
       "runs": [
@@ -405,6 +420,16 @@
           "tokens": 380701,
           "cost_usd": 0.6315337999999999,
           "verdict": "fail"
+        },
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-02T12:13:00+01:00",
+          "min": 3.2,
+          "turns": 21,
+          "tokens": 204932,
+          "cost_usd": 0.3999464,
+          "verdict": "review"
         }
       ],
       "verify_started": "2026-11-02T12:06:30+01:00"
@@ -2155,6 +2180,11 @@
           "t": "2026-11-02T12:09:31+01:00",
           "by": "tester",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T12:12:48+01:00",
+          "by": "consultor",
+          "msg": "El arreglo ya está hecho dentro de T-006 (la constante IT apunta a LakehouseStack.java y el docstring está actualizado; no se ha tocado ningún caso de test_each_drift_is_detected). ./mk test-board: 88 passed. Esta tarjeta sigue abierta: al cogerla solo hay que comprobarlo y cerrarla."
         }
       ]
     }
@@ -2176,13 +2206,13 @@
     "measure": {
       "state": "working",
       "current": "T-006",
-      "message": "tester con T-006",
+      "message": "desarrollador con T-006",
       "pid": 25568,
-      "heartbeat": "2026-11-02T12:06:31+01:00",
+      "heartbeat": "2026-11-02T12:09:50+01:00",
       "enabled": true,
-      "agent": "tester",
-      "started": "2026-11-02T12:06:31+01:00",
-      "live": "live-T-006-tester-20261102-120631.jsonl"
+      "agent": "desarrollador",
+      "started": "2026-11-02T12:09:50+01:00",
+      "live": "live-T-006-desarrollador-20261102-120950.jsonl"
     }
   }
 }
