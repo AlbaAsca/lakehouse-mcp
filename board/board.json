@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-02T17:38:39+01:00",
+  "updated": "2026-11-02T17:42:29+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -61,24 +61,24 @@
       "name": "Desarrollador",
       "role": "Implementa las tareas",
       "color": "#7aa2f7",
-      "status": "working",
-      "current": "T-009"
+      "status": "idle",
+      "current": null
     },
     {
       "id": "tester",
       "name": "Tester",
       "role": "Verifica, escribe tests y busca fallos",
       "color": "#9ece6a",
-      "status": "working",
-      "current": "T-013"
+      "status": "idle",
+      "current": null
     },
     {
       "id": "investigador",
       "name": "Investigador",
       "role": "Busca alternativas, librerías y mejoras",
       "color": "#7dcfff",
-      "status": "idle",
-      "current": null
+      "status": "working",
+      "current": "T-014"
     },
     {
       "id": "experto",
@@ -583,10 +583,10 @@
       "id": "T-009",
       "title": "Infra: GitHub Actions con build y tests",
       "owner": "desarrollador",
-      "status": "doing",
+      "status": "review",
       "priority": "media",
       "estimate_min": 20.0,
-      "actual_min": null,
+      "actual_min": 6.8,
       "auto": true,
       "manual": null,
       "desc": "El proyecto pide CI sin Kaggle y hoy no hay ninguna. Se propone un workflow que compile y pase toda la suite en cada push y PR, usando solo la muestra sintética. Las evals van aparte, en su propia tarjeta.\nCómo sabremos si funciona: la primera ejecución tras subir la rama termina en verde, sin secretos ni acceso a Kaggle.\n\n## Técnico\n- .github/workflows/ci.yml: temurin 25, caché de ~/.m2, mvn -B verify, pytest de tests/. Sin imagen tools: el runner ya tiene Docker.\n- Crear .env a partir de .env.example si algún test lo necesita.\n- Runner hospedado de GitHub (repo público, sin coste); caché de capas para la imagen de Connect si el tiempo lo pide.\n- El consultor sube la rama y comprueba la ejecución al integrar; si tarda más de 20 min, anotar los pasos lentos.",
@@ -594,9 +594,9 @@
         "T-006"
       ],
       "created": "2026-11-02T11:35:56+01:00",
-      "updated": "2026-11-02T17:33:19+01:00",
+      "updated": "2026-11-02T17:40:06+01:00",
       "started_at": "2026-11-02T17:33:19+01:00",
-      "finished_at": null,
+      "finished_at": "2026-11-02T17:40:06+01:00",
       "log": [
         {
           "t": "2026-11-02T11:35:56+01:00",
@@ -617,6 +617,16 @@
           "t": "2026-11-02T17:33:19+01:00",
           "by": "desarrollador",
           "msg": "Empieza en worktree aparte, en paralelo al runner"
+        },
+        {
+          "t": "2026-11-02T17:40:06+01:00",
+          "by": "desarrollador",
+          "msg": "Workflow integrado en develop (a750bd4); falta ver la primera ejecución en GitHub: run 41483634938"
+        },
+        {
+          "t": "2026-11-02T17:40:06+01:00",
+          "by": "consultor",
+          "msg": "Importante: el tester debe mirar el resultado real de la ejecución en GitHub, no solo el YAML. La imagen del conector no se cachea: tarjeta aparte si CI resulta lenta."
         }
       ]
     },
@@ -819,7 +829,7 @@
       "id": "T-013",
       "title": "Productor: enviar a Kafka y comando seed",
       "owner": "desarrollador",
-      "status": "review",
+      "status": "done",
       "priority": "alta",
       "estimate_min": 35.0,
       "actual_min": 13.7,
@@ -832,7 +842,7 @@
         "T-076"
       ],
       "created": "2026-11-02T11:36:18+01:00",
-      "updated": "2026-11-02T17:00:16+01:00",
+      "updated": "2026-11-02T17:42:29+01:00",
       "started_at": "2026-11-02T16:45:54+01:00",
       "finished_at": "2026-11-02T16:50:50+01:00",
       "log": [
@@ -905,6 +915,21 @@
           "t": "2026-11-02T17:35:00+01:00",
           "by": "tester",
           "msg": "verificando"
+        },
+        {
+          "t": "2026-11-02T17:42:29+01:00",
+          "by": "tester",
+          "msg": "DONE: El envío a Kafka y el comando seed pasan `ProducerIT` (8/8) comparando con el CSV y las suites están en verde; `./mk seed` con el CSV real queda para T-018."
+        },
+        {
+          "t": "2026-11-02T17:42:29+01:00",
+          "by": "tester",
+          "msg": "⚠ 1 comandos denegados: git log --all --format=%h\\ %s --grep=T-013"
+        },
+        {
+          "t": "2026-11-02T17:42:29+01:00",
+          "by": "runner",
+          "msg": "✓ permiso concedido automáticamente: git log --all* (solo lectura dentro del proyecto); se reintenta"
         }
       ],
       "runs": [
@@ -927,6 +952,16 @@
           "tokens": 494508,
           "cost_usd": 1.0080492,
           "verdict": "blocked"
+        },
+        {
+          "agent": "tester",
+          "mode": "verify",
+          "at": "2026-11-02T17:42:29+01:00",
+          "min": 7.5,
+          "turns": 34,
+          "tokens": 186356,
+          "cost_usd": 0.4958656,
+          "verdict": "done"
         }
       ],
       "verify_started": "2026-11-02T17:35:00+01:00"
@@ -935,7 +970,7 @@
       "id": "T-014",
       "title": "Consulta: comprobar qué hace de verdad DuckDB con Iceberg",
       "owner": "investigador",
-      "status": "next",
+      "status": "doing",
       "priority": "alta",
       "estimate_min": 40.0,
       "actual_min": null,
@@ -946,8 +981,8 @@
         "T-006"
       ],
       "created": "2026-11-02T11:36:19+01:00",
-      "updated": "2026-11-02T17:37:14+01:00",
-      "started_at": null,
+      "updated": "2026-11-02T17:38:48+01:00",
+      "started_at": "2026-11-02T17:38:42+01:00",
       "finished_at": null,
       "log": [
         {
@@ -959,6 +994,16 @@
           "t": "2026-11-02T17:37:14+01:00",
           "by": "arquitecto",
           "msg": "Recorrido mínimo: ver docs/architecture.md"
+        },
+        {
+          "t": "2026-11-02T17:38:42+01:00",
+          "by": "runner",
+          "msg": "empieza investigador"
+        },
+        {
+          "t": "2026-11-02T17:38:48+01:00",
+          "by": "investigador",
+          "msg": "Empiezo: experimento DuckDB+Iceberg"
         }
       ]
     },
@@ -3037,6 +3082,11 @@
           "t": "2026-11-02T17:31:31+01:00",
           "by": "tú",
           "msg": "me parece bien"
+        },
+        {
+          "t": "2026-11-02T17:40:08+01:00",
+          "by": "tú",
+          "msg": "si, pon tarea"
         }
       ]
     },
@@ -3488,19 +3538,48 @@
           "msg": "creada"
         }
       ]
+    },
+    {
+      "id": "T-099",
+      "title": "Llevar a agent-board los arreglos del runner",
+      "owner": "consultor",
+      "status": "backlog",
+      "priority": "media",
+      "estimate_min": 20.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Varios fallos que hemos arreglado aquí están en el runner que heredan todos los proyectos, así que hay que subirlos a la plantilla agent-board. Las lecciones ya están allí; falta el código. Cómo sabremos si funciona: agent-board tiene los mismos arreglos y sus tests en verde.",
+      "deps": [
+        "T-073",
+        "T-082",
+        "T-084",
+        "T-085"
+      ],
+      "created": "2026-11-02T17:41:28+01:00",
+      "updated": "2026-11-02T17:41:28+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T17:41:28+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ]
     }
   ],
   "runners": {
     "think": {
       "state": "working",
-      "current": "T-086",
-      "message": "arquitecto con T-086",
+      "current": "T-014",
+      "message": "investigador con T-014",
       "pid": 21744,
-      "heartbeat": "2026-11-02T17:33:40+01:00",
+      "heartbeat": "2026-11-02T17:38:42+01:00",
       "enabled": true,
-      "agent": "arquitecto",
-      "started": "2026-11-02T17:33:40+01:00",
-      "live": "live-T-086-arquitecto-20261102-173340.jsonl",
+      "agent": "investigador",
+      "started": "2026-11-02T17:38:42+01:00",
+      "live": "live-T-014-investigador-20261102-173842.jsonl",
       "contrib_at": "2026-11-02T11:46:22+01:00",
       "contrib_agent": "investigador"
     },
