@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-02T11:29:13+01:00",
+  "updated": "2026-11-02T11:41:38+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -94,7 +94,7 @@
       "id": "T-001",
       "title": "Fase 0: dejar el entorno levantado",
       "owner": "consultor",
-      "status": "backlog",
+      "status": "done",
       "priority": "alta",
       "estimate_min": 45.0,
       "actual_min": null,
@@ -103,12 +103,1714 @@
       "desc": "Repositorio, imágenes Docker, dependencias Maven y datos listos para que los agentes trabajen sin instalar nada. Cómo sabremos si funciona: ./mk up y ./mk smoke terminan bien.",
       "deps": [],
       "created": "2026-11-02T11:29:13+01:00",
-      "updated": "2026-11-02T11:29:13+01:00",
+      "updated": "2026-11-02T11:41:38+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
         {
           "t": "2026-11-02T11:29:13+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T11:41:38+01:00",
+          "by": "consultor",
+          "msg": "up y smoke pasan; 2019-Oct descargado"
+        }
+      ]
+    },
+    {
+      "id": "T-002",
+      "title": "Infra: que el catálogo sobreviva a un reinicio de Polaris",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "alta",
+      "estimate_min": 45.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Polaris guarda el catálogo en memoria: tras reiniciarlo, el catálogo lakehouse da 404 aunque los datos sigan en S3. Se propone guardarlo en Postgres, que es la opción documentada para Polaris 1.8.0, y crear un kit de pruebas donde demostrarlo.\nCómo sabremos si funciona: un test crea catálogo y tabla, para y arranca Polaris, y el catálogo y la tabla siguen ahí.\n\n## Técnico\n- compose.yaml: servicio postgres con volumen e imagen propia infra/postgres (COPY de init SQL con CREATE SCHEMA polaris_schema a /docker-entrypoint-initdb.d; sin bind mounts). Base ops también aquí (decisión 10 de docs/architecture.md).\n- Servicio de un uso polaris-bootstrap: imagen apache/polaris-admin-tool:1.8.0, comando bootstrap -r REALM -c REALM,CLIENT_ID,CLIENT_SECRET. polaris depende de él con service_completed_successfully.\n- Polaris: polaris.persistence.type=relational-jdbc, quarkus.datasource.username/password, quarkus.datasource.jdbc.url. Quitar POLARIS_BOOTSTRAP_CREDENTIALS. La doc 1.8.0 mezcla nombres de propiedad: el test decide.\n- Comprobar que un segundo bootstrap sale con código 0 (la doc dice idempotente, no da el código). Si no, envolverlo.\n- POSTGRES_PASSWORD con valor por defecto en compose para no romper el .env existente; añadir a .env.example.\n- Módulo Maven nuevo testkit con PolarisPersistenceIT (Testcontainers, misma config que compose), failsafe.\n- Verificación: ./mk test. La comprobación con compose real va en otra tarjeta manual.\n- Fuentes: https://polaris.apache.org/releases/1.8.0/metastores/relational-jdbc/ y /releases/1.8.0/admin-tool/",
+      "deps": [],
+      "created": "2026-11-02T11:35:10+01:00",
+      "updated": "2026-11-02T11:35:10+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T11:35:10+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-003",
+      "title": "Infra: comando para perfilar el CSV real sin copiar datos",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "media",
+      "estimate_min": 15.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Para que la muestra sintética y las reglas de calidad se parezcan a los datos reales hay que saber cómo son, pero no podemos subir ni una fila por la licencia. Se propone un comando que solo saque agregados: nulos, rangos, duplicados, volumen por día y si el fichero viene ordenado.\nCómo sabremos si funciona: sobre un CSV pequeño de prueba, el informe da los recuentos correctos y no contiene ningún valor individual de user_id ni user_session.\n\n## Técnico\n- Target make profile-data: DuckDB CLI con infra/profile-data.sql sobre /data/raw/$(MONTH).csv; escribe docs/data-profile.md.\n- Sin filas ni valores de identificadores; solo agregados por columna y top de event_type.\n- Test en tests/ con CSV inventado en tmp_path; se verifica con ./mk test-board.",
+      "deps": [],
+      "created": "2026-11-02T11:35:11+01:00",
+      "updated": "2026-11-02T11:35:11+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T11:35:11+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-004",
+      "title": "Infra: muestra sintética para CI, sin datos reales",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "alta",
+      "estimate_min": 35.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "CI y casi todos los tests necesitan datos, y la licencia del dataset impide usar un extracto real. Se propone un generador con semilla fija que invente eventos con el mismo esquema, incluya los tipos de suciedad del origen y una caída de compras plantada para que el agente tenga algo que explicar.\nCómo sabremos si funciona: dos ejecuciones dan un fichero idéntico byte a byte, cada caso sucio aparece, y ningún valor proviene del dataset real.\n\n## Técnico\n- infra/synthetic/generate.py (solo biblioteca estándar; salida UTF-8) --seed --rows --out. Fichero versionado testdata/synthetic-events.csv.gz, ~50k filas, 14 días (gzip con mtime=0 para reproducibilidad; .gitignore no excluye .csv.gz).\n- Esquema: event_time, event_type, product_id, category_id, category_code, brand, price, user_id, user_session.\n- Sesiones coherentes view->cart->purchase. Casos sucios: category_code y brand nulos, user_session nulo, price 0 o negativo, duplicados exactos.\n- Día con caída plantada de compras (documentar qué día y por qué marca o categoría en infra/synthetic/README.md).\n- Valores claramente inventados (marcas ficticias, ids en rango propio), nunca derivados del CSV real.\n- Tests en tests/ (./mk test-board): determinismo, esquema, presencia de cada caso, guarda contra CSV sin comprimir o de más de 5 MB en el repo.",
+      "deps": [],
+      "created": "2026-11-02T11:35:11+01:00",
+      "updated": "2026-11-02T11:35:11+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T11:35:11+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-005",
+      "title": "Infra: comprobar la persistencia del catálogo en el stack real",
+      "owner": "consultor",
+      "status": "backlog",
+      "priority": "alta",
+      "estimate_min": 10.0,
+      "actual_min": null,
+      "auto": false,
+      "manual": "Ejecutar ./mk up, luego docker compose restart polaris, luego ./mk smoke, repetir ./mk up, y anotar el resultado.",
+      "desc": "El test de la tarjeta anterior usa contenedores propios; falta ver el compose de verdad, y los agentes no pueden levantarlo. El responsable lo comprueba con tres comandos, incluido un segundo arranque por si el bootstrap repetido falla.\nCómo sabremos si funciona: tras reiniciar Polaris, ./mk smoke pasa y el catálogo lakehouse no da 404; el segundo ./mk up termina sin error.\n\n## Técnico\nSi el volumen de Postgres es nuevo no hay nada que migrar: el catálogo se crea con lakehouse-init (idempotente). Tablas ya registradas en la versión en memoria se pierden; no hay datos que conservar en esta fase.",
+      "deps": [
+        "T-002"
+      ],
+      "created": "2026-11-02T11:35:32+01:00",
+      "updated": "2026-11-02T11:35:32+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T11:35:32+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-006",
+      "title": "Infra: kit de pruebas que levanta el lakehouse en contenedores",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "alta",
+      "estimate_min": 40.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Casi todo lo que viene se tiene que probar contra un lakehouse de verdad, y los agentes no pueden levantar el stack. Se propone un kit común que arranque SeaweedFS, Postgres y Polaris desde las mismas imágenes de infra/ y los comparta entre tests, para no repetirlo en cada módulo ni disparar los tiempos.\nCómo sabremos si funciona: un test escribe y lee una fila en Iceberg desde DuckDB a través de Polaris, igual que ./mk smoke, sin stack levantado.\n\n## Técnico\n- testkit: LakehouseStack (singleton; ImageFromDockerfile desde infra/seaweedfs, infra/postgres, infra/polaris; bootstrap + init.sh). Ampliable después con Kafka, Registry y Connect.\n- Dentro de tools se accede por TESTCONTAINERS_HOST_OVERRIDE=host.docker.internal con puertos mapeados.\n- Ayudante de ATTACH con ACCESS_DELEGATION_MODE none y secreto S3 propio, apuntando al puerto mapeado.\n- pom raíz: BOM de Testcontainers, surefire para unitarios, failsafe para *IT. Presupuesto: ./mk test completo en ~10 min (ver docs/architecture.md); si se pasa, anotarlo en la tarjeta.\n- Verificación: ./mk test con el stack apagado.",
+      "deps": [
+        "T-002"
+      ],
+      "created": "2026-11-02T11:35:33+01:00",
+      "updated": "2026-11-02T11:35:33+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T11:35:33+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-007",
+      "title": "Infra: perfilar el CSV real y dejar el informe",
+      "owner": "consultor",
+      "status": "backlog",
+      "priority": "media",
+      "estimate_min": 5.0,
+      "actual_min": null,
+      "auto": false,
+      "manual": "Ejecutar ./mk profile-data y revisar docs/data-profile.md antes de versionarlo: solo agregados, ninguna fila ni identificador.",
+      "desc": "El CSV está en el volumen data y los agentes no tienen permiso para ejecutar comandos dentro de tools fuera de los tests. El responsable lanza el comando y el informe queda en docs/ para que los agentes lo lean.\nCómo sabremos si funciona: existe docs/data-profile.md con nulos, rangos, duplicados, orden y volumen por día, sin valores individuales.\n\n## Técnico\nFichero 2019-Oct, ~42M filas según la ficha de Kaggle (no verificado): DuckDB tardará unos minutos.",
+      "deps": [
+        "T-003"
+      ],
+      "created": "2026-11-02T11:35:33+01:00",
+      "updated": "2026-11-02T11:35:33+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T11:35:33+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-008",
+      "title": "Productor: esquema Avro y lectura tolerante del CSV",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "alta",
+      "estimate_min": 30.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "El productor tiene que leer el CSV sin perder las filas sucias, porque son justo los casos de calidad que queremos conservar. Se propone definir el esquema Avro y un lector que acepte nulos y formatos raros sin descartar nada.\nCómo sabremos si funciona: cada fila de la muestra sintética se convierte en un evento con los mismos valores, incluidas las sucias.\n\n## Técnico\n- producer/src/main/avro/event.avsc, nullable en category_code, brand, user_session; event_time como timestamp-micros.\n- Formato de fecha del origen: 2019-10-01 00:00:00 UTC (confirmar con docs/data-profile.md si ya existe).\n- Soporte de .csv y .csv.gz en streaming, sin cargar en memoria (fichero real de varios GB).\n- Las filas ilegibles se cuentan y se registran; no paran el proceso.\n- Tests unitarios elemento a elemento contra testdata/synthetic-events.csv.gz. Verificación: ./mk test.",
+      "deps": [
+        "T-004"
+      ],
+      "created": "2026-11-02T11:35:34+01:00",
+      "updated": "2026-11-02T11:35:34+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T11:35:34+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-009",
+      "title": "Infra: GitHub Actions con build y tests",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "media",
+      "estimate_min": 20.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "El proyecto pide CI sin Kaggle y hoy no hay ninguna. Se propone un workflow que compile y pase toda la suite en cada push y PR, usando solo la muestra sintética. Las evals van aparte, en su propia tarjeta.\nCómo sabremos si funciona: la primera ejecución tras subir la rama termina en verde, sin secretos ni acceso a Kaggle.\n\n## Técnico\n- .github/workflows/ci.yml: temurin 25, caché de ~/.m2, mvn -B verify, pytest de tests/. Sin imagen tools: el runner ya tiene Docker.\n- Crear .env a partir de .env.example si algún test lo necesita.\n- Runner hospedado de GitHub (repo público, sin coste); caché de capas para la imagen de Connect si el tiempo lo pide.\n- El consultor sube la rama y comprueba la ejecución al integrar; si tarda más de 20 min, anotar los pasos lentos.",
+      "deps": [
+        "T-006"
+      ],
+      "created": "2026-11-02T11:35:56+01:00",
+      "updated": "2026-11-02T11:35:56+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T11:35:56+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-010",
+      "title": "Infra: acercar la muestra sintética al perfil real",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "media",
+      "estimate_min": 15.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "La primera versión de la muestra se basa en lo que dice el brief. Cuando esté el informe del CSV real, conviene ajustar proporciones y añadir suciedad que no hubiéramos previsto, para que CI no pruebe un mundo más limpio que el real.\nCómo sabremos si funciona: las proporciones de la muestra (nulos, tipos de evento) quedan dentro de un margen del informe y cada tipo de suciedad del informe tiene su caso.\n\n## Técnico\nLeer docs/data-profile.md; ajustar generate.py y regenerar el fichero. Test comparando proporciones con margen de ±5 puntos, valores fijados en el test. Se usan solo agregados, sin valores individuales. Verificación: ./mk test-board.",
+      "deps": [
+        "T-004",
+        "T-007"
+      ],
+      "created": "2026-11-02T11:35:56+01:00",
+      "updated": "2026-11-02T11:35:56+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T11:35:56+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-011",
+      "title": "Productor: muestreo, orden temporal, aceleración y hora actual",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "alta",
+      "estimate_min": 40.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "La demo debe reproducir el mes como si ocurriera ahora y a la velocidad que queramos, usando solo parte de los datos. Se muestrea por sesión completa, no por fila, porque si no se rompe el recorrido vista-carrito-compra y las métricas salen falsas. Esta tarjeta es solo la lógica, sin Kafka, para poder probarla con un reloj simulado.\nCómo sabremos si funciona: una sesión entra entera o no entra, el mismo porcentaje da siempre las mismas filas, y los tiempos entre eventos se dividen exactamente por la aceleración.\n\n## Técnico\n- Parámetros: sample-rate o max-rows, speedup, rewrite-timestamp (desplaza todo para que el primero sea ahora). Hash determinista de user_session; las filas sin sesión se muestrean por hash de la fila.\n- Si docs/data-profile.md dice que el CSV no está ordenado, documentar la opción elegida: el mes no cabe en memoria.\n- Reloj inyectable (java.time.Clock), sin sleeps reales en tests. Tests unitarios elemento a elemento. Verificación: ./mk test.",
+      "deps": [
+        "T-008"
+      ],
+      "created": "2026-11-02T11:35:57+01:00",
+      "updated": "2026-11-02T11:35:57+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T11:35:57+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-012",
+      "title": "Ingesta: configurar y registrar el conector hacia Iceberg",
+      "owner": "desarrollador",
+      "status": "blocked",
+      "priority": "alta",
+      "estimate_min": 35.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Los eventos deben llegar solos de Kafka a Iceberg. El plugin ya está cargado, pero falta su configuración y un modo de registrarla al arrancar. Como las imágenes Confluent no traen curl, lo registrará un servicio pequeño de un solo uso.\nCómo sabremos si funciona: en la prueba de integración de la siguiente tarjeta el conector queda RUNNING; aquí, que la configuración es válida contra el endpoint de validación.\n\n## Técnico\n- connect/iceberg-sink.json: tabla lakehouse.ecommerce.events, particionado day(event_time) y event_type, catalogo REST de Polaris, S3 con claves estáticas y endpoint seaweedfs, path-style. Commit ~30 s. evolve-schema apagado (decisión 3). DLQ activada para mensajes ilegibles.\n- Servicio connect-init en compose (Alpine + curl + jq; JSON dentro de la imagen, sustitución de secretos desde el entorno) idempotente con PUT /connectors/{name}/config.\n- Connect también necesita que exista el namespace: añadirlo a init.sh.\n- Verificación: test con el contenedor Connect construido desde infra/connect, PUT /connector-plugins/.../config/validate sin errores. ./mk test.",
+      "deps": [
+        "T-002"
+      ],
+      "created": "2026-11-02T11:35:58+01:00",
+      "updated": "2026-11-02T11:41:38+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T11:35:58+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T11:36:17+01:00",
+          "by": "consultor",
+          "msg": "Necesita también el kit de pruebas de T-006 (usa sus contenedores): no empezar hasta que T-006 esté en done. board.py no permite añadir dependencias a una tarjeta ya creada."
+        },
+        {
+          "t": "2026-11-02T11:41:38+01:00",
+          "by": "consultor",
+          "msg": "Espera a T-006; no se puede añadir dep a una tarjeta creada"
+        }
+      ]
+    },
+    {
+      "id": "T-013",
+      "title": "Productor: enviar a Kafka y comando seed",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "alta",
+      "estimate_min": 35.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Falta unir la lógica de reproducción con Kafka y dar un comando para lanzarlo. El responsable lanzará seed sobre el CSV real, y los tests lo harán sobre la muestra sintética.\nCómo sabremos si funciona: un test envía la muestra a Kafka y Schema Registry en contenedores, consume el topic y compara evento a evento con el CSV.\n\n## Técnico\n- Añadir Kafka y Schema Registry a testkit LakehouseStack (arrancan solo si se piden).\n- Topic ecommerce.events; clave user_session para conservar el orden por sesión; creación idempotente del topic con varias particiones.\n- CLI: --input --sample-rate --max-rows --speedup --rewrite-timestamp; métricas de progreso al log.\n- Makefile: seed con variables MONTH, SAMPLE y SPEEDUP, y compilación del jar. Sigue siendo target solo para el responsable.\n- Verificación: ProducerIT en ./mk test.",
+      "deps": [
+        "T-011",
+        "T-006"
+      ],
+      "created": "2026-11-02T11:36:18+01:00",
+      "updated": "2026-11-02T11:36:18+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T11:36:18+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-014",
+      "title": "Consulta: comprobar qué hace de verdad DuckDB con Iceberg",
+      "owner": "investigador",
+      "status": "backlog",
+      "priority": "alta",
+      "estimate_min": 40.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Varias decisiones dependen de cosas que la documentación de DuckDB no deja claras: cómo leer un snapshot antiguo, si se puede borrar en tablas particionadas por Polaris sin STS, si se puede quitar un duplicado exacto. Es mejor probarlo antes de construir encima, con un experimento pequeño.\nCómo sabremos si funciona: queda un documento que responde a cada pregunta con «comprobado» y un test que lo demuestra, o una alternativa si no se puede.\n\n## Técnico\nFichero docs/spike-duckdb-iceberg.md y testkit/.../DuckDbIcebergSpikeIT, en ./mk test. Preguntas:\n1. INSERT en tabla particionada por day(ts), event_type.\n2. Time travel: snapshot_from_id (documentado) o AT (VERSION =>).\n3. iceberg_snapshots e iceberg_metadata.\n4. DELETE en particionada y lectura posterior; cómo borrar solo una de dos filas idénticas (file_path/file_row_number) o, si no se puede, reescribir la partición.\n5. Si ATTACH admite READ_ONLY.\n6. Si json_serialize_sql rechaza lo no-SELECT, y qué nodo da para funciones de tabla como read_csv.\n7. Vistas sobre tablas Iceberg (decisión 12): vista temporal local que hashea user_id.\nSi alguna respuesta invalida una decisión de docs/architecture.md, anotarlo aquí y crear tarjeta para el arquitecto.",
+      "deps": [
+        "T-006"
+      ],
+      "created": "2026-11-02T11:36:19+01:00",
+      "updated": "2026-11-02T11:36:19+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T11:36:19+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-015",
+      "title": "Ingesta: prueba completa de CSV sintético a tabla Iceberg",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "alta",
+      "estimate_min": 45.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Es la primera vez que se juntan todas las piezas: productor, Kafka, conector, Polaris y S3. Es lo más incierto de la ingesta, así que se prueba de punta a punta antes de construir la consulta encima.\nCómo sabremos si funciona: tras enviar la muestra, la tabla contiene exactamente las mismas filas (también las sucias y los duplicados del origen) y sus particiones son por día y tipo de evento.\n\n## Técnico\n- IngestE2EIT: stack completo en Testcontainers con imagen de infra/connect (compila Iceberg desde git; tarda la primera vez, usar deleteOnExit=false para reutilizar la imagen).\n- Comparación fila a fila con DuckDB contra el CSV, usando commit de 10 s en test. Espera con Awaitility hasta cuadrar recuento, con timeout claro.\n- Ejecutar con el stack apagado (memoria).\n- Si el tiempo total de ./mk test pasa de 10 min, anotarlo y proponer cómo repartirlo.",
+      "deps": [
+        "T-012",
+        "T-013"
+      ],
+      "created": "2026-11-02T11:36:36+01:00",
+      "updated": "2026-11-02T11:36:36+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T11:36:36+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-016",
+      "title": "Consulta: conexión a DuckDB y carga rápida de datos de prueba",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "alta",
+      "estimate_min": 35.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "El servidor MCP necesita una forma fiable de hablar con Iceberg a través de DuckDB, con sus límites de tiempo. Los tests de consulta tampoco deberían pasar por Kafka cada vez, así que se añade una carga directa de la muestra.\nCómo sabremos si funciona: un test carga la muestra sin Kafka y lee las filas exactas a través de la conexión del servidor; una consulta que excede el tiempo se corta.\n\n## Técnico\n- mcp-server: LakehouseSession (pool pequeño de conexiones DuckDB, LOAD iceberg/httpfs, secretos, ATTACH con ACCESS_DELEGATION_MODE none, timeout y memory_limit). Extensiones: comprobar que la instalación funciona sin internet o precargarlas en la imagen.\n- testkit: SyntheticLoader (crea tabla particionada e inserta desde testdata/synthetic-events.csv.gz según lo que diga docs/spike-duckdb-iceberg.md).\n- Verificación: ./mk test.",
+      "deps": [
+        "T-014"
+      ],
+      "created": "2026-11-02T11:36:36+01:00",
+      "updated": "2026-11-02T11:36:36+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T11:36:36+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-017",
+      "title": "Consulta: leer esquema, particiones y snapshots del catálogo",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "media",
+      "estimate_min": 30.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Para describir tablas, ver el último snapshot y más adelante deshacer cambios hace falta hablar directamente con el catálogo. Se usa la API Java de Iceberg, que es la que cubre estas operaciones.\nCómo sabremos si funciona: tras varias escrituras de prueba, el código devuelve el esquema, las particiones y la lista de snapshots esperados, en orden.\n\n## Técnico\n- mcp-server: IcebergCatalogClient sobre RESTCatalog (URI Polaris, OAuth2 client credentials, S3FileIO con endpoint y path-style, claves estáticas).\n- Dependencia iceberg-core y iceberg-aws en 1.12.0 (igual que infra/connect/Dockerfile); revisar conflicto de versiones con Spring Boot 4.\n- Métodos: listTables, describe, snapshots. Rollback y addColumn se añaden en sus tarjetas.\n- Verificación: IT con LakehouseStack en ./mk test.",
+      "deps": [
+        "T-006"
+      ],
+      "created": "2026-11-02T11:36:37+01:00",
+      "updated": "2026-11-02T11:36:37+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T11:36:37+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-018",
+      "title": "Ingesta: cargar el mes real y anotar rendimiento",
+      "owner": "consultor",
+      "status": "backlog",
+      "priority": "media",
+      "estimate_min": 20.0,
+      "actual_min": null,
+      "auto": false,
+      "manual": "Ejecutar ./mk up, luego ./mk seed con SAMPLE para ~1M de filas, y anotar filas, duración y consumo de RAM (docker stats). Decidir si conviene subir a 5M.",
+      "desc": "Hasta aquí todo se ha probado con datos sintéticos. Falta ver que el mes real muestreado llega entero y que el PC lo aguanta, y los agentes no pueden lanzar seed.\nCómo sabremos si funciona: el recuento en Iceberg coincide con las filas enviadas por el productor, sin OOM en ningún contenedor.\n\n## Técnico\nComprobar recuento con DuckDB dentro de tools. Si falla por memoria, bajar KAFKA_HEAP_OPTS de Connect o el tamaño de muestra. Anotar los números en esta tarjeta: el benchmark y la demo los usan.",
+      "deps": [
+        "T-015",
+        "T-005"
+      ],
+      "created": "2026-11-02T11:36:53+01:00",
+      "updated": "2026-11-02T11:36:53+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T11:36:53+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        },
+        {
+          "t": "2026-11-02T11:41:38+01:00",
+          "by": "consultor",
+          "msg": "El dato real está comprimido: /data/raw/2019-Oct.csv.zip en el volumen data (1,6 GB; 5,6 GB sin comprimir). Leerlo con unzip -p o descomprimir antes de muestrear."
+        }
+      ]
+    },
+    {
+      "id": "T-019",
+      "title": "Consulta: validador de SQL que solo deja pasar lecturas",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "alta",
+      "estimate_min": 40.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "El agente va a mandar SQL, y un SELECT mal vigilado podría leer ficheros del disco o escribir datos. Se propone apoyarse en el propio analizador de DuckDB en vez de en expresiones regulares, que son fáciles de esquivar.\nCómo sabremos si funciona: una batería de intentos de ataque es rechazada caso a caso y las consultas legítimas pasan, con el límite de filas aplicado.\n\n## Técnico\n- mcp-server: SqlGuard. Usa json_serialize_sql para parsear y recorre el AST (según docs/spike-duckdb-iceberg.md): una sola sentencia SELECT, solo tablas de lh y vistas permitidas, ninguna función de tabla (read_csv, read_parquet, glob, iceberg_scan...), sin COPY, ATTACH, SET, PRAGMA ni INSTALL.\n- Límite de filas por envoltura: SELECT * FROM (q) LIMIT n+1, para detectar truncado. Timeout de LakehouseSession.\n- Test parametrizado con al menos 30 casos: comentarios, mayúsculas, CTE con función de tabla, subconsultas, varias sentencias. Sin contenedor: se puede usar DuckDB en memoria. ./mk test.",
+      "deps": [
+        "T-016"
+      ],
+      "created": "2026-11-02T11:36:53+01:00",
+      "updated": "2026-11-02T11:36:53+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T11:36:53+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-020",
+      "title": "MCP: servidor con list_tables y describe_table",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "alta",
+      "estimate_min": 40.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Primer tramo del servidor MCP: que arranque y que un cliente MCP real vea las herramientas y las pueda llamar. Se empieza por las dos más sencillas para fijar el patrón que seguirán las demás.\nCómo sabremos si funciona: un cliente MCP en un test lista las herramientas y describe la tabla de prueba con esquema, particiones y snapshots correctos.\n\n## Técnico\n- spring-ai-starter-mcp-server-webmvc 2.0.2: comprobar en la doc oficial la forma actual de declarar tools (@McpTool u otra) y el transporte (Streamable HTTP).\n- Respuestas estructuradas y estables, con errores legibles para el modelo.\n- McpServerIT con cliente MCP real, sobre LakehouseStack y SyntheticLoader. ./mk test.",
+      "deps": [
+        "T-016",
+        "T-017"
+      ],
+      "created": "2026-11-02T11:36:54+01:00",
+      "updated": "2026-11-02T11:36:54+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T11:36:54+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-021",
+      "title": "MCP: run_query y time_travel",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "alta",
+      "estimate_min": 30.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Son las herramientas con las que el agente lee datos, hoy o en el pasado. Ambas pasan por el validador, de modo que el time travel no se convierte en una puerta trasera.\nCómo sabremos si funciona: el test modifica la tabla, y consultar el snapshot anterior devuelve las filas de antes; un SQL prohibido da error claro por ambas vías.\n\n## Técnico\n- run_query(sql, max_rows): columnas, filas, truncated. time_travel(table, snapshot_id o timestamp, sql o columnas), con la sintaxis comprobada en docs/spike-duckdb-iceberg.md.\n- Tests por MCP real comparando filas una a una. ./mk test.",
+      "deps": [
+        "T-019",
+        "T-020"
+      ],
+      "created": "2026-11-02T11:37:13+01:00",
+      "updated": "2026-11-02T11:37:13+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T11:37:13+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-022",
+      "title": "MCP: pipeline_health (retraso, frescura, último snapshot)",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "alta",
+      "estimate_min": 35.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "El agente tiene que poder ver si la tubería está viva: si el conector se retrasa, si los datos están al día y cuándo se escribió por última vez. Sin esto no puede detectar un consumidor caído.\nCómo sabremos si funciona: con mensajes sin consumir, el retraso que se informa coincide con el número enviado; sin escrituras recientes, la frescura sale como vencida.\n\n## Técnico\n- Lag por AdminClient (grupo connect-<nombre>), estado por REST de Connect, frescura por hora del último snapshot (no por event_time: los datos de 2019 sin rewrite-timestamp parecerían siempre viejos).\n- Umbrales configurables y estado OK/WARN/FAIL con motivo.\n- Si Kafka o Connect no responden, se informa como dato, no como excepción.\n- IT con Kafka en contenedor y grupo creado a mano; Connect simulado. ./mk test.",
+      "deps": [
+        "T-020",
+        "T-013"
+      ],
+      "created": "2026-11-02T11:37:14+01:00",
+      "updated": "2026-11-02T11:37:14+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T11:37:14+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-023",
+      "title": "MCP: verdad de referencia para los chequeos de calidad",
+      "owner": "tester",
+      "status": "backlog",
+      "priority": "alta",
+      "estimate_min": 25.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Para saber si los chequeos de calidad aciertan hace falta calcular la respuesta correcta sin usar el código que se está probando. El tester la calcula directamente del fichero sintético y la deja como referencia para el desarrollador.\nCómo sabremos si funciona: el fichero de referencia lista, por columna y por día, los valores esperados, y coincide con lo documentado en la muestra.\n\n## Técnico\n- evals/truth/compute_quality_truth.py (Python estándar, sin DuckDB ni código del proyecto) que escribe evals/truth/quality.json: nulos por columna, duplicados exactos, price fuera de rango, filas por día.\n- Se regenera con un solo comando si cambia la muestra; test en tests/ que comprueba que el JSON está al día (./mk test-board).",
+      "deps": [
+        "T-004"
+      ],
+      "created": "2026-11-02T11:37:14+01:00",
+      "updated": "2026-11-02T11:37:14+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T11:37:14+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-024",
+      "title": "MCP: métricas de cada herramienta (Micrometer y Actuator)",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "media",
+      "estimate_min": 20.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "El brief pide observabilidad: cuántas veces se llama cada herramienta, cuánto tarda y cuántas falla. Se hace de forma central para que cualquier herramienta nueva quede medida sin tocarla.\nCómo sabremos si funciona: tras varias llamadas en un test, el endpoint de métricas da los contadores exactos por herramienta y resultado.\n\n## Técnico\n- Aspecto o interceptor común; métrica mcp.tool.calls (timer con tags tool, outcome). Actuator expone health y metrics; Prometheus opcional si no añade coste.\n- IT que cuenta llamadas correctas y fallidas. ./mk test.",
+      "deps": [
+        "T-020"
+      ],
+      "created": "2026-11-02T11:37:15+01:00",
+      "updated": "2026-11-02T11:37:15+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T11:37:15+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-025",
+      "title": "MCP: data_quality_check",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "alta",
+      "estimate_min": 40.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "El agente necesita detectar datos malos sin improvisar: nulos, duplicados, valores fuera de rango y días con muy poco volumen respecto a lo habitual. Se compara el resultado con la referencia del tester, no con los números que salgan.\nCómo sabremos si funciona: cada cifra del chequeo coincide con evals/truth/quality.json, y el día de la caída plantada queda marcado.\n\n## Técnico\n- data_quality_check(table, day opcional): nulos por columna, duplicados exactos, price <= 0 y atípicos, volumen vs. mediana de los días anteriores del mismo tipo de evento (umbral configurable), partición vacía. También compara columnas de Schema Registry con el esquema Iceberg (para schema drift).\n- Las nulidades conocidas del origen (brand, category_code) van como informativo, no como fallo: mirar docs/data-profile.md si existe.\n- Test elemento a elemento contra quality.json. ./mk test.",
+      "deps": [
+        "T-021",
+        "T-023"
+      ],
+      "created": "2026-11-02T11:37:33+01:00",
+      "updated": "2026-11-02T11:37:33+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T11:37:33+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-026",
+      "title": "MCP: propose_fix y apply_fix con aprobación humana",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "alta",
+      "estimate_min": 45.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "El agente puede proponer arreglos, pero solo se aplican si una persona los aprueba. Para que eso sea real y no una formalidad, los arreglos son de una lista cerrada y la aprobación entra por una vía a la que el modelo no tiene acceso. Esta tarjeta deja el mecanismo y un primer arreglo.\nCómo sabremos si funciona: aplicar sin aprobar falla y no cambia nada; tras aprobar, se aplica una vez; repetirlo no lo aplica de nuevo.\n\n## Técnico\n- Base ops en Postgres (decisión 10): fix_proposals con id, acción, parámetros, motivo, efecto esperado, estado, approved_by, timestamps. Flyway o SQL de arranque.\n- propose_fix(action, params, reason) con enum cerrado; apply_fix(proposal_id) idempotente.\n- REST con HATEOAS: GET /fix-proposals, GET /fix-proposals/{id}, POST /fix-proposals/{id}/approvals, con links a las acciones disponibles. La credencial se añade de verdad en la tarjeta de RBAC; aquí, deja el punto de corte listo y documentado.\n- Primer arreglo: ROLLBACK_SNAPSHOT vía Iceberg API (manageSnapshots().rollbackTo). Interfaz FixAction para añadir los demás.\n- IT: flujo completo sobre LakehouseStack. ./mk test.",
+      "deps": [
+        "T-021"
+      ],
+      "created": "2026-11-02T11:37:33+01:00",
+      "updated": "2026-11-02T11:37:33+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T11:37:33+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-027",
+      "title": "Semántica: definir en palabras las cuatro métricas",
+      "owner": "arquitecto",
+      "status": "backlog",
+      "priority": "alta",
+      "estimate_min": 15.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Antes de escribir SQL hay que decidir qué significa cada métrica, porque hay más de una forma razonable de calcularla y la verdad de referencia y el código tienen que partir de la misma definición, cada uno por su lado.\nCómo sabremos si funciona: dos personas leyendo el documento calcularían lo mismo; incluye un ejemplo de 5 filas resuelto a mano por métrica.\n\n## Técnico\ndocs/metrics.md: conversión view->cart->purchase, ticket medio, abandono de carrito, top marcas. Fijar la unidad (sesión o usuario), el trato de sesiones nulas, price <= 0, duplicados y brand nula; ventana temporal y zona horaria (UTC). Sin SQL.",
+      "deps": [
+        "T-004"
+      ],
+      "created": "2026-11-02T11:37:34+01:00",
+      "updated": "2026-11-02T11:37:34+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T11:37:34+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-028",
+      "title": "MCP: servidor en el compose y configuración para Claude Desktop",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "media",
+      "estimate_min": 30.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Hasta ahora el servidor solo corre en los tests. Tiene que formar parte del stack con su imagen, y Claude Desktop tiene que poder conectarse con una configuración de ejemplo.\nCómo sabremos si funciona: un test construye la imagen, la arranca y responde en el endpoint de salud y por MCP.\n\n## Técnico\n- infra/mcp-server/Dockerfile multi-etapa (contexto raíz), -Xmx según docs/architecture.md, extensiones DuckDB precargadas, healthcheck con Actuator. Puerto publicado, sin bind mounts.\n- docs/claude-desktop.md y ejemplo de configuración. Comprobar en la documentación actual cómo Claude Desktop conecta a un servidor HTTP local (conector remoto o puente stdio); si exige instalar algo en el host, decirlo.\n- Verificación: ImageFromDockerfile en ./mk test.",
+      "deps": [
+        "T-022",
+        "T-024",
+        "T-025",
+        "T-026"
+      ],
+      "created": "2026-11-02T11:37:44+01:00",
+      "updated": "2026-11-02T11:37:44+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T11:37:44+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-029",
+      "title": "Semántica: verdad de referencia de las métricas",
+      "owner": "tester",
+      "status": "backlog",
+      "priority": "alta",
+      "estimate_min": 25.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Antes de que exista el SQL de las métricas, el tester calcula sus valores correctos desde el fichero sintético, partiendo solo de las definiciones escritas. Si el documento es ambiguo, se descubre aquí.\nCómo sabremos si funciona: un JSON de referencia da cada métrica por día y las ambigüedades encontradas quedan resueltas en docs/metrics.md.\n\n## Técnico\nevals/truth/compute_metrics_truth.py (Python estándar) escribe evals/truth/metrics.json: las cuatro métricas por día y global, top 10 de marcas. Sin mirar semantic/. Comprueba los ejemplos a mano de docs/metrics.md. Test de que el JSON está al día con la muestra (./mk test-board).",
+      "deps": [
+        "T-027"
+      ],
+      "created": "2026-11-02T11:37:45+01:00",
+      "updated": "2026-11-02T11:37:45+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T11:37:45+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-030",
+      "title": "MCP: probar Claude Desktop contra el servidor",
+      "owner": "consultor",
+      "status": "backlog",
+      "priority": "baja",
+      "estimate_min": 10.0,
+      "actual_min": null,
+      "auto": false,
+      "manual": "Con ./mk up en marcha, poner la configuración de docs/claude-desktop.md en Claude Desktop y hacer una pregunta real.",
+      "desc": "Claude Desktop está en el PC del responsable y los agentes no pueden probarlo. Basta una comprobación: conectar y preguntar.\nCómo sabremos si funciona: Claude Desktop lista las herramientas y responde a una pregunta usando run_query.\n\n## Técnico\nSi el conector requiere instalar un puente en el host, decidir si merece la pena o si se deja documentado sin probar.",
+      "deps": [
+        "T-028"
+      ],
+      "created": "2026-11-02T11:37:59+01:00",
+      "updated": "2026-11-02T11:37:59+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T11:37:59+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-031",
+      "title": "Semántica: métricas en YAML que coincidan con la referencia",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "alta",
+      "estimate_min": 35.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Las métricas se escriben en YAML para que el agente las use en lugar de improvisar SQL, y que cambiar una definición no suponga tocar Java. Se comprueban contra la referencia del tester, día a día.\nCómo sabremos si funciona: las cuatro métricas coinciden con evals/truth/metrics.json en todos los días; un YAML mal formado falla al arrancar con un mensaje claro.\n\n## Técnico\n- semantic/src/main/resources/metrics/*.yaml: name, description, sql, parameters (from, to, limit), unit. Biblioteca semantic: MetricCatalog con carga y validación.\n- Parámetros por bind, nunca por concatenación.\n- SemanticMetricsIT en ./mk test con LakehouseStack, tolerancia 1e-6.",
+      "deps": [
+        "T-029",
+        "T-016"
+      ],
+      "created": "2026-11-02T11:37:59+01:00",
+      "updated": "2026-11-02T11:37:59+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T11:37:59+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-032",
+      "title": "Agente: poner ANTHROPIC_API_KEY en .env",
+      "owner": "consultor",
+      "status": "backlog",
+      "priority": "media",
+      "estimate_min": 5.0,
+      "actual_min": null,
+      "auto": false,
+      "manual": "Crear una clave en la consola de Anthropic, ponerle un límite de gasto y añadirla a .env como ANTHROPIC_API_KEY. Nunca al repo.",
+      "desc": "El agente y las evals llaman a la API de Anthropic, que gasta cuota, y la clave solo la puede poner el responsable. Conviene una clave propia con límite de gasto mensual, para que un error en bucle no sea caro.\nCómo sabremos si funciona: la prueba real del agente responde en lugar de dar error 401.\n\n## Técnico\n.env ya está en .gitignore. Las tarjetas del agente se prueban con modelo simulado y no dependen de esta; solo la necesitan las ejecuciones reales. Atención: una vez puesta, ./mk evals (que los agentes sí pueden ejecutar) gastará cuota.",
+      "deps": [],
+      "created": "2026-11-02T11:38:00+01:00",
+      "updated": "2026-11-02T11:38:00+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T11:38:00+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-033",
+      "title": "Semántica: herramienta get_metric",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "alta",
+      "estimate_min": 25.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Pone las métricas al alcance del agente. Debe poder descubrir qué métricas hay y pedir una por nombre y fechas, en lugar de escribir su propio SQL.\nCómo sabremos si funciona: pedir por MCP cada métrica devuelve los valores de la referencia; una métrica inexistente devuelve la lista de las disponibles.\n\n## Técnico\nget_metric(name, from, to, limit) y list_metrics (o descripción dinámica de la tool). mcp-server depende de semantic. La salida incluye la definición textual. IT por MCP real contra metrics.json. ./mk test.",
+      "deps": [
+        "T-031",
+        "T-020"
+      ],
+      "created": "2026-11-02T11:38:06+01:00",
+      "updated": "2026-11-02T11:38:06+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T11:38:06+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-034",
+      "title": "Agente: cliente Spring AI que responde preguntas por MCP",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "alta",
+      "estimate_min": 40.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "El agente es el protagonista de la demo: recibe una pregunta de negocio, usa las herramientas MCP y responde. Se prueba con un modelo simulado y un servidor MCP real, para no gastar cuota en cada test.\nCómo sabremos si funciona: con un modelo simulado que pide get_metric, el agente hace la llamada real y su resultado llega al modelo y a la respuesta.\n\n## Técnico\n- agent: ChatClient de Spring AI 2.0.2 con spring-ai-starter-model-anthropic y cliente MCP. CLI: ask pregunta. Comprobar la API en la doc oficial.\n- Modelo por configuración (AGENT_MODEL), sin nombre fijo en código. System prompt en recursos: prefiere get_metric sobre SQL; no inventar cifras, citar la herramienta.\n- ChatModel simulado con guion de tool calls; servidor MCP real en el test. ./mk test, sin clave de API.",
+      "deps": [
+        "T-033",
+        "T-021"
+      ],
+      "created": "2026-11-02T11:38:12+01:00",
+      "updated": "2026-11-02T11:38:12+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T11:38:12+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-035",
+      "title": "Agente: topes de iteraciones, tokens y gasto",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "alta",
+      "estimate_min": 30.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Un agente que entra en bucle puede gastar mucho sin que nadie lo vea. Se fijan límites por pregunta y por ejecución, y al alcanzarlos el agente para y lo dice, en lugar de seguir o fallar sin explicación.\nCómo sabremos si funciona: un modelo simulado que nunca termina se corta en el tope exacto, con un mensaje claro y el uso registrado.\n\n## Técnico\nmax-tool-iterations, max-tokens y presupuesto en USD por ejecución (a partir del usage y un precio configurable). Log con tokens y coste por pregunta; errores de tool se devuelven al modelo. Test con ChatModel simulado. ./mk test.",
+      "deps": [
+        "T-034"
+      ],
+      "created": "2026-11-02T11:38:28+01:00",
+      "updated": "2026-11-02T11:38:28+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T11:38:28+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-036",
+      "title": "Agente: investigar por qué cayeron las compras",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "alta",
+      "estimate_min": 35.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "La pregunta estrella del brief es «¿por qué cayeron las compras ayer?». El agente no debe limitarse a dar la cifra: tiene que descartar fallos de la tubería y buscar qué segmento explica la caída. Aquí se escribe la guía de investigación que sigue; la calidad real con el modelo verdadero la medirán las evals.\nCómo sabremos si funciona: con un modelo simulado que sigue la guía, las llamadas llegan en orden y los datos devuelven el día y el segmento plantados en la muestra.\n\n## Técnico\nPrompt en recursos: 1) pipeline_health 2) data_quality_check 3) get_metric en el día y referencia 4) run_query por marca o categoría 5) respuesta separando hecho y conjetura. Test con guion sobre la muestra sintética. La prueba con modelo real va en la tarjeta manual de demo y en evals. ./mk test.",
+      "deps": [
+        "T-034",
+        "T-025",
+        "T-022"
+      ],
+      "created": "2026-11-02T11:38:28+01:00",
+      "updated": "2026-11-02T11:38:28+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T11:38:28+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-037",
+      "title": "Chaos: comando chaos, duplicados y partición vacía",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "alta",
+      "estimate_min": 35.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Para demostrar la autorreparación hacen falta fallos reproducibles. Se empieza por los dos que tocan solo la tabla, que son los más fáciles de probar, y por el comando común que luego usarán los demás.\nCómo sabremos si funciona: tras inyectar cada fallo, la tabla tiene exactamente las filas duplicadas o eliminadas previstas, y la inyección informa qué ha hecho.\n\n## Técnico\n- Herramienta chaos en Java en mcp-server o módulo propio (decidir y justificar), make chaos SCENARIO=duplicates|empty-partition|consumer-down|schema-drift, con salida JSON (lo inyectado y cuándo).\n- duplicates: reinserta un % de un día. empty-partition: elimina un día con un DELETE/commit Iceberg (recuperable con rollback).\n- IT con LakehouseStack, comparando filas. El target make queda solo para el responsable. ./mk test.",
+      "deps": [
+        "T-016",
+        "T-017"
+      ],
+      "created": "2026-11-02T11:38:29+01:00",
+      "updated": "2026-11-02T11:38:29+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T11:38:29+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-038",
+      "title": "Chaos: ciclo completo de duplicados",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "alta",
+      "estimate_min": 40.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Primer ciclo completo sin modelo: se inyectan duplicados, el chequeo los detecta, se propone el arreglo, se aprueba, se aplica y se comprueba. Quitar duplicados sin perder filas buenas es delicado, y lo correcto depende del experimento con DuckDB.\nCómo sabremos si funciona: después del arreglo la tabla es idéntica fila a fila a la de antes del fallo, incluidos los duplicados que ya venían en el origen.\n\n## Técnico\n- FixAction DEDUPLICATE_PARTITION, según docs/spike-duckdb-iceberg.md. Debe distinguir los duplicados inyectados de los del origen (brief: los datos sucios se conservan): por ejemplo, operando sobre lo añadido desde el snapshot previo, no por contenido global.\n- Si el rollback es más seguro y honesto para este caso, se usa y se documenta.\n- IT scripted (sin LLM) por MCP real. ./mk test.",
+      "deps": [
+        "T-037",
+        "T-025",
+        "T-026"
+      ],
+      "created": "2026-11-02T11:38:49+01:00",
+      "updated": "2026-11-02T11:38:49+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T11:38:49+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-039",
+      "title": "Chaos: ciclo completo de partición vacía",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "media",
+      "estimate_min": 30.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Un día de datos desaparece. El chequeo debe verlo como volumen anómalo y el arreglo es volver al snapshot sano, aprovechando que Iceberg conserva el histórico. También tiene que quedar claro qué pasa con lo escrito después del fallo.\nCómo sabremos si funciona: tras el arreglo aprobado, el día recupera sus filas exactas; si hubo escrituras posteriores, la propuesta lo avisa antes de aprobar.\n\n## Técnico\nDetecta: partición vacía en data_quality_check. Arreglo: ROLLBACK_SNAPSHOT (T-026). propose_fix devuelve los snapshots y el recuento de filas que se perderían. IT scripted por MCP real con caso con y sin escrituras posteriores. ./mk test.",
+      "deps": [
+        "T-037",
+        "T-025",
+        "T-026"
+      ],
+      "created": "2026-11-02T11:38:50+01:00",
+      "updated": "2026-11-02T11:38:50+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T11:38:50+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-040",
+      "title": "Chaos: ciclo completo de consumidor caído",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "alta",
+      "estimate_min": 40.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "El conector deja de consumir: los datos se acumulan en Kafka y la tabla se queda atrás. Es el caso más visual de la demo, con la ventaja de que al reanudar no se pierde nada.\nCómo sabremos si funciona: al pausarlo, pipeline_health pasa a FAIL con retraso creciente; tras el arreglo aprobado, el retraso vuelve a cero y la tabla contiene todas las filas.\n\n## Técnico\n- Inyección: PUT /connectors/{name}/pause o parar tareas. FixAction RESUME_CONNECTOR (resume y restart de tareas fallidas por REST de Connect).\n- IT sobre el stack completo de IngestE2EIT (mismos contenedores). Sin duplicados tras reanudar: comparación fila a fila. Stack apagado (memoria). ./mk test.",
+      "deps": [
+        "T-037",
+        "T-022",
+        "T-026",
+        "T-015"
+      ],
+      "created": "2026-11-02T11:38:51+01:00",
+      "updated": "2026-11-02T11:38:51+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T11:38:51+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-041",
+      "title": "Chaos: ciclo completo de schema drift",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "media",
+      "estimate_min": 45.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "El productor empieza a mandar un campo nuevo, compatible con el contrato, y como la evolución automática está apagada, Iceberg lo ignora sin avisar: se pierden datos en silencio. El chequeo debe compararlo con Schema Registry y el arreglo añade la columna sin reprocesar. De los cuatro, este es el de más incertidumbre.\nCómo sabremos si funciona: tras el arreglo aprobado, los eventos nuevos traen la columna rellena y las filas antiguas siguen intactas con ella en nulo.\n\n## Técnico\n- Inyección: producer con esquema v2 (campo nullable con default).\n- Detección: columnas en Registry que no están en Iceberg (T-025).\n- FixAction ADD_COLUMN por Iceberg API (updateSchema). Comprobar si el sink toma la columna sin reiniciar; si no, reiniciar la tarea como parte del arreglo. Si con evolve apagado no se comporta así, ir a blocked con la alternativa.\n- Los eventos entre la deriva y el arreglo no recuperan el campo: documentarlo.\n- IT sobre stack completo. ./mk test.",
+      "deps": [
+        "T-037",
+        "T-025",
+        "T-026",
+        "T-015"
+      ],
+      "created": "2026-11-02T11:38:51+01:00",
+      "updated": "2026-11-02T11:38:51+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T11:38:51+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-042",
+      "title": "Chaos: modo reparación del agente con aprobación en consola y comando demo",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "alta",
+      "estimate_min": 40.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Aquí el agente sigue el ciclo solo: detecta, diagnostica y propone, y luego se para a preguntar a la persona. La aprobación la da el programa tras pedirla por consola, sin que el modelo tenga nunca la credencial ni una forma de aprobar.\nCómo sabremos si funciona: con modelo simulado, si la persona dice no, nada cambia; si dice sí, se aplica y se verifica; y la credencial de aprobación no aparece nunca en lo enviado al modelo.\n\n## Técnico\n- agent: comando heal. Prompt de ciclo. Aprobación en consola, llamada a POST /fix-proposals/{id}/approvals con la clave admin, solo desde código Java. La sesión del modelo usa la clave de agente.\n- Test: ChatModel simulado que intenta apply_fix sin aprobar (rechazado); inspección de todos los mensajes enviados, sin clave.\n- Makefile: demo (pregunta, chaos, heal) para el responsable. ./mk test.",
+      "deps": [
+        "T-035",
+        "T-036",
+        "T-038"
+      ],
+      "created": "2026-11-02T11:39:11+01:00",
+      "updated": "2026-11-02T11:39:11+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T11:39:11+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-043",
+      "title": "Contracts: romper el build si se rompe el contrato de datos",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "media",
+      "estimate_min": 30.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Si alguien cambia el esquema de los eventos de forma incompatible, debería fallar la compilación antes de llegar a ningún sitio. Se guardan los contratos versionados y se comprueban en dos niveles: sin contenedores en cada build, y contra Schema Registry real.\nCómo sabremos si funciona: quitar un campo sin valor por defecto (caso de prueba) hace fallar el test, y añadir uno nullable con default pasa; Registry rechaza el incompatible con 409.\n\n## Técnico\n- contracts/ecommerce.events-value/v1.avsc... El .avsc de producer debe coincidir con la última versión: test que lo exija.\n- Test unitario con org.apache.avro.SchemaCompatibility contra todas las versiones.\n- IT: compatibilidad BACKWARD en el subject, registro de versiones, 409 con el esquema roto (fixtures en src/test).\n- ./mk test.",
+      "deps": [
+        "T-013"
+      ],
+      "created": "2026-11-02T11:39:12+01:00",
+      "updated": "2026-11-02T11:39:12+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T11:39:12+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-044",
+      "title": "Mantenimiento: Trino leyendo el catálogo, solo a demanda",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "media",
+      "estimate_min": 40.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Trino se usará para compactar y para el benchmark, pero con 7,6 GB no puede estar siempre encendido. Hay que configurarlo dentro de su imagen, sin STS, para que lea por Polaris las mismas tablas que DuckDB.\nCómo sabremos si funciona: Trino en un test lee por Polaris la muestra cargada y su recuento y sumas coinciden con DuckDB columna a columna.\n\n## Técnico\n- infra/trino/Dockerfile (trinodb/trino:484) con catalog/lakehouse.properties: connector iceberg, catalog.type=rest, OAuth2, vended-credentials desactivado, fs.native-s3, endpoint y path-style; JVM -Xmx2g. Sigue en perfil bench en compose.\n- Sin secretos en la imagen: propiedades con ${ENV:...}.\n- TrinoCatalogIT con Testcontainers, stack apagado. ./mk test.",
+      "deps": [
+        "T-016"
+      ],
+      "created": "2026-11-02T11:39:12+01:00",
+      "updated": "2026-11-02T11:39:12+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T11:39:12+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-045",
+      "title": "Mantenimiento: añadir una columna sin reprocesar",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "media",
+      "estimate_min": 25.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "El brief pide demostrar que Iceberg permite cambiar el esquema sin reescribir datos. La prueba tiene que enseñarlo de forma comprobable: los ficheros existentes son exactamente los mismos antes y después.\nCómo sabremos si funciona: tras añadir la columna, la lista de ficheros de datos no cambia, las filas viejas la leen en nulo y las nuevas con valor.\n\n## Técnico\nIcebergCatalogClient.addColumn (compartir con ADD_COLUMN de T-041 si ya existe). IT que compara iceberg_metadata antes y después, y time travel al snapshot previo con el esquema antiguo. Texto de demostración en docs/. ./mk test.",
+      "deps": [
+        "T-017",
+        "T-016"
+      ],
+      "created": "2026-11-02T11:39:13+01:00",
+      "updated": "2026-11-02T11:39:13+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T11:39:13+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-046",
+      "title": "Chaos: demo real de los cuatro fallos con el modelo verdadero",
+      "owner": "consultor",
+      "status": "backlog",
+      "priority": "alta",
+      "estimate_min": 30.0,
+      "actual_min": null,
+      "auto": false,
+      "manual": "Con ./mk up y datos cargados, ejecutar ./mk chaos para cada SCENARIO y ./mk demo, aprobando en consola. Anotar coste de la API y lo que falle.",
+      "desc": "Hasta aquí los ciclos se han probado con guion. Falta ver al modelo real recorriéndolos en el stack completo. Los agentes no pueden lanzar chaos ni demo, y hay que aprobar a mano; además, si convence, será lo que se grabe.\nCómo sabremos si funciona: en los cuatro fallos el agente detecta, propone el arreglo correcto, espera la aprobación y verifica; y la pregunta sobre la caída de compras se responde bien.\n\n## Técnico\nCada fallo que aparezca pasa a ser una tarjeta nueva. Anotar tokens y coste de la demo completa para dimensionar evals.",
+      "deps": [
+        "T-042",
+        "T-039",
+        "T-040",
+        "T-041",
+        "T-028",
+        "T-032",
+        "T-018"
+      ],
+      "created": "2026-11-02T11:39:40+01:00",
+      "updated": "2026-11-02T11:39:40+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T11:39:40+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-047",
+      "title": "Mantenimiento: compactar ficheros y expirar snapshots",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "media",
+      "estimate_min": 40.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "La ingesta en streaming deja muchos ficheros pequeños, que hacen lentas las lecturas. Se compacta y se expiran los snapshots viejos con Trino, que ya está para el benchmark y gestiona bien los borrados. Lo importante es probar que cambian los ficheros, pero no los datos.\nCómo sabremos si funciona: tras compactar hay muchos menos ficheros y las filas son idénticas una a una; tras expirar, quedan solo los snapshots dentro de la retención.\n\n## Técnico\n- ALTER TABLE ... EXECUTE optimize y expire_snapshots (iceberg.expire-snapshots.min-retention ajustado en el catálogo).\n- Makefile: maintain (arranca Trino en perfil bench, ejecuta y lo para). Para agentes, solo por IT; el target queda para el responsable.\n- Debe funcionar con ficheros de borrado escritos por DuckDB: caso en el test.\n- MaintenanceIT con conteo de ficheros por iceberg_metadata y comparación fila a fila. ./mk test.",
+      "deps": [
+        "T-044"
+      ],
+      "created": "2026-11-02T11:39:41+01:00",
+      "updated": "2026-11-02T11:39:41+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T11:39:41+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-048",
+      "title": "Evals: preguntas de negocio y respuestas de referencia",
+      "owner": "tester",
+      "status": "backlog",
+      "priority": "alta",
+      "estimate_min": 40.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Para medir al agente hace falta un examen con respuestas conocidas. El tester escribe las preguntas y calcula las respuestas directamente del fichero sintético, sin mirar el agente ni el servidor, para que la nota signifique algo.\nCómo sabremos si funciona: hay 15-18 preguntas con respuesta exacta y una forma de corregir cada una, y el cálculo se puede repetir con un comando.\n\n## Técnico\n- evals/questions/*.yaml: id, pregunta, tipo (number, set, ranking), expected, tolerance, in_subset (bool para el subconjunto de CI). evals/truth/compute_eval_truth.py en Python estándar.\n- No leer mcp-server/, agent/ ni semantic/ (sí docs/metrics.md). Preguntas variadas: una métrica, filtros, comparaciones entre días, trampas por datos sucios.\n- Test de que expected está al día (./mk test-board).",
+      "deps": [
+        "T-010",
+        "T-027"
+      ],
+      "created": "2026-11-02T11:39:41+01:00",
+      "updated": "2026-11-02T11:39:41+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T11:39:41+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-049",
+      "title": "Benchmark: mismas consultas en DuckDB y Trino, tabla reproducible",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "media",
+      "estimate_min": 35.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Queremos una comparación honesta entre DuckDB y Trino sobre las mismas consultas, con una tabla que cualquiera pueda repetir. Aquí se construye la herramienta y se prueba con la muestra; la medición real se hace después en otra tarjeta.\nCómo sabremos si funciona: con la muestra, ambos motores devuelven resultados iguales en cada consulta y se genera la tabla con tiempos en frío y en caliente.\n\n## Técnico\n- bench/queries/*.sql (6-10: filtros de partición, agregaciones, joins, embudo). Mismo SQL en ambos; si hay que adaptar, se documenta caso a caso.\n- Harness: varias repeticiones, mediana y mín/máx, frío/caliente, comprueba igualdad de resultados y anota versión, filas y RAM. Salida docs/bench/results.md y JSON.\n- Makefile: bench (perfil bench, parar Connect para dejar memoria; solo responsable).\n- BenchIT con stack de testkit. ./mk test.",
+      "deps": [
+        "T-044"
+      ],
+      "created": "2026-11-02T11:39:42+01:00",
+      "updated": "2026-11-02T11:39:42+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T11:39:42+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-050",
+      "title": "Seguridad: roles analyst y admin en las herramientas",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "alta",
+      "estimate_min": 35.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Hoy cualquiera con acceso al servidor podría aprobar y aplicar arreglos. Se separan los roles: el analista lee y propone, y solo el administrador aplica y aprueba. El agente usa una clave de analista, lo que hace real la aprobación humana.\nCómo sabremos si funciona: una tabla de pruebas recorre herramienta por rol y comprueba permitido o denegado; sin clave, todo da 401 salvo la salud.\n\n## Técnico\n- Spring Security + claves API por .env (MCP_ANALYST_KEY, MCP_ADMIN_KEY; añadir a .env.example con valores de ejemplo, comparación en tiempo constante).\n- analyst: list_tables, describe_table, run_query, get_metric, pipeline_health, data_quality_check, time_travel, propose_fix. admin: además apply_fix y POST /fix-proposals/{id}/approvals.\n- Confirmar con T-042: la consola aprueba con admin, el modelo opera con analyst, y apply_fix lo ejecuta el programa o un rol separado.\n- Tocará adaptar ITs anteriores. Verificación: ./mk test.",
+      "deps": [
+        "T-026",
+        "T-020"
+      ],
+      "created": "2026-11-02T11:39:42+01:00",
+      "updated": "2026-11-02T11:39:42+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T11:39:42+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-051",
+      "title": "Evals: preguntas de anomalías y diagnóstico con referencia",
+      "owner": "tester",
+      "status": "backlog",
+      "priority": "media",
+      "estimate_min": 30.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Además de cifras, el agente tiene que saber explicar: qué día cayeron las compras, en qué segmento, y si los datos están sucios. El tester añade esas preguntas desde lo plantado en la muestra, sin mirar el agente.\nCómo sabremos si funciona: en total hay 25-30 preguntas, unas 8 marcadas para el subconjunto barato, y cada diagnóstico se corrige con criterios fijos.\n\n## Técnico\nAmplía evals/questions con tipo diagnosis: hechos obligatorios (día, segmento, magnitud con tolerancia) y prohibidos. Sin modelo como juez (decisión 16). El subconjunto cubre cada tipo y las preguntas más baratas de responder. ./mk test-board.",
+      "deps": [
+        "T-048"
+      ],
+      "created": "2026-11-02T11:40:08+01:00",
+      "updated": "2026-11-02T11:40:08+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T11:40:08+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-052",
+      "title": "Benchmark: medir con los datos reales y publicar la tabla",
+      "owner": "consultor",
+      "status": "backlog",
+      "priority": "media",
+      "estimate_min": 20.0,
+      "actual_min": null,
+      "auto": false,
+      "manual": "Con los datos reales cargados, ejecutar ./mk bench y revisar docs/bench/results.md antes de versionarlo.",
+      "desc": "La cifra que se publica debe salir del mes real muestreado, y los agentes no pueden lanzar bench. Conviene hacerlo con el PC sin otra carga, y sin perder el detalle de la máquina para que el número se entienda.\nCómo sabremos si funciona: la tabla sale con todas las consultas, resultados iguales en ambos motores y sin errores de memoria.\n\n## Técnico\nSi Trino se queda sin memoria, bajar SAMPLE o parar más servicios, y anotarlo en los resultados. Se publica también lo que no favorezca a DuckDB.",
+      "deps": [
+        "T-049",
+        "T-018"
+      ],
+      "created": "2026-11-02T11:40:08+01:00",
+      "updated": "2026-11-02T11:40:08+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T11:40:08+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-053",
+      "title": "Seguridad: registro de auditoría de cada llamada",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "media",
+      "estimate_min": 25.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Si un agente toca datos, debe quedar constancia de quién hizo qué y cuándo, incluidas las llamadas rechazadas y las aprobaciones. Se guarda en Postgres junto a las propuestas, para poder consultarlo.\nCómo sabremos si funciona: tras una secuencia de llamadas, el registro tiene exactamente esas entradas, en orden, y ninguna incluye claves ni user_id en claro.\n\n## Técnico\nTabla audit_log en ops (ts, role, tool, parámetros saneados, outcome, duración, proposal_id). Solo inserción. Mismo interceptor que T-024. GET /audit-events solo admin, con paginación y HATEOAS. IT que compara entrada a entrada. ./mk test.",
+      "deps": [
+        "T-050"
+      ],
+      "created": "2026-11-02T11:40:09+01:00",
+      "updated": "2026-11-02T11:40:09+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T11:40:09+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-054",
+      "title": "Seguridad: enmascarar user_id para analistas",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "alta",
+      "estimate_min": 35.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "El analista debe poder contar usuarios y agrupar por ellos sin ver quiénes son. Se le da acceso a través de vistas con el identificador convertido en un hash con sal y se le impide tocar la tabla base. El rol admin sigue viendo el valor original.\nCómo sabremos si funciona: el recuento de usuarios distintos es igual en ambos roles, y ninguna fila del analista contiene un user_id real, ni por run_query ni por time_travel.\n\n## Técnico\n- Vistas en esquema safe de cada sesión DuckDB (según docs/spike-duckdb-iceberg.md); sal por .env (MASKING_SALT).\n- SqlGuard por rol: analyst solo safe.*. time_travel y get_metric también pasan por enmascarado: revisar que no expongan user_id.\n- IT comparando con los user_id de la muestra. ./mk test.",
+      "deps": [
+        "T-050",
+        "T-019"
+      ],
+      "created": "2026-11-02T11:40:09+01:00",
+      "updated": "2026-11-02T11:40:09+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T11:40:09+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-055",
+      "title": "README: versión en inglés con arquitectura y quickstart",
+      "owner": "arquitecto",
+      "status": "backlog",
+      "priority": "media",
+      "estimate_min": 30.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "El README es lo primero que ve quien llega al portfolio. Debe explicar qué es, cómo arrancarlo y qué decisiones se tomaron, y dar el crédito de los datos con su licencia. Los resultados de evals y benchmark se añaden después, cuando existan números reales.\nCómo sabremos si funciona: cada comando del quickstart existe en el Makefile, cada enlace funciona y no hay ninguna cifra sin fuente.\n\n## Técnico\nEn inglés: diagrama Mermaid, quickstart (./mk), ejemplos de prompts, Design decisions (resumen de docs/architecture.md), Built with agent-board, atribución y licencia del dataset (© Original Authors; CI con datos sintéticos). Huecos marcados para evals, benchmark y GIF.",
+      "deps": [
+        "T-046"
+      ],
+      "created": "2026-11-02T11:40:10+01:00",
+      "updated": "2026-11-02T11:40:10+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T11:40:10+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-056",
+      "title": "Evals: ejecutor, corrección automática e informe",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "alta",
+      "estimate_min": 40.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Falta la máquina que pase el examen: lanza cada pregunta al agente sobre la muestra sintética, corrige con criterios fijos y da la nota. Por defecto usa el subconjunto barato, se para al alcanzar el presupuesto, y falla con mensaje claro si no hay clave, para no gastar por accidente.\nCómo sabremos si funciona: con un modelo simulado que acierta unas y falla otras, la nota y el detalle pregunta a pregunta son los esperados; sin clave no se llama a la API.\n\n## Técnico\n- evals: EvalRunner sobre LakehouseStack + mcp-server + agent. Correctores number, set, ranking, diagnosis. Salida evals/results/latest.json y resumen en Markdown.\n- Makefile: evals usa EVAL_SCOPE=subset (por defecto) o full; EVAL_MODEL; EVAL_MAX_USD por defecto bajo. ./mk evals lo pueden lanzar los agentes, así que el valor por defecto debe ser barato, sin full por omisión.\n- Tests de la corrección con modelo simulado, en ./mk test (sin clave).",
+      "deps": [
+        "T-035",
+        "T-036",
+        "T-051"
+      ],
+      "created": "2026-11-02T11:40:30+01:00",
+      "updated": "2026-11-02T11:40:30+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T11:40:30+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-057",
+      "title": "Seguridad: intento de saltarse roles, enmascarado y aprobación",
+      "owner": "tester",
+      "status": "backlog",
+      "priority": "alta",
+      "estimate_min": 30.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Quien ha construido las defensas no es quien mejor las ataca. El tester intenta conseguir user_id reales como analista, aplicar un arreglo sin aprobar, escapar del validador y encontrar secretos en el repo. Cada agujero se convierte en una tarjeta nueva.\nCómo sabremos si funciona: queda una batería de ataques como test de regresión, todos rechazados, o una tarjeta por cada uno que no lo sea.\n\n## Técnico\nSecurityAttackIT por MCP real: cast o concatenación de user_id, CTE recursiva, información de sistema (duckdb_secrets(), duckdb_settings()), time_travel a tabla base, reuso de una aprobación, aprobar otra propuesta, inyección de instrucciones en datos (un brand con texto malicioso). Buscar secretos en git ls-files y en el historial. ./mk test.",
+      "deps": [
+        "T-053",
+        "T-054"
+      ],
+      "created": "2026-11-02T11:40:31+01:00",
+      "updated": "2026-11-02T11:40:31+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T11:40:31+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-058",
+      "title": "Pages: sitio con arquitectura, demo y decisiones",
+      "owner": "arquitecto",
+      "status": "backlog",
+      "priority": "baja",
+      "estimate_min": 25.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "El brief pide una página para contar el proyecto sin tener que leer el repo. Se propone publicar desde la carpeta docs/ con Jekyll integrado de GitHub, sin workflow propio ni generador que mantener. Aquí se prepara el contenido; publicar lo hace el responsable.\nCómo sabremos si funciona: los enlaces internos y los diagramas son correctos, y los documentos de trabajo no aparecen en la portada.\n\n## Técnico\ndocs/index.md y páginas de arquitectura, demo y decisiones en inglés; _config.yml con exclude de brief, spikes y similares si procede. Diagramas Mermaid: comprobar soporte en Pages (no es automático como en README), o usar imágenes.",
+      "deps": [
+        "T-055"
+      ],
+      "created": "2026-11-02T11:40:32+01:00",
+      "updated": "2026-11-02T11:40:32+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T11:40:32+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-059",
+      "title": "README: grabar el GIF o vídeo de la demo",
+      "owner": "consultor",
+      "status": "backlog",
+      "priority": "media",
+      "estimate_min": 30.0,
+      "actual_min": null,
+      "auto": false,
+      "manual": "Grabar la pregunta sobre la caída y un ciclo de self-healing, con aprobación incluida; dejar el GIF en docs/media/ (menos de 10 MB) o un enlace al vídeo.",
+      "desc": "La demo se entiende mejor viéndola, y la grabación debe hacerla el responsable en su PC. Sugerencia: el fallo de consumidor caído, que es el más visual, y una duración de 1-2 min.\nCómo sabremos si funciona: se ve en el README sin descargar nada, y no aparece ninguna clave ni dato personal en pantalla.\n\n## Técnico\nAcelerar las esperas en edición. Revisar que .env y la clave de API no salgan en la terminal.",
+      "deps": [
+        "T-046"
+      ],
+      "created": "2026-11-02T11:40:32+01:00",
+      "updated": "2026-11-02T11:40:32+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T11:40:32+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-060",
+      "title": "Evals: workflow de CI con coste acotado",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "media",
+      "estimate_min": 20.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "El brief pide evals en CI, pero cada ejecución cuesta dinero. Propuesta: en PR y push nada de API, solo la corrección con modelo simulado; el subconjunto de ~8 preguntas con un modelo barato una vez por semana y a mano; el conjunto completo solo a mano antes de publicar nota.\nCómo sabremos si funciona: sin secret, el workflow se salta el paso con aviso y no falla; un push normal no llama nunca a la API.\n\n## Técnico\n.github/workflows/evals.yml: on schedule semanal y workflow_dispatch (input scope). EVAL_MODEL y EVAL_MAX_USD como variables. Nunca pull_request (los PR ajenos no tienen secret ni deben gastar). Subir resultado como artifact. Falla si la precisión baja del umbral fijado tras la primera medición. El consultor comprueba al subir.",
+      "deps": [
+        "T-056",
+        "T-009"
+      ],
+      "created": "2026-11-02T11:40:47+01:00",
+      "updated": "2026-11-02T11:40:47+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T11:40:47+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-061",
+      "title": "Evals: pasar el examen completo y fijar la nota",
+      "owner": "consultor",
+      "status": "backlog",
+      "priority": "media",
+      "estimate_min": 20.0,
+      "actual_min": null,
+      "auto": false,
+      "manual": "Autorizar el gasto y ejecutar ./mk evals con EVAL_SCOPE=full y el modelo elegido; revisar evals/results antes de versionar.",
+      "desc": "La nota que se publique debe salir del conjunto completo con el modelo real, lo que cuesta dinero, por lo que lo decide el responsable. Conviene primero el subconjunto para estimar el coste. Los fallos no se ocultan: los mira el tester y se convierten en tarjetas.\nCómo sabremos si funciona: queda un informe con la nota, el modelo, el coste y el detalle por pregunta.\n\n## Técnico\nFijar en esta tarjeta el modelo, y el umbral mínimo para T-060. Las preguntas no se ajustan para subir la nota: si una está mal, la corrige el tester con justificación.",
+      "deps": [
+        "T-056",
+        "T-032"
+      ],
+      "created": "2026-11-02T11:40:48+01:00",
+      "updated": "2026-11-02T11:40:48+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T11:40:48+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-062",
+      "title": "Pages: activar la publicación en GitHub",
+      "owner": "consultor",
+      "status": "backlog",
+      "priority": "baja",
+      "estimate_min": 5.0,
+      "actual_min": null,
+      "auto": false,
+      "manual": "En GitHub, Settings > Pages: publicar desde main, carpeta /docs. Requiere repositorio público (o plan que lo permita) y el merge a main.",
+      "desc": "Activar Pages cambia una configuración pública del repositorio, así que le toca al responsable. Solo se hace una vez y conviene hacerlo con el contenido ya integrado en main.\nCómo sabremos si funciona: la URL pública muestra la portada con diagramas y enlaces funcionando.\n\n## Técnico\nAñadir la URL al README y a la descripción del repo.",
+      "deps": [
+        "T-058"
+      ],
+      "created": "2026-11-02T11:40:48+01:00",
+      "updated": "2026-11-02T11:40:48+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T11:40:48+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-063",
+      "title": "Evals: poner el secret de GitHub y aceptar el gasto en CI",
+      "owner": "consultor",
+      "status": "backlog",
+      "priority": "media",
+      "estimate_min": 10.0,
+      "actual_min": null,
+      "auto": false,
+      "manual": "Decidir si aceptas la propuesta de coste (descrita abajo). Si sí: crear el secret ANTHROPIC_API_KEY en GitHub (mejor una clave aparte con límite de gasto) y lanzar el workflow una vez a mano.",
+      "desc": "Las evals en CI gastan cuota y necesitan una clave en GitHub, que solo puede poner el responsable. Propuesta: sin llamadas a la API en PR ni push; ~8 preguntas con un modelo barato cada semana y a mano; las 25-30 preguntas solo a mano antes de publicar nota; tope de gasto por ejecución.\nCómo sabremos si funciona: la ejecución manual del subconjunto termina con la nota y un coste dentro del tope.\n\n## Técnico\nAntes de decidir, mirar el coste real anotado en T-046 y T-061. Se puede quitar el cron y dejar solo ejecución manual si se quiere gasto cero por defecto; el workflow se salta el paso sin secret.",
+      "deps": [
+        "T-060"
+      ],
+      "created": "2026-11-02T11:41:00+01:00",
+      "updated": "2026-11-02T11:41:00+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T11:41:00+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-064",
+      "title": "README: añadir resultados reales de evals, benchmark y demo",
+      "owner": "arquitecto",
+      "status": "backlog",
+      "priority": "media",
+      "estimate_min": 15.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Última pasada: rellenar los huecos con los números medidos y el GIF, y comprobar que lo que promete el README existe de verdad. Se publican las cifras como salen, indicando el modelo y la máquina.\nCómo sabremos si funciona: cada cifra coincide con su fichero de resultados y enlaza a él; ninguna característica del brief queda sin demostrar o sin marcar como pendiente.\n\n## Técnico\nFuentes: evals/results, docs/bench/results.md, docs/media. Revisar el brief punto por punto. El tester la revisa en review comparando las cifras con los ficheros.",
+      "deps": [
+        "T-055",
+        "T-061",
+        "T-052",
+        "T-059",
+        "T-057",
+        "T-043",
+        "T-045",
+        "T-047"
+      ],
+      "created": "2026-11-02T11:41:01+01:00",
+      "updated": "2026-11-02T11:41:01+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-02T11:41:01+01:00",
           "by": "consultor",
           "msg": "creada"
         }
