@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-03T11:23:51+01:00",
+  "updated": "2026-11-03T11:38:55+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -6021,7 +6021,7 @@
       "id": "T-127",
       "title": "La integración continua está en rojo: un test del validador de SQL tumba la máquina de pruebas",
       "owner": "desarrollador",
-      "status": "review",
+      "status": "next",
       "priority": "alta",
       "estimate_min": 20.0,
       "actual_min": 56.4,
@@ -6030,7 +6030,7 @@
       "desc": "Desde que se cerró el validador de SQL, cada subida a develop falla: una clase de pruebas del validador provoca un fallo grave de memoria que mata todo el proceso de tests, y los módulos siguientes ni se ejecutan. Lo más probable es que venga de las pruebas añadidas al cerrar esa tarjeta, que ejecutan consultas muy anidadas con muy poca memoria de pila. Hay que averiguar si el fallo es solo de la prueba o si una consulta aceptada por el validador puede tumbar también el servidor, porque esto segundo sería un agujero real.\nCómo sabremos si funciona: la integración continua de develop vuelve a verde y ejecuta todos los módulos, sin haber borrado la comprobación sin explicar por qué.\n## Técnico\nCI: runs 41534768076 (09c5187, primer rojo) y 41535625552 (7165f70); job java, mvn verify. SqlGuardProbeTest: 'Segmentation fault (core dumped)', exit 139, unos 10 s tras empezar la clase; SqlGuardTest (162) pasa; agent, semantic, evals y bench quedan SKIPPED. El último verde, 48ea90c, no tenía los 79 tests añadidos en 09c5187. Sospechoso sin confirmar: theDeepestAllowedQueriesRunOnASmallStack (hilo de 256 KB). Comentario del test: si el margen fuera malo, mataría la JVM. Criterio: mvn verify en verde en CI; si la causa es el margen, ajustar los límites de SqlGuard (producción), no solo el test.",
       "deps": [],
       "created": "2026-11-02T23:40:03+01:00",
-      "updated": "2026-11-03T11:23:51+01:00",
+      "updated": "2026-11-03T11:38:55+01:00",
       "started_at": "2026-11-03T10:27:30+01:00",
       "finished_at": "2026-11-03T11:23:51+01:00",
       "log": [
@@ -6068,6 +6068,16 @@
           "t": "2026-11-03T11:23:51+01:00",
           "by": "desarrollador",
           "msg": "REVIEW: Repeticiones en marcha. Sigo cuando terminen."
+        },
+        {
+          "t": "2026-11-03T11:24:03+01:00",
+          "by": "tester",
+          "msg": "verificando"
+        },
+        {
+          "t": "2026-11-03T11:38:55+01:00",
+          "by": "tester",
+          "msg": "FAIL: la CI de develop sigue en rojo con 1eb5e5e (exit 139 en la cadena de EXCEPT con pila de 512 KB, 20 caídas de 40 repeticiones) y el commit incluye tests temporales de diagnóstico que hay que quitar."
         }
       ],
       "runs": [
@@ -6080,8 +6090,19 @@
           "tokens": 426145,
           "cost_usd": 3.0451192,
           "verdict": "review"
+        },
+        {
+          "agent": "tester",
+          "mode": "verify",
+          "at": "2026-11-03T11:38:55+01:00",
+          "min": 14.9,
+          "turns": 44,
+          "tokens": 739650,
+          "cost_usd": 0.9372119999999999,
+          "verdict": "fail"
         }
-      ]
+      ],
+      "verify_started": "2026-11-03T11:24:03+01:00"
     },
     {
       "id": "T-128",
@@ -6614,6 +6635,30 @@
         "task": "T-084",
         "why": ""
       }
+    },
+    {
+      "id": "T-146",
+      "title": "Consulta: comprobar si unas pocas subconsultas con nombre que se leen varias veces pueden colgar el servidor",
+      "owner": "tester",
+      "status": "backlog",
+      "priority": "media",
+      "estimate_min": 15.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "El nuevo límite de complejidad del validador mide lo profunda que es una consulta, pero no cuántas veces se repite su contenido. Si cada subconsulta con nombre lee dos o tres veces la anterior, el trabajo podría multiplicarse en cada paso aunque el texto sea corto. Es una sospecha al leer el cambio, sin ejecutar todavía: se propone probarlo en un proceso aparte, porque si es cierto una sola consulta aceptada podría agotar la memoria o bloquear el servidor.\nCómo sabremos si funciona: hay una prueba que lanza el peor caso aceptado y el proceso termina a tiempo con una respuesta o un rechazo, sin caerse; si no ocurre así, queda una tarjeta para el desarrollador con la consulta que lo provoca.\n## Técnico\nDónde: SqlGuard.walk (commit 1eb5e5e), MAX_DEPTH=100; suma la profundidad del cuerpo de la CTE en cada referencia, pero se queda con el máximo y no multiplica por referencias. Forma a probar, ajustando los eslabones hasta el mayor número aceptado: WITH c0 AS (SELECT 1 x), c1 AS (SELECT 1 x FROM c0,c0,c0), c2 AS (SELECT 1 x FROM c1,c1,c1)... SELECT x FROM cN. Medir en una JVM hija con tiempo máximo, con guard.guarded y con guard.run, anotando tiempo y memoria. Relacionada con T-117. Criterio: la JVM hija acaba dentro del tiempo máximo y con exit 0 en el mayor N aceptado.",
+      "deps": [],
+      "created": "2026-11-03T11:38:34+01:00",
+      "updated": "2026-11-03T11:38:34+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-03T11:38:34+01:00",
+          "by": "tester",
+          "msg": "creada"
+        }
+      ]
     }
   ],
   "runners": {
@@ -6633,13 +6678,13 @@
     "measure": {
       "state": "working",
       "current": "T-127",
-      "message": "desarrollador con T-127",
+      "message": "tester con T-127",
       "pid": 19972,
-      "heartbeat": "2026-11-03T10:27:31+01:00",
+      "heartbeat": "2026-11-03T11:24:04+01:00",
       "enabled": true,
-      "agent": "desarrollador",
-      "started": "2026-11-03T10:27:31+01:00",
-      "live": "live-T-127-desarrollador-20261103-102731.jsonl"
+      "agent": "tester",
+      "started": "2026-11-03T11:24:04+01:00",
+      "live": "live-T-127-tester-20261103-112404.jsonl"
     }
   }
 }
