@@ -389,6 +389,20 @@ def test_al_reanudar_se_olvida_el_motivo_de_la_pausa(monkeypatch, tmp_path):
     assert runner.bd.load()["runner"]["pause_reason"] is None
 
 
+@pytest.mark.parametrize("flags, rounds", [([], 0), (["--contribute"], 1)])
+def test_sin_contribute_el_carril_no_crea_rondas_y_sale(monkeypatch, tmp_path, flags, rounds):
+    calls = []
+    monkeypatch.setattr(runner, "STOP", tmp_path / "STOP")
+    monkeypatch.setattr(runner, "LOGDIR", tmp_path)
+    monkeypatch.setattr(runner, "pick", lambda b, lane: (None, None))  # ninguna tarjeta lista
+    monkeypatch.setattr(runner, "contribute", lambda o: calls.append(o) or False)
+    monkeypatch.setattr(runner, "run_claude", lambda *a, **kw: pytest.fail("no debe lanzar agentes"))
+    monkeypatch.setattr(sys, "argv", ["runner.py", "--lane", "think", "--until-idle", *flags])
+    monkeypatch.setattr(runner, "LANE", "think")
+    runner.main()  # si no saliera solo, el test se quedaría colgado
+    assert len(calls) == rounds
+
+
 def test_un_corte_para_el_runner_sin_contar_fallo(monkeypatch, tmp_path):
     r = _agent_result("", True) | {"cut": True}
     lane, seen = _main_loop(monkeypatch, tmp_path, r, rounds=2)

@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-03T01:35:03+01:00",
+  "updated": "2026-11-03T01:37:08+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -4117,18 +4117,18 @@
       "id": "T-082",
       "title": "Arrancar el carril de pensar sin rondas de aportación",
       "owner": "desarrollador",
-      "status": "next",
+      "status": "review",
       "priority": "media",
       "estimate_min": 20.0,
-      "actual_min": null,
+      "actual_min": 2.0,
       "auto": true,
       "manual": null,
       "desc": "El botón del panel lanza siempre rondas de aportación en el carril de pensar, que gastan cupo en ideas fuera del plan. Por eso está apagado y las tarjetas del arquitecto y del investigador no avanzan. Se propone poder arrancarlo sin ellas. Cómo sabremos si funciona: al arrancar sin aportación, el carril hace solo tarjetas del panel y no crea ninguna ronda.\n\n## Técnico\nboard/server.py, runner_start: añade --contribute al carril think. Parámetro contribute=false o ajuste en el panel, con test en tests/test_board.py. Además, el carril con --until-idle sale si no tiene tarjetas listas y no vuelve solo: documentarlo en docs/wiki/componentes/agent-board.md.",
       "deps": [],
       "created": "2026-11-02T17:30:57+01:00",
-      "updated": "2026-11-02T17:30:59+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-03T01:37:08+01:00",
+      "started_at": "2026-11-03T01:35:06+01:00",
+      "finished_at": "2026-11-03T01:37:08+01:00",
       "log": [
         {
           "t": "2026-11-02T17:30:57+01:00",
@@ -4144,6 +4144,28 @@
           "t": "2026-11-02T22:01:42+01:00",
           "by": "tú",
           "msg": "editada: priority"
+        },
+        {
+          "t": "2026-11-03T01:35:06+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-03T01:37:08+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: El botón Iniciar ya arranca sin rondas de aportación salvo casilla marcada, con tests en verde y wiki actualizada; falta reiniciar el panel y probarlo en real."
+        }
+      ],
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-03T01:37:08+01:00",
+          "min": 2.0,
+          "turns": 36,
+          "tokens": 270788,
+          "cost_usd": 0.4965514,
+          "verdict": "review"
         }
       ]
     },
@@ -6095,14 +6117,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-017",
-      "message": "tester con T-017",
+      "current": "T-082",
+      "message": "desarrollador con T-082",
       "pid": 8716,
-      "heartbeat": "2026-11-03T01:20:48+01:00",
+      "heartbeat": "2026-11-03T01:35:06+01:00",
       "enabled": true,
-      "agent": "tester",
-      "started": "2026-11-03T01:20:47+01:00",
-      "live": "live-T-017-tester-20261103-012047.jsonl"
+      "agent": "desarrollador",
+      "started": "2026-11-03T01:35:06+01:00",
+      "live": "live-T-082-desarrollador-20261103-013506.jsonl"
     }
   }
 }

@@ -78,6 +78,34 @@ def test_control_del_runner(board, monkeypatch):
     assert "exists" in s and (not s["exists"] or "next" in s)
 
 
+def test_iniciar_con_y_sin_rondas_de_aportacion(board, monkeypatch):
+    from fastapi.testclient import TestClient
+    sys.path.insert(0, str(board))
+    import importlib
+    import server
+    importlib.reload(server)
+    cmds = []
+
+    class Fake:
+        pid = 4242
+
+    def popen(cmd, **kw):
+        cmds.append(cmd)
+        return Fake()
+    monkeypatch.setattr(server.subprocess, "Popen", popen)  # sin procesos reales
+    c = TestClient(server.app)
+
+    def arranca(url):
+        cmds.clear()
+        assert c.post(url).json()["ok"]
+        return {cmd[cmd.index("--lane") + 1]: "--contribute" in cmd for cmd in cmds}
+    assert arranca("/api/runner/start?contribute=false") == {"think": False, "measure": False}
+    assert arranca("/api/runner/start?lane=think&contribute=false") == {"think": False}
+    assert arranca("/api/runner/start?contribute=true") == {"think": True, "measure": False}
+    assert arranca("/api/runner/start") == {"think": True, "measure": False}  # sin parámetro, como antes
+    assert 'id="rContrib"' in c.get("/").text
+
+
 def test_live_events_resume_el_stream():
     sys.path.insert(0, str(ROOT / "board"))
     import server

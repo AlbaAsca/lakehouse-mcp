@@ -134,6 +134,7 @@ dialog h3{margin:0;grid-column:1/-1;font-size:15px}
 </header>
 <section id="runner"><div id="lanes" style="flex:1 1 100%"></div><span class="sp"></span>
   <button id="rStart" title="Trabaja las tarjetas pendientes una tras otra y se para cuando no quedan">▶ Iniciar</button>
+  <label title="Si está marcada, cuando el carril de pensar se queda sin tarjetas lanza una ronda de aportación, que gasta cupo en ideas fuera del plan"><input type="checkbox" id="rContrib"> con rondas de aportación</label>
   <button id="rStop" title="Para el runner y al agente que esté trabajando; su tarjeta vuelve a Próximo">■ Parar</button>
   <button id="rToggle" title="En pausa, ni el botón Iniciar ni la ejecución programada cogen tarjetas">Pausar</button></section>
 <details id="live"><summary>📜 Ver en directo qué hace el agente <select id="liveLane" onclick="event.stopPropagation()"><option value="think">Pensar</option><option value="measure">Medir</option><option value="all">Único</option></select> <span id="liveFile"></span></summary><div id="liveLog"></div></details>
@@ -229,7 +230,7 @@ function renderRunner() {
   $("#rToggle").onclick = () => api("POST", "/api/board/runner", { enabled: g.enabled === false });
   $("#rStart").disabled = lanes.every(([, r]) => r.alive);
   $("#rStop").disabled = !alive;
-  $("#rStart").onclick = () => api("POST", "/api/runner/start");
+  $("#rStart").onclick = () => api("POST", "/api/runner/start?contribute=" + $("#rContrib").checked);
   $("#rStop").onclick = () => confirm("¿Parar los dos carriles y a los agentes que estén trabajando ahora?") && api("POST", "/api/runner/stop");
 }
 

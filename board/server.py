@@ -260,9 +260,10 @@ def runner_live(n: int = 60, lane: str = "all"):
 
 
 @app.post("/api/runner/start")
-def runner_start(lane: str = None):
+def runner_start(lane: str = None, contribute: bool = True):
     """Arranca el runner en segundo plano: trabaja tarea tras tarea y se para cuando no quedan (--until-idle).
-    Sin ?lane= arranca los dos carriles (think con --contribute, measure); los que ya estén vivos se respetan."""
+    Sin ?lane= arranca los dos carriles (think con --contribute, measure); los que ya estén vivos se respetan.
+    Con ?contribute=false el carril think hace solo tarjetas del panel, sin rondas de aportación."""
     lanes, b = _lanes(lane), json.loads(BOARD.read_text(encoding="utf-8"))
     legacy = pid_alive(b.get("runner", {}).get("pid"))  # un runner «all» ya cubre todos los carriles
     todo = [] if legacy else [k for k in lanes if not pid_alive(_state(b, k).get("pid"))]
@@ -284,7 +285,7 @@ def runner_start(lane: str = None):
     args = dict(cwd=ROOT, env=env, stdout=log, stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL)
     pids = {}
     for k in todo:
-        cmd = [sys.executable, str(HERE / "runner.py"), "--lane", k, "--until-idle"] + (["--contribute"] if k != "measure" else [])
+        cmd = [sys.executable, str(HERE / "runner.py"), "--lane", k, "--until-idle"] + (["--contribute"] if contribute and k != "measure" else [])
         try:  # fuera del "job" del proceso padre: si no, Windows lo mata cuando el padre termina
             p = subprocess.Popen(cmd, creationflags=flags | (0x01000000 if os.name == "nt" else 0), **args)
         except OSError:
