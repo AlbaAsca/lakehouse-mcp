@@ -64,8 +64,9 @@ public final class CatalogReader {
                     }
                     return out;
                 });
+        // No ORDER BY: the function answers in the order of the spec, which field ids need not follow.
         List<PartitionField> partitions = session.query("SELECT name, transform, source_column FROM "
-                + "iceberg_partition_specs(" + functionArgument(namespace, table) + ") WHERE is_default ORDER BY field_id",
+                + "iceberg_partition_specs(" + functionArgument(namespace, table) + ") WHERE is_default",
                 rows -> {
                     List<PartitionField> out = new ArrayList<>();
                     while (rows.next()) {
@@ -114,8 +115,9 @@ public final class CatalogReader {
         }
     }
 
+    /** The functions parse this text as a qualified name, so each part is quoted or a dot in it would split it. */
     private static String functionArgument(String namespace, String table) {
-        return LakehouseSession.quote(CATALOG + "." + namespace + "." + table);
+        return LakehouseSession.quote(CATALOG + "." + identifier(namespace) + "." + identifier(table));
     }
 
     private static String identifier(String name) {

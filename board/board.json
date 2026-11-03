@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-03T01:13:15+01:00",
+  "updated": "2026-11-03T01:20:44+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -1378,10 +1378,10 @@
       "id": "T-017",
       "title": "Consulta: leer esquema, particiones y snapshots del catálogo",
       "owner": "desarrollador",
-      "status": "next",
+      "status": "review",
       "priority": "media",
       "estimate_min": 30.0,
-      "actual_min": 17.1,
+      "actual_min": 24.5,
       "auto": true,
       "manual": null,
       "desc": "Para describir tablas y ver el último snapshot hace falta leer los datos del catálogo. Se había previsto una biblioteca aparte, pero la prueba ha demostrado que el motor de consulta ya da casi todo esto, así que se evita una dependencia pesada.\nCómo sabremos si funciona: tras varias escrituras de prueba, el código devuelve el esquema, las particiones y la lista de snapshots esperados, en orden.\n\n## Técnico\nDecisión 5 de docs/architecture.md: sin iceberg-core ni iceberg-aws en mcp-server.\n- mcp-server: CatalogReader sobre la conexión de LakehouseSession (T-016). Métodos: listTables, describe, snapshots.\n- Snapshots: iceberg_snapshots('lh.ns.t'), pasando el nombre como texto. Esquema: DESCRIBE o information_schema.\n- Particiones: probar primero iceberg_partition_specs, documentada pero no comprobada en esta versión (la documentación va por delante de la extensión). Si no existe, GET /api/catalog/v1/lakehouse/namespaces/{ns}/tables/{t} de Polaris con java.net.http. Anotar en docs/architecture.md, decisión 5, cuál se usó.\n- Verificación: IT con LakehouseStack en ./mk test. Depende de T-016 (cambio de dependencia propuesto al consultor).",
@@ -1389,9 +1389,9 @@
         "T-006"
       ],
       "created": "2026-11-02T11:36:37+01:00",
-      "updated": "2026-11-03T01:13:15+01:00",
-      "started_at": "2026-11-03T00:40:40+01:00",
-      "finished_at": "2026-11-03T00:57:49+01:00",
+      "updated": "2026-11-03T01:20:44+01:00",
+      "started_at": "2026-11-03T01:13:19+01:00",
+      "finished_at": "2026-11-03T01:20:44+01:00",
       "log": [
         {
           "t": "2026-11-02T11:36:37+01:00",
@@ -1432,6 +1432,16 @@
           "t": "2026-11-03T01:13:15+01:00",
           "by": "tester",
           "msg": "FAIL: `describe` altera el orden de particiones del catálogo y `describe`/`snapshots` fallan con tablas con punto en el nombre (reproducible con los dos tests `@Disabled` de `CatalogReaderEdgeIT`)."
+        },
+        {
+          "t": "2026-11-03T01:13:19+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-03T01:20:44+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: `describe` respeta el orden de particiones del catálogo y las tablas con punto ya se leen; `mcp-server` en verde excluyendo `SqlGuardProbeTest` (T-127)."
         }
       ],
       "runs": [
@@ -1454,6 +1464,16 @@
           "tokens": 1479730,
           "cost_usd": 1.6776620000000002,
           "verdict": "fail"
+        },
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-03T01:20:44+01:00",
+          "min": 7.4,
+          "turns": 25,
+          "tokens": 293587,
+          "cost_usd": 0.5995276,
+          "verdict": "review"
         }
       ],
       "verify_started": "2026-11-03T00:57:53+01:00"
@@ -6022,13 +6042,13 @@
     "measure": {
       "state": "working",
       "current": "T-017",
-      "message": "tester con T-017",
+      "message": "desarrollador con T-017",
       "pid": 8716,
-      "heartbeat": "2026-11-03T00:57:53+01:00",
+      "heartbeat": "2026-11-03T01:13:19+01:00",
       "enabled": true,
-      "agent": "tester",
-      "started": "2026-11-03T00:57:53+01:00",
-      "live": "live-T-017-tester-20261103-005753.jsonl"
+      "agent": "desarrollador",
+      "started": "2026-11-03T01:13:19+01:00",
+      "live": "live-T-017-desarrollador-20261103-011319.jsonl"
     }
   }
 }

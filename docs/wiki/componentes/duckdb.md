@@ -68,11 +68,13 @@ Lo demuestra `LakehouseSessionIT`, en `./mk test`.
 | `describe` | `DESCRIBE`, `iceberg_partition_specs(...) WHERE is_default` | Columnas con su tipo y particiones actuales |
 | `snapshots` | `iceberg_snapshots(...)` | Del más antiguo al último, con padre, fecha, operación y totales |
 
-Tres cosas comprobadas con la versión actual de la extensión:
+Cinco cosas comprobadas con la versión actual de la extensión:
 
 - **`information_schema.columns` no sirve.** En una sesión que aún no ha leído la tabla devuelve una sola columna llamada `__`, y luego no ve las columnas añadidas. `DESCRIBE` acierta siempre, también con la sesión ya abierta.
 - **DuckDB dice que toda columna admite nulos**, aunque Iceberg la tenga como obligatoria. Por eso `describe` no da ese dato: para saberlo hay que preguntar a Polaris.
 - **Los nombres distinguen mayúsculas**, y una tabla que no existe da `NoSuchElementException`. Sin esa comprobación previa, `iceberg_snapshots` responde con un error engañoso sobre `version-hint`.
+- **El nombre que se pasa como texto a `iceberg_snapshots` e `iceberg_partition_specs` se interpreta como nombre cualificado.** Una tabla con un punto hay que escribirla entre comillas dobles: `iceberg_snapshots('lh.ns."do.t"')`.
+- **Las particiones se devuelven en el orden del catálogo** si no se ordenan. Ese orden importa y `field_id` no tiene por qué seguirlo, así que `describe` no usa `ORDER BY`.
 
 ## Cómo probarlo tú mismo
 

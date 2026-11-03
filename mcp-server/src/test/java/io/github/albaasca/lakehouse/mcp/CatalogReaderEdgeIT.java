@@ -31,7 +31,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -154,7 +153,6 @@ class CatalogReaderEdgeIT {
     }
 
     /** The order of a spec is the order of its fields in the catalog; field ids need not follow it. */
-    @Disabled("T-017: CatalogReader.describe sorts by field_id; remove this line with the fix")
     @Test
     void partitionsKeepTheOrderOfTheSpec() throws Exception {
         String table = "spec_order";
@@ -230,7 +228,6 @@ class CatalogReaderEdgeIT {
     }
 
     /** The table is listed and DESCRIBE reads it, so its partitions and snapshots have to read too. */
-    @Disabled("T-017: CatalogReader.functionArgument does not quote the name; remove this line with the fix")
     @Test
     void aTableWithADotInItsNameIsReadLikeAnyOther() throws Exception {
         String table = "do.t";
