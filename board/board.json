@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-03T13:20:31+01:00",
+  "updated": "2026-11-03T13:22:56+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -4311,7 +4311,7 @@
         "T-145"
       ],
       "created": "2026-11-02T17:30:57+01:00",
-      "updated": "2026-11-03T10:27:24+01:00",
+      "updated": "2026-11-03T13:22:56+01:00",
       "started_at": "2026-11-03T10:26:39+01:00",
       "finished_at": "2026-11-03T10:27:24+01:00",
       "log": [
@@ -4404,6 +4404,16 @@
           "t": "2026-11-03T12:25:01+01:00",
           "by": "tú",
           "msg": "✓ permiso concedido: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\board\\runner.py *"
+        },
+        {
+          "t": "2026-11-03T13:20:38+01:00",
+          "by": "tester",
+          "msg": "verificando"
+        },
+        {
+          "t": "2026-11-03T13:22:56+01:00",
+          "by": "tester",
+          "msg": "límite de uso, reintenta tras el reset"
         }
       ],
       "runs": [
@@ -4427,7 +4437,8 @@
           "cost_usd": 0.3340106,
           "verdict": "review"
         }
-      ]
+      ],
+      "verify_started": "2026-11-03T13:20:38+01:00"
     },
     {
       "id": "T-085",
@@ -6743,6 +6754,30 @@
           "msg": "creada"
         }
       ]
+    },
+    {
+      "id": "T-148",
+      "title": "Un agente que termina bien pero cita el aviso de límite se toma por cortado",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "media",
+      "estimate_min": 10.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Si el mensaje final de un agente menciona de pasada el aviso de límite de uso, el ejecutor cree que se agotó el cupo aunque el agente haya terminado y dado su veredicto. La tarjeta vuelve atrás, se pierde el trabajo de esa ronda y el ejecutor se para. Puede repetirse siempre en tarjetas que hablan de ese aviso. Se propone que un mensaje con veredicto válido cuente como terminado.\nCómo sabremos si funciona: un agente que cita el aviso y da su veredicto cierra la tarjeta con ese veredicto, y un límite real sigue devolviéndola a su estado.\n## Técnico\nboard/runner.py, is_usage_limit: LIMIT_RE se aplica a todo r['text']. Reproducción: interruption con text que contiene 'usage limit reached' y una línea final 'RESULT: done', cut=False, devuelve ('limit', LIMIT_MSG). Criterio: con RESULT_RE en el mensaje final, interruption devuelve None; sin RESULT sigue devolviendo limit. Viene de antes de T-084 (T-013). Test en tests/test_runner.py.",
+      "deps": [],
+      "created": "2026-11-03T13:22:42+01:00",
+      "updated": "2026-11-03T13:22:42+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-03T13:22:42+01:00",
+          "by": "tester",
+          "msg": "creada"
+        }
+      ]
     }
   ],
   "runners": {
@@ -6761,14 +6796,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-127",
-      "message": "tester con T-127",
+      "current": "T-084",
+      "message": "tester con T-084",
       "pid": 19972,
-      "heartbeat": "2026-11-03T12:04:50+01:00",
+      "heartbeat": "2026-11-03T13:20:39+01:00",
       "enabled": true,
       "agent": "tester",
-      "started": "2026-11-03T12:04:50+01:00",
-      "live": "live-T-127-tester-20261103-120450.jsonl"
+      "started": "2026-11-03T13:20:39+01:00",
+      "live": "live-T-084-tester-20261103-132039.jsonl"
     }
   }
 }

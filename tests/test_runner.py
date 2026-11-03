@@ -411,8 +411,55 @@ def test_un_corte_para_el_runner_sin_contar_fallo(monkeypatch, tmp_path):
     assert any(kw.get("message") == runner.CUT_MSG for kw in seen)
 
 
+T012_REAL_LOG = Path(__file__).resolve().parents[1] / "board" / "runs" / "T-012-tester-20261102-131521.txt"
+
+
+@pytest.mark.parametrize("code", [0, 1])
+def test_la_salida_completa_de_t012_devuelve_la_tarjeta_a_revision(monkeypatch, tmp_path, code):
+    if not T012_REAL_LOG.exists():  # board/runs/ no se sube: en CI cubre el caso T012_TAIL
+        pytest.skip("log real de T-012 no disponible")
+    raw = T012_REAL_LOG.read_text(encoding="utf-8").split("--- stderr ---")[0]
+    events = [json.loads(line) for line in raw.splitlines() if line.strip()]
+    tid = _new_card("review")
+    r = _stream(monkeypatch, tmp_path, events, code=code)
+    assert runner.finish(tid, "verify", "tester", r) == ("review", "cut", runner.CUT_MSG)
+    assert runner.bd.task(runner.bd.load(), tid)["log"][-1]["msg"] == runner.CUT_MSG
+
+
+def test_un_result_a_medias_en_el_flujo_no_cierra_la_tarjeta(monkeypatch, tmp_path):
+    said = {"type": "assistant", "message": {"content": [{"type": "text", "text": "RESULT: done — aún no he terminado"}]}}
+    tid = _new_card("review")
+    r = _stream(monkeypatch, tmp_path, [said, *T012_TAIL], code=1)
+    assert runner.finish(tid, "verify", "tester", r)[:2] == ("review", "cut")
+    assert runner.bd.task(runner.bd.load(), tid)["status"] == "review"
+
+
+def test_un_proceso_real_que_muere_sin_mensaje_final_es_un_corte(monkeypatch, tmp_path):
+    monkeypatch.setattr(runner, "LOGDIR", tmp_path)
+    monkeypatch.setattr(runner, "claim", lambda *a: None)
+    tid = _new_card("doing")
+    r = runner.run_claude(sys.executable, "prompt", "tester", 60, tag="T-1")  # python rechaza -p: stderr y código de error reales
+    assert r["code"] != 0 and r["err"] and r["cut"]
+    new, verdict, summary = runner.finish(tid, "work", "tester", r)
+    assert (new, verdict) == ("next", "cut")
+    assert summary.startswith(runner.CUT_MSG + ": ") and "\n" not in summary
+
+
+def test_una_ronda_de_aportacion_cortada_no_marca_el_enfriamiento(monkeypatch, tmp_path):
+    monkeypatch.setattr(runner, "LOGDIR", tmp_path)
+    monkeypatch.setattr(runner, "LANE", "all")
+    monkeypatch.setattr(runner, "snapshot", lambda: {})
+    monkeypatch.setattr(runner, "save", lambda *a: pytest.fail("un corte no guarda nada"))
+    monkeypatch.setattr(runner, "run_claude", lambda *a, **kw: _agent_result("", True) | {"cut": True})
+    o = type("O", (), dict(dry_run=False, claude="claude", contrib_every=0))
+    assert runner.contribute(o) is False
+    b = runner.bd.load()
+    assert not runner.bd.lane_state(b, "all").get("contrib_at")
+    assert b["tasks"][-1]["log"][-1]["msg"] == f"LIMIT: {runner.CUT_MSG}"
+
+
 def _live(denied):
-    use ={"type": "assistant", "message": {"content": [
+    use = {"type": "assistant", "message": {"content": [
         {"type": "tool_use", "id": "a", "name": "Bash", "input": {"command": "cat x && python board/board.py add T"}}]}}
     txt = "Permission for this tool use was denied" if denied else "ok"
     res = {"type": "user", "message": {"content": [{"type": "tool_result", "tool_use_id": "a", "content": txt}]}}
