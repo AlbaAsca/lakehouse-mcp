@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-03T10:10:55+01:00",
+  "updated": "2026-11-03T10:23:01+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -1378,10 +1378,10 @@
       "id": "T-017",
       "title": "Consulta: leer esquema, particiones y snapshots del catálogo",
       "owner": "desarrollador",
-      "status": "next",
+      "status": "review",
       "priority": "alta",
       "estimate_min": 30.0,
-      "actual_min": 24.5,
+      "actual_min": 36.5,
       "auto": true,
       "manual": null,
       "desc": "Para describir tablas y ver el último snapshot hace falta leer los datos del catálogo. Se había previsto una biblioteca aparte, pero la prueba ha demostrado que el motor de consulta ya da casi todo esto, así que se evita una dependencia pesada.\nCómo sabremos si funciona: tras varias escrituras de prueba, el código devuelve el esquema, las particiones y la lista de snapshots esperados, en orden.\n\n## Técnico\nDecisión 5 de docs/architecture.md: sin iceberg-core ni iceberg-aws en mcp-server.\n- mcp-server: CatalogReader sobre la conexión de LakehouseSession (T-016). Métodos: listTables, describe, snapshots.\n- Snapshots: iceberg_snapshots('lh.ns.t'), pasando el nombre como texto. Esquema: DESCRIBE o information_schema.\n- Particiones: probar primero iceberg_partition_specs, documentada pero no comprobada en esta versión (la documentación va por delante de la extensión). Si no existe, GET /api/catalog/v1/lakehouse/namespaces/{ns}/tables/{t} de Polaris con java.net.http. Anotar en docs/architecture.md, decisión 5, cuál se usó.\n- Verificación: IT con LakehouseStack en ./mk test. Depende de T-016 (cambio de dependencia propuesto al consultor).",
@@ -1389,9 +1389,9 @@
         "T-006"
       ],
       "created": "2026-11-02T11:36:37+01:00",
-      "updated": "2026-11-03T10:04:44+01:00",
-      "started_at": "2026-11-03T01:13:19+01:00",
-      "finished_at": "2026-11-03T01:20:44+01:00",
+      "updated": "2026-11-03T10:23:01+01:00",
+      "started_at": "2026-11-03T10:20:07+01:00",
+      "finished_at": "2026-11-03T10:23:01+01:00",
       "log": [
         {
           "t": "2026-11-02T11:36:37+01:00",
@@ -1472,6 +1472,26 @@
           "t": "2026-11-03T10:04:51+01:00",
           "by": "tú",
           "msg": "editada: priority"
+        },
+        {
+          "t": "2026-11-03T10:10:59+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-03T10:20:04+01:00",
+          "by": "consultor",
+          "msg": "Se cortó por el reinicio del PC a las 10:14"
+        },
+        {
+          "t": "2026-11-03T10:20:07+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-03T10:23:01+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: `CatalogReader` ya cumple el criterio y los tests de `mcp-server` pasan en verde, sin cambios de código en esta pasada."
         }
       ],
       "runs": [
@@ -1514,6 +1534,16 @@
           "tokens": 1114627,
           "cost_usd": 1.2868774,
           "verdict": "blocked"
+        },
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-03T10:23:01+01:00",
+          "min": 2.9,
+          "turns": 22,
+          "tokens": 155637,
+          "cost_usd": 0.39837560000000005,
+          "verdict": "review"
         }
       ],
       "verify_started": "2026-11-03T01:20:47+01:00"
@@ -4422,6 +4452,11 @@
           "t": "2026-11-03T10:10:54+01:00",
           "by": "runner",
           "msg": "✓ permiso concedido automáticamente: git show* (solo lectura dentro del proyecto); se reintenta"
+        },
+        {
+          "t": "2026-11-03T10:20:04+01:00",
+          "by": "consultor",
+          "msg": "Falso positivo: el runner abre solicitudes de permiso con Grep * (T-140, T-143). Grep es herramienta permitida, no comando: no debería abrir tarjeta."
         }
       ],
       "runs": [
@@ -6403,7 +6438,7 @@
       "id": "T-143",
       "title": "Solicitud de permiso: Grep *",
       "owner": "consultor",
-      "status": "human",
+      "status": "done",
       "priority": "media",
       "estimate_min": 2,
       "actual_min": null,
@@ -6412,7 +6447,7 @@
       "desc": "El agente «tester» necesitaba un comando que no está en su lista de permitidos y se lo bloquearon mientras hacía T-085. No es de solo lectura ni está prohibido, así que lo tiene que validar una persona.\n\nPara qué lo quería: (no lo explicó)\n\nCómo decidir: concede si es seguro repetirlo sin supervisión dentro del proyecto; deniega si escribe fuera, publica, borra o usa la red.\n\n## Técnico\n- Comando: Grep\n- Patrón que se concedería: Grep *\n- Tarjeta: T-085",
       "deps": [],
       "created": "2026-11-03T10:10:54+01:00",
-      "updated": "2026-11-03T10:10:54+01:00",
+      "updated": "2026-11-03T10:20:04+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -6420,6 +6455,11 @@
           "t": "2026-11-03T10:10:54+01:00",
           "by": "runner",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-03T10:20:04+01:00",
+          "by": "consultor",
+          "msg": "Sin conceder: Grep es una herramienta, no un comando; ya está permitida"
         }
       ],
       "kind": "permiso",
@@ -6448,14 +6488,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-085",
-      "message": "tester con T-085",
-      "pid": 23100,
-      "heartbeat": "2026-11-03T10:08:30+01:00",
+      "current": "T-017",
+      "message": "desarrollador con T-017",
+      "pid": 19972,
+      "heartbeat": "2026-11-03T10:20:08+01:00",
       "enabled": true,
-      "agent": "tester",
-      "started": "2026-11-03T10:08:30+01:00",
-      "live": "live-T-085-tester-20261103-100830.jsonl"
+      "agent": "desarrollador",
+      "started": "2026-11-03T10:20:08+01:00",
+      "live": "live-T-017-desarrollador-20261103-102008.jsonl"
     }
   }
 }
