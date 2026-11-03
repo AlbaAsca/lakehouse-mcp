@@ -89,6 +89,12 @@
       "why": "concedido automáticamente a desarrollador (T-085): solo lectura dentro del proyecto",
       "by": "runner",
       "at": "2026-11-03T01:44:04+01:00"
+    },
+    {
+      "pattern": "git show*",
+      "why": "concedido automáticamente a tester (T-085): solo lectura dentro del proyecto",
+      "by": "runner",
+      "at": "2026-11-03T10:10:54+01:00"
     }
   ],
   "denied": []
