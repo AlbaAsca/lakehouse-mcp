@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-03T00:57:49+01:00",
+  "updated": "2026-11-03T01:13:15+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -1378,7 +1378,7 @@
       "id": "T-017",
       "title": "Consulta: leer esquema, particiones y snapshots del catálogo",
       "owner": "desarrollador",
-      "status": "review",
+      "status": "next",
       "priority": "media",
       "estimate_min": 30.0,
       "actual_min": 17.1,
@@ -1389,7 +1389,7 @@
         "T-006"
       ],
       "created": "2026-11-02T11:36:37+01:00",
-      "updated": "2026-11-03T00:57:49+01:00",
+      "updated": "2026-11-03T01:13:15+01:00",
       "started_at": "2026-11-03T00:40:40+01:00",
       "finished_at": "2026-11-03T00:57:49+01:00",
       "log": [
@@ -1422,6 +1422,16 @@
           "t": "2026-11-03T00:57:49+01:00",
           "by": "desarrollador",
           "msg": "REVIEW: CatalogReader lee tablas, esquema, particiones y snapshots solo con DuckDB y sus tests pasan, pero el módulo completo falla por SqlGuardProbeTest (de T-019, parece T-127), excluido al probar."
+        },
+        {
+          "t": "2026-11-03T00:57:53+01:00",
+          "by": "tester",
+          "msg": "verificando"
+        },
+        {
+          "t": "2026-11-03T01:13:15+01:00",
+          "by": "tester",
+          "msg": "FAIL: `describe` altera el orden de particiones del catálogo y `describe`/`snapshots` fallan con tablas con punto en el nombre (reproducible con los dos tests `@Disabled` de `CatalogReaderEdgeIT`)."
         }
       ],
       "runs": [
@@ -1434,8 +1444,19 @@
           "tokens": 1337309,
           "cost_usd": 1.8931302000000003,
           "verdict": "review"
+        },
+        {
+          "agent": "tester",
+          "mode": "verify",
+          "at": "2026-11-03T01:13:15+01:00",
+          "min": 15.4,
+          "turns": 53,
+          "tokens": 1479730,
+          "cost_usd": 1.6776620000000002,
+          "verdict": "fail"
         }
-      ]
+      ],
+      "verify_started": "2026-11-03T00:57:53+01:00"
     },
     {
       "id": "T-018",
@@ -5694,6 +5715,11 @@
           "t": "2026-11-02T23:40:03+01:00",
           "by": "tester",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-03T01:12:50+01:00",
+          "by": "consultor",
+          "msg": "Tester (T-017): sigue en rojo en el run 41547257605, Crashed tests: SqlGuardProbeTest, exit 139. Consecuencia: la CI muere en surefire de mcp-server antes de failsafe, así que CatalogReaderIT y CatalogReaderEdgeIT no se han ejecutado nunca en CI, solo en local con -Dtest que excluye esa clase."
         }
       ]
     },
@@ -5946,6 +5972,37 @@
         "task": "T-084",
         "why": ""
       }
+    },
+    {
+      "id": "T-137",
+      "title": "Después de deshacer una escritura, el último snapshot de la lista no es el vigente",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "media",
+      "estimate_min": 20.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "La lectura del catálogo devuelve los snapshots del más antiguo al más nuevo, pero no dice cuál está en vigor. Tras volver a una versión anterior, el último de la lista sigue siendo el que se acaba de deshacer, de modo que quien lo tome por el actual informará de datos que ya no se ven. Se propone indicar cuál es el vigente, porque el aviso de frescura, la descripción de tablas y el arreglo de vuelta atrás dependen de ello.\nCómo sabremos si funciona: tras una vuelta atrás sin escrituras nuevas, la lectura señala como vigente el snapshot al que se volvió, igual que el catálogo.\n\n## Técnico\nDónde: CatalogReader.snapshots y record Snapshot; afecta a T-020, T-022 y T-026.\nSíntoma: tres inserciones y CALL iceberg_rollback_to_snapshot al primero: el REST de Polaris da current-snapshot-id = primero, y snapshots().getLast() es el tercero. Lo fija CatalogReaderEdgeIT.afterARollbackTheChainIsRightAndTheLastInTheListIsNotTheCurrentOne.\niceberg_snapshots no tiene columna de vigente (sequence_number, snapshot_id, parent_id, timestamp_ms, manifest_list, operation, summary). Fuente del dato por decidir: REST de Polaris con java.net.http, u otra función de DuckDB si existe (sin comprobar).\nCriterio: método o campo con el snapshot vigente, comparado con current-snapshot-id tras rollback, en tabla sin escrituras (ninguno) y tras escribir de nuevo. Anotar la fuente en docs/architecture.md, decisión 5.",
+      "deps": [
+        "T-017"
+      ],
+      "created": "2026-11-03T01:12:49+01:00",
+      "updated": "2026-11-03T01:13:01+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-03T01:12:49+01:00",
+          "by": "tester",
+          "msg": "creada"
+        },
+        {
+          "t": "2026-11-03T01:13:01+01:00",
+          "by": "consultor",
+          "msg": "descripción reescrita"
+        }
+      ]
     }
   ],
   "runners": {
@@ -5965,13 +6022,13 @@
     "measure": {
       "state": "working",
       "current": "T-017",
-      "message": "desarrollador con T-017",
+      "message": "tester con T-017",
       "pid": 8716,
-      "heartbeat": "2026-11-03T00:40:40+01:00",
+      "heartbeat": "2026-11-03T00:57:53+01:00",
       "enabled": true,
-      "agent": "desarrollador",
-      "started": "2026-11-03T00:40:40+01:00",
-      "live": "live-T-017-desarrollador-20261103-004040.jsonl"
+      "agent": "tester",
+      "started": "2026-11-03T00:57:53+01:00",
+      "live": "live-T-017-tester-20261103-005753.jsonl"
     }
   }
 }
