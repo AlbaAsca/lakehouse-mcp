@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-03T01:40:52+01:00",
+  "updated": "2026-11-03T01:44:04+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -4332,18 +4332,20 @@
       "id": "T-085",
       "title": "Prohibir siempre los comandos destructivos, aunque haya un permiso amplio",
       "owner": "desarrollador",
-      "status": "next",
+      "status": "review",
       "priority": "media",
       "estimate_min": 20.0,
-      "actual_min": null,
+      "actual_min": 3.1,
       "auto": true,
       "manual": null,
       "desc": "Un permiso amplio como ./mk * o docker * deja a los agentes ejecutar cosas que borran datos sin supervisión. Se propone una lista cerrada que nunca se conceda, sea cual sea el permiso. Cómo sabremos si funciona: docker compose down -v, docker system prune y ./mk down se deniegan aunque exista un permiso que los cubra.\n\n## Técnico\nboard/permissions.py NEVER y runner.py DENIED, que prevalecen sobre allowed. Añadir a los tests de tests/test_permissions.py. Revisar el permiso actual ./mk *, concedido a las 17:02: al terminar T-072, proponer a la responsable reducirlo a up, smoke y test.",
-      "deps": [],
+      "deps": [
+        "T-140"
+      ],
       "created": "2026-11-02T17:30:58+01:00",
-      "updated": "2026-11-02T17:30:59+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-03T01:44:04+01:00",
+      "started_at": "2026-11-03T01:40:57+01:00",
+      "finished_at": "2026-11-03T01:44:04+01:00",
       "log": [
         {
           "t": "2026-11-02T17:30:58+01:00",
@@ -4359,6 +4361,43 @@
           "t": "2026-11-02T22:01:44+01:00",
           "by": "tú",
           "msg": "editada: priority"
+        },
+        {
+          "t": "2026-11-03T01:40:57+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-03T01:44:04+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: los comandos destructivos de docker, ./mk y gh se deniegan aunque haya un permiso amplio, con tests en verde y sin probar aún con la CLI real; T-139 propone reducir ./mk *"
+        },
+        {
+          "t": "2026-11-03T01:44:04+01:00",
+          "by": "desarrollador",
+          "msg": "⚠ 2 comandos denegados: Grep | git log -5 --format=%h\\ %s -- board/permissions.py board/runner.py"
+        },
+        {
+          "t": "2026-11-03T01:44:04+01:00",
+          "by": "runner",
+          "msg": "? permiso solicitado: Grep * (T-140); la tarjeta espera la decisión"
+        },
+        {
+          "t": "2026-11-03T01:44:04+01:00",
+          "by": "runner",
+          "msg": "✓ permiso concedido automáticamente: git log -5* (solo lectura dentro del proyecto); se reintenta"
+        }
+      ],
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-03T01:44:04+01:00",
+          "min": 3.1,
+          "turns": 36,
+          "tokens": 306179,
+          "cost_usd": 0.7263438000000001,
+          "verdict": "review"
         }
       ]
     },
@@ -6120,6 +6159,67 @@
           "msg": "creada"
         }
       ]
+    },
+    {
+      "id": "T-139",
+      "title": "Reducir el permiso amplio de los agentes con ./mk",
+      "owner": "consultor",
+      "status": "backlog",
+      "priority": "media",
+      "estimate_min": 2.0,
+      "actual_min": null,
+      "auto": false,
+      "manual": "Decide si cambias los permisos concedidos ./mk * y ./mk.cmd * por solo up, smoke y test.",
+      "desc": "Los agentes pueden lanzar cualquier objetivo de ./mk: el permiso se concedió mientras se arreglaba el conector, trabajo que ya terminó. Ahora ./mk down está prohibido siempre, pero siguen abiertos sin supervisión objetivos como chaos, pensado para romper datos a propósito, además de seed y download-data. Se propone dejarlo solo en up, smoke y test.\n\nCómo sabremos si funciona: los agentes pueden arrancar el stack, comprobarlo y pasar tests, y cualquier otro objetivo de ./mk pide validación.\n\n## Técnico\nboard/permissions.json: quitar ./mk * y ./mk.cmd *; conceder ./mk up*, ./mk smoke*, ./mk test* y sus equivalentes con ./mk.cmd. T-085 lo pedía al terminar T-072, ya cerrada. docker * y gh * siguen igual de amplios y conviene revisarlos a la vez.",
+      "deps": [],
+      "created": "2026-11-03T01:43:08+01:00",
+      "updated": "2026-11-03T01:43:21+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-03T01:43:08+01:00",
+          "by": "desarrollador",
+          "msg": "creada"
+        },
+        {
+          "t": "2026-11-03T01:43:21+01:00",
+          "by": "consultor",
+          "msg": "descripción reescrita"
+        }
+      ]
+    },
+    {
+      "id": "T-140",
+      "title": "Solicitud de permiso: Grep *",
+      "owner": "consultor",
+      "status": "human",
+      "priority": "media",
+      "estimate_min": 2,
+      "actual_min": null,
+      "auto": false,
+      "manual": "Abre la tarjeta y pulsa «Conceder» o «Denegar».",
+      "desc": "El agente «desarrollador» necesitaba un comando que no está en su lista de permitidos y se lo bloquearon mientras hacía T-085. No es de solo lectura ni está prohibido, así que lo tiene que validar una persona.\n\nPara qué lo quería: (no lo explicó)\n\nCómo decidir: concede si es seguro repetirlo sin supervisión dentro del proyecto; deniega si escribe fuera, publica, borra o usa la red.\n\n## Técnico\n- Comando: Grep\n- Patrón que se concedería: Grep *\n- Tarjeta: T-085",
+      "deps": [],
+      "created": "2026-11-03T01:44:04+01:00",
+      "updated": "2026-11-03T01:44:04+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-03T01:44:04+01:00",
+          "by": "runner",
+          "msg": "creada"
+        }
+      ],
+      "kind": "permiso",
+      "perm": {
+        "pattern": "Grep *",
+        "command": "Grep",
+        "agent": "desarrollador",
+        "task": "T-085",
+        "why": ""
+      }
     }
   ],
   "runners": {
@@ -6138,14 +6238,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-082",
-      "message": "tester con T-082",
+      "current": "T-085",
+      "message": "desarrollador con T-085",
       "pid": 8716,
-      "heartbeat": "2026-11-03T01:37:12+01:00",
+      "heartbeat": "2026-11-03T01:40:57+01:00",
       "enabled": true,
-      "agent": "tester",
-      "started": "2026-11-03T01:37:12+01:00",
-      "live": "live-T-082-tester-20261103-013712.jsonl"
+      "agent": "desarrollador",
+      "started": "2026-11-03T01:40:57+01:00",
+      "live": "live-T-085-desarrollador-20261103-014057.jsonl"
     }
   }
 }

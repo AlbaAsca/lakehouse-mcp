@@ -42,7 +42,7 @@ stateDiagram-v2
 
 ## Cómo está configurado aquí
 
-Las reglas están en [`CLAUDE.md`](../../../CLAUDE.md). Los permisos de los agentes están en listas `ALLOWED` y `DENIED` en `runner.py`, más [`board/permissions.json`](../../../board/permissions.json). Por eso los agentes no pueden hacer `git commit`: los commits los hace el runner.
+Las reglas están en [`CLAUDE.md`](../../../CLAUDE.md). Los permisos de los agentes están en listas `ALLOWED` y `DENIED` en `runner.py`, más [`board/permissions.json`](../../../board/permissions.json). Por eso los agentes no pueden hacer `git commit`: los commits los hace el runner. Los comandos destructivos (`docker compose down`, `docker … prune`, `docker … rm`, `./mk down`, `gh … delete`) se deniegan siempre desde `never_rules()` en `board/permissions.py`, aunque exista un permiso amplio como `docker *`, porque la denegación manda sobre lo permitido.
 
 El botón **▶ Iniciar** arranca los dos carriles y trabaja solo las tarjetas del panel. Si marcas «con rondas de aportación», el carril de pensar lanza además una ronda cuando se queda sin tarjetas, y esa ronda gasta cupo en ideas fuera del plan. Por API es `POST /api/runner/start?contribute=false`; sin el parámetro, las rondas se activan (T-082).
 

@@ -83,6 +83,12 @@
       "why": "concedido por el responsable desde el panel",
       "by": "responsable",
       "at": "2026-11-03T00:21:47+01:00"
+    },
+    {
+      "pattern": "git log -5*",
+      "why": "concedido automáticamente a desarrollador (T-085): solo lectura dentro del proyecto",
+      "by": "runner",
+      "at": "2026-11-03T01:44:04+01:00"
     }
   ],
   "denied": []

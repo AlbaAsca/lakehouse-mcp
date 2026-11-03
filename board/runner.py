@@ -56,7 +56,7 @@ DENIED = ["Bash(python -m pip *)", "Bash(pip *)", "Bash(npm *)", "Bash(npx *)", 
           "Bash(curl *)", "Bash(wget *)", "Bash(cp *)", "Bash(mv *)", "Bash(rm *)",
           "Bash(git add*)", "Bash(git commit*)", "Bash(git push*)", "Bash(git reset*)", "Bash(git checkout*)",
           "PowerShell(python -m pip *)", "PowerShell(pip *)", "PowerShell(Copy-Item*)", "PowerShell(Remove-Item*)",
-          "PowerShell(git add*)", "PowerShell(git commit*)", "PowerShell(git push*)"]
+          "PowerShell(git add*)", "PowerShell(git commit*)", "PowerShell(git push*)", *pm.never_rules()]
 
 RULES = """Reglas (modo autónomo, permisos: solo código y tests):
 - Nadie va a responder preguntas: decide tú dentro de tu rol, con el criterio más sensato.

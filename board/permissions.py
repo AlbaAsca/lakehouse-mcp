@@ -27,7 +27,18 @@ NEVER = [
     (re.compile(r"(^|\s)(rm|del|rmdir|Remove-Item|mv|Move-Item|cp|Copy-Item)\b"), "borrar o mover ficheros: usa Write/Edit"),
     (re.compile(r"\b(pip|npm|npx|winget|choco|conda)\b|-m\s+pip\b"), "instalar software: lo decide el responsable"),
     (re.compile(r"\b(curl|wget|Invoke-WebRequest|iwr|ssh|scp)\b"), "red: usa WebFetch o pide los datos al responsable"),
+    # Anclados al inicio para no confundir un comando con un texto que lo menciona (p. ej. la descripción de una tarjeta).
+    (re.compile(r"^(\S*[\\/])?docker(\.exe)?\s(.*\s)?(down|prune|rm|rmi)(\s|$)"), "borra contenedores o datos: solo el responsable"),
+    (re.compile(r"^(\S*[\\/])?(mk(\.cmd)?|make)\s(.*\s)?down(\s|$)"), "apaga el stack: solo el responsable"),
+    (re.compile(r"^(\S*[\\/])?gh(\.exe)?\s(.*\s)?(delete|DELETE)(\s|$)"), "borra en GitHub: solo el responsable"),
 ]
+# Lo mismo que los tres últimos de NEVER, en el formato de la CLI: las reglas de denegar prevalecen sobre cualquier concesión.
+# Palabra exacta, no «down*», que también cazaría ./mk download-data.
+NEVER_WORDS = {
+    "docker": ("down", "prune", "rm", "rmi"),
+    "./mk": ("down",), "mk": ("down",), "./mk.cmd": ("down",), "mk.cmd": ("down",), ".\\mk.cmd": ("down",), "make": ("down",),
+    "gh": ("delete", "DELETE"),
+}
 SAFE = [  # solo lectura, o build y tests dentro de los contenedores del proyecto
     re.compile(r"^(\.venv[\\/]Scripts[\\/])?python(\.exe)?\s"),
     re.compile(r"^git\s+(status|diff|log|show|blame|ls-files|rev-parse|tag\s+(--list|-l)|branch\s+(--list|-a|-v)|describe)\b"),
@@ -88,6 +99,13 @@ def rules(d=None):
     d = d or load()
     wrap = lambda ps: [f"{tool}({p})" for p in ps for tool in ("Bash", "PowerShell")]
     return wrap([x["pattern"] for x in d["allowed"]]), wrap([x["pattern"] for x in d["denied"]])
+
+
+def never_rules():
+    """Reglas de denegar de los comandos destructivos: cubren la palabra justo detrás del comando o tras otras opciones."""
+    forms = ("{c} {w}", "{c} {w} *", "{c} * {w}", "{c} * {w} *")
+    return [f"{tool}({f.format(c=c, w=w)})" for c, words in NEVER_WORDS.items() for w in words for f in forms
+            for tool in ("Bash", "PowerShell")]
 
 
 def record(kind, pat, why, by, d=None, save_it=True):
