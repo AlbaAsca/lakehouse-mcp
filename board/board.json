@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-03T10:23:01+01:00",
+  "updated": "2026-11-03T10:26:32+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -1378,7 +1378,7 @@
       "id": "T-017",
       "title": "Consulta: leer esquema, particiones y snapshots del catálogo",
       "owner": "desarrollador",
-      "status": "review",
+      "status": "done",
       "priority": "alta",
       "estimate_min": 30.0,
       "actual_min": 36.5,
@@ -1389,7 +1389,7 @@
         "T-006"
       ],
       "created": "2026-11-02T11:36:37+01:00",
-      "updated": "2026-11-03T10:23:01+01:00",
+      "updated": "2026-11-03T10:26:32+01:00",
       "started_at": "2026-11-03T10:20:07+01:00",
       "finished_at": "2026-11-03T10:23:01+01:00",
       "log": [
@@ -1492,6 +1492,16 @@
           "t": "2026-11-03T10:23:01+01:00",
           "by": "desarrollador",
           "msg": "REVIEW: `CatalogReader` ya cumple el criterio y los tests de `mcp-server` pasan en verde, sin cambios de código en esta pasada."
+        },
+        {
+          "t": "2026-11-03T10:23:08+01:00",
+          "by": "tester",
+          "msg": "verificando"
+        },
+        {
+          "t": "2026-11-03T10:26:32+01:00",
+          "by": "tester",
+          "msg": "DONE: `CatalogReader` cumple el criterio con los tests de `mcp-server` en verde en local (37 de integración contra el stack real), aunque en la CI siguen sin ejecutarse por T-127."
         }
       ],
       "runs": [
@@ -1544,9 +1554,19 @@
           "tokens": 155637,
           "cost_usd": 0.39837560000000005,
           "verdict": "review"
+        },
+        {
+          "agent": "tester",
+          "mode": "verify",
+          "at": "2026-11-03T10:26:32+01:00",
+          "min": 3.4,
+          "turns": 42,
+          "tokens": 661607,
+          "cost_usd": 0.800018,
+          "verdict": "done"
         }
       ],
-      "verify_started": "2026-11-03T01:20:47+01:00"
+      "verify_started": "2026-11-03T10:23:08+01:00"
     },
     {
       "id": "T-018",
@@ -5997,6 +6017,11 @@
           "t": "2026-11-03T10:05:14+01:00",
           "by": "consultor",
           "msg": "Sigue en rojo: la CI 41555809230 (commit de T-091) falla igual, mcp-server con 'The forked VM terminated without properly saying goodbye'. Visto por el tester al verificar T-091."
+        },
+        {
+          "t": "2026-11-03T10:26:08+01:00",
+          "by": "consultor",
+          "msg": "Dato del tester (T-017), 3-nov 10:24: ./mk test MODULE=mcp-server en local pasó entero, con SqlGuardProbeTest 140/140 y sin caída, pero la CI de las 09:18 UTC sí murió con Segmentation fault en esa clase. Parece intermitente o propio del entorno: una pasada en verde no lo da por arreglado. Mientras siga, la CI se corta en los tests unitarios de mcp-server y no llega a ejecutar sus tests de integración (CatalogReaderIT, CatalogReaderEdgeIT, LakehouseSessionIT)."
         }
       ]
     },
@@ -6470,6 +6495,35 @@
         "task": "T-085",
         "why": ""
       }
+    },
+    {
+      "id": "T-144",
+      "title": "La portada de la wiki no menciona la lectura del catálogo del servidor",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "baja",
+      "estimate_min": 3.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "La tabla de estado de la portada de la wiki dice qué existe ya en el servidor, y cita la conexión y el validador, pero no la lectura del catálogo, que ya funciona. Quien la lea cree que el servidor tiene menos de lo que tiene. Se propone añadirla a esa línea con un enlace a su explicación.\nCómo sabremos si funciona: la línea del servidor en la portada nombra la lectura del catálogo y su enlace lleva a la sección correcta.\n## Técnico\ndocs/wiki/README.md línea 39: añadir CatalogReader (T-017) con enlace a componentes/duckdb.md#dentro-del-servidor-mcp. Solo documentación, sin tests.",
+      "deps": [],
+      "created": "2026-11-03T10:26:11+01:00",
+      "updated": "2026-11-03T10:26:18+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-03T10:26:11+01:00",
+          "by": "tester",
+          "msg": "creada"
+        },
+        {
+          "t": "2026-11-03T10:26:18+01:00",
+          "by": "consultor",
+          "msg": "descripción reescrita"
+        }
+      ]
     }
   ],
   "runners": {
@@ -6489,13 +6543,13 @@
     "measure": {
       "state": "working",
       "current": "T-017",
-      "message": "desarrollador con T-017",
+      "message": "tester con T-017",
       "pid": 19972,
-      "heartbeat": "2026-11-03T10:20:08+01:00",
+      "heartbeat": "2026-11-03T10:23:08+01:00",
       "enabled": true,
-      "agent": "desarrollador",
-      "started": "2026-11-03T10:20:08+01:00",
-      "live": "live-T-017-desarrollador-20261103-102008.jsonl"
+      "agent": "tester",
+      "started": "2026-11-03T10:23:08+01:00",
+      "live": "live-T-017-tester-20261103-102308.jsonl"
     }
   }
 }
