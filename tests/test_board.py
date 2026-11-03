@@ -1,5 +1,6 @@
 """Pruebas mínimas del panel: CLI con bloqueo, tiempos medidos y API del servidor."""
 import json
+import re
 import shutil
 import subprocess
 import sys
@@ -104,6 +105,15 @@ def test_iniciar_con_y_sin_rondas_de_aportacion(board, monkeypatch):
     assert arranca("/api/runner/start?contribute=true") == {"think": True, "measure": False}
     assert arranca("/api/runner/start") == {"think": True, "measure": False}  # sin parámetro, como antes
     assert 'id="rContrib"' in c.get("/").text
+
+
+def test_el_boton_iniciar_no_lanza_rondas_salvo_casilla_marcada():
+    """T-082: lo que importa es lo que hace el botón por defecto, no que la casilla exista."""
+    html = (ROOT / "board" / "panel.html").read_text(encoding="utf-8")
+    casilla = re.search(r"<input[^>]*id=\"rContrib\"[^>]*>", html).group(0)
+    assert "checked" not in casilla, "la casilla debe nacer desmarcada"
+    llamadas = re.findall(r"api\(\"POST\", \"/api/runner/start[^;]*;", html)
+    assert llamadas == ['api("POST", "/api/runner/start?contribute=" + $("#rContrib").checked);']
 
 
 def test_live_events_resume_el_stream():
