@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-03T01:51:12+01:00",
+  "updated": "2026-11-03T10:08:25+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -1378,8 +1378,8 @@
       "id": "T-017",
       "title": "Consulta: leer esquema, particiones y snapshots del catálogo",
       "owner": "desarrollador",
-      "status": "blocked",
-      "priority": "media",
+      "status": "next",
+      "priority": "alta",
       "estimate_min": 30.0,
       "actual_min": 24.5,
       "auto": true,
@@ -1389,7 +1389,7 @@
         "T-006"
       ],
       "created": "2026-11-02T11:36:37+01:00",
-      "updated": "2026-11-03T01:35:03+01:00",
+      "updated": "2026-11-03T10:04:44+01:00",
       "started_at": "2026-11-03T01:13:19+01:00",
       "finished_at": "2026-11-03T01:20:44+01:00",
       "log": [
@@ -1462,6 +1462,16 @@
           "t": "2026-11-03T01:35:03+01:00",
           "by": "runner",
           "msg": "✗ «python board/board.py add \"Las tablas de un espacio de nombres anidado no aparecen hasta q»: varios comandos, tuberías, redirecciones o heredoc: lanza cada comando por separado y crea ficheros con Write/Edit"
+        },
+        {
+          "t": "2026-11-03T10:04:44+01:00",
+          "by": "consultor",
+          "msg": "El bloqueo era un board.py add denegado por saltos de línea; T-138 ya existe. Es del MVP: reintenta"
+        },
+        {
+          "t": "2026-11-03T10:04:51+01:00",
+          "by": "tú",
+          "msg": "editada: priority"
         }
       ],
       "runs": [
@@ -4651,7 +4661,7 @@
       "id": "T-091",
       "title": "Cargar la muestra sintética con un solo comando",
       "owner": "desarrollador",
-      "status": "review",
+      "status": "done",
       "priority": "media",
       "estimate_min": 15.0,
       "actual_min": 6.9,
@@ -4662,7 +4672,7 @@
         "T-013"
       ],
       "created": "2026-11-02T17:36:40+01:00",
-      "updated": "2026-11-03T01:51:12+01:00",
+      "updated": "2026-11-03T10:08:25+01:00",
       "started_at": "2026-11-03T01:44:18+01:00",
       "finished_at": "2026-11-03T01:51:12+01:00",
       "log": [
@@ -4690,6 +4700,21 @@
           "t": "2026-11-03T01:51:12+01:00",
           "by": "desarrollador",
           "msg": "REVIEW: `./mk seed-sample` envía las 50.000 filas de la muestra sin descargas y lo informa, con test y documentación; falta probar la llegada a la tabla en el stack de `compose.yaml`."
+        },
+        {
+          "t": "2026-11-03T01:51:24+01:00",
+          "by": "tester",
+          "msg": "verificando"
+        },
+        {
+          "t": "2026-11-03T10:08:10+01:00",
+          "by": "consultor",
+          "msg": "Tester: repetí ./mk seed-sample para verificarlo. El topic ecommerce.events del stack local tiene ahora dos cargas de la muestra y la tarea del conector sigue parada (T-141). Antes de contrastar cifras o grabar (T-092, T-097): docker compose down -v y ./mk up."
+        },
+        {
+          "t": "2026-11-03T10:08:25+01:00",
+          "by": "tester",
+          "msg": "DONE: `./mk seed-sample` envía y confirma las 50.000 filas sin descargas, con tests en verde; la llegada a la tabla sigue sin probar porque el conector está parado (T-141)."
         }
       ],
       "runs": [
@@ -4702,8 +4727,19 @@
           "tokens": 233210,
           "cost_usd": 0.5649212,
           "verdict": "review"
+        },
+        {
+          "agent": "tester",
+          "mode": "verify",
+          "at": "2026-11-03T10:08:25+01:00",
+          "min": 497.0,
+          "turns": 7,
+          "tokens": 193438,
+          "cost_usd": 0.9921666,
+          "verdict": "done"
         }
-      ]
+      ],
+      "verify_started": "2026-11-03T01:51:24+01:00"
     },
     {
       "id": "T-092",
@@ -5857,7 +5893,7 @@
       "id": "T-127",
       "title": "La integración continua está en rojo: un test del validador de SQL tumba la máquina de pruebas",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "next",
       "priority": "alta",
       "estimate_min": 20.0,
       "actual_min": null,
@@ -5866,7 +5902,7 @@
       "desc": "Desde que se cerró el validador de SQL, cada subida a develop falla: una clase de pruebas del validador provoca un fallo grave de memoria que mata todo el proceso de tests, y los módulos siguientes ni se ejecutan. Lo más probable es que venga de las pruebas añadidas al cerrar esa tarjeta, que ejecutan consultas muy anidadas con muy poca memoria de pila. Hay que averiguar si el fallo es solo de la prueba o si una consulta aceptada por el validador puede tumbar también el servidor, porque esto segundo sería un agujero real.\nCómo sabremos si funciona: la integración continua de develop vuelve a verde y ejecuta todos los módulos, sin haber borrado la comprobación sin explicar por qué.\n## Técnico\nCI: runs 41534768076 (09c5187, primer rojo) y 41535625552 (7165f70); job java, mvn verify. SqlGuardProbeTest: 'Segmentation fault (core dumped)', exit 139, unos 10 s tras empezar la clase; SqlGuardTest (162) pasa; agent, semantic, evals y bench quedan SKIPPED. El último verde, 48ea90c, no tenía los 79 tests añadidos en 09c5187. Sospechoso sin confirmar: theDeepestAllowedQueriesRunOnASmallStack (hilo de 256 KB). Comentario del test: si el margen fuera malo, mataría la JVM. Criterio: mvn verify en verde en CI; si la causa es el margen, ajustar los límites de SqlGuard (producción), no solo el test.",
       "deps": [],
       "created": "2026-11-02T23:40:03+01:00",
-      "updated": "2026-11-02T23:40:03+01:00",
+      "updated": "2026-11-03T10:04:44+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -5879,6 +5915,16 @@
           "t": "2026-11-03T01:12:50+01:00",
           "by": "consultor",
           "msg": "Tester (T-017): sigue en rojo en el run 41547257605, Crashed tests: SqlGuardProbeTest, exit 139. Consecuencia: la CI muere en surefire de mcp-server antes de failsafe, así que CatalogReaderIT y CatalogReaderEdgeIT no se han ejecutado nunca en CI, solo en local con -Dtest que excluye esa clase."
+        },
+        {
+          "t": "2026-11-03T10:04:44+01:00",
+          "by": "consultor",
+          "msg": "CI en rojo: tiene preferencia (Tests por niveles)"
+        },
+        {
+          "t": "2026-11-03T10:05:14+01:00",
+          "by": "consultor",
+          "msg": "Sigue en rojo: la CI 41555809230 (commit de T-091) falla igual, mcp-server con 'The forked VM terminated without properly saying goodbye'. Visto por el tester al verificar T-091."
         }
       ]
     },
@@ -6072,7 +6118,7 @@
       "id": "T-135",
       "title": "Solicitud de permiso: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\board\\runner.py *",
       "owner": "consultor",
-      "status": "human",
+      "status": "done",
       "priority": "media",
       "estimate_min": 2,
       "actual_min": null,
@@ -6081,7 +6127,7 @@
       "desc": "El agente «desarrollador» necesitaba un comando que no está en su lista de permitidos y se lo bloquearon mientras hacía T-084. No es de solo lectura ni está prohibido, así que lo tiene que validar una persona.\n\nPara qué lo quería: (no lo explicó)\n\nCómo decidir: concede si es seguro repetirlo sin supervisión dentro del proyecto; deniega si escribe fuera, publica, borra o usa la red.\n\n## Técnico\n- Comando: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\board\\runner.py\n- Patrón que se concedería: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\board\\runner.py *\n- Tarjeta: T-084",
       "deps": [],
       "created": "2026-11-03T00:40:37+01:00",
-      "updated": "2026-11-03T00:40:37+01:00",
+      "updated": "2026-11-03T10:04:45+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -6089,6 +6135,11 @@
           "t": "2026-11-03T00:40:37+01:00",
           "by": "runner",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-03T10:04:45+01:00",
+          "by": "consultor",
+          "msg": "Ya concedido a las 23:21 desde el panel; T-085 revisa este tipo de permisos"
         }
       ],
       "kind": "permiso",
@@ -6104,7 +6155,7 @@
       "id": "T-136",
       "title": "Solicitud de permiso: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\tests\\test_runner.py *",
       "owner": "consultor",
-      "status": "human",
+      "status": "done",
       "priority": "media",
       "estimate_min": 2,
       "actual_min": null,
@@ -6113,7 +6164,7 @@
       "desc": "El agente «desarrollador» necesitaba un comando que no está en su lista de permitidos y se lo bloquearon mientras hacía T-084. No es de solo lectura ni está prohibido, así que lo tiene que validar una persona.\n\nPara qué lo quería: (no lo explicó)\n\nCómo decidir: concede si es seguro repetirlo sin supervisión dentro del proyecto; deniega si escribe fuera, publica, borra o usa la red.\n\n## Técnico\n- Comando: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\tests\\test_runner.py\n- Patrón que se concedería: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\tests\\test_runner.py *\n- Tarjeta: T-084",
       "deps": [],
       "created": "2026-11-03T00:40:37+01:00",
-      "updated": "2026-11-03T00:40:37+01:00",
+      "updated": "2026-11-03T10:04:45+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -6121,6 +6172,11 @@
           "t": "2026-11-03T00:40:37+01:00",
           "by": "runner",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-03T10:04:45+01:00",
+          "by": "consultor",
+          "msg": "Ya concedido a las 23:21 desde el panel; T-085 revisa este tipo de permisos"
         }
       ],
       "kind": "permiso",
@@ -6220,7 +6276,7 @@
       "id": "T-140",
       "title": "Solicitud de permiso: Grep *",
       "owner": "consultor",
-      "status": "human",
+      "status": "done",
       "priority": "media",
       "estimate_min": 2,
       "actual_min": null,
@@ -6229,7 +6285,7 @@
       "desc": "El agente «desarrollador» necesitaba un comando que no está en su lista de permitidos y se lo bloquearon mientras hacía T-085. No es de solo lectura ni está prohibido, así que lo tiene que validar una persona.\n\nPara qué lo quería: (no lo explicó)\n\nCómo decidir: concede si es seguro repetirlo sin supervisión dentro del proyecto; deniega si escribe fuera, publica, borra o usa la red.\n\n## Técnico\n- Comando: Grep\n- Patrón que se concedería: Grep *\n- Tarjeta: T-085",
       "deps": [],
       "created": "2026-11-03T01:44:04+01:00",
-      "updated": "2026-11-03T01:44:04+01:00",
+      "updated": "2026-11-03T10:04:45+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -6237,6 +6293,11 @@
           "t": "2026-11-03T01:44:04+01:00",
           "by": "runner",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-03T10:04:45+01:00",
+          "by": "consultor",
+          "msg": "Sin conceder: Grep es una herramienta, no un comando, y ya está permitida para los agentes"
         }
       ],
       "kind": "permiso",
@@ -6247,6 +6308,30 @@
         "task": "T-085",
         "why": ""
       }
+    },
+    {
+      "id": "T-141",
+      "title": "El conector hacia la tabla se muere tras una pausa del equipo y no vuelve solo",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "alta",
+      "estimate_min": 30.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Con el stack levantado, la parte del conector que escribe en la tabla lleva parada desde antes de cargar la muestra, así que las filas enviadas se quedan en la cola y no llegan a la tabla. Nada lo avisa: el servicio sigue marcado como sano y solo un reinicio manual lo levantaría. Se propone que el conector se recupere solo o que el arranque y la comprobación del stack lo detecten, porque la demo depende de este tramo y T-092 y T-097 lo necesitan.\nCómo sabremos si funciona: tras una pausa o reinicio de Kafka, una carga de la muestra termina con todas sus filas en la tabla, o el fallo se avisa claramente.\n\n## Técnico\nVisto al verificar T-091. Tarea iceberg-sink-0 en FAILED desde 2026-11-02 21:33:03 (conector RUNNING, contenedor healthy): ConnectException 'Cannot retrieve members for consumer group: connect-iceberg-sink', causa GroupIdNotFoundException, en CommitterImpl.hasLeaderPartition <- close <- onPartitionsLost (iceberg-kafka-connect 1.12.0). Hipótesis sin confirmar: sesión perdida con el PC suspendido, y el grupo no existe porque el sink nunca confirmó offsets con el topic vacío. Datos: ecommerce.events con end offset 50000 y sin grupo connect-iceberg-sink en kafka-consumer-groups --all-groups. Relacionada con T-078 (la comprobación rápida no detecta un conector roto). Criterio: reproducir la pérdida de sesión con el topic vacío (por ejemplo docker pause de connect más allá del timeout), y después de ella 50.000 filas en la tabla sin reinicio manual, o estado de error visible en ./mk smoke o ./mk up. Para hacerlo limpio: docker compose down -v antes de medir.",
+      "deps": [],
+      "created": "2026-11-03T10:04:50+01:00",
+      "updated": "2026-11-03T10:04:50+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-03T10:04:50+01:00",
+          "by": "tester",
+          "msg": "creada"
+        }
+      ]
     }
   ],
   "runners": {
@@ -6266,13 +6351,13 @@
     "measure": {
       "state": "working",
       "current": "T-091",
-      "message": "desarrollador con T-091",
+      "message": "tester con T-091",
       "pid": 23100,
-      "heartbeat": "2026-11-03T01:44:18+01:00",
+      "heartbeat": "2026-11-03T01:51:25+01:00",
       "enabled": true,
-      "agent": "desarrollador",
-      "started": "2026-11-03T01:44:18+01:00",
-      "live": "live-T-091-desarrollador-20261103-014418.jsonl"
+      "agent": "tester",
+      "started": "2026-11-03T01:51:25+01:00",
+      "live": "live-T-091-tester-20261103-015125.jsonl"
     }
   }
 }
