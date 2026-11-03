@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-03T11:38:55+01:00",
+  "updated": "2026-11-03T12:04:43+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -5727,6 +5727,11 @@
           "t": "2026-11-02T23:08:51+01:00",
           "by": "tester",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-03T12:04:28+01:00",
+          "by": "consultor",
+          "msg": "Añadir a la limpieza: mcp-server/src/test/java/io/github/albaasca/lakehouse/mcp/StackDiagTest.java, que T-127 dejó vacío porque los agentes no pueden borrar ficheros. Sus tests están ahora en SqlGuardStackTest."
         }
       ]
     },
@@ -6021,18 +6026,18 @@
       "id": "T-127",
       "title": "La integración continua está en rojo: un test del validador de SQL tumba la máquina de pruebas",
       "owner": "desarrollador",
-      "status": "next",
+      "status": "review",
       "priority": "alta",
       "estimate_min": 20.0,
-      "actual_min": 56.4,
+      "actual_min": 82.1,
       "auto": true,
       "manual": null,
       "desc": "Desde que se cerró el validador de SQL, cada subida a develop falla: una clase de pruebas del validador provoca un fallo grave de memoria que mata todo el proceso de tests, y los módulos siguientes ni se ejecutan. Lo más probable es que venga de las pruebas añadidas al cerrar esa tarjeta, que ejecutan consultas muy anidadas con muy poca memoria de pila. Hay que averiguar si el fallo es solo de la prueba o si una consulta aceptada por el validador puede tumbar también el servidor, porque esto segundo sería un agujero real.\nCómo sabremos si funciona: la integración continua de develop vuelve a verde y ejecuta todos los módulos, sin haber borrado la comprobación sin explicar por qué.\n## Técnico\nCI: runs 41534768076 (09c5187, primer rojo) y 41535625552 (7165f70); job java, mvn verify. SqlGuardProbeTest: 'Segmentation fault (core dumped)', exit 139, unos 10 s tras empezar la clase; SqlGuardTest (162) pasa; agent, semantic, evals y bench quedan SKIPPED. El último verde, 48ea90c, no tenía los 79 tests añadidos en 09c5187. Sospechoso sin confirmar: theDeepestAllowedQueriesRunOnASmallStack (hilo de 256 KB). Comentario del test: si el margen fuera malo, mataría la JVM. Criterio: mvn verify en verde en CI; si la causa es el margen, ajustar los límites de SqlGuard (producción), no solo el test.",
       "deps": [],
       "created": "2026-11-02T23:40:03+01:00",
-      "updated": "2026-11-03T11:38:55+01:00",
-      "started_at": "2026-11-03T10:27:30+01:00",
-      "finished_at": "2026-11-03T11:23:51+01:00",
+      "updated": "2026-11-03T12:04:43+01:00",
+      "started_at": "2026-11-03T11:39:01+01:00",
+      "finished_at": "2026-11-03T12:04:43+01:00",
       "log": [
         {
           "t": "2026-11-02T23:40:03+01:00",
@@ -6078,6 +6083,21 @@
           "t": "2026-11-03T11:38:55+01:00",
           "by": "tester",
           "msg": "FAIL: la CI de develop sigue en rojo con 1eb5e5e (exit 139 en la cadena de EXCEPT con pila de 512 KB, 20 caídas de 40 repeticiones) y el commit incluye tests temporales de diagnóstico que hay que quitar."
+        },
+        {
+          "t": "2026-11-03T11:39:01+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-03T11:40:07+01:00",
+          "by": "consultor",
+          "msg": "Pasa de 1,5× (20 min estimados, 56 reales + 15 de verificación). Causa: el fallo es intermitente y depende de qué hilo ejecuta cada parte de la consulta, y hubo que medirlo con muchas JVM. Nueva previsión: 45 min para aclarar la causa, fijar el margen y limpiar."
+        },
+        {
+          "t": "2026-11-03T12:04:43+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: bajado `MAX_DEPTH` a 80 porque 45 `EXCEPT` necesitan algo más de 512 KB; test estable 40 de 40 bajo carga y tests de `mcp-server` en verde, falta confirmar la CI tras el commit."
         }
       ],
       "runs": [
@@ -6100,6 +6120,16 @@
           "tokens": 739650,
           "cost_usd": 0.9372119999999999,
           "verdict": "fail"
+        },
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-03T12:04:43+01:00",
+          "min": 25.7,
+          "turns": 59,
+          "tokens": 1260689,
+          "cost_usd": 1.6291970000000002,
+          "verdict": "review"
         }
       ],
       "verify_started": "2026-11-03T11:24:03+01:00"
@@ -6678,13 +6708,13 @@
     "measure": {
       "state": "working",
       "current": "T-127",
-      "message": "tester con T-127",
+      "message": "desarrollador con T-127",
       "pid": 19972,
-      "heartbeat": "2026-11-03T11:24:04+01:00",
+      "heartbeat": "2026-11-03T11:39:02+01:00",
       "enabled": true,
-      "agent": "tester",
-      "started": "2026-11-03T11:24:04+01:00",
-      "live": "live-T-127-tester-20261103-112404.jsonl"
+      "agent": "desarrollador",
+      "started": "2026-11-03T11:39:02+01:00",
+      "live": "live-T-127-desarrollador-20261103-113902.jsonl"
     }
   }
 }

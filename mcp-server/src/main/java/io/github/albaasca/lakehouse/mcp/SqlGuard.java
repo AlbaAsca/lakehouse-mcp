@@ -153,12 +153,14 @@ public final class SqlGuard {
     static final int MAX_SQL_LENGTH = 4_000;
 
     /**
-     * Levels of the parsed tree, wrapper included. Running a query needs far more stack than parsing it, about 3.5 KB per
-     * level. Measured in T-127: 400 tables in a {@code FROM} fit the length limit and Jackson's default of 500 levels, and
-     * kill the process on a stack of 1 MB, the JVM's default. 107 levels need between 256 and 384 KB, so 100 leaves more
-     * than twice that margin; it allows about 90 joined tables, or 30 nested subqueries, functions or chained operators.
+     * Levels of the parsed tree, wrapper included. Running a query needs far more stack than parsing it, on the thread that
+     * calls DuckDB, whatever DuckDB's own number of threads. Measured in T-127: 400 tables in a {@code FROM} fit the length
+     * limit and Jackson's default of 500 levels, and kill the process on a stack of 1 MB, the JVM's default. The hungriest
+     * shape is a chain of {@code EXCEPT} or {@code INTERSECT}: at 100 levels (45 links) it dies on 512 KB and runs on 768 KB.
+     * At 80 levels every shape measured runs on 384 KB, leaving the default stack more than 2.5 times that. It allows about
+     * 70 joined tables, 35 {@code EXCEPT}, 23 nested subqueries, functions or chained operators, or 13 linked CTEs.
      */
-    static final int MAX_DEPTH = 100;
+    static final int MAX_DEPTH = 80;
 
     private static final String TOO_COMPLEX = "The query is too complex to validate";
 
