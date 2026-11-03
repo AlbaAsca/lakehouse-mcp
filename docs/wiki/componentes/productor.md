@@ -37,6 +37,7 @@ Los precios a cero o negativos y los duplicados pasan tal cual, a propósito: so
 - **Java 25 y Spring Boot 4.1.2**, en [`pom.xml`](../../../pom.xml). Avro sin generación de código: el esquema se carga como recurso.
 - **Serializador:** `kafka-avro-serializer` `8.4.0`.
 - **Makefile:** [`seed`](../../../Makefile) usa `MONTH ?= 2019-Oct`, `SAMPLE ?= 0.01` y `SPEEDUP ?= 3600`, compila el jar y espera el CSV en `/data/raw`. Se cambian así (sin probar, como todo `seed`): `./mk seed MONTH=2019-Nov SAMPLE=0.05`.
+- **Makefile, muestra:** `seed-sample` envía la muestra sintética entera, sin esperas (`--sample-rate 1 --speedup 1e12`). Repetirlo duplica filas: [operación](../04-operacion.md#cargar-la-muestra-sintética).
 - **Datos de prueba:** [`testdata/synthetic-events.csv.gz`](../../../testdata/synthetic-events.csv.gz), 50.000 filas inventadas con casos sucios y una caída plantada. Lo describe [`infra/synthetic/README.md`](../../../infra/synthetic/README.md).
 
 ## Cómo probarlo tú mismo

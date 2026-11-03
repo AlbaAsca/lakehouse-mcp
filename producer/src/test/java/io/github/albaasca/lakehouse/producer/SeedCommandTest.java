@@ -44,6 +44,22 @@ class SeedCommandTest {
     }
 
     @Test
+    void theSeedSampleTargetOfTheMakefileSendsTheWholeSample() throws Exception {
+        String recipe = Files.readAllLines(Path.of("../Makefile")).stream()
+                .dropWhile(line -> !line.startsWith("seed-sample:"))
+                .filter(line -> line.contains("java -jar"))
+                .findFirst()
+                .orElseThrow();
+        // The recipe runs from the root of the repo and the tests from producer/.
+        String args = recipe.substring(recipe.indexOf("--input")).replace("testdata/", "../testdata/");
+
+        int exit = seed(args.split(" "));
+
+        assertThat(exit).isEqualTo(SeedCommand.OK);
+        assertThat(sent).hasSize(50_000);
+    }
+
+    @Test
     void theTopicIsTheOneOfTheSinkUnlessAnotherIsGiven() {
         String input = SAMPLE.toString();
 

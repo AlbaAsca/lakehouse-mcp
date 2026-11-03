@@ -96,6 +96,7 @@ cp .env.example .env   # y cambia las contraseñas
 
 | Otras formas | |
 |---|---|
+| Cargar la muestra sintética, sin Kaggle (con el stack arriba; repetirlo duplica filas) | `./mk seed-sample` |
 | Descargar el dataset (necesita `~/.kaggle`) | `./mk download-data` |
 | Otro mes | `./mk download-data MONTH=2019-Nov` |
 | Reproducir el mes en Kafka (con el stack arriba) | `./mk seed` (por defecto 1 % de las sesiones a 3600×) |

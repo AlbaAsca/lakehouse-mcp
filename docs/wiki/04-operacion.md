@@ -30,6 +30,23 @@ Salidas que parecen errores y no lo son:
 - `Realm 'POLARIS' is already bootstrapped; skipping.` en `polaris-bootstrap`.
 - `make: *** [...] Error 1` tras `not implemented yet`: el objetivo aún no existe.
 
+## Cargar la muestra sintética
+
+```bash
+./mk seed-sample
+```
+
+Con el stack arriba, envía a Kafka las 50.000 filas de `testdata/synthetic-events.csv.gz`, sin Kaggle ni descargas. Termina así (en la prueba tardó 5 s, sin contar la compilación):
+
+```
+SeedCommand - Read 50000 rows (0 unreadable), sent 50000 events, 0 late, in PT5.008437063S
+SeedCommand - Kafka confirmed 50000 events
+```
+
+**Repetirlo duplica filas en la tabla.** Para empezar de cero, `docker compose down -v` (borra todos los datos del stack) y `./mk up`.
+
+**Sin probar:** que las filas lleguen a la tabla en el stack de `compose.yaml` (ese tramo solo está probado en contenedores, con `IngestE2EIT`), la duplicación en la tabla y el arranque limpio con `docker compose down -v`.
+
 ## Síntomas y remedios
 
 ### Docker no responde

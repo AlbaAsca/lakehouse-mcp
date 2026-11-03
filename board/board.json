@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-03T01:44:04+01:00",
+  "updated": "2026-11-03T01:51:12+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -4651,10 +4651,10 @@
       "id": "T-091",
       "title": "Cargar la muestra sintética con un solo comando",
       "owner": "desarrollador",
-      "status": "next",
+      "status": "review",
       "priority": "media",
       "estimate_min": 15.0,
-      "actual_min": null,
+      "actual_min": 6.9,
       "auto": true,
       "manual": null,
       "desc": "Hoy el comando de carga solo sabe leer el mes real, que exige cuenta de Kaggle y descarga. Se propone un comando que cargue la muestra sintética que ya está en el repo: así cualquiera que clone el proyecto puede ver la demo, y la grabación no depende de la licencia de los datos reales.\nCómo sabremos si funciona: con el stack levantado, el comando envía toda la muestra sin pedir ninguna descarga y dice cuántas filas ha enviado.\n\n## Técnico\nObjetivo seed-sample en Makefile (nombre publicado en mk y mk.cmd): producer con --input testdata/synthetic-events.csv.gz, --sample-rate 1 y sin espera (speedup alto, la muestra debe entrar en menos de 2 min). El lector ya admite .gz (CsvEventReader). Comprobar que tools ve testdata: compose solo monta bind en tools. Imprimir las filas enviadas y avisar de que repetir el comando duplica filas en la tabla. Añadirlo a README y docs/wiki/04-operacion.md. Verificación: ./mk test y una ejecución real si el stack está arriba, si no marcar sin probar. Diseño: docs/architecture.md, sección Recorrido mínimo.",
@@ -4662,9 +4662,9 @@
         "T-013"
       ],
       "created": "2026-11-02T17:36:40+01:00",
-      "updated": "2026-11-02T17:36:40+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-03T01:51:12+01:00",
+      "started_at": "2026-11-03T01:44:18+01:00",
+      "finished_at": "2026-11-03T01:51:12+01:00",
       "log": [
         {
           "t": "2026-11-02T17:36:40+01:00",
@@ -4675,6 +4675,33 @@
           "t": "2026-11-02T22:01:46+01:00",
           "by": "tú",
           "msg": "editada: priority"
+        },
+        {
+          "t": "2026-11-03T01:44:18+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-03T01:51:02+01:00",
+          "by": "consultor",
+          "msg": "La prueba real de seed-sample envió 50.000 filas al topic ecommerce.events del stack local, que sigue arriba con esos datos. Antes de contrastar cifras o grabar (T-092, T-097), empezar con el stack limpio o se contarán dobles."
+        },
+        {
+          "t": "2026-11-03T01:51:12+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: `./mk seed-sample` envía las 50.000 filas de la muestra sin descargas y lo informa, con test y documentación; falta probar la llegada a la tabla en el stack de `compose.yaml`."
+        }
+      ],
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-03T01:51:12+01:00",
+          "min": 6.9,
+          "turns": 31,
+          "tokens": 233210,
+          "cost_usd": 0.5649212,
+          "verdict": "review"
         }
       ]
     },
@@ -6238,14 +6265,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-085",
-      "message": "desarrollador con T-085",
-      "pid": 8716,
-      "heartbeat": "2026-11-03T01:40:57+01:00",
+      "current": "T-091",
+      "message": "desarrollador con T-091",
+      "pid": 23100,
+      "heartbeat": "2026-11-03T01:44:18+01:00",
       "enabled": true,
       "agent": "desarrollador",
-      "started": "2026-11-03T01:40:57+01:00",
-      "live": "live-T-085-desarrollador-20261103-014057.jsonl"
+      "started": "2026-11-03T01:44:18+01:00",
+      "live": "live-T-091-desarrollador-20261103-014418.jsonl"
     }
   }
 }

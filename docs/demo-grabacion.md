@@ -1,6 +1,6 @@
 # Guion de la primera demo y del GIF
 
-**Sin probar: `./mk seed-sample` y `./mk ask` aún no existen** (T-091, T-096). Este guion se ejecuta en T-097; corrige aquí lo que cambie. Diseño: [`architecture.md`](architecture.md#recorrido-mínimo-la-primera-demo).
+**Sin probar: `./mk ask` aún no existe** (T-096). `./mk seed-sample` ya funciona (T-091), pero el guion entero no se ha ejecutado. Este guion se ejecuta en T-097; corrige aquí lo que cambie. Diseño: [`architecture.md`](architecture.md#recorrido-mínimo-la-primera-demo).
 
 ## Antes de grabar
 

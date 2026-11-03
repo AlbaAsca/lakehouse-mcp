@@ -5,7 +5,7 @@ MONTH ?= 2019-Oct
 SAMPLE ?= 0.01
 SPEEDUP ?= 3600
 
-.PHONY: up down download-data seed test test-board evals chaos bench demo smoke
+.PHONY: up down download-data seed seed-sample test test-board evals chaos bench demo smoke
 up:
 	docker compose up -d --build --wait
 down:
@@ -30,5 +30,10 @@ seed:
 	test -f /data/raw/$(MONTH).csv || unzip -o /data/raw/$(MONTH).csv.zip -d /data/raw
 	mvn -B -q -pl producer -am -DskipTests package
 	java -jar producer/target/producer-*.jar --input /data/raw/$(MONTH).csv --sample-rate $(SAMPLE) --speedup $(SPEEDUP)
+# Needs the stack up, nothing else: the synthetic sample is in the repo. All of it, without waiting.
+seed-sample:
+	mvn -B -q -pl producer -am -DskipTests package
+	java -jar producer/target/producer-*.jar --input testdata/synthetic-events.csv.gz --sample-rate 1 --speedup 1e12
+	@echo "seed-sample: running it again duplicates the rows in the table (docker compose down -v starts clean)."
 evals chaos bench demo:
 	@echo "$@: not implemented yet, see the board" && exit 1

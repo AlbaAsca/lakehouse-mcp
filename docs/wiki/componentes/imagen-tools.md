@@ -42,6 +42,7 @@ Cuando `make up` corre dentro de `tools`, habla con el Docker de tu ordenador a 
 | `test`, `test MODULE=<módulo>` | ✅ probado con `./mk` |
 | `download-data` | Sin probar: requiere credenciales de Kaggle |
 | `seed` | Sin probar: requiere el CSV real. El comando que lanza sí está probado con la muestra sintética (`ProducerIT`) |
+| `seed-sample` | ✅ probado con `./mk` y el stack arriba: Kafka confirma las 50.000 filas |
 | `evals`, `chaos`, `bench`, `demo` | ⬜ responden `not implemented yet` |
 
 ## Cómo probarlo tú mismo
