@@ -1,6 +1,7 @@
 package io.github.albaasca.lakehouse.mcp;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.github.albaasca.lakehouse.mcp.CatalogReader.Column;
 import io.github.albaasca.lakehouse.mcp.CatalogReader.PartitionField;
@@ -24,6 +25,7 @@ import java.sql.Statement;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.TimeZone;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -274,6 +276,40 @@ class CatalogReaderEdgeIT {
             assertThat(reader.listTables()).contains(new TableRef(namespace, "inside"));
             assertThat(reader.describe(namespace, "inside").columns()).containsExactly(new Column("id", "BIGINT"));
             assertThat(reader.snapshots(namespace, "inside")).hasSize(1);
+        }
+    }
+
+    /**
+     * Today's limit, so that a change is noticed: a new session does not list nested namespaces, so the reader says the
+     * table is missing. Once the session has read that table by its name, the namespace is listed and readable.
+     */
+    @Test
+    void aNestedNamespaceIsOnlySeenAfterTheSessionHasReadIt() throws Exception {
+        String parent = "nest_parent";
+        String nested = parent + ".child";
+        exec("CREATE SCHEMA IF NOT EXISTS lh." + parent);
+        exec("CREATE SCHEMA IF NOT EXISTS lh." + quoted(nested));
+        exec("CREATE TABLE lh." + quoted(nested) + ".inside (id BIGINT, kind VARCHAR) PARTITIONED BY (kind)");
+        exec("INSERT INTO lh." + quoted(nested) + ".inside VALUES (1, 'a')");
+
+        try (LakehouseSession session = session()) {
+            CatalogReader reader = new CatalogReader(session);
+            assertThat(reader.listTables()).extracting(TableRef::namespace).doesNotContain(nested);
+            assertThatThrownBy(() -> reader.describe(nested, "inside")).isInstanceOf(NoSuchElementException.class);
+            assertThatThrownBy(() -> reader.snapshots(nested, "inside")).isInstanceOf(NoSuchElementException.class);
+
+            long rowsInTable = session.query("SELECT count(*) FROM lh." + quoted(nested) + ".inside", rows -> {
+                rows.next();
+                return rows.getLong(1);
+            });
+            assertThat(rowsInTable).isEqualTo(1L);
+
+            assertThat(reader.listTables()).contains(new TableRef(nested, "inside"));
+            assertThat(reader.describe(nested, "inside").columns()).containsExactly(
+                    new Column("id", "BIGINT"), new Column("kind", "VARCHAR"));
+            assertThat(reader.describe(nested, "inside").partitions()).containsExactly(
+                    new PartitionField("identity_kind_2", "identity", "kind"));
+            assertThat(reader.snapshots(nested, "inside")).extracting(Snapshot::operation).containsExactly("append");
         }
     }
 

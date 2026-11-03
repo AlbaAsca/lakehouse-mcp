@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-03T01:20:44+01:00",
+  "updated": "2026-11-03T01:35:03+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -1378,7 +1378,7 @@
       "id": "T-017",
       "title": "Consulta: leer esquema, particiones y snapshots del catálogo",
       "owner": "desarrollador",
-      "status": "review",
+      "status": "blocked",
       "priority": "media",
       "estimate_min": 30.0,
       "actual_min": 24.5,
@@ -1389,7 +1389,7 @@
         "T-006"
       ],
       "created": "2026-11-02T11:36:37+01:00",
-      "updated": "2026-11-03T01:20:44+01:00",
+      "updated": "2026-11-03T01:35:03+01:00",
       "started_at": "2026-11-03T01:13:19+01:00",
       "finished_at": "2026-11-03T01:20:44+01:00",
       "log": [
@@ -1442,6 +1442,26 @@
           "t": "2026-11-03T01:20:44+01:00",
           "by": "desarrollador",
           "msg": "REVIEW: `describe` respeta el orden de particiones del catálogo y las tablas con punto ya se leen; `mcp-server` en verde excluyendo `SqlGuardProbeTest` (T-127)."
+        },
+        {
+          "t": "2026-11-03T01:20:47+01:00",
+          "by": "tester",
+          "msg": "verificando"
+        },
+        {
+          "t": "2026-11-03T01:35:03+01:00",
+          "by": "tester",
+          "msg": "BLOCKED: `CatalogReader` devuelve esquema, particiones y snapshots correctos y en orden, con `mcp-server` en verde salvo `SqlGuardProbeTest` (T-127), un test nuevo y el límite de los espacios de nombres anidados registrado en T-138."
+        },
+        {
+          "t": "2026-11-03T01:35:03+01:00",
+          "by": "tester",
+          "msg": "⚠ 1 comandos denegados: python board/board.py add \"Las tablas de un espacio de nombres anidado no aparec"
+        },
+        {
+          "t": "2026-11-03T01:35:03+01:00",
+          "by": "runner",
+          "msg": "✗ «python board/board.py add \"Las tablas de un espacio de nombres anidado no aparecen hasta q»: varios comandos, tuberías, redirecciones o heredoc: lanza cada comando por separado y crea ficheros con Write/Edit"
         }
       ],
       "runs": [
@@ -1474,9 +1494,19 @@
           "tokens": 293587,
           "cost_usd": 0.5995276,
           "verdict": "review"
+        },
+        {
+          "agent": "tester",
+          "mode": "verify",
+          "at": "2026-11-03T01:35:03+01:00",
+          "min": 14.3,
+          "turns": 54,
+          "tokens": 1114627,
+          "cost_usd": 1.2868774,
+          "verdict": "blocked"
         }
       ],
-      "verify_started": "2026-11-03T00:57:53+01:00"
+      "verify_started": "2026-11-03T01:20:47+01:00"
     },
     {
       "id": "T-018",
@@ -6023,6 +6053,30 @@
           "msg": "descripción reescrita"
         }
       ]
+    },
+    {
+      "id": "T-138",
+      "title": "Las tablas de un espacio de nombres anidado no aparecen hasta que alguien las lee",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "baja",
+      "estimate_min": 15.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Si una tabla vive en un espacio de nombres dentro de otro, una sesión recién abierta no la lista y dice que no existe, aunque la tabla esté ahí y se pueda consultar. Basta leerla una vez por su nombre para que aparezca, así que la respuesta cambia según lo que la sesión haya hecho antes. Hoy no afecta a la demo, porque todo vive en un espacio de nombres de un solo nivel. Se propone recorrer los espacios anidados al listar o, si no compensa, dejarlo escrito como límite en la wiki.\nCómo sabremos si funciona: la misma tabla aparece siempre al listar, o la wiki explica el límite y el test sigue fijando ese comportamiento.\n## Técnico\nDónde: CatalogReader.listTables y requireTable, sobre information_schema.tables. Síntoma: con la tabla inside en el namespace nest_parent.child, en sesión nueva listTables no da el namespace y describe/snapshots lanzan NoSuchElementException; tras un SELECT count(*) sobre esa tabla, los tres funcionan. Fijado en CatalogReaderEdgeIT.aNestedNamespaceIsOnlySeenAfterTheSessionHasReadIt (T-017). Criterio: listado estable sin lectura previa, actualizando ese test; o decisión documentada en docs/wiki/componentes/duckdb.md.",
+      "deps": [],
+      "created": "2026-11-03T01:34:44+01:00",
+      "updated": "2026-11-03T01:34:44+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-03T01:34:44+01:00",
+          "by": "tester",
+          "msg": "creada"
+        }
+      ]
     }
   ],
   "runners": {
@@ -6042,13 +6096,13 @@
     "measure": {
       "state": "working",
       "current": "T-017",
-      "message": "desarrollador con T-017",
+      "message": "tester con T-017",
       "pid": 8716,
-      "heartbeat": "2026-11-03T01:13:19+01:00",
+      "heartbeat": "2026-11-03T01:20:48+01:00",
       "enabled": true,
-      "agent": "desarrollador",
-      "started": "2026-11-03T01:13:19+01:00",
-      "live": "live-T-017-desarrollador-20261103-011319.jsonl"
+      "agent": "tester",
+      "started": "2026-11-03T01:20:47+01:00",
+      "live": "live-T-017-tester-20261103-012047.jsonl"
     }
   }
 }
