@@ -52,9 +52,10 @@ Reglas de diseño, en [`docs/architecture.md`](../../architecture.md#decisiones)
 | `TIME_TRAVEL` | `AT (...)`: el pasado solo se consulta con `time_travel` | `t AT (VERSION => 1)` |
 | `SYNTAX` | Lo que DuckDB no entiende, y lo que pasa de 4.000 caracteres | `SELECT FROM` |
 
-Cinco cosas que conviene saber:
+Seis cosas que conviene saber:
 
 - **La longitud se comprueba antes de preguntar a DuckDB.** Un anidamiento excesivo no da un error: desborda la pila y tumba el proceso entero. Comprobado con el peor caso, `FROM a,a,a...`: con la pila de 1 MB de la JVM aguanta 16.000 caracteres y cae en 32.000; con una de 256 KB, aguanta 6.000 y cae en 8.000. Por eso el límite se cuenta en Java y es de 4.000.
+- **La profundidad también tiene límite, porque ejecutar gasta más pila que analizar.** Esas cifras solo cubren el análisis. Al ejecutarla de verdad, una consulta aceptada con 400 tablas en el `FROM` tumbaba el proceso con la pila de 1 MB. Por eso el árbol de la consulta no puede pasar de 100 niveles (`MAX_DEPTH`): caben unas 90 tablas unidas o 30 subconsultas, funciones u operadores encadenados. Cada referencia a una CTE suma la profundidad de su cuerpo, de modo que caben 17 CTE simples en cadena; varias CTE pequeñas no pueden sumar lo que no cabría en una sola. Pasarse da el error «The query is too complex to validate».
 - **Hay funciones de texto que se saltan el límite de memoria.** `lpad`, `rpad`, `replace` y `regexp_replace` construyen una celda de cualquier tamaño: `replace` anidado llegó a 4,8 GB con `memory_limit` de 256 MB, aunque solo se pidiera su longitud. Por eso no están en la lista. `||` sí se frena: da un error de memoria, pero no a tiempo: con `memory_limit` de 256 MB, el proceso llegó a ocupar 5 GB antes (riesgo abierto, T-117).
 
 - **Una CTE no protege su propio nombre.** Comprobado: en `WITH t AS (SELECT * FROM t) SELECT * FROM t`, el `t` de dentro es la tabla real, y podría ser una ruta. Por eso cada CTE solo ve las anteriores a ella. Los nombres de CTE se comparan distinguiendo mayúsculas: `WITH A ... FROM a` se rechaza aunque sea inofensivo.

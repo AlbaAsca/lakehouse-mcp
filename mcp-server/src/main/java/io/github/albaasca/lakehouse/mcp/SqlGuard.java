@@ -5,13 +5,15 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import tools.jackson.core.JacksonException;
+import tools.jackson.core.StreamReadConstraints;
+import tools.jackson.core.json.JsonFactory;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -145,12 +147,25 @@ public final class SqlGuard {
     /**
      * Too much nesting does not fail in DuckDB's parser: it overflows the stack and takes the whole process down. Measured
      * in T-019 with the worst shape, {@code FROM a,a,a...}: a stack of 256 KB survives 6,000 characters and dies at 8,000;
-     * one of 1 MB (the JVM's default) survives 16,000 and dies at 32,000. Length alone is enough: it also caps {@code FROM (}
-     * at 666 levels, and it needs no second parser to tell a parenthesis from one inside a string.
+     * one of 1 MB (the JVM's default) survives 16,000 and dies at 32,000. This limit only protects the parser, and it needs
+     * no second parser to tell a parenthesis from one inside a string; what runs afterwards is {@link #MAX_DEPTH}'s job.
      */
     static final int MAX_SQL_LENGTH = 4_000;
 
-    private static final JsonMapper JSON = JsonMapper.builder().build();
+    /**
+     * Levels of the parsed tree, wrapper included. Running a query needs far more stack than parsing it, about 3.5 KB per
+     * level. Measured in T-127: 400 tables in a {@code FROM} fit the length limit and Jackson's default of 500 levels, and
+     * kill the process on a stack of 1 MB, the JVM's default. 107 levels need between 256 and 384 KB, so 100 leaves more
+     * than twice that margin; it allows about 90 joined tables, or 30 nested subqueries, functions or chained operators.
+     */
+    static final int MAX_DEPTH = 100;
+
+    private static final String TOO_COMPLEX = "The query is too complex to validate";
+
+    private static final JsonMapper JSON = JsonMapper.builder(JsonFactory.builder()
+                    .streamReadConstraints(StreamReadConstraints.builder().maxNestingDepth(MAX_DEPTH).build())
+                    .build())
+            .build();
 
     private final Engine engine;
 
@@ -238,7 +253,7 @@ public final class SqlGuard {
         try {
             root = JSON.readTree(json);
         } catch (JacksonException e) {
-            throw new Rejected(Rule.SYNTAX, "The query is too complex to validate");
+            throw new Rejected(Rule.SYNTAX, TOO_COMPLEX);
         }
         if (root.path("error").asBoolean(true)) {
             String message = text(root, "error_message");
@@ -248,44 +263,56 @@ public final class SqlGuard {
         if (statements.size() != 1) {
             throw new Rejected(Rule.NOT_ONE_STATEMENT, "Expected exactly one statement, got " + statements.size());
         }
-        walk(statements.get(0), Set.of(), tables);
+        if (walk(statements.get(0), Map.of(), tables) > MAX_DEPTH) {
+            throw new Rejected(Rule.SYNTAX, TOO_COMPLEX);
+        }
     }
 
     /**
      * Visits every object of the tree, not just the known places: subqueries can hang from expressions, joins, CTEs...
      *
-     * @param ctes the CTE names visible here. A name outside its scope is not a CTE for DuckDB but a table or a file.
+     * <p>Each CTE body sees only the CTEs before it, and never itself. T-019 ran it: in
+     * {@code WITH t AS (SELECT * FROM t) ...} the inner {@code t} is the real table, and it could be a path just as well.
+     *
+     * @param ctes the CTE names visible here, with their depth. A name outside its scope is not a CTE for DuckDB but a table
+     *     or a file.
+     * @return the levels this node needs: a reference to a CTE counts its body, which DuckDB binds at that point. T-127: a
+     *     chain of CTEs fitting the length limit is shallow in the tree and still killed the process on a stack of 512 KB.
      */
-    private static void walk(JsonNode node, Set<String> ctes, Collection<TableName> tables) {
+    private static int walk(JsonNode node, Map<String, Integer> ctes, Collection<TableName> tables) {
+        int deepest = 0;
         if (node.isArray()) {
             for (JsonNode child : node) {
-                walk(child, ctes, tables);
+                deepest = Math.max(deepest, walk(child, ctes, tables));
             }
+            return deepest + 1;
         }
         if (!node.isObject()) {
-            return;
+            return 0;
         }
-        check(node, ctes, tables);
-        Set<String> scope = withCtes(node.path("cte_map").path("map"), ctes, tables);
+        check(node, ctes.keySet(), tables);
+        Map<String, Integer> scope = ctes;
+        for (JsonNode entry : node.path("cte_map").path("map")) {
+            int body = walk(entry.path("value"), scope, tables);
+            deepest = Math.max(deepest, body);
+            scope = new HashMap<>(scope);
+            scope.put(text(entry, "key"), body);
+        }
         for (Map.Entry<String, JsonNode> property : node.properties()) {
             if (!property.getKey().equals("cte_map")) {
-                walk(property.getValue(), scope, tables);
+                deepest = Math.max(deepest, walk(property.getValue(), scope, tables));
             }
         }
+        if (text(node, "type").equals("BASE_TABLE") && isCte(node, ctes.keySet())) {
+            deepest += ctes.get(text(node, "table_name"));
+        }
+        return deepest + 1;
     }
 
-    /**
-     * Each body sees only the CTEs before it, and never itself. T-019 ran it: in
-     * {@code WITH t AS (SELECT * FROM t) ...} the inner {@code t} is the real table, and it could be a path just as well.
-     */
-    private static Set<String> withCtes(JsonNode entries, Set<String> outer, Collection<TableName> tables) {
-        Set<String> scope = outer;
-        for (JsonNode entry : entries) {
-            walk(entry.path("value"), scope, tables);
-            scope = new HashSet<>(scope);
-            scope.add(text(entry, "key"));
-        }
-        return scope;
+    /** Exact case on purpose: if DuckDB matched CTEs differently, a near miss must not pass as a CTE and read a file. */
+    private static boolean isCte(JsonNode table, Set<String> ctes) {
+        return text(table, "catalog_name").isEmpty() && text(table, "schema_name").isEmpty()
+                && ctes.contains(text(table, "table_name"));
     }
 
     private static void check(JsonNode node, Set<String> ctes, Collection<TableName> tables) {
@@ -329,8 +356,7 @@ public final class SqlGuard {
         String catalog = text(node, "catalog_name");
         String schema = text(node, "schema_name");
         String table = text(node, "table_name");
-        // Exact case on purpose: if DuckDB matched CTEs differently, a near miss must not pass as a CTE and read a file.
-        if (catalog.isEmpty() && schema.isEmpty() && ctes.contains(table)) {
+        if (isCte(node, ctes)) {
             return;
         }
         if (tables.stream().noneMatch(allowed -> allowed.isReachedBy(catalog, schema, table))) {

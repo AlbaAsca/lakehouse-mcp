@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-03T10:27:24+01:00",
+  "updated": "2026-11-03T11:23:51+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -6021,18 +6021,18 @@
       "id": "T-127",
       "title": "La integración continua está en rojo: un test del validador de SQL tumba la máquina de pruebas",
       "owner": "desarrollador",
-      "status": "next",
+      "status": "review",
       "priority": "alta",
       "estimate_min": 20.0,
-      "actual_min": null,
+      "actual_min": 56.4,
       "auto": true,
       "manual": null,
       "desc": "Desde que se cerró el validador de SQL, cada subida a develop falla: una clase de pruebas del validador provoca un fallo grave de memoria que mata todo el proceso de tests, y los módulos siguientes ni se ejecutan. Lo más probable es que venga de las pruebas añadidas al cerrar esa tarjeta, que ejecutan consultas muy anidadas con muy poca memoria de pila. Hay que averiguar si el fallo es solo de la prueba o si una consulta aceptada por el validador puede tumbar también el servidor, porque esto segundo sería un agujero real.\nCómo sabremos si funciona: la integración continua de develop vuelve a verde y ejecuta todos los módulos, sin haber borrado la comprobación sin explicar por qué.\n## Técnico\nCI: runs 41534768076 (09c5187, primer rojo) y 41535625552 (7165f70); job java, mvn verify. SqlGuardProbeTest: 'Segmentation fault (core dumped)', exit 139, unos 10 s tras empezar la clase; SqlGuardTest (162) pasa; agent, semantic, evals y bench quedan SKIPPED. El último verde, 48ea90c, no tenía los 79 tests añadidos en 09c5187. Sospechoso sin confirmar: theDeepestAllowedQueriesRunOnASmallStack (hilo de 256 KB). Comentario del test: si el margen fuera malo, mataría la JVM. Criterio: mvn verify en verde en CI; si la causa es el margen, ajustar los límites de SqlGuard (producción), no solo el test.",
       "deps": [],
       "created": "2026-11-02T23:40:03+01:00",
-      "updated": "2026-11-03T10:04:44+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-03T11:23:51+01:00",
+      "started_at": "2026-11-03T10:27:30+01:00",
+      "finished_at": "2026-11-03T11:23:51+01:00",
       "log": [
         {
           "t": "2026-11-02T23:40:03+01:00",
@@ -6058,6 +6058,28 @@
           "t": "2026-11-03T10:26:08+01:00",
           "by": "consultor",
           "msg": "Dato del tester (T-017), 3-nov 10:24: ./mk test MODULE=mcp-server en local pasó entero, con SqlGuardProbeTest 140/140 y sin caída, pero la CI de las 09:18 UTC sí murió con Segmentation fault en esa clase. Parece intermitente o propio del entorno: una pasada en verde no lo da por arreglado. Mientras siga, la CI se corta en los tests unitarios de mcp-server y no llega a ejecutar sus tests de integración (CatalogReaderIT, CatalogReaderEdgeIT, LakehouseSessionIT)."
+        },
+        {
+          "t": "2026-11-03T10:27:30+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-03T11:23:51+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: Repeticiones en marcha. Sigo cuando terminen."
+        }
+      ],
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-03T11:23:51+01:00",
+          "min": 56.3,
+          "turns": 6,
+          "tokens": 426145,
+          "cost_usd": 3.0451192,
+          "verdict": "review"
         }
       ]
     },
@@ -6610,14 +6632,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-084",
-      "message": "desarrollador con T-084",
+      "current": "T-127",
+      "message": "desarrollador con T-127",
       "pid": 19972,
-      "heartbeat": "2026-11-03T10:26:39+01:00",
+      "heartbeat": "2026-11-03T10:27:31+01:00",
       "enabled": true,
       "agent": "desarrollador",
-      "started": "2026-11-03T10:26:39+01:00",
-      "live": "live-T-084-desarrollador-20261103-102639.jsonl"
+      "started": "2026-11-03T10:27:31+01:00",
+      "live": "live-T-127-desarrollador-20261103-102731.jsonl"
     }
   }
 }

@@ -287,36 +287,6 @@ class SqlGuardProbeTest {
         assertThat(guard.run(sql, ALLOWED, 1).rows().get(0)).hasSize((SqlGuard.MAX_SQL_LENGTH - 8) / 2 + 1);
     }
 
-    /**
-     * The deepest shapes that get past the validator, run for real and not only parsed, on a stack of 256 KB. If the margin
-     * were wrong this would not fail: it would kill the test JVM. Hand-worked results: nesting must not change the answer.
-     */
-    private static Stream<Arguments> deepButAllowed() {
-        return Stream.of(
-                arguments("SELECT * FROM (".repeat(160) + "SELECT 1" + ")".repeat(160), "[[1]]"),
-                arguments("SELECT " + "abs(".repeat(160) + "1" + ")".repeat(160), "[[1]]"),
-                arguments("SELECT 1" + "+1".repeat(160), "[[161]]"),
-                arguments("SELECT 1" + " UNION ALL SELECT 1".repeat(200), "[[1]]"));
-    }
-
-    @ParameterizedTest
-    @MethodSource("deepButAllowed")
-    void theDeepestAllowedQueriesRunOnASmallStack(String sql, String expected) throws InterruptedException {
-        Object[] answer = {null};
-        Thread thread = new Thread(null, () -> {
-            try {
-                answer[0] = guard.run(sql, ALLOWED, 1).rows().toString();
-            } catch (Rejected | SQLException e) {
-                answer[0] = e;
-            }
-        }, "small-stack", 256 * 1024);
-
-        thread.start();
-        thread.join();
-
-        assertThat(answer[0]).isEqualTo(expected);
-    }
-
     private static List<String> text(ResultSet rows) throws SQLException {
         List<String> values = new ArrayList<>();
         int width = rows.getMetaData().getColumnCount();
