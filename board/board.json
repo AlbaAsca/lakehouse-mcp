@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-04T20:30:20+01:00",
+  "updated": "2026-11-04T20:49:17+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -1808,7 +1808,7 @@
       "id": "T-020",
       "title": "MCP: servidor con list_tables y describe_table",
       "owner": "desarrollador",
-      "status": "review",
+      "status": "done",
       "priority": "media",
       "estimate_min": 40.0,
       "actual_min": 11.2,
@@ -1820,7 +1820,7 @@
         "T-017"
       ],
       "created": "2026-11-02T11:36:54+01:00",
-      "updated": "2026-11-04T20:30:20+01:00",
+      "updated": "2026-11-04T20:49:17+01:00",
       "started_at": "2026-11-04T20:19:10+01:00",
       "finished_at": "2026-11-04T20:30:20+01:00",
       "log": [
@@ -1858,6 +1858,16 @@
           "t": "2026-11-04T20:30:20+01:00",
           "by": "runner",
           "msg": "✓ permiso concedido automáticamente: ls * (solo lectura dentro del proyecto); se reintenta"
+        },
+        {
+          "t": "2026-11-04T20:30:27+01:00",
+          "by": "tester",
+          "msg": "verificando"
+        },
+        {
+          "t": "2026-11-04T20:49:17+01:00",
+          "by": "tester",
+          "msg": "DONE: Servidor MCP verificado con cliente real contra la API del catálogo y tests del módulo en verde (2 desactivados por T-154, el fallo de variables obligatorias que no avisan)."
         }
       ],
       "runs": [
@@ -1870,8 +1880,19 @@
           "tokens": 1252247,
           "cost_usd": 1.8428836000000002,
           "verdict": "review"
+        },
+        {
+          "agent": "tester",
+          "mode": "verify",
+          "at": "2026-11-04T20:49:17+01:00",
+          "min": 18.8,
+          "turns": 51,
+          "tokens": 1252365,
+          "cost_usd": 1.6933078,
+          "verdict": "done"
         }
-      ]
+      ],
+      "verify_started": "2026-11-04T20:30:27+01:00"
     },
     {
       "id": "T-021",
@@ -6552,6 +6573,11 @@
           "t": "2026-11-03T01:13:01+01:00",
           "by": "consultor",
           "msg": "descripción reescrita"
+        },
+        {
+          "t": "2026-11-04T20:45:59+01:00",
+          "by": "consultor",
+          "msg": "Tester, T-020: describe_table ya expone este problema al modelo. Da los 20 snapshots con mayor número de secuencia y ningún campo dice cuál es el vigente, así que tras deshacer una escritura el último de la lista no lo es, y el vigente puede quedar fuera de los 20. Al arreglarlo, añadir el identificador del snapshot vigente a la respuesta."
         }
       ]
     },
@@ -7033,6 +7059,30 @@
         "task": "T-084",
         "why": ""
       }
+    },
+    {
+      "id": "T-154",
+      "title": "El servidor MCP arranca aunque falten las claves del almacén",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "media",
+      "estimate_min": 15.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Si falta una variable obligatoria, el servidor no avisa: usa como clave el texto literal de la variable sin sustituir. Sin las claves del almacén arranca y contesta sobre el catálogo con normalidad, así que el fallo no aparecerá hasta que una herramienta lea datos, lejos de la causa. Se propone comprobar las variables obligatorias al arrancar y parar con un mensaje que diga cuál falta.\nCómo sabremos si funciona: al arrancar sin una variable obligatoria, el servidor se para y el error nombra esa variable.\n\n## Técnico\n- Dónde: mcp-server/src/main/resources/application.yaml (comentario «no credentials, no start», que hoy es falso) y McpServerApplication.LakehouseProperties.\n- Causa probable: el Binder de Spring Boot deja sin resolver los placeholders sin valor en lugar de fallar, de modo que el campo vale el texto ${S3_ACCESS_KEY}.\n- Medido en McpServerEdgeIT: sin S3_* y con catálogo válido el contexto arranca, y list_tables y describe_table responden bien. Sin ninguna variable falla por otro motivo: Could not resolve hostname polaris, sin nombrar la variable.\n- Criterio: quitar @Disabled de los dos tests withoutCredentials... y withoutStorageCredentials... de McpServerEdgeIT, ambos en verde, cubriendo POLARIS_CLIENT_ID, POLARIS_CLIENT_SECRET, S3_ACCESS_KEY, S3_SECRET_KEY y S3_REGION. Corregir el comentario del yaml y la frase de docs/wiki/componentes/servidor-mcp.md.\n- Conviene antes de T-093, que pone el servidor en el compose.",
+      "deps": [],
+      "created": "2026-11-04T20:45:58+01:00",
+      "updated": "2026-11-04T20:45:58+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-04T20:45:58+01:00",
+          "by": "tester",
+          "msg": "creada"
+        }
+      ]
     }
   ],
   "runners": {
@@ -7052,13 +7102,13 @@
     "measure": {
       "state": "working",
       "current": "T-020",
-      "message": "desarrollador con T-020",
+      "message": "tester con T-020",
       "pid": 17012,
-      "heartbeat": "2026-11-04T20:19:11+01:00",
+      "heartbeat": "2026-11-04T20:30:28+01:00",
       "enabled": true,
-      "agent": "desarrollador",
-      "started": "2026-11-04T20:19:10+01:00",
-      "live": "live-T-020-desarrollador-20261104-201911.jsonl"
+      "agent": "tester",
+      "started": "2026-11-04T20:30:28+01:00",
+      "live": "live-T-020-tester-20261104-203028.jsonl"
     }
   }
 }

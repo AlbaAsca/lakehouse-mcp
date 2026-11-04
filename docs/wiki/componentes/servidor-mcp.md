@@ -85,7 +85,7 @@ Variables de `mcp-server/src/main/resources/application.yaml`:
 
 **Hoy no pide autenticación.** Spring Security está abierto a propósito hasta las claves de T-050, y por eso el servidor solo escucha en `127.0.0.1` por defecto. Quien lo ponga en el compose (T-093) tendrá que poner `MCP_SERVER_ADDRESS=0.0.0.0`, y entonces lo alcanzará cualquiera que llegue a ese puerto.
 
-Sin la conexión con el catálogo el servidor no arranca, porque ninguna herramienta podría contestar. Arrancarlo sin variables o con el `.jar` fuera de los tests está sin probar.
+Sin la conexión con el catálogo el servidor no arranca, porque ninguna herramienta podría contestar (lo comprueba `McpServerEdgeIT`). **Si falta una variable obligatoria, hoy no avisa** (T-154): usa como valor el texto `${VARIABLE}`. Sin las de `S3_*` arranca y contesta sobre el catálogo; leer datos está sin probar en ese estado. Arrancarlo con el `.jar` fuera de los tests está sin probar.
 
 Límite previsto en el [presupuesto de memoria](../../architecture.md#memoria-docker-76-gb): 1 GB.
 
