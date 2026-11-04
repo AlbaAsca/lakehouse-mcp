@@ -56,7 +56,8 @@ Pregunta de la demo: las cinco marcas con más ingresos por compras. Se contrast
 | **Primera versión del agente solo con `run_query`** (T-094). | Esperar a `get_metric`: 4 tarjetas más de capa semántica (T-027, T-029, T-031, T-033). Decisión 8 aplazada, no anulada: T-034 la añade después. |
 | **Servidor MCP en el compose en cuanto consulta** (T-093). | Esperar a T-028 tal como estaba: arrastraba T-022, T-023, T-024, T-025 y T-026, ninguna necesaria aquí. |
 | **Validador SQL dentro del recorrido** (T-019). | Quitarlo para ir más rápido: un modelo con SQL libre en un repo público contradice el mensaje del proyecto. |
-| **Tope de iteraciones desde la primera versión** (T-094); tokens y gasto siguen en T-035. | Dejarlo todo para T-035: la primera ejecución real gastaría sin freno. Además, T-032 pide una clave con límite de gasto. |
+| **Tope de llamadas a herramientas desde la primera versión** (T-094), con el de Spring AI (`AGENT_MAX_TOOL_CALLS`); tokens y gasto siguen en T-035. | Dejarlo todo para T-035: la primera ejecución real gastaría sin freno. Un bucle propio: repetiría lo que Spring AI ya trae y cuenta mejor, porque también suma las llamadas que llegan juntas. |
+| **Gemini por defecto, Claude por configuración** (`AGENT_PROVIDER`, decisión de la responsable). La capa gratuita permite repetir la demo sin gastar; los dos van en el jar y solo arranca el elegido. Un 429 se informa como cuota, no como respuesta fallida. | Solo Anthropic: cada prueba cuesta dinero. Elegir con perfiles de Maven: habría que recompilar para cambiar de modelo. |
 
 La pregunta «¿por qué cayeron las compras?» y el self-healing quedan fuera: siguen siendo el objetivo de la demo completa (T-036, T-042, T-046, T-059).
 
@@ -70,7 +71,7 @@ Las ramas A y B no se esperan: los tests de consulta cargan la muestra sin Kafka
 | B. Consulta y MCP | T-014 → T-016 → T-106 y T-019; T-016 → T-017; T-016 + T-017 → T-020; T-106 + T-019 + T-020 → T-021 | investigador y desarrollador |
 | C. Agente | T-021 → T-093 y T-094 → T-096 | desarrollador |
 | D. Comando y referencia | T-091 y T-092 (independientes) | desarrollador y tester |
-| E. Demo | T-032 (clave) → T-097 (probar y grabar, [guion](demo-grabacion.md)) → T-098 (README) | responsable y arquitecto |
+| E. Demo | T-032 (clave; con Gemini por defecto, `GEMINI_API_KEY`) → T-097 (probar y grabar, [guion](demo-grabacion.md)) → T-098 (README) | responsable y arquitecto |
 
 Estimación: ~390 min de agente en las tarjetas automáticas (T-014, T-015, T-016, T-017, T-019, T-020, T-021, T-091 a T-094, T-096) y ~25 min de la responsable, sin contar T-089 ni lo que quede de T-072, T-012 y T-013. Los tiempos reales hasta ahora van muy por debajo de lo estimado, pero T-012 terminó en 14 min y su conector no funcionaba: la integración es donde puede desviarse.
 

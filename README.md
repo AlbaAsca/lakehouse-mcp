@@ -77,7 +77,8 @@ una página por cada pieza (qué es, cómo se conecta, cómo está configurada y
 | ✅ | Persistencia del catálogo de Polaris | En Postgres: sobrevive a un reinicio |
 | 🚧 | Productor e ingesta del mes real | Lectura, muestreo y orden hechos; falta el envío y la ingesta |
 | ⬜ | Servidor MCP: `list_tables`, `describe_table`, `run_query`, `get_metric`, `pipeline_health`, `data_quality_check`, `time_travel`, `propose_fix`, `apply_fix` | Planificado |
-| ⬜ | Capa semántica y agente | Planificado |
+| 🚧 | Agente (Spring AI, Gemini por defecto o Claude por configuración) | Primera versión: contesta consultando por MCP y se corta en un tope, comprobado con un modelo simulado; falta probarlo con un modelo de verdad |
+| ⬜ | Capa semántica | Planificado |
 | ⬜ | Self-healing con `make chaos` | Planificado |
 | ⬜ | Data contracts y mantenimiento de Iceberg | Planificado |
 | ⬜ | Evals, benchmark frente a Trino, RBAC y auditoría | Planificado |

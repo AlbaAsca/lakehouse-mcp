@@ -34,6 +34,7 @@ Kaggle `mkechinov/ecommerce-behavior-data-from-multi-category-store` (REES46).
 - Módulos: producer/, connect/, mcp-server/, agent/, semantic/, evals/, bench/, infra/, docs/
 - Tests unitarios y de integración con Testcontainers; CI sin Kaggle
 - Observabilidad: Micrometer/Actuator, con métricas de las tools MCP
+- Modelo del agente: Gemini por defecto, por su capa gratuita; Claude se elige por configuración, sin tocar el código
 - GitHub Actions: build, tests y evals
 - Makefile: up, down, download-data, seed, test, evals, chaos, bench, demo
 - Sin secretos en el repo (.env.example)

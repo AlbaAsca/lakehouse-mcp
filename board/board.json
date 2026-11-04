@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-04T21:42:52+01:00",
+  "updated": "2026-11-04T22:02:42+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -5199,20 +5199,21 @@
       "id": "T-094",
       "title": "Agente: primera versión que contesta consultando los datos",
       "owner": "desarrollador",
-      "status": "next",
+      "status": "review",
       "priority": "media",
       "estimate_min": 45.0,
-      "actual_min": null,
+      "actual_min": 19.7,
       "auto": true,
       "manual": null,
       "desc": "El agente esperaba a que estuvieran hechas todas las métricas de negocio, un rodeo largo para enseñar lo esencial. Se propone una primera versión que conteste usando la consulta validada, y añadir las métricas después. Lleva desde el principio un tope de vueltas, para que un bucle no gaste sin control.\nCómo sabremos si funciona: con un modelo simulado que pide una consulta, el agente la lanza de verdad por MCP y la cifra devuelta llega a la respuesta; un modelo que nunca acaba se corta en el tope.\n\n## Técnico\nSale de T-034, que queda para la preferencia por get_metric. agent: ChatClient de Spring AI 2.0.2 con spring-ai-starter-model-anthropic y cliente MCP (comprobar la API en la doc oficial). Entrada: ask pregunta. AGENT_MODEL por configuración, sin nombre fijo en código. System prompt en recursos: no inventar cifras y citar la herramienta usada. Tope de iteraciones de herramientas por configuración, con mensaje claro; tokens y gasto siguen en T-035. Test con ChatModel simulado con guion y servidor MCP real, sin clave de API, en ./mk test. Crear docs/wiki/componentes/agente.md o actualizarla, y el estado en docs/wiki/README.md.\n\nCambio de la responsable (2-nov): el proveedor por defecto es Gemini por su capa gratuita, y se elige por configuración para poder usar Claude sin tocar el código.\n\nTécnico añadido: agent/pom.xml con spring-ai-starter-model-google-genai (2.0.2) y, sin activar por defecto, el de Anthropic. Propiedad spring.ai.model.chat para elegirlo; clave en GEMINI_API_KEY, también en .env.example. Usa ChatClient: en Spring AI 2 el ChatModel ya no ejecuta herramientas solo. Modelo de la capa gratuita y configurable: compruébalo en la documentación actual, y si es Gemini 3 revisa thought signatures. Un error 429 de cuota se informa como cuota, nunca como respuesta fallida. Actualiza docs/brief.md, docs/architecture.md, README y docs/wiki/componentes/agente.md.",
       "deps": [
-        "T-021"
+        "T-021",
+        "T-161"
       ],
       "created": "2026-11-02T17:36:54+01:00",
-      "updated": "2026-11-02T18:22:55+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-04T22:02:42+01:00",
+      "started_at": "2026-11-04T21:42:59+01:00",
+      "finished_at": "2026-11-04T22:02:42+01:00",
       "log": [
         {
           "t": "2026-11-02T17:36:54+01:00",
@@ -5228,6 +5229,38 @@
           "t": "2026-11-02T22:01:53+01:00",
           "by": "tú",
           "msg": "editada: priority"
+        },
+        {
+          "t": "2026-11-04T21:42:59+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-04T22:02:42+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: Agente con Gemini por defecto y Claude configurable, tope de llamadas y aviso de cuota, 20 tests en verde con modelo simulado; falta probarlo con un modelo real y confirmar el modelo gratuito."
+        },
+        {
+          "t": "2026-11-04T22:02:42+01:00",
+          "by": "desarrollador",
+          "msg": "⚠ 1 comandos denegados: docker compose run --rm tools javap -cp //root/.m2/repository/com/anthropic/anth"
+        },
+        {
+          "t": "2026-11-04T22:02:42+01:00",
+          "by": "runner",
+          "msg": "? permiso solicitado: docker * (T-161); la tarjeta espera la decisión"
+        }
+      ],
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-04T22:02:42+01:00",
+          "min": 19.7,
+          "turns": 154,
+          "tokens": 2794562,
+          "cost_usd": 3.2914098,
+          "verdict": "review"
         }
       ]
     },
@@ -5320,6 +5353,11 @@
           "t": "2026-11-02T18:22:56+01:00",
           "by": "consultor",
           "msg": "Con Gemini y datos sintéticos. Anotar el modelo usado y las llamadas de la prueba."
+        },
+        {
+          "t": "2026-11-04T22:00:17+01:00",
+          "by": "consultor",
+          "msg": "Desde T-094 el proveedor por defecto es Gemini: hace falta GEMINI_API_KEY en .env (la de T-032 es de Anthropic y solo sirve con AGENT_PROVIDER=anthropic y AGENT_MODEL). El modelo por defecto, gemini-2.5-flash, está sin comprobar en la capa gratuita: si responde 404 o 429 desde la primera pregunta, cambia AGENT_MODEL. Esta será la primera prueba con un modelo de verdad, incluidas las thought signatures si se usa Gemini 3."
         }
       ]
     },
@@ -7343,6 +7381,67 @@
           "msg": "Esperar a T-106 antes de empezar: fija la instancia de lectura en 400 MB y la de reparación en 256 MB."
         }
       ]
+    },
+    {
+      "id": "T-160",
+      "title": "Agente: explicar en una línea que el servidor de datos no responde",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "media",
+      "estimate_min": 10.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Si el servidor de datos está apagado, el agente no arranca y suelta una traza de error enorme donde cuesta encontrar la causa. Quien prueba la demo por primera vez tropezará con esto. Se propone mostrar una sola línea que diga qué falla y a qué dirección intentó conectarse.\nCómo sabremos si funciona: con el servidor apagado, se ve un mensaje de una línea con la dirección y el proceso termina con error.\n## Técnico\nComprobado en T-094: java -jar agent-*.jar ask hola --MCP_SERVER_URL=http://localhost:1 sale con código 1 tras una UnsatisfiedDependencyException que acaba en 'Client failed to initialize by explicit API call'. Falla al crear los beans, antes de AskRunner: probar un FailureAnalyzer de Spring Boot o spring.ai.mcp.client.initialized=false con inicialización explícita. Conviene hacerlo con T-096.",
+      "deps": [],
+      "created": "2026-11-04T22:00:15+01:00",
+      "updated": "2026-11-04T22:02:20+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-04T22:00:15+01:00",
+          "by": "desarrollador",
+          "msg": "creada"
+        },
+        {
+          "t": "2026-11-04T22:02:20+01:00",
+          "by": "consultor",
+          "msg": "descripción reescrita"
+        }
+      ]
+    },
+    {
+      "id": "T-161",
+      "title": "Solicitud de permiso: docker *",
+      "owner": "consultor",
+      "status": "human",
+      "priority": "media",
+      "estimate_min": 2,
+      "actual_min": null,
+      "auto": false,
+      "manual": "Abre la tarjeta y pulsa «Conceder» o «Denegar».",
+      "desc": "El agente «desarrollador» necesitaba un comando que no está en su lista de permitidos y se lo bloquearon mientras hacía T-094. No es de solo lectura ni está prohibido, así que lo tiene que validar una persona.\n\nPara qué lo quería: (no lo explicó)\n\nCómo decidir: concede si es seguro repetirlo sin supervisión dentro del proyecto; deniega si escribe fuera, publica, borra o usa la red.\n\n## Técnico\n- Comando: docker compose run --rm tools javap -cp //root/.m2/repository/com/anthropic/anthropic-java\n- Patrón que se concedería: docker *\n- Tarjeta: T-094",
+      "deps": [],
+      "created": "2026-11-04T22:02:42+01:00",
+      "updated": "2026-11-04T22:02:42+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-04T22:02:42+01:00",
+          "by": "runner",
+          "msg": "creada"
+        }
+      ],
+      "kind": "permiso",
+      "perm": {
+        "pattern": "docker *",
+        "command": "docker compose run --rm tools javap -cp //root/.m2/repository/com/anthropic/anthropic-java",
+        "agent": "desarrollador",
+        "task": "T-094",
+        "why": ""
+      }
     }
   ],
   "runners": {
@@ -7361,14 +7460,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-093",
-      "message": "tester con T-093",
+      "current": "T-094",
+      "message": "desarrollador con T-094",
       "pid": 17012,
-      "heartbeat": "2026-11-04T21:35:41+01:00",
+      "heartbeat": "2026-11-04T21:43:00+01:00",
       "enabled": true,
-      "agent": "tester",
-      "started": "2026-11-04T21:35:41+01:00",
-      "live": "live-T-093-tester-20261104-213541.jsonl"
+      "agent": "desarrollador",
+      "started": "2026-11-04T21:43:00+01:00",
+      "live": "live-T-094-desarrollador-20261104-214300.jsonl"
     }
   }
 }
