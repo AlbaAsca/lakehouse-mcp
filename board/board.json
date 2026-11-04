@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-04T21:35:34+01:00",
+  "updated": "2026-11-04T21:42:52+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -5100,7 +5100,7 @@
       "id": "T-093",
       "title": "MCP: poner el servidor dentro del stack en cuanto sepa consultar",
       "owner": "desarrollador",
-      "status": "review",
+      "status": "done",
       "priority": "media",
       "estimate_min": 30.0,
       "actual_min": 17.3,
@@ -5111,7 +5111,7 @@
         "T-021"
       ],
       "created": "2026-11-02T17:36:48+01:00",
-      "updated": "2026-11-04T21:35:34+01:00",
+      "updated": "2026-11-04T21:42:52+01:00",
       "started_at": "2026-11-04T21:18:17+01:00",
       "finished_at": "2026-11-04T21:35:34+01:00",
       "log": [
@@ -5149,6 +5149,26 @@
           "t": "2026-11-04T21:35:34+01:00",
           "by": "desarrollador",
           "msg": "REVIEW: Servidor MCP en el compose con imagen probada en contenedores y tests del módulo en verde; falta comprobar `./mk up` con el stack completo (T-157)."
+        },
+        {
+          "t": "2026-11-04T21:35:41+01:00",
+          "by": "tester",
+          "msg": "verificando"
+        },
+        {
+          "t": "2026-11-04T21:42:52+01:00",
+          "by": "tester",
+          "msg": "DONE: Imagen del servidor MCP verificada en contenedores (sana, lista herramientas y consulta) y test contra desvíos del compose añadido; `./mk up` con el stack completo queda sin probar en T-157."
+        },
+        {
+          "t": "2026-11-04T21:42:52+01:00",
+          "by": "tester",
+          "msg": "⚠ 1 comandos denegados: git show ac5499c -- . :(exclude)board/board.json"
+        },
+        {
+          "t": "2026-11-04T21:42:52+01:00",
+          "by": "runner",
+          "msg": "✓ permiso concedido automáticamente: git show* (solo lectura dentro del proyecto); se reintenta"
         }
       ],
       "runs": [
@@ -5161,8 +5181,19 @@
           "tokens": 1668952,
           "cost_usd": 2.0079841999999997,
           "verdict": "review"
+        },
+        {
+          "agent": "tester",
+          "mode": "verify",
+          "at": "2026-11-04T21:42:52+01:00",
+          "min": 7.2,
+          "turns": 8,
+          "tokens": 295899,
+          "cost_usd": 1.1333874,
+          "verdict": "done"
         }
-      ]
+      ],
+      "verify_started": "2026-11-04T21:35:41+01:00"
     },
     {
       "id": "T-094",
@@ -7278,6 +7309,40 @@
           "msg": "creada"
         }
       ]
+    },
+    {
+      "id": "T-159",
+      "title": "Servidor MCP: alinear la memoria de DuckDB con el reparto previsto",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "media",
+      "estimate_min": 15.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "El servidor corre con un límite de 1 GB, pero nadie ha comprobado qué pasa si una consulta pesada llega al tope de memoria: el test actual solo usa una carga mínima. El reparto previsto deja poco margen, así que el contenedor podría morir en vez de devolver un error. Se propone probarlo con una consulta pesada real una vez separadas las conexiones de lectura y reparación, que es la tarjeta que fija ese reparto.\nCómo sabremos si funciona: una consulta pesada dentro del límite de 1 GB falla con un error limpio, el contenedor sigue vivo y la siguiente consulta contesta.\n## Técnico\nDepende de T-106, que baja memory_limit de 512 MB a 400 MB; esta tarjeta no cambia ese valor. Presupuesto de docs/architecture.md: JVM 256 MB + lectura 400 MB + reparación 256 MB = 912 MB, sin contar metaspace ni hilos. Añadir el caso a McpServerImageIT (memoria limitada a 1 GB): tras el Out of Memory de DuckDB, sin reinicio del contenedor y con la consulta siguiente correcta. Si el contenedor muere, ajustar el reparto. Actualizar docs/wiki/componentes/servidor-mcp.md.",
+      "deps": [],
+      "created": "2026-11-04T21:40:23+01:00",
+      "updated": "2026-11-04T21:42:39+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-04T21:40:23+01:00",
+          "by": "tester",
+          "msg": "creada"
+        },
+        {
+          "t": "2026-11-04T21:42:39+01:00",
+          "by": "consultor",
+          "msg": "descripción reescrita"
+        },
+        {
+          "t": "2026-11-04T21:42:40+01:00",
+          "by": "consultor",
+          "msg": "Esperar a T-106 antes de empezar: fija la instancia de lectura en 400 MB y la de reparación en 256 MB."
+        }
+      ]
     }
   ],
   "runners": {
@@ -7297,13 +7362,13 @@
     "measure": {
       "state": "working",
       "current": "T-093",
-      "message": "desarrollador con T-093",
+      "message": "tester con T-093",
       "pid": 17012,
-      "heartbeat": "2026-11-04T21:18:18+01:00",
+      "heartbeat": "2026-11-04T21:35:41+01:00",
       "enabled": true,
-      "agent": "desarrollador",
-      "started": "2026-11-04T21:18:18+01:00",
-      "live": "live-T-093-desarrollador-20261104-211818.jsonl"
+      "agent": "tester",
+      "started": "2026-11-04T21:35:41+01:00",
+      "live": "live-T-093-tester-20261104-213541.jsonl"
     }
   }
 }
