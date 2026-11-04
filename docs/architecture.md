@@ -130,7 +130,7 @@ Reparto inicial del 1 GB de `mcp-server`, sin medir: JVM 256 MB, DuckDB de lectu
 ## Riesgos abiertos
 
 - **DuckDB sobre lo que escribe el sink.** T-014 lo [comprobó](spike-duckdb-iceberg.md) con ficheros escritos por DuckDB. Sin verificar: borrar, hacer rollback, añadir columna y compactar sobre ficheros del sink, o mientras el sink hace commit (T-038, T-039, T-041, T-047).
-- **El time travel de la decisión 21.** Cada pieza está comprobada, pero no juntas: vista temporal con `AT`, catálogo `READ_ONLY` y hash, ni con un esquema antiguo. Lo decide un test de T-021. Si falla, analyst se queda sin `time_travel`, con un error claro, y se anota aquí.
+- **El time travel de la decisión 21, con hash.** T-021 comprobó que la vista temporal con `AT` funciona sobre el catálogo `READ_ONLY` y sobre un snapshot con esquema anterior, que responde con las columnas de entonces (`QueryToolsIT`), con ficheros escritos por DuckDB. Falta la proyección con hash de analyst (T-054). Si falla, analyst se queda sin `time_travel`, con un error claro, y se anota aquí.
 - **`READ_ONLY` protege el catálogo, no S3.** La instancia de lectura lleva la misma clave S3 de la decisión 2. Lo que impide leer o escribir ficheros directamente es el validador, hasta que se apliquen los ajustes de seguridad de DuckDB propuestos en [`NOTAS-investigador.md`](NOTAS-investigador.md), que ahora pueden limitarse a esta instancia.
 - **Compactar con volumen real:** sin medir. Con 256 MB puede quedarse corta (T-047).
 - **Bootstrap repetido:** la documentación de 1.8.0 dice que es idempotente, pero no indica el código de salida. Si no es 0, `./mk up` fallaría la segunda vez.

@@ -114,14 +114,15 @@ class McpServerIT {
     }
 
     @Test
-    void theClientSeesBothToolsWithTheirArgumentsAndAsReadOnly() {
+    void theClientSeesTheToolsWithTheirArgumentsAndAsReadOnly() {
         List<Tool> tools = client().listTools().tools();
 
         assertThat(client().getServerCapabilities().tools()).isNotNull();
         assertThat(client().getServerCapabilities().prompts()).isNull();
         assertThat(client().getServerCapabilities().resources()).isNull();
         assertThat(client().getServerCapabilities().completions()).isNull();
-        assertThat(tools).extracting(Tool::name).containsExactlyInAnyOrder("list_tables", "describe_table");
+        assertThat(tools).extracting(Tool::name)
+                .containsExactlyInAnyOrder("list_tables", "describe_table", "run_query", "time_travel");
         assertThat(tools).allSatisfy(tool -> {
             assertThat(tool.description()).isNotBlank();
             assertThat(tool.annotations().readOnlyHint()).isTrue();

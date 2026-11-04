@@ -56,7 +56,7 @@ public final class CatalogReader {
     /** @throws NoSuchElementException if the table does not exist */
     public TableDescription describe(String namespace, String table) throws SQLException {
         requireTable(namespace, table);
-        List<Column> columns = session.query("DESCRIBE " + CATALOG + "." + identifier(namespace) + "." + identifier(table),
+        List<Column> columns = session.query("DESCRIBE " + qualifiedName(namespace, table),
                 rows -> {
                     List<Column> out = new ArrayList<>();
                     while (rows.next()) {
@@ -117,7 +117,12 @@ public final class CatalogReader {
 
     /** The functions parse this text as a qualified name, so each part is quoted or a dot in it would split it. */
     private static String functionArgument(String namespace, String table) {
-        return LakehouseSession.quote(CATALOG + "." + identifier(namespace) + "." + identifier(table));
+        return LakehouseSession.quote(qualifiedName(namespace, table));
+    }
+
+    /** The table as SQL can name it, whatever its name contains. */
+    static String qualifiedName(String namespace, String table) {
+        return CATALOG + "." + identifier(namespace) + "." + identifier(table);
     }
 
     private static String identifier(String name) {

@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-04T20:49:17+01:00",
+  "updated": "2026-11-04T21:00:41+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -1898,10 +1898,10 @@
       "id": "T-021",
       "title": "MCP: run_query y time_travel",
       "owner": "desarrollador",
-      "status": "next",
+      "status": "review",
       "priority": "media",
       "estimate_min": 30.0,
-      "actual_min": null,
+      "actual_min": 11.3,
       "auto": true,
       "manual": null,
       "desc": "Son las herramientas con las que el agente lee datos, hoy o en el pasado. Ambas pasan por el validador y por la conexión que no puede escribir, de modo que el time travel no se convierte en una puerta trasera. El modelo nunca escribe él mismo a qué versión viajar: elige tabla y versión, y el servidor monta el resto.\nCómo sabremos si funciona: el test modifica la tabla, y consultar el snapshot anterior devuelve las filas de antes; un SQL prohibido da error claro por ambas vías.\n\n## Técnico\nDecisiones 20 y 21 de docs/architecture.md. Ambas por la instancia de lectura de T-106.\n- run_query(sql, max_rows): columnas, filas, truncated.\n- time_travel(table, snapshot_id o instant, sql, max_rows): tabla contra la lista conocida; CREATE OR REPLACE TEMP VIEW at_snapshot AS SELECT <proyección> FROM lh.ns.t AT (VERSION => id), con id numérico; sql por SqlGuard con at_snapshot como única tabla permitida; DROP en finally, con la conexión reservada durante toda la llamada.\n- instant con zona obligatoria (ISO-8601): se resuelve al último snapshot con timestamp_ms anterior o igual, por iceberg_snapshots. Sin AT (TIMESTAMP): su zona horaria está sin verificar. Id inexistente: error legible.\n- Comprobar la combinación aún sin probar: vista temporal con AT sobre catálogo READ_ONLY y sobre un snapshot con esquema anterior. Si falla, anotarlo en Riesgos abiertos de docs/architecture.md.\n- Tests por MCP real comparando filas una a una. ./mk test.",
@@ -1910,9 +1910,9 @@
         "T-020"
       ],
       "created": "2026-11-02T11:37:13+01:00",
-      "updated": "2026-11-02T18:15:01+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-04T21:00:41+01:00",
+      "started_at": "2026-11-04T20:49:23+01:00",
+      "finished_at": "2026-11-04T21:00:41+01:00",
       "log": [
         {
           "t": "2026-11-02T11:37:13+01:00",
@@ -1938,6 +1938,28 @@
           "t": "2026-11-02T22:01:40+01:00",
           "by": "tú",
           "msg": "editada: priority"
+        },
+        {
+          "t": "2026-11-04T20:49:23+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-04T21:00:41+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: `run_query` y `time_travel` funcionan por MCP real con validador y conexión de solo lectura, con los tests del módulo en verde."
+        }
+      ],
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-04T21:00:41+01:00",
+          "min": 11.3,
+          "turns": 57,
+          "tokens": 1114030,
+          "cost_usd": 1.9304912,
+          "verdict": "review"
         }
       ]
     },
@@ -7101,14 +7123,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-020",
-      "message": "tester con T-020",
+      "current": "T-021",
+      "message": "desarrollador con T-021",
       "pid": 17012,
-      "heartbeat": "2026-11-04T20:30:28+01:00",
+      "heartbeat": "2026-11-04T20:49:23+01:00",
       "enabled": true,
-      "agent": "tester",
-      "started": "2026-11-04T20:30:28+01:00",
-      "live": "live-T-020-tester-20261104-203028.jsonl"
+      "agent": "desarrollador",
+      "started": "2026-11-04T20:49:23+01:00",
+      "live": "live-T-021-desarrollador-20261104-204923.jsonl"
     }
   }
 }

@@ -1,6 +1,6 @@
 # Servidor MCP
 
-**Estado:** 🟡 parcial. Ya es una aplicación con dos herramientas, `list_tables` y `describe_table`, probadas con un cliente MCP real. Existen también la [conexión con DuckDB y la lectura del catálogo](duckdb.md#dentro-del-servidor-mcp) y el [validador de SQL](#el-validador-de-sql), que aún no usa ninguna herramienta. Todavía no está en `compose.yaml` (T-093) ni tiene claves de API (T-050). Tarjetas T-021 a T-028.
+**Estado:** 🟡 parcial. Ya es una aplicación con cuatro herramientas, `list_tables`, `describe_table`, `run_query` y `time_travel`, probadas con un cliente MCP real. Usan la [conexión con DuckDB y la lectura del catálogo](duckdb.md#dentro-del-servidor-mcp) y el [validador de SQL](#el-validador-de-sql). Todavía no está en `compose.yaml` (T-093) ni tiene claves de API (T-050). Tarjetas T-021 a T-028.
 
 [Portada](../README.md) · [Glosario](../01-conceptos.md)
 
@@ -29,8 +29,8 @@ Las herramientas previstas, del [brief](../../brief.md#servidor-mcp-tools):
 | Herramienta | Qué hará | Tarjeta |
 |---|---|---|
 | `list_tables`, `describe_table` | Hecho: tablas, esquema, particiones y snapshots | T-020 |
-| `run_query` | Solo `SELECT`, validado y con límite de filas | T-019, T-021 |
-| `time_travel` | Consulta sobre un snapshot anterior | T-021 |
+| `run_query` | Hecho: solo `SELECT`, validado y con límite de filas | T-019, T-021 |
+| `time_travel` | Hecho: consulta sobre un snapshot anterior. Aún sin enmascarado para analyst | T-021, T-054 |
 | `pipeline_health` | Lag, frescura y último snapshot | T-022 |
 | `data_quality_check` | Nulos, duplicados, rangos y volumen | T-025 |
 | `propose_fix`, `apply_fix` | Propone y aplica un arreglo solo con aprobación humana | T-026 |
@@ -47,9 +47,23 @@ Es el patrón que seguirán las demás (`CatalogTools` y `ToolResults`):
 - **Un error es una respuesta que el modelo puede leer**, con `isError`, no un fallo de la llamada. Si no existe la tabla, lo dice con su nombre; si falta un argumento, lo dice el SDK al comprobar el esquema de entrada. Si falla el catálogo, el detalle va al log y el modelo solo sabe que el problema está en el servidor.
 - **`describe_table` da los 20 snapshots más recientes**, del más antiguo al más nuevo, y `snapshotCount` dice cuántos hay. El conector confirma cada 30 s, así que una tabla puede guardar miles.
 
+### Leer datos: `run_query` y `time_travel`
+
+Las dos contestan `columns`, `rows` y `truncated`, que avisa de que había más filas que el límite. `maxRows` va de 1 a 1.000 y, si no se indica, vale 100. Las dos pasan por el validador y por la instancia de DuckDB que no puede escribir.
+
+- **`run_query(sql, maxRows)`** lee los datos de hoy. Las tablas se escriben enteras, `lh.<namespace>.<tabla>`, y solo valen las que existen en ese momento.
+- **`time_travel(namespace, table, sql, snapshotId o instant, maxRows)`** lee el pasado. El modelo elige tabla y versión, y su `SELECT` solo puede leer de `at_snapshot`, una vista que monta el servidor. La respuesta añade `snapshotId` y `committedAt`, para saber qué versión se leyó.
+- **Un instante lleva zona obligatoria** (`2026-03-01T10:00:00Z`) y se convierte en el último snapshot confirmado antes o en ese momento. El servidor siempre consulta por id: `AT (TIMESTAMP => ...)` no se usa porque su zona horaria está sin verificar.
+- **La vista vive en una sola conexión**, reservada durante toda la llamada y borrada al terminar, así que varias llamadas a la vez no se mezclan. El id se comprueba contra los snapshots de esa tabla: el de otra tabla da «No snapshot».
+- **Un snapshot con un esquema anterior responde con las columnas de entonces**: pedir una columna añadida después da error. Comprobado con ficheros escritos por DuckDB; con ficheros del sink, sin probar.
+- **Los errores del SQL llegan al modelo solo si puede arreglarlos**: lo que rechaza el validador, y los `Binder Error`, `Conversion Error` y `Out of Range Error` de DuckDB. Cualquier otro fallo puede llevar rutas del almacén, así que va al log.
+- **Las celdas se devuelven para que no cambien según la máquina.** Una fecha sin zona sale como texto tal cual, y los enteros grandes no pierden dígitos. Las listas y estructuras salen como texto.
+
+Por ahora, sin claves de API, ambas leen las tablas base con `user_id` sin enmascarar. Eso cambia con los roles (T-050, T-054).
+
 ### El validador de SQL
 
-`SqlGuard` ya existe, aunque ninguna herramienta lo usa todavía. Es el portero de `run_query` y `time_travel`: le pide a DuckDB que analice la consulta, sin ejecutarla, y recorre el resultado entero. Solo deja pasar lo que está en sus listas, así que lo que no conoce se rechaza.
+`SqlGuard` es el portero de `run_query` y `time_travel`: le pide a DuckDB que analice la consulta, sin ejecutarla, y recorre el resultado entero. Solo deja pasar lo que está en sus listas, así que lo que no conoce se rechaza.
 
 | Regla | Qué rechaza | Ejemplo |
 |---|---|---|
@@ -95,6 +109,12 @@ Todavía no hay servicio en `compose.yaml` (T-093). Lo que sí se puede ejecutar
 
 ```bash
 ./mk test MODULE=mcp-server MAVEN_ARGS="-Dit.test=McpServerIT -Dtest=CatalogToolsTest -Dsurefire.failIfNoSpecifiedTests=false"
+```
+
+Para `run_query` y `time_travel`:
+
+```bash
+./mk test MODULE=mcp-server MAVEN_ARGS="-Dit.test=QueryToolsIT -Dtest=QueryToolsTest -Dsurefire.failIfNoSpecifiedTests=false"
 ```
 
 ## Qué puede fallar

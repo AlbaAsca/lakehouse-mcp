@@ -30,7 +30,7 @@ final class ToolResults {
     static CallToolResult of(Answer answer) {
         try {
             return CallToolResult.builder().addTextContent(JsonMapper.shared().writeValueAsString(answer.get())).build();
-        } catch (NoSuchElementException e) {
+        } catch (NoSuchElementException | IllegalArgumentException | SqlGuard.Rejected e) {
             return error(e.getMessage());
         } catch (SQLTimeoutException e) {
             LOG.warn("Tool timed out", e);

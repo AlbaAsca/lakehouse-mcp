@@ -144,13 +144,59 @@ public final class LakehouseSession implements AutoCloseable {
      * @throws SQLException if DuckDB rejects it; the connection stays usable for the next query
      */
     public <T> T query(String sql, RowReader<T> reader) throws SQLException {
+        return withConnection(reserved -> reserved.query(sql, reader));
+    }
+
+    /**
+     * Keeps one connection for the whole of {@code work}, for what lives in a connection, such as a temporary view.
+     * Inside it, use only {@code reserved}: going back to the pool can wait for a connection that this call itself holds.
+     *
+     * @throws SQLTimeoutException if no connection frees up within the query timeout
+     */
+    public <T> T withConnection(Work<T> work) throws SQLException {
         Connection connection = borrow();
         try {
+            return work.run(new Reserved(connection));
+        } finally {
+            release(connection);
+        }
+    }
+
+    /** What to do with a reserved connection. */
+    @FunctionalInterface
+    public interface Work<T> {
+        T run(Reserved reserved) throws SQLException;
+    }
+
+    /** One connection of the pool. Each statement has the query timeout to itself; it is not shared by the whole call. */
+    public final class Reserved {
+
+        private final Connection connection;
+
+        private Reserved(Connection connection) {
+            this.connection = connection;
+        }
+
+        /** Runs a statement that returns rows, as {@link LakehouseSession#query} does. */
+        public <T> T query(String sql, RowReader<T> reader) throws SQLException {
+            return timed(sql, statement -> {
+                try (ResultSet rows = statement.executeQuery(sql)) {
+                    return reader.read(rows);
+                }
+            });
+        }
+
+        /** Runs a statement without rows, such as {@code CREATE VIEW}: the driver refuses those in {@code executeQuery}. */
+        public void execute(String sql) throws SQLException {
+            timed(sql, statement -> statement.execute(sql));
+        }
+
+        private <T> T timed(String sql, StatementWork<T> work) throws SQLException {
             // One Statement per query: after an error the driver closes it, not just the failed query.
             try (Statement statement = connection.createStatement();
                     Timeout timeout = new Timeout(statement)) {
-                try (ResultSet rows = statement.executeQuery(sql)) {
-                    return reader.read(rows);
+                try {
+                    return work.run(statement);
                 } catch (SQLException e) {
                     if (timeout.fired()) {
                         throw new SQLTimeoutException("Query exceeded " + settings.queryTimeout() + ": " + sql, e);
@@ -158,9 +204,12 @@ public final class LakehouseSession implements AutoCloseable {
                     throw e;
                 }
             }
-        } finally {
-            release(connection);
         }
+    }
+
+    @FunctionalInterface
+    private interface StatementWork<T> {
+        T run(Statement statement) throws SQLException;
     }
 
     private Connection borrow() throws SQLException {
