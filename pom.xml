@@ -20,12 +20,15 @@
     <module>evals</module>
     <module>bench</module>
     <module>testkit</module>
+    <module>maintenance</module>
   </modules>
   <properties>
     <java.version>25</java.version>
     <spring-ai.version>2.0.2</spring-ai.version>
     <duckdb.version>2.0.0.1</duckdb.version>
     <confluent.version>8.4.0</confluent.version>
+    <!-- The same version as the sink (infra/connect/Dockerfile). -->
+    <iceberg.version>1.12.0</iceberg.version>
   </properties>
   <dependencyManagement>
     <dependencies>

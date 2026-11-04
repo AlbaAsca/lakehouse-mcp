@@ -4,8 +4,11 @@ MONTH ?= 2019-Oct
 # 1% of the sessions, with one hour of the original passing per second: a month in about 12 minutes.
 SAMPLE ?= 0.01
 SPEEDUP ?= 3600
+# Snapshots older than this go, along with the files only they use: time travel can no longer reach them.
+TABLE ?= ecommerce.events
+RETENTION ?= P7D
 
-.PHONY: up down download-data seed seed-sample test test-board evals chaos bench demo smoke
+.PHONY: up down download-data seed seed-sample test test-board evals chaos bench demo smoke expire
 up:
 	docker compose up -d --build --wait
 down:
@@ -35,5 +38,7 @@ seed-sample:
 	mvn -B -q -pl producer -am -DskipTests package
 	java -jar producer/target/producer-*.jar --input testdata/synthetic-events.csv.gz --sample-rate 1 --speedup 1e12
 	@echo "seed-sample: running it again duplicates the rows in the table (docker compose down -v starts clean)."
+expire:
+	docker compose run --rm --build expire-snapshots --table $(TABLE) --retention $(RETENTION)
 evals chaos bench demo:
 	@echo "$@: not implemented yet, see the board" && exit 1

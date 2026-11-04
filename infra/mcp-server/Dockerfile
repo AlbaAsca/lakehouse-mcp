@@ -10,6 +10,7 @@ COPY semantic/pom.xml semantic/
 COPY evals/pom.xml evals/
 COPY bench/pom.xml bench/
 COPY testkit/pom.xml testkit/
+COPY maintenance/pom.xml maintenance/
 # Downloads in a layer of their own: changing the code does not fetch them again. With no code yet there is nothing to repackage.
 RUN mvn -B -q -pl mcp-server -am -Dmaven.test.skip=true -Dspring-boot.repackage.skip=true package
 # mcp-server only uses testkit in its tests, but Maven still needs it in the build.

@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-04T22:02:42+01:00",
+  "updated": "2026-11-04T22:34:50+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -2827,6 +2827,11 @@
           "t": "2026-11-02T18:15:20+01:00",
           "by": "consultor",
           "msg": "descripción reescrita"
+        },
+        {
+          "t": "2026-11-04T22:24:33+01:00",
+          "by": "consultor",
+          "msg": "De T-105: la compactación de DuckDB deja registrado el fichero de borrado, así que expirar no lo elimina (ExpireSnapshotsIT lo fija). Además, los ficheros sustituidos solo desaparecen cuando expira el propio snapshot de la compactación, no antes. La parte de expirar de esta tarjeta ya está hecha en T-105: el título debe quedar en solo compactar."
         }
       ]
     },
@@ -5630,10 +5635,10 @@
       "id": "T-105",
       "title": "Mantenimiento: expirar snapshots viejos",
       "owner": "desarrollador",
-      "status": "next",
+      "status": "blocked",
       "priority": "media",
       "estimate_min": 40.0,
-      "actual_min": null,
+      "actual_min": 32.0,
       "auto": true,
       "manual": null,
       "desc": "Cada escritura deja un snapshot y sus ficheros, y con el tiempo ocupan cada vez más. El motor de consulta compacta, pero no sabe expirar, así que hace falta otra herramienta. Cuál depende de si Trino se queda en el proyecto: si se queda, basta con usarlo; si se va, se añade un proceso pequeño que solo se ejecuta cuando se pide.\nCómo sabremos si funciona: tras expirar quedan solo los snapshots dentro de la retención, las filas actuales son idénticas una a una y los ficheros que ya nadie usa desaparecen del almacén.\n\n## Técnico\nBloqueada por T-087. Decisión 6 de docs/architecture.md.\n- Si Trino se queda: ALTER TABLE ... EXECUTE expire_snapshots sobre T-044, ajustando iceberg.expire-snapshots.min-retention (7 días por defecto). Unos 15 min.\n- Si Trino se va: módulo o imagen de un solo uso con iceberg-core e iceberg-aws 1.12.0 (RESTCatalog, table.expireSnapshots()), nunca dentro de mcp-server. Unos 40 min.\n- Caso obligatorio: tabla con ficheros de borrado escritos por DuckDB y compactada por T-047. Comprobar en SeaweedFS que los ficheros de datos y de borrado sin referencias desaparecen, no solo que baje el recuento de iceberg_snapshots.\n- IT con ./mk test.",
@@ -5641,9 +5646,9 @@
         "T-087"
       ],
       "created": "2026-11-02T18:14:35+01:00",
-      "updated": "2026-11-02T18:18:08+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-04T22:34:50+01:00",
+      "started_at": "2026-11-04T22:02:49+01:00",
+      "finished_at": "2026-11-04T22:34:50+01:00",
       "log": [
         {
           "t": "2026-11-02T18:14:35+01:00",
@@ -5659,6 +5664,38 @@
           "t": "2026-11-02T18:18:08+01:00",
           "by": "consultor",
           "msg": "Sin Trino: hazlo con un proceso de un solo uso con la API Java de Iceberg, como propuso T-101 (unos 40 min)."
+        },
+        {
+          "t": "2026-11-04T22:02:49+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-04T22:34:50+01:00",
+          "by": "desarrollador",
+          "msg": "BLOCKED: Expiración de snapshots lista con módulo `maintenance` y `./mk expire`, en verde salvo el fallo ajeno de T-163 y sin probar aún sobre la tabla real del sink."
+        },
+        {
+          "t": "2026-11-04T22:34:50+01:00",
+          "by": "desarrollador",
+          "msg": "⚠ 1 comandos denegados: python board/board.py add \"Si el almacén cae durante la expiración, quedan fiche"
+        },
+        {
+          "t": "2026-11-04T22:34:50+01:00",
+          "by": "runner",
+          "msg": "✗ «python board/board.py add \"Si el almacén cae durante la expiración, quedan ficheros huérfa»: borrar o mover ficheros: usa Write/Edit"
+        }
+      ],
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-04T22:34:50+01:00",
+          "min": 32.0,
+          "turns": 130,
+          "tokens": 3148192,
+          "cost_usd": 3.369236999999999,
+          "verdict": "blocked"
         }
       ]
     },
@@ -7442,6 +7479,54 @@
         "task": "T-094",
         "why": ""
       }
+    },
+    {
+      "id": "T-162",
+      "title": "Si el almacén cae durante la expiración, quedan ficheros huérfanos para siempre",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "baja",
+      "estimate_min": 30.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Al expirar, Iceberg confirma primero y limpia después. Si el almacén falla justo en medio de la limpieza, los snapshots ya no están y sus ficheros se quedan sin que nada los vuelva a borrar. Se propone una limpieza de huérfanos que compare el contenido del almacén con lo que la tabla usa, y también recoja los ficheros de metadatos viejos, que hoy se acumulan.\nCómo sabremos si funciona: tras provocar un fallo a mitad de limpieza, una pasada posterior deja en el almacén solo los ficheros que la tabla usa.\n## Técnico\nT-105 comprueba el almacén antes de confirmar (SnapshotExpirer.checkStoreIsReachable), pero no cubre el fallo durante la limpieza: IncrementalFileCleanup solo registra avisos y el proceso sale con 0. Si se lista el bucket, respetar una antigüedad mínima para no borrar ficheros de un commit en curso del sink. Los ficheros metadata.json viejos no los borra expire_snapshots; opción: write.metadata.delete-after-commit.enabled.",
+      "deps": [],
+      "created": "2026-11-04T22:31:26+01:00",
+      "updated": "2026-11-04T22:31:26+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-04T22:31:26+01:00",
+          "by": "desarrollador",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-163",
+      "title": "Un test del servidor falla al azar según la hora a la que se lanza",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "media",
+      "estimate_min": 5.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Un test comprueba que un dato secreto, el número 42, no aparece en un mensaje de error. Pero el mensaje incluye el nombre de un espacio de pruebas que lleva la hora en milisegundos, y si esa hora contiene un 42 el test falla sin que haya ningún problema real. Se propone usar como dato secreto un valor que no pueda coincidir por azar.\nCómo sabremos si funciona: el test pasa a cualquier hora, y sigue fallando si el dato secreto se filtra de verdad.\n## Técnico\nQueryToolsEdgeIT.noBackDoorThroughTheView, línea 320: doesNotContain(42) contra el mensaje Table not allowed: lh.query_edge_1793827839142.secret. Visto en T-105: fallan los casos 1 a 5 cuando el NS contiene 42. La CI estaba en verde en el mismo código.",
+      "deps": [],
+      "created": "2026-11-04T22:31:57+01:00",
+      "updated": "2026-11-04T22:31:57+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-04T22:31:57+01:00",
+          "by": "desarrollador",
+          "msg": "creada"
+        }
+      ]
     }
   ],
   "runners": {
@@ -7460,14 +7545,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-094",
-      "message": "desarrollador con T-094",
+      "current": "T-105",
+      "message": "desarrollador con T-105",
       "pid": 17012,
-      "heartbeat": "2026-11-04T21:43:00+01:00",
+      "heartbeat": "2026-11-04T22:02:49+01:00",
       "enabled": true,
       "agent": "desarrollador",
-      "started": "2026-11-04T21:43:00+01:00",
-      "live": "live-T-094-desarrollador-20261104-214300.jsonl"
+      "started": "2026-11-04T22:02:49+01:00",
+      "live": "live-T-105-desarrollador-20261104-220249.jsonl"
     }
   }
 }

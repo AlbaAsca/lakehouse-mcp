@@ -40,8 +40,8 @@ class McpServerImageIT {
     private static final long MEMORY_BUDGET = 1024L * 1024 * 1024;
     /** What the root .dockerignore lets through: Testcontainers does not read it. */
     private static final List<String> CONTEXT = List.of("pom.xml", "producer/pom.xml", "mcp-server/pom.xml", "agent/pom.xml",
-            "semantic/pom.xml", "evals/pom.xml", "bench/pom.xml", "testkit/pom.xml", "mcp-server/src/main", "testkit/src/main",
-            "infra/mcp-server");
+            "semantic/pom.xml", "evals/pom.xml", "bench/pom.xml", "testkit/pom.xml", "maintenance/pom.xml", "mcp-server/src/main",
+            "testkit/src/main", "infra/mcp-server");
     private static final ObjectMapper JSON = new ObjectMapper();
 
     private static GenericContainer<?> server;

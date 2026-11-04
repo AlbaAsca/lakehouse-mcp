@@ -69,6 +69,7 @@ El recorrido completo, con snapshots y time travel, está en [el tutorial](../03
 ## Qué puede fallar
 
 - **Muchos ficheros pequeños.** Con commits cada 30 s se acumularán. Hace falta compactar (⬜ T-047).
+- **Los snapshots ocupan.** Cada uno retiene sus ficheros hasta que [se expira](../04-operacion.md#expirar-snapshots-viejos). Es manual: `./mk expire`.
 - **Borrar una tabla no borra sus ficheros.** Comprobado aquí con DuckDB y Polaris: tras `DROP TABLE` siguen los objetos en S3. [Detalle](../04-operacion.md#drop-table-deja-los-ficheros-en-s3).
 - **El catálogo y los ficheros son dos cosas.** Si se pierde el catálogo, los ficheros siguen, pero nadie sabe qué tabla forman. Por eso [Polaris guarda en Postgres](postgres.md).
 

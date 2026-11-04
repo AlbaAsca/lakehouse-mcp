@@ -47,6 +47,27 @@ SeedCommand - Kafka confirmed 50000 events
 
 **Sin probar:** que las filas lleguen a la tabla en el stack de `compose.yaml` (ese tramo solo está probado en contenedores, con `IngestE2EIT`), la duplicación en la tabla y el arranque limpio con `docker compose down -v`.
 
+## Expirar snapshots viejos
+
+Cada escritura deja un snapshot y sus ficheros. Este proceso de un solo uso borra los snapshots más antiguos que la retención y los ficheros que solo ellos usaban. No está encendido: arranca, hace su trabajo y termina.
+
+```bash
+./mk expire                                  # ecommerce.events, retención de 7 días
+./mk expire TABLE=ecommerce.events RETENTION=P30D
+```
+
+**Es irreversible:** a un snapshot expirado ya no se puede volver con time travel ni con rollback. El vigente nunca se borra, aunque sea más viejo que la retención.
+
+Salida normal, de una tabla de prueba: `maintenance_it.compacted snapshots: 5 -> 1, files deleted: 7, files that could not be deleted: 0`. Código de salida: 0 si todo fue bien, 1 si falló o quedaron ficheros sin borrar (los lista), 2 si faltan argumentos o variables.
+
+Estado de la comprobación: la lógica está probada con la imagen real contra tablas de prueba (`ExpireSnapshotsIT`). `./mk expire` se ha ejecutado en el stack hasta el catálogo, sin una tabla `ecommerce.events` que expirar (acaba con `Table does not exist`): **sin probar sobre la tabla que escribe el sink**.
+
+Tres cosas que pueden sorprender:
+
+- **Un fichero sustituido no se va hasta que expira el snapshot que lo sustituyó.** Si lo último que pasó en la tabla fue una compactación, sus ficheros viejos siguen ahí hasta la siguiente pasada, cuando ya haya un snapshot posterior y la compactación quede fuera de la retención. Lo fija `afterACompactionTheImageRemovesTheReplacedFilesFromTheStore`.
+- **El fichero de borrado de una compactación se queda.** La compactación de DuckDB lo deja registrado, así que sigue en uso y expirar no lo toca.
+- **Comprueba el almacén antes de confirmar.** Iceberg confirma primero y limpia después, y si entonces no llega al almacén solo escribe avisos y los ficheros quedan huérfanos. Por eso el proceso lee del almacén antes y, si no puede, falla sin expirar nada. Si el almacén cae justo durante la limpieza, esos ficheros siguen sin borrarse (⬜ T-162).
+
 ## Síntomas y remedios
 
 ### Docker no responde

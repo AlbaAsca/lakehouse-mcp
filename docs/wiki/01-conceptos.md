@@ -88,7 +88,7 @@ Una foto de la tabla en un momento dado. Cada escritura crea una nueva, sin dest
 Guardar los datos en grupos lógicos, por ejemplo uno por día, para que una consulta sobre un día no tenga que abrir todo el mes.
 
 ### Compactación y expiración
-Escribir poco a poco deja muchos ficheros pequeños. Compactar los une. Expirar borra snapshots viejos que ya no se necesitan. Es la limpieza periódica de la tabla (⬜ T-047).
+Escribir poco a poco deja muchos ficheros pequeños. Compactar los une. Expirar borra snapshots viejos que ya no se necesitan. Es la limpieza periódica de la tabla (compactar: ⬜ T-047; [expirar](04-operacion.md#expirar-snapshots-viejos): ✅ T-105).
 
 ### Catálogo
 El registro que responde a «¿dónde está la versión actual de la tabla `ventas`?». Es el fichero central de una biblioteca. Todos los que leen y escriben lo consultan, y así todos ven la misma versión. Aquí es [Polaris](componentes/polaris.md).

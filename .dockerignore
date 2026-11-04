@@ -1,7 +1,9 @@
-# Only infra/mcp-server/Dockerfile builds from the root; this keeps .env, .git and target/ out of its context.
+# Only infra/mcp-server and infra/maintenance build from the root; this keeps .env, .git and target/ out of their context.
 *
 !pom.xml
 !*/pom.xml
 !mcp-server/src/main
+!maintenance/src/main
 !testkit/src/main
 !infra/mcp-server
+!infra/maintenance
