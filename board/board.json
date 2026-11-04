@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-03T13:22:56+01:00",
+  "updated": "2026-11-04T20:19:04+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -4298,7 +4298,7 @@
       "id": "T-084",
       "title": "Que un agente cortado no deje la tarjeta bloqueada con basura",
       "owner": "desarrollador",
-      "status": "review",
+      "status": "done",
       "priority": "alta",
       "estimate_min": 25.0,
       "actual_min": 5.2,
@@ -4308,10 +4308,12 @@
       "deps": [
         "T-135",
         "T-136",
-        "T-145"
+        "T-145",
+        "T-152",
+        "T-153"
       ],
       "created": "2026-11-02T17:30:57+01:00",
-      "updated": "2026-11-03T13:22:56+01:00",
+      "updated": "2026-11-04T20:19:04+01:00",
       "started_at": "2026-11-03T10:26:39+01:00",
       "finished_at": "2026-11-03T10:27:24+01:00",
       "log": [
@@ -4414,6 +4416,36 @@
           "t": "2026-11-03T13:22:56+01:00",
           "by": "tester",
           "msg": "límite de uso, reintenta tras el reset"
+        },
+        {
+          "t": "2026-11-04T20:15:59+01:00",
+          "by": "tester",
+          "msg": "verificando"
+        },
+        {
+          "t": "2026-11-04T20:19:04+01:00",
+          "by": "tester",
+          "msg": "DONE: El agente cortado devuelve la tarjeta a su estado sin JSON, comprobado con el log real de T-012 y 37 tests en verde; las variantes pendientes quedan en T-149, T-150 y T-151."
+        },
+        {
+          "t": "2026-11-04T20:19:04+01:00",
+          "by": "tester",
+          "msg": "⚠ 3 comandos denegados: git show b048130 -- board/runner.py tests/test_runner.py CLAUDE.md docs/wiki/com | C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\board\\runner.py | Grep"
+        },
+        {
+          "t": "2026-11-04T20:19:04+01:00",
+          "by": "runner",
+          "msg": "✓ permiso concedido automáticamente: git show* (solo lectura dentro del proyecto); se reintenta"
+        },
+        {
+          "t": "2026-11-04T20:19:04+01:00",
+          "by": "runner",
+          "msg": "? permiso solicitado: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\board\\runner.py * (T-152); la tarjeta espera la decisión"
+        },
+        {
+          "t": "2026-11-04T20:19:04+01:00",
+          "by": "runner",
+          "msg": "? permiso solicitado: Grep * (T-153); la tarjeta espera la decisión"
         }
       ],
       "runs": [
@@ -4436,9 +4468,19 @@
           "tokens": 134181,
           "cost_usd": 0.3340106,
           "verdict": "review"
+        },
+        {
+          "agent": "tester",
+          "mode": "verify",
+          "at": "2026-11-04T20:19:04+01:00",
+          "min": 3.1,
+          "turns": 42,
+          "tokens": 448533,
+          "cost_usd": 0.8014284,
+          "verdict": "done"
         }
       ],
-      "verify_started": "2026-11-03T13:20:38+01:00"
+      "verify_started": "2026-11-04T20:15:59+01:00"
     },
     {
       "id": "T-085",
@@ -6778,6 +6820,157 @@
           "msg": "creada"
         }
       ]
+    },
+    {
+      "id": "T-149",
+      "title": "Un error de la API deja la tarjeta bloqueada con JSON como motivo",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "media",
+      "estimate_min": 15.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Si el servicio de Claude falla (por ejemplo, por sobrecarga), el agente acaba con un mensaje de error en lugar de su veredicto. La tarjeta queda bloqueada con ese JSON como motivo y nadie la retoma, aunque la tarea no tenga ningún problema. Es el mismo síntoma que arregló T-084 por otro camino. Se propone tratarlo como un corte: la tarjeta vuelve a su estado con un motivo legible.\nCómo sabremos si funciona: una salida con error de API devuelve la tarjeta a su estado y su registro no contiene JSON.\n## Técnico\nboard/runner.py, run_claude y finish. Reproducido con evento sintético {type:result, subtype:success, is_error:true, result:'API Error: 529 {...overloaded_error...}'}, código 1, modo verify: finish devuelve blocked con el JSON en el log, porque cut=False al haber texto. El formato viene de lo que se recuerda de la CLI: en board/runs no hay ningún caso real de is_error:true, así que hay que confirmarlo. Criterio: resultado con is_error:true y sin línea RESULT => veredicto cut, sin entrada en runs ni llaves en el log. Sanear también el stderr en interruption(), que hoy copia JSON tal cual al motivo. Test en tests/test_runner.py.",
+      "deps": [],
+      "created": "2026-11-04T20:18:23+01:00",
+      "updated": "2026-11-04T20:18:45+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-04T20:18:23+01:00",
+          "by": "tester",
+          "msg": "creada"
+        },
+        {
+          "t": "2026-11-04T20:18:45+01:00",
+          "by": "consultor",
+          "msg": "descripción reescrita"
+        }
+      ]
+    },
+    {
+      "id": "T-150",
+      "title": "Una tarjeta que se corta siempre se reintenta sin fin",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "media",
+      "estimate_min": 20.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Cuando un agente se corta, la tarjeta vuelve a su estado y se reintenta en la siguiente ejecución, sin contar los intentos. Si el corte se repite siempre por culpa de esa tarjeta, gastará cupo una y otra vez, y además parará el runner cada vez, sin que nadie se entere. Se propone contar los cortes seguidos y, a partir de un tope, bloquear la tarjeta con un motivo claro.\nCómo sabremos si funciona: tras varios cortes seguidos de la misma tarjeta, esta queda bloqueada con un motivo legible y el runner sigue con las demás.\n## Técnico\nboard/runner.py: finish (rama stopped) no añade nada a t['runs'] y el bucle de main hace break con verdict cut sin contarlo; fails es local y se reinicia con cada proceso. Comprobado también que un result vacío con is_error:false y código 0 da cut=True, así que un agente que termina siempre sin mensaje entra en el mismo bucle. Criterio: contador persistente en la tarjeta, que se reinicia con un veredicto real y bloquea a los 3 cortes seguidos. No debe aplicarse a verdict limit, que es ajeno a la tarjeta. El tope de 3 es una propuesta, igual que MAX_FAILS. Relacionado con T-083 (reanudación programada), que multiplicaría el gasto. Test en tests/test_runner.py.",
+      "deps": [],
+      "created": "2026-11-04T20:18:29+01:00",
+      "updated": "2026-11-04T20:18:49+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-04T20:18:29+01:00",
+          "by": "tester",
+          "msg": "creada"
+        },
+        {
+          "t": "2026-11-04T20:18:49+01:00",
+          "by": "consultor",
+          "msg": "descripción reescrita"
+        }
+      ]
+    },
+    {
+      "id": "T-151",
+      "title": "Un agente cortado pierde el aviso de sus comandos denegados",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "baja",
+      "estimate_min": 10.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Cuando a un agente le deniegan un comando, debe quedar anotado en la tarjeta. Pero si después se corta, la nota se pierde, y tampoco se abre la solicitud de permiso. Al reintentar, lo normal es que le vuelva a pasar lo mismo sin que nadie lo vea. Se propone anotar los comandos denegados también en este caso.\nCómo sabremos si funciona: una ejecución cortada con un comando denegado deja la nota en el registro de la tarjeta.\n## Técnico\nboard/runner.py, finish: la rama stopped retorna antes de usar r['denied'], así que no se llama a bd.log ni a permission_protocol. Reproducido: run_claude devuelve denied=['python board/board.py add X'] y el log de la tarjeta solo tiene 'agente cortado sin mensaje final, se reintentará'. CLAUDE.md, sección Ejecución autónoma, dice que los denegados quedan anotados. Criterio: el log incluye la línea de aviso ⚠ en la rama stopped, también con límite de uso. Test en tests/test_runner.py.",
+      "deps": [],
+      "created": "2026-11-04T20:18:34+01:00",
+      "updated": "2026-11-04T20:18:52+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-04T20:18:34+01:00",
+          "by": "tester",
+          "msg": "creada"
+        },
+        {
+          "t": "2026-11-04T20:18:52+01:00",
+          "by": "consultor",
+          "msg": "descripción reescrita"
+        }
+      ]
+    },
+    {
+      "id": "T-152",
+      "title": "Solicitud de permiso: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\board\\runner.py *",
+      "owner": "consultor",
+      "status": "human",
+      "priority": "media",
+      "estimate_min": 2,
+      "actual_min": null,
+      "auto": false,
+      "manual": "Abre la tarjeta y pulsa «Conceder» o «Denegar».",
+      "desc": "El agente «tester» necesitaba un comando que no está en su lista de permitidos y se lo bloquearon mientras hacía T-084. No es de solo lectura ni está prohibido, así que lo tiene que validar una persona.\n\nPara qué lo quería: (no lo explicó)\n\nCómo decidir: concede si es seguro repetirlo sin supervisión dentro del proyecto; deniega si escribe fuera, publica, borra o usa la red.\n\n## Técnico\n- Comando: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\board\\runner.py\n- Patrón que se concedería: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\board\\runner.py *\n- Tarjeta: T-084",
+      "deps": [],
+      "created": "2026-11-04T20:19:04+01:00",
+      "updated": "2026-11-04T20:19:04+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-04T20:19:04+01:00",
+          "by": "runner",
+          "msg": "creada"
+        }
+      ],
+      "kind": "permiso",
+      "perm": {
+        "pattern": "C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\board\\runner.py *",
+        "command": "C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\board\\runner.py",
+        "agent": "tester",
+        "task": "T-084",
+        "why": ""
+      }
+    },
+    {
+      "id": "T-153",
+      "title": "Solicitud de permiso: Grep *",
+      "owner": "consultor",
+      "status": "human",
+      "priority": "media",
+      "estimate_min": 2,
+      "actual_min": null,
+      "auto": false,
+      "manual": "Abre la tarjeta y pulsa «Conceder» o «Denegar».",
+      "desc": "El agente «tester» necesitaba un comando que no está en su lista de permitidos y se lo bloquearon mientras hacía T-084. No es de solo lectura ni está prohibido, así que lo tiene que validar una persona.\n\nPara qué lo quería: (no lo explicó)\n\nCómo decidir: concede si es seguro repetirlo sin supervisión dentro del proyecto; deniega si escribe fuera, publica, borra o usa la red.\n\n## Técnico\n- Comando: Grep\n- Patrón que se concedería: Grep *\n- Tarjeta: T-084",
+      "deps": [],
+      "created": "2026-11-04T20:19:04+01:00",
+      "updated": "2026-11-04T20:19:04+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-04T20:19:04+01:00",
+          "by": "runner",
+          "msg": "creada"
+        }
+      ],
+      "kind": "permiso",
+      "perm": {
+        "pattern": "Grep *",
+        "command": "Grep",
+        "agent": "tester",
+        "task": "T-084",
+        "why": ""
+      }
     }
   ],
   "runners": {
@@ -6798,12 +6991,12 @@
       "state": "working",
       "current": "T-084",
       "message": "tester con T-084",
-      "pid": 19972,
-      "heartbeat": "2026-11-03T13:20:39+01:00",
+      "pid": 17012,
+      "heartbeat": "2026-11-04T20:16:00+01:00",
       "enabled": true,
       "agent": "tester",
-      "started": "2026-11-03T13:20:39+01:00",
-      "live": "live-T-084-tester-20261103-132039.jsonl"
+      "started": "2026-11-04T20:16:00+01:00",
+      "live": "live-T-084-tester-20261104-201600.jsonl"
     }
   }
 }
