@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-04T21:16:44+01:00",
+  "updated": "2026-11-04T21:18:12+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -5042,10 +5042,10 @@
       "id": "T-092",
       "title": "Calcular por separado la respuesta correcta de la pregunta de la demo",
       "owner": "tester",
-      "status": "next",
+      "status": "done",
       "priority": "media",
       "estimate_min": 15.0,
-      "actual_min": null,
+      "actual_min": 1.4,
       "auto": true,
       "manual": null,
       "desc": "Un agente puede contestar con seguridad y equivocarse, así que la demo necesita una cifra con la que comparar. Se propone calcularla directamente desde la muestra, sin usar nada de la aplicación ni de la base de datos.\nCómo sabremos si funciona: hay un fichero con el total de filas y las cinco marcas con más ingresos por compras, y volver a calcularlo da lo mismo.\n\n## Técnico\nScript evals/demo/reference.py solo con biblioteca estándar: lee testdata/synthetic-events.csv.gz y escribe evals/demo/expected.json con total de filas y top 5 de brand por suma de price donde event_type = purchase. Sin quitar duplicados (T-015 exige que lleguen todas las filas) y excluyendo brand vacío. Documentar esas dos reglas en el fichero. Test pytest de dos ejecuciones iguales y de un caso a mano con un CSV mínimo. No mirar el código de mcp-server ni agent.",
@@ -5053,9 +5053,9 @@
         "T-004"
       ],
       "created": "2026-11-02T17:36:44+01:00",
-      "updated": "2026-11-02T17:36:44+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-04T21:18:12+01:00",
+      "started_at": "2026-11-04T21:16:50+01:00",
+      "finished_at": "2026-11-04T21:18:12+01:00",
       "log": [
         {
           "t": "2026-11-02T17:36:44+01:00",
@@ -5066,6 +5066,33 @@
           "t": "2026-11-02T22:01:48+01:00",
           "by": "tú",
           "msg": "editada: priority"
+        },
+        {
+          "t": "2026-11-04T21:16:50+01:00",
+          "by": "runner",
+          "msg": "empieza tester"
+        },
+        {
+          "t": "2026-11-04T21:16:55+01:00",
+          "by": "tester",
+          "msg": "Empiezo el cálculo de referencia"
+        },
+        {
+          "t": "2026-11-04T21:18:12+01:00",
+          "by": "tester",
+          "msg": "DONE: `evals/demo/expected.json` tiene 50.000 filas y el top 5 de marcas por compras, y es reproducible con `evals/demo/reference.py`, con 7 tests en verde."
+        }
+      ],
+      "runs": [
+        {
+          "agent": "tester",
+          "mode": "work",
+          "at": "2026-11-04T21:18:12+01:00",
+          "min": 1.4,
+          "turns": 27,
+          "tokens": 158283,
+          "cost_usd": 0.42169239999999997,
+          "verdict": "done"
         }
       ]
     },
@@ -7192,14 +7219,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-021",
-      "message": "tester con T-021",
+      "current": "T-092",
+      "message": "tester con T-092",
       "pid": 17012,
-      "heartbeat": "2026-11-04T21:00:47+01:00",
+      "heartbeat": "2026-11-04T21:16:50+01:00",
       "enabled": true,
       "agent": "tester",
-      "started": "2026-11-04T21:00:47+01:00",
-      "live": "live-T-021-tester-20261104-210047.jsonl"
+      "started": "2026-11-04T21:16:50+01:00",
+      "live": "live-T-092-tester-20261104-211650.jsonl"
     }
   }
 }

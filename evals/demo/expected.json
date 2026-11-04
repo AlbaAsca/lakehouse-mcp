@@ -1,0 +1,32 @@
+{
+  "source": "testdata/synthetic-events.csv.gz",
+  "rules": [
+    "Sin quitar duplicados: T-015 exige que lleguen todas las filas, así que cada fila repetida cuenta y suma.",
+    "Se excluyen las compras con marca vacía.",
+    "Se suma el precio tal cual, incluidos los negativos y los cero de la muestra.",
+    "Un empate en ingresos se resuelve por nombre de marca."
+  ],
+  "total_rows": 50000,
+  "top_brands_by_purchase_revenue": [
+    {
+      "brand": "synth-nimbora",
+      "revenue": "704515.14"
+    },
+    {
+      "brand": "synth-velkaro",
+      "revenue": "373157.08"
+    },
+    {
+      "brand": "synth-ostrina",
+      "revenue": "286978.02"
+    },
+    {
+      "brand": "synth-quorvo",
+      "revenue": "284523.31"
+    },
+    {
+      "brand": "synth-lumbrel",
+      "revenue": "216201.67"
+    }
+  ]
+}
