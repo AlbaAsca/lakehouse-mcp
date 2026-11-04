@@ -54,7 +54,7 @@ Para conectarse necesita dos secretos: uno de tipo `iceberg` para Polaris y otro
 | `memory_limit` | `512MB` | La consulta falla con `Out of Memory` y la sesión sigue viva |
 | `temp_directory` | vacío | No se desborda a disco: sin esto, el límite de memoria solo movería el problema al disco |
 | `READ_ONLY` en el `ATTACH` | siempre | Rechaza cualquier escritura, también el `SELECT` de rollback |
-| `installExtensions` | `true` | Con `false` no descarga nada: `httpfs`, `avro` e `iceberg` deben estar ya en `extensionDirectory`, o no arranca |
+| `installExtensions` | `true` | Con `false` no descarga nada: `httpfs`, `avro` e `iceberg` deben estar ya en `extensionDirectory`, o no arranca. Así corre [la imagen del servidor](servidor-mcp.md#la-imagen) (T-093) |
 
 Para los tests, [`SyntheticLoader`](../../../testkit/src/main/java/io/github/albaasca/lakehouse/testkit/SyntheticLoader.java) carga la muestra en una tabla Iceberg sin pasar por Kafka. Los ficheros los escribe DuckDB, no el sink.
 

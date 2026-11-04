@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-04T21:18:12+01:00",
+  "updated": "2026-11-04T21:35:34+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -5100,10 +5100,10 @@
       "id": "T-093",
       "title": "MCP: poner el servidor dentro del stack en cuanto sepa consultar",
       "owner": "desarrollador",
-      "status": "next",
+      "status": "review",
       "priority": "media",
       "estimate_min": 30.0,
-      "actual_min": null,
+      "actual_min": 17.3,
       "auto": true,
       "manual": null,
       "desc": "El servidor solo entraba en el stack al final, cuando tuviera todas las herramientas, y eso retrasaba cualquier demo real. Se propone meterlo ya con lo que sepa hacer en ese momento: las demás herramientas aparecerán solas cuando se construyan.\nCómo sabremos si funciona: al levantar el stack, el servidor queda sano y un cliente MCP puede listar sus herramientas y consultar.\n\n## Técnico\nSale de T-028 (que queda solo para Claude Desktop). infra/mcp-server/Dockerfile multi-etapa, contexto raíz, -Xmx según la tabla de memoria (1 GB), extensiones DuckDB precargadas, healthcheck con Actuator, puerto publicado, sin bind mounts. Servicio en compose.yaml. Verificación: test con ImageFromDockerfile (salud y MCP) en ./mk test. Actualizar docs/wiki/componentes y el estado en docs/wiki/README.md.",
@@ -5111,9 +5111,9 @@
         "T-021"
       ],
       "created": "2026-11-02T17:36:48+01:00",
-      "updated": "2026-11-02T17:36:48+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-04T21:35:34+01:00",
+      "started_at": "2026-11-04T21:18:17+01:00",
+      "finished_at": "2026-11-04T21:35:34+01:00",
       "log": [
         {
           "t": "2026-11-02T17:36:48+01:00",
@@ -5134,6 +5134,33 @@
           "t": "2026-11-04T20:30:07+01:00",
           "by": "consultor",
           "msg": "T-020: el servidor escucha solo en 127.0.0.1 y puerto 8090 por defecto. En el compose hay que poner MCP_SERVER_ADDRESS=0.0.0.0, y S3_ENDPOINT/POLARIS_URI ya apuntan por defecto a los servicios del compose. Falta probar el .jar fuera de los tests."
+        },
+        {
+          "t": "2026-11-04T21:18:17+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-04T21:35:25+01:00",
+          "by": "consultor",
+          "msg": "Imagen probada: McpServerImageIT (5/5) y módulo mcp-server en verde (111 IT sin fallos, 2 omitidos). docker compose build mcp-server también funciona (contexto de 96 KB). No probado: ./mk up con el servicio, queda en T-157. Primera construcción: unos 4 min; después solo recompila. Puerto publicado solo en 127.0.0.1, sin autenticación hasta T-050. memory_limit sigue en 512 MB, no en los 400 MB del reparto."
+        },
+        {
+          "t": "2026-11-04T21:35:34+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: Servidor MCP en el compose con imagen probada en contenedores y tests del módulo en verde; falta comprobar `./mk up` con el stack completo (T-157)."
+        }
+      ],
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-04T21:35:34+01:00",
+          "min": 17.3,
+          "turns": 80,
+          "tokens": 1668952,
+          "cost_usd": 2.0079841999999997,
+          "verdict": "review"
         }
       ]
     },
@@ -7201,6 +7228,56 @@
           "msg": "creada"
         }
       ]
+    },
+    {
+      "id": "T-157",
+      "title": "[Tú] Comprobar el servidor MCP en el stack completo",
+      "owner": "consultor",
+      "status": "backlog",
+      "priority": "alta",
+      "estimate_min": 10.0,
+      "actual_min": null,
+      "auto": false,
+      "manual": "Ejecutar ./mk up y luego ./mk test no hace falta: basta con mirar que mcp-server sale healthy y con curl http://localhost:8090/actuator/health",
+      "desc": "El servidor ya está en el stack y su imagen pasa las pruebas en contenedores, pero el stack entero no se ha levantado con él, porque esa prueba no la hacen los agentes automáticos. Falta hacerlo una vez de verdad antes de construir la demo encima.\nCómo sabremos si funciona: al levantar el stack, el servidor queda sano y un cliente puede listar sus herramientas y consultar.\n## Técnico\n./mk up; docker compose ps debe mostrar mcp-server healthy; curl http://localhost:8090/actuator/health da UP. Sin probar también: que el host alcance 127.0.0.1:8090 con Docker Desktop. Al confirmarlo, quitar los «sin probar» de docs/wiki/README.md y docs/wiki/componentes/servidor-mcp.md.",
+      "deps": [
+        "T-093"
+      ],
+      "created": "2026-11-04T21:35:17+01:00",
+      "updated": "2026-11-04T21:35:17+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-04T21:35:17+01:00",
+          "by": "desarrollador",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-158",
+      "title": "Que la salud del servidor MCP avise si se pierde el catálogo",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "baja",
+      "estimate_min": 15.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Hoy el servidor se declara sano si el proceso contesta, aunque el catálogo haya caído después de arrancar: las herramientas fallarían mientras Docker lo ve bien. Se propone que la comprobación de salud pregunte también al catálogo, decidiendo antes si eso debe reiniciar algo o solo avisar.\nCómo sabremos si funciona: con el catálogo parado, la salud deja de decir que todo va bien, y vuelve sola cuando regresa.\n## Técnico\nHealthIndicator de Actuator sobre LakehouseSession. No observado todavía: deducido de que no hay indicador propio; comprobarlo primero parando Polaris (LakehouseStack.restartPolaris cambia el puerto, ojo). Relacionado con T-112.",
+      "deps": [],
+      "created": "2026-11-04T21:35:20+01:00",
+      "updated": "2026-11-04T21:35:20+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-04T21:35:20+01:00",
+          "by": "desarrollador",
+          "msg": "creada"
+        }
+      ]
     }
   ],
   "runners": {
@@ -7219,14 +7296,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-092",
-      "message": "tester con T-092",
+      "current": "T-093",
+      "message": "desarrollador con T-093",
       "pid": 17012,
-      "heartbeat": "2026-11-04T21:16:50+01:00",
+      "heartbeat": "2026-11-04T21:18:18+01:00",
       "enabled": true,
-      "agent": "tester",
-      "started": "2026-11-04T21:16:50+01:00",
-      "live": "live-T-092-tester-20261104-211650.jsonl"
+      "agent": "desarrollador",
+      "started": "2026-11-04T21:18:18+01:00",
+      "live": "live-T-093-desarrollador-20261104-211818.jsonl"
     }
   }
 }

@@ -151,6 +151,23 @@ services:
     env_file: [.env]
     restart: "no"
 
+  mcp-server:
+    build:
+      context: .
+      dockerfile: infra/mcp-server/Dockerfile
+    depends_on:
+      polaris: {condition: service_healthy}
+      lakehouse-init: {condition: service_completed_successfully}
+    environment:
+      MCP_SERVER_ADDRESS: 0.0.0.0
+      POLARIS_CLIENT_ID: ${POLARIS_CLIENT_ID}
+      POLARIS_CLIENT_SECRET: ${POLARIS_CLIENT_SECRET}
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY}
+      S3_SECRET_KEY: ${S3_SECRET_KEY}
+      S3_REGION: ${S3_REGION}
+    # Host loopback only: no authentication until the API keys of T-050. Other services reach it at mcp-server:8090.
+    ports: ["127.0.0.1:8090:8090"]
+
   trino:
     image: trinodb/trino:484
     profiles: [bench]

@@ -3,6 +3,7 @@ package io.github.albaasca.lakehouse.mcp;
 import io.github.albaasca.lakehouse.mcp.LakehouseSession.Catalog;
 import io.github.albaasca.lakehouse.mcp.LakehouseSession.Settings;
 import io.github.albaasca.lakehouse.mcp.LakehouseSession.Storage;
+import java.nio.file.Path;
 import java.sql.SQLException;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -18,7 +19,15 @@ import org.springframework.security.web.SecurityFilterChain;
 public class McpServerApplication {
 
     @ConfigurationProperties("lakehouse")
-    record LakehouseProperties(Catalog catalog, Storage storage) {}
+    record LakehouseProperties(Catalog catalog, Storage storage, String extensionDirectory) {
+
+        Settings settings() {
+            Settings settings = Settings.of(catalog, storage);
+            return extensionDirectory == null || extensionDirectory.isBlank()
+                    ? settings
+                    : settings.withExtensions(Path.of(extensionDirectory), false);
+        }
+    }
 
     public static void main(String[] args) {
         SpringApplication.run(McpServerApplication.class, args);
@@ -26,7 +35,7 @@ public class McpServerApplication {
 
     @Bean
     LakehouseSession lakehouseSession(LakehouseProperties properties) throws SQLException {
-        return new LakehouseSession(Settings.of(properties.catalog(), properties.storage()));
+        return new LakehouseSession(properties.settings());
     }
 
     @Bean

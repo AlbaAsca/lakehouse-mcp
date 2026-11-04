@@ -21,6 +21,8 @@ server:
 
 # The same variables as compose.yaml. Without a default on purpose: no credentials, no start.
 lakehouse:
+  # Set in the image: extensions already there, nothing is downloaded. Empty: DuckDB's default directory, installing them.
+  extension-directory: ${DUCKDB_EXTENSION_DIRECTORY:}
   catalog:
     name: ${POLARIS_CATALOG:lakehouse}
     uri: ${POLARIS_URI:http://polaris:8181}

@@ -87,7 +87,7 @@ Red interna: la de Compose, donde cada servicio se alcanza por su nombre. «Publ
 | `lakehouse-init`, DuckDB, Polaris | SeaweedFS S3 | HTTP (S3, path-style) | 8333 | 8333 | `S3_ACCESS_KEY`, `S3_SECRET_KEY`, `S3_REGION` | ✅ |
 | Connect (sink) | SeaweedFS S3 | HTTP (S3, path-style) | 8333 | 8333 | las mismas de S3 | 🚧 T-012 |
 | Healthcheck y tú, dentro del contenedor | SeaweedFS master y filer | HTTP | 9333, 8888 | no | ninguna | ✅ |
-| Agente, Claude Desktop | Servidor MCP | HTTP (MCP) | por decidir | por decidir | claves de API previstas | ⬜ T-028, T-050 |
+| Agente, Claude Desktop | Servidor MCP | HTTP (MCP) | 8090 | 8090, solo en `127.0.0.1` | ninguna; claves de API previstas | 🟡 servicio en el compose (T-093); clientes T-028, T-034; claves T-050 |
 | Agente | API de Anthropic | HTTPS | n/a | n/a | `ANTHROPIC_API_KEY` | ⬜ T-032 |
 | Tú | Trino | HTTP | 8080 | 8080, solo con perfil `bench` | sin configurar | ⬜ T-044 |
 | Tú | Panel agent-board | HTTP | corre en el host | 8020 | ninguna | ✅ |
@@ -108,6 +108,8 @@ flowchart TD
     SR --> C
     I --> C
     C --> CI[connect-init<br/>un solo uso]
+    POL --> MCP[mcp-server]
+    I --> MCP
 ```
 
 Por qué en este orden:
@@ -118,6 +120,7 @@ Por qué en este orden:
 - **`lakehouse-init` después de Polaris.** Necesita su API para crear el catálogo `lakehouse`, los permisos y el namespace `ecommerce`. También crea el bucket. Es idempotente: un 409 significa «ya existe».
 - **Connect después de Kafka, Schema Registry y `lakehouse-init`.** Los dos primeros los necesita para funcionar. El tercero garantiza que el catálogo existe cuando se registre el sink.
 - **`connect-init` después de Connect** (🚧 T-012). Registra el conector con un `PUT`.
+- **`mcp-server` después de Polaris y `lakehouse-init`.** Al arrancar se engancha al catálogo `lakehouse` y, si no puede, no arranca (T-093).
 
 `tools` y `trino` están en perfiles, así que `up` no los arranca.
 

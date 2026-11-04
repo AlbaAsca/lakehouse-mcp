@@ -1,6 +1,6 @@
 # Servidor MCP
 
-**Estado:** 🟡 parcial. Ya es una aplicación con cuatro herramientas, `list_tables`, `describe_table`, `run_query` y `time_travel`, probadas con un cliente MCP real. Usan la [conexión con DuckDB y la lectura del catálogo](duckdb.md#dentro-del-servidor-mcp) y el [validador de SQL](#el-validador-de-sql). Todavía no está en `compose.yaml` (T-093) ni tiene claves de API (T-050). Tarjetas T-021 a T-028.
+**Estado:** 🟡 parcial. Ya es una aplicación con cuatro herramientas, `list_tables`, `describe_table`, `run_query` y `time_travel`, probadas con un cliente MCP real. Usan la [conexión con DuckDB y la lectura del catálogo](duckdb.md#dentro-del-servidor-mcp) y el [validador de SQL](#el-validador-de-sql). Es un servicio de `compose.yaml` (T-093); su imagen está probada en contenedores, pero `./mk up` con ese servicio está sin probar. Aún no tiene claves de API (T-050). Tarjetas T-021 a T-028.
 
 [Portada](../README.md) · [Glosario](../01-conceptos.md)
 
@@ -16,7 +16,7 @@ Limita lo que puede hacer un modelo. Sin él, el agente necesitaría acceso dire
 
 | Dirección | Quién | Puerto |
 |---|---|---|
-| Entrada | [Agente](agente.md), Claude Desktop | HTTP 8090, ruta `/mcp` |
+| Entrada | [Agente](agente.md), Claude Desktop | HTTP 8090, ruta `/mcp`. Desde la red del compose, `mcp-server:8090`; desde tu ordenador, `localhost:8090` |
 | Salida | [DuckDB](duckdb.md), embebido: una instancia de lectura y otra de reparación | mismo proceso |
 | Salida | [Polaris](polaris.md), a través de DuckDB | 8181 |
 | Salida | [Postgres](postgres.md), base `ops` | 5432 |
@@ -96,16 +96,35 @@ Variables de `mcp-server/src/main/resources/application.yaml`:
 | `POLARIS_CLIENT_ID`, `POLARIS_CLIENT_SECRET`, `S3_ACCESS_KEY`, `S3_SECRET_KEY`, `S3_REGION` | Ninguno: son obligatorias |
 | `POLARIS_CATALOG`, `POLARIS_URI`, `S3_ENDPOINT` | `lakehouse`, `http://polaris:8181`, `seaweedfs:8333` |
 | `MCP_SERVER_ADDRESS`, `MCP_SERVER_PORT` | `127.0.0.1`, `8090` |
+| `DUCKDB_EXTENSION_DIRECTORY` | Vacío: el directorio de DuckDB, descargando las extensiones. La imagen pone `/opt/duckdb-extensions`: solo carga de ahí y no descarga nada |
 
-**Hoy no pide autenticación.** Spring Security está abierto a propósito hasta las claves de T-050, y por eso el servidor solo escucha en `127.0.0.1` por defecto. Quien lo ponga en el compose (T-093) tendrá que poner `MCP_SERVER_ADDRESS=0.0.0.0`, y entonces lo alcanzará cualquiera que llegue a ese puerto.
+**Hoy no pide autenticación.** Spring Security está abierto a propósito hasta las claves de T-050. Por eso, fuera de un contenedor, escucha solo en `127.0.0.1`. El compose pone `MCP_SERVER_ADDRESS=0.0.0.0` para que lleguen otros servicios, así que lo alcanza cualquier contenedor de su red, pero publica el puerto solo en el `127.0.0.1` de tu ordenador: desde otra máquina no se llega.
 
-Sin la conexión con el catálogo el servidor no arranca, porque ninguna herramienta podría contestar (lo comprueba `McpServerEdgeIT`). **Si falta una variable obligatoria, hoy no avisa** (T-154): usa como valor el texto `${VARIABLE}`. Sin las de `S3_*` arranca y contesta sobre el catálogo; leer datos está sin probar en ese estado. Arrancarlo con el `.jar` fuera de los tests está sin probar.
+Sin la conexión con el catálogo el servidor no arranca, porque ninguna herramienta podría contestar (lo comprueba `McpServerEdgeIT`). **Si falta una variable obligatoria, hoy no avisa** (T-154): usa como valor el texto `${VARIABLE}`. Sin las de `S3_*` arranca y contesta sobre el catálogo; leer datos está sin probar en ese estado.
 
-Límite previsto en el [presupuesto de memoria](../../architecture.md#memoria-docker-76-gb): 1 GB.
+### La imagen
+
+[`infra/mcp-server/Dockerfile`](../../../infra/mcp-server/Dockerfile) compila el servidor dentro de Docker, con la raíz del repositorio como contexto. Un `.dockerignore` en la raíz deja fuera `.env`, `.git` y `target/`.
+
+- **Las extensiones de DuckDB vienen dentro.** Las instala al construir `PreloadExtensions.java`, con el mismo driver que usa el servidor, para que coincida la versión. Arrancar no descarga nada.
+- **La salud la mira la propia imagen**: `HEALTHCHECK` contra `/actuator/health`. Solo mira que el proceso conteste: no comprueba el catálogo después de arrancar (T-158 propone cambiarlo si se ve útil).
+- **Memoria.** `-Xmx256m` de los 1 GB del [presupuesto](../../architecture.md#memoria-docker-76-gb); DuckDB va fuera del heap, con `memory_limit` de 512 MB. El reparto prevé 400 MB para lectura: no se ha cambiado. El compose no pone límite al contenedor; el test sí lo arranca limitado a 1 GB, con una carga mínima, y aguanta. Bajo carga real no se ha medido.
 
 ## Cómo probarlo tú mismo
 
-Todavía no hay servicio en `compose.yaml` (T-093). Lo que sí se puede ejecutar es su test, que levanta el catálogo en contenedores, arranca la aplicación entera y le habla con un cliente MCP real:
+Con el stack levantado (**sin probar**: `./mk up` con este servicio aún no se ha ejecutado), `localhost:8090/mcp` es la dirección para un cliente MCP y la salud está en:
+
+```bash
+curl http://localhost:8090/actuator/health
+```
+
+El test de la imagen la construye, la arranca como el compose (en contenedores, sin el resto del stack) y comprueba salud, herramientas y una consulta:
+
+```bash
+./mk test MODULE=mcp-server MAVEN_ARGS="-Dit.test=McpServerImageIT -Dtest=McpServerApplicationTest -Dsurefire.failIfNoSpecifiedTests=false"
+```
+
+El test de la aplicación levanta el catálogo en contenedores, arranca la aplicación entera y le habla con un cliente MCP real:
 
 ```bash
 ./mk test MODULE=mcp-server MAVEN_ARGS="-Dit.test=McpServerIT -Dtest=CatalogToolsTest -Dsurefire.failIfNoSpecifiedTests=false"
