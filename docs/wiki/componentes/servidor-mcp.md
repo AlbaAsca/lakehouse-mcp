@@ -1,6 +1,6 @@
 # Servidor MCP
 
-**Estado:** ⬜ planificado. Solo existen la [conexión con DuckDB y la lectura del catálogo](duckdb.md#dentro-del-servidor-mcp) y el [validador de SQL](#el-validador-de-sql), probados por sus tests: todavía no hay aplicación, herramientas ni comandos que enseñar. Tarjetas T-020 a T-028.
+**Estado:** 🟡 parcial. Ya es una aplicación con dos herramientas, `list_tables` y `describe_table`, probadas con un cliente MCP real. Existen también la [conexión con DuckDB y la lectura del catálogo](duckdb.md#dentro-del-servidor-mcp) y el [validador de SQL](#el-validador-de-sql), que aún no usa ninguna herramienta. Todavía no está en `compose.yaml` (T-093) ni tiene claves de API (T-050). Tarjetas T-021 a T-028.
 
 [Portada](../README.md) · [Glosario](../01-conceptos.md)
 
@@ -16,7 +16,7 @@ Limita lo que puede hacer un modelo. Sin él, el agente necesitaría acceso dire
 
 | Dirección | Quién | Puerto |
 |---|---|---|
-| Entrada | [Agente](agente.md), Claude Desktop | HTTP, por decidir (T-028) |
+| Entrada | [Agente](agente.md), Claude Desktop | HTTP 8090, ruta `/mcp` |
 | Salida | [DuckDB](duckdb.md), embebido: una instancia de lectura y otra de reparación | mismo proceso |
 | Salida | [Polaris](polaris.md), a través de DuckDB | 8181 |
 | Salida | [Postgres](postgres.md), base `ops` | 5432 |
@@ -28,7 +28,7 @@ Las herramientas previstas, del [brief](../../brief.md#servidor-mcp-tools):
 
 | Herramienta | Qué hará | Tarjeta |
 |---|---|---|
-| `list_tables`, `describe_table` | Tablas, esquema, particiones y snapshots | T-020 |
+| `list_tables`, `describe_table` | Hecho: tablas, esquema, particiones y snapshots | T-020 |
 | `run_query` | Solo `SELECT`, validado y con límite de filas | T-019, T-021 |
 | `time_travel` | Consulta sobre un snapshot anterior | T-021 |
 | `pipeline_health` | Lag, frescura y último snapshot | T-022 |
@@ -37,6 +37,15 @@ Las herramientas previstas, del [brief](../../brief.md#servidor-mcp-tools):
 | `get_metric` | Métricas de la [capa semántica](capa-semantica.md) | T-033 |
 
 Reglas de diseño, en [`docs/architecture.md`](../../architecture.md#decisiones): validar SQL con el parser de DuckDB (7), arreglos de catálogo cerrado cuya aprobación llega por `POST /fix-proposals/{id}/approvals` con una credencial que el modelo nunca recibe (9), roles por clave de API (11), enmascarado de `user_id` por vistas (12), dos instancias de DuckDB (20) y `time_travel` como única vía al pasado, también para analyst (21).
+
+### Cómo responde una herramienta
+
+Es el patrón que seguirán las demás (`CatalogTools` y `ToolResults`):
+
+- **Se declara con `@McpTool`** y se sirve por Streamable HTTP. Solo se ofrecen herramientas: ni recursos, ni prompts, ni autocompletado.
+- **La respuesta es JSON como texto.** Spring AI tiene además `structuredContent`, pero su cliente solo pasa `content` al modelo: con la otra forma el [agente](agente.md) recibiría una respuesta vacía. Los nombres de los campos son el contrato.
+- **Un error es una respuesta que el modelo puede leer**, con `isError`, no un fallo de la llamada. Si no existe la tabla, lo dice con su nombre; si falta un argumento, lo dice el SDK al comprobar el esquema de entrada. Si falla el catálogo, el detalle va al log y el modelo solo sabe que el problema está en el servidor.
+- **`describe_table` da los 20 snapshots más recientes**, del más antiguo al más nuevo, y `snapshotCount` dice cuántos hay. El conector confirma cada 30 s, así que una tabla puede guardar miles.
 
 ### El validador de SQL
 
@@ -62,17 +71,31 @@ Seis cosas que conviene saber:
 - **Lo que se ejecuta no es el texto original.** La consulta se reconstruye a partir del árbol validado, se envuelve con el límite de filas y se valida otra vez. Pide una fila más que el límite para saber si hubo recorte (`truncated`). Si una consulta necesita ampliar la lista, el error dice qué función falta.
 - **Sigue siendo la única barrera ante los ficheros.** Mientras no se haga T-115, un fallo aquí daría acceso a los ficheros del contenedor.
 
-## Cómo estará configurado
+## Cómo está configurado
 
-Dependencias ya declaradas en el `pom.xml`: `spring-ai-starter-mcp-server-webmvc`, `duckdb_jdbc`, Actuator y Spring Security. Spring AI 2.0.2.
+Dependencias en el `pom.xml`: `spring-ai-starter-mcp-server-webmvc`, `duckdb_jdbc`, Actuator y Spring Security. Spring AI 2.0.2.
 
-Dos datos de la [documentación de Spring AI](https://docs.spring.io/spring-ai/reference/api/mcp/mcp-server-boot-starter-docs.html) que afectan al diseño: ese starter ofrece transportes HTTP, y el endpoint queda **sin autenticar** por defecto, de modo que RBAC no es opcional en cuanto salga de localhost (T-050).
+Variables de `mcp-server/src/main/resources/application.yaml`:
+
+| Variable | Por defecto |
+|---|---|
+| `POLARIS_CLIENT_ID`, `POLARIS_CLIENT_SECRET`, `S3_ACCESS_KEY`, `S3_SECRET_KEY`, `S3_REGION` | Ninguno: son obligatorias |
+| `POLARIS_CATALOG`, `POLARIS_URI`, `S3_ENDPOINT` | `lakehouse`, `http://polaris:8181`, `seaweedfs:8333` |
+| `MCP_SERVER_ADDRESS`, `MCP_SERVER_PORT` | `127.0.0.1`, `8090` |
+
+**Hoy no pide autenticación.** Spring Security está abierto a propósito hasta las claves de T-050, y por eso el servidor solo escucha en `127.0.0.1` por defecto. Quien lo ponga en el compose (T-093) tendrá que poner `MCP_SERVER_ADDRESS=0.0.0.0`, y entonces lo alcanzará cualquiera que llegue a ese puerto.
+
+Sin la conexión con el catálogo el servidor no arranca, porque ninguna herramienta podría contestar. Arrancarlo sin variables o con el `.jar` fuera de los tests está sin probar.
 
 Límite previsto en el [presupuesto de memoria](../../architecture.md#memoria-docker-76-gb): 1 GB.
 
 ## Cómo probarlo tú mismo
 
-Todavía no se puede. No hay servicio en `compose.yaml` ni código que ejecutar.
+Todavía no hay servicio en `compose.yaml` (T-093). Lo que sí se puede ejecutar es su test, que levanta el catálogo en contenedores, arranca la aplicación entera y le habla con un cliente MCP real:
+
+```bash
+./mk test MODULE=mcp-server MAVEN_ARGS="-Dit.test=McpServerIT -Dtest=CatalogToolsTest -Dsurefire.failIfNoSpecifiedTests=false"
+```
 
 ## Qué puede fallar
 

@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-04T20:19:04+01:00",
+  "updated": "2026-11-04T20:30:20+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -1808,10 +1808,10 @@
       "id": "T-020",
       "title": "MCP: servidor con list_tables y describe_table",
       "owner": "desarrollador",
-      "status": "next",
+      "status": "review",
       "priority": "media",
       "estimate_min": 40.0,
-      "actual_min": null,
+      "actual_min": 11.2,
       "auto": true,
       "manual": null,
       "desc": "Primer tramo del servidor MCP: que arranque y que un cliente MCP real vea las herramientas y las pueda llamar. Se empieza por las dos más sencillas para fijar el patrón que seguirán las demás.\nCómo sabremos si funciona: un cliente MCP en un test lista las herramientas y describe la tabla de prueba con esquema, particiones y snapshots correctos.\n\n## Técnico\n- spring-ai-starter-mcp-server-webmvc 2.0.2: comprobar en la doc oficial la forma actual de declarar tools (@McpTool u otra) y el transporte (Streamable HTTP).\n- Respuestas estructuradas y estables, con errores legibles para el modelo.\n- McpServerIT con cliente MCP real, sobre LakehouseStack y SyntheticLoader. ./mk test.",
@@ -1820,9 +1820,9 @@
         "T-017"
       ],
       "created": "2026-11-02T11:36:54+01:00",
-      "updated": "2026-11-02T17:37:18+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-04T20:30:20+01:00",
+      "started_at": "2026-11-04T20:19:10+01:00",
+      "finished_at": "2026-11-04T20:30:20+01:00",
       "log": [
         {
           "t": "2026-11-02T11:36:54+01:00",
@@ -1838,6 +1838,38 @@
           "t": "2026-11-02T22:01:38+01:00",
           "by": "tú",
           "msg": "editada: priority"
+        },
+        {
+          "t": "2026-11-04T20:19:10+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-04T20:30:20+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: Servidor MCP con list_tables y describe_table probado con un cliente real; tests del módulo en verde."
+        },
+        {
+          "t": "2026-11-04T20:30:20+01:00",
+          "by": "desarrollador",
+          "msg": "⚠ 1 comandos denegados: ls C:/Users/albaa/.m2/repository/org/springframework/ai"
+        },
+        {
+          "t": "2026-11-04T20:30:20+01:00",
+          "by": "runner",
+          "msg": "✓ permiso concedido automáticamente: ls * (solo lectura dentro del proyecto); se reintenta"
+        }
+      ],
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-04T20:30:20+01:00",
+          "min": 11.2,
+          "turns": 75,
+          "tokens": 1252247,
+          "cost_usd": 1.8428836000000002,
+          "verdict": "review"
         }
       ]
     },
@@ -2816,6 +2848,11 @@
           "t": "2026-11-02T11:39:42+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-04T20:30:09+01:00",
+          "by": "consultor",
+          "msg": "T-020: la cadena openUntilApiKeys de McpServerApplication deja todo abierto y sin CSRF; hay que sustituirla. También sale en el log una contraseña generada que hoy no protege nada. Mientras no haya claves, una web abierta en el navegador podría llamar a /mcp en localhost: la especificación MCP pide validar la cabecera Origin; comprobarlo aquí."
         }
       ]
     },
@@ -4446,6 +4483,16 @@
           "t": "2026-11-04T20:19:04+01:00",
           "by": "runner",
           "msg": "? permiso solicitado: Grep * (T-153); la tarjeta espera la decisión"
+        },
+        {
+          "t": "2026-11-04T20:23:50+01:00",
+          "by": "tú",
+          "msg": "✓ permiso concedido: Grep *"
+        },
+        {
+          "t": "2026-11-04T20:23:56+01:00",
+          "by": "tú",
+          "msg": "✓ permiso concedido: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\board\\runner.py *"
         }
       ],
       "runs": [
@@ -4991,6 +5038,11 @@
           "t": "2026-11-02T22:01:50+01:00",
           "by": "tú",
           "msg": "editada: priority"
+        },
+        {
+          "t": "2026-11-04T20:30:07+01:00",
+          "by": "consultor",
+          "msg": "T-020: el servidor escucha solo en 127.0.0.1 y puerto 8090 por defecto. En el compose hay que poner MCP_SERVER_ADDRESS=0.0.0.0, y S3_ENDPOINT/POLARIS_URI ya apuntan por defecto a los servicios del compose. Falta probar el .jar fuera de los tests."
         }
       ]
     },
@@ -6912,7 +6964,7 @@
       "id": "T-152",
       "title": "Solicitud de permiso: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\board\\runner.py *",
       "owner": "consultor",
-      "status": "human",
+      "status": "done",
       "priority": "media",
       "estimate_min": 2,
       "actual_min": null,
@@ -6921,7 +6973,7 @@
       "desc": "El agente «tester» necesitaba un comando que no está en su lista de permitidos y se lo bloquearon mientras hacía T-084. No es de solo lectura ni está prohibido, así que lo tiene que validar una persona.\n\nPara qué lo quería: (no lo explicó)\n\nCómo decidir: concede si es seguro repetirlo sin supervisión dentro del proyecto; deniega si escribe fuera, publica, borra o usa la red.\n\n## Técnico\n- Comando: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\board\\runner.py\n- Patrón que se concedería: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\board\\runner.py *\n- Tarjeta: T-084",
       "deps": [],
       "created": "2026-11-04T20:19:04+01:00",
-      "updated": "2026-11-04T20:19:04+01:00",
+      "updated": "2026-11-04T20:23:56+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -6929,6 +6981,11 @@
           "t": "2026-11-04T20:19:04+01:00",
           "by": "runner",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-04T20:23:56+01:00",
+          "by": "tú",
+          "msg": "✓ Concedido: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\board\\runner.py *"
         }
       ],
       "kind": "permiso",
@@ -6944,7 +7001,7 @@
       "id": "T-153",
       "title": "Solicitud de permiso: Grep *",
       "owner": "consultor",
-      "status": "human",
+      "status": "done",
       "priority": "media",
       "estimate_min": 2,
       "actual_min": null,
@@ -6953,7 +7010,7 @@
       "desc": "El agente «tester» necesitaba un comando que no está en su lista de permitidos y se lo bloquearon mientras hacía T-084. No es de solo lectura ni está prohibido, así que lo tiene que validar una persona.\n\nPara qué lo quería: (no lo explicó)\n\nCómo decidir: concede si es seguro repetirlo sin supervisión dentro del proyecto; deniega si escribe fuera, publica, borra o usa la red.\n\n## Técnico\n- Comando: Grep\n- Patrón que se concedería: Grep *\n- Tarjeta: T-084",
       "deps": [],
       "created": "2026-11-04T20:19:04+01:00",
-      "updated": "2026-11-04T20:19:04+01:00",
+      "updated": "2026-11-04T20:23:50+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -6961,6 +7018,11 @@
           "t": "2026-11-04T20:19:04+01:00",
           "by": "runner",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-04T20:23:50+01:00",
+          "by": "tú",
+          "msg": "✓ Concedido: Grep *"
         }
       ],
       "kind": "permiso",
@@ -6989,14 +7051,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-084",
-      "message": "tester con T-084",
+      "current": "T-020",
+      "message": "desarrollador con T-020",
       "pid": 17012,
-      "heartbeat": "2026-11-04T20:16:00+01:00",
+      "heartbeat": "2026-11-04T20:19:11+01:00",
       "enabled": true,
-      "agent": "tester",
-      "started": "2026-11-04T20:16:00+01:00",
-      "live": "live-T-084-tester-20261104-201600.jsonl"
+      "agent": "desarrollador",
+      "started": "2026-11-04T20:19:10+01:00",
+      "live": "live-T-020-desarrollador-20261104-201911.jsonl"
     }
   }
 }

@@ -101,6 +101,12 @@
       "why": "Herramienta de búsqueda de solo lectura; evita solicitudes repetidas",
       "by": "responsable",
       "at": "2026-11-03T10:27:21+01:00"
+    },
+    {
+      "pattern": "ls *",
+      "why": "concedido automáticamente a desarrollador (T-020): solo lectura dentro del proyecto",
+      "by": "runner",
+      "at": "2026-11-04T20:30:20+01:00"
     }
   ],
   "denied": []

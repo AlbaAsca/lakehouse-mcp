@@ -36,7 +36,8 @@ Cada página empieza en lenguaje llano y avanza hasta el detalle técnico. Puede
 | 🚧 | Productor Java (T-008, T-011, T-013) | Lectura, muestreo, orden y envío a Kafka con tests en verde sobre la muestra sintética. `./mk seed-sample` carga la muestra en el stack (T-091). Falta probar `./mk seed` con el CSV real. [Detalle](componentes/productor.md) |
 | ✅ | Conector hacia Iceberg (T-012, T-072) | La tarea sale `RUNNING` y un evento llega a la tabla, comprobado en contenedores; `./mk up` sobre un stack ya existente termina sin error. **Sin probar:** `./mk up` desde cero, un evento en el stack de `compose.yaml` y el mes real. [Detalle](componentes/kafka-connect.md) |
 | 🚧 | Ingesta de principio a fin (T-015, T-018) | La muestra sintética llega del CSV a la tabla fila a fila, comprobado en contenedores (`IngestE2EIT`). **Sin probar:** el stack de `compose.yaml` y el mes real |
-| ⬜ | [Servidor MCP](componentes/servidor-mcp.md), [capa semántica](componentes/capa-semantica.md), [agente](componentes/agente.md) | Solo existen sus `pom.xml`; el servidor tiene además su [conexión con DuckDB](componentes/duckdb.md#dentro-del-servidor-mcp) y su [validador de SQL](componentes/servidor-mcp.md#el-validador-de-sql), y la capa semántica sus [definiciones en palabras](../metrics.md) |
+| 🟡 | [Servidor MCP](componentes/servidor-mcp.md) | Arranca y sirve `list_tables` y `describe_table` a un cliente MCP real en los tests. Aún no está en el compose ni tiene claves de API; su [validador de SQL](componentes/servidor-mcp.md#el-validador-de-sql) todavía no lo usa ninguna herramienta |
+| ⬜ | [Capa semántica](componentes/capa-semantica.md), [agente](componentes/agente.md) | Solo existen sus `pom.xml`; la capa semántica tiene además sus [definiciones en palabras](../metrics.md) |
 | ⬜ | Chaos y self-healing, evals, benchmark, RBAC y auditoría | Planificado. `./mk evals`, `chaos`, `bench` y `demo` responden «not implemented yet» |
 
 No hay ninguna cifra de precisión ni de rendimiento porque todavía no se ha medido nada de eso.
@@ -56,7 +57,7 @@ Leyenda: ✅ funciona · 🚧 en curso · ⬜ planificado.
 | Transporte | Almacén | Consulta y agente | Entorno |
 |---|---|---|---|
 | ✅ [Kafka](componentes/kafka.md) | ✅ [Iceberg](componentes/iceberg.md) | ✅ [DuckDB](componentes/duckdb.md) | ✅ [Imagen tools](componentes/imagen-tools.md) |
-| ✅ [Schema Registry](componentes/schema-registry.md) | ✅ [Polaris](componentes/polaris.md) | ⬜ [Servidor MCP](componentes/servidor-mcp.md) | ✅ [agent-board](componentes/agent-board.md) |
+| ✅ [Schema Registry](componentes/schema-registry.md) | ✅ [Polaris](componentes/polaris.md) | 🟡 [Servidor MCP](componentes/servidor-mcp.md) | ✅ [agent-board](componentes/agent-board.md) |
 | ✅ [Kafka Connect e Iceberg sink](componentes/kafka-connect.md) | ✅ [Postgres](componentes/postgres.md) | ⬜ [Capa semántica](componentes/capa-semantica.md) | |
 | 🚧 [Productor](componentes/productor.md) | ✅ [SeaweedFS](componentes/seaweedfs.md) | ⬜ [Agente](componentes/agente.md) | |
 | | | ⬜ [Trino](componentes/trino.md) | |

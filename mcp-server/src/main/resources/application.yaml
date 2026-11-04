@@ -1,0 +1,33 @@
+spring:
+  application:
+    name: mcp-server
+  ai:
+    mcp:
+      server:
+        name: lakehouse
+        version: 0.1.0
+        type: SYNC
+        protocol: STREAMABLE
+        # Tools are all it has: do not offer the client anything else.
+        capabilities:
+          resource: false
+          prompt: false
+          completion: false
+
+server:
+  # Loopback until the API keys of T-050: the endpoint has no authentication yet.
+  address: ${MCP_SERVER_ADDRESS:127.0.0.1}
+  port: ${MCP_SERVER_PORT:8090}
+
+# The same variables as compose.yaml. Without a default on purpose: no credentials, no start.
+lakehouse:
+  catalog:
+    name: ${POLARIS_CATALOG:lakehouse}
+    uri: ${POLARIS_URI:http://polaris:8181}
+    client-id: ${POLARIS_CLIENT_ID}
+    client-secret: ${POLARIS_CLIENT_SECRET}
+  storage:
+    endpoint: ${S3_ENDPOINT:seaweedfs:8333}
+    access-key: ${S3_ACCESS_KEY}
+    secret-key: ${S3_SECRET_KEY}
+    region: ${S3_REGION}
