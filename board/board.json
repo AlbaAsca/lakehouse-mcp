@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-04T21:00:41+01:00",
+  "updated": "2026-11-04T21:16:44+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -1898,7 +1898,7 @@
       "id": "T-021",
       "title": "MCP: run_query y time_travel",
       "owner": "desarrollador",
-      "status": "review",
+      "status": "done",
       "priority": "media",
       "estimate_min": 30.0,
       "actual_min": 11.3,
@@ -1910,7 +1910,7 @@
         "T-020"
       ],
       "created": "2026-11-02T11:37:13+01:00",
-      "updated": "2026-11-04T21:00:41+01:00",
+      "updated": "2026-11-04T21:16:44+01:00",
       "started_at": "2026-11-04T20:49:23+01:00",
       "finished_at": "2026-11-04T21:00:41+01:00",
       "log": [
@@ -1948,6 +1948,16 @@
           "t": "2026-11-04T21:00:41+01:00",
           "by": "desarrollador",
           "msg": "REVIEW: `run_query` y `time_travel` funcionan por MCP real con validador y conexión de solo lectura, con los tests del módulo en verde."
+        },
+        {
+          "t": "2026-11-04T21:00:47+01:00",
+          "by": "tester",
+          "msg": "verificando"
+        },
+        {
+          "t": "2026-11-04T21:16:44+01:00",
+          "by": "tester",
+          "msg": "DONE: run_query y time_travel verificados por MCP real con referencia propia fila a fila, módulo y CI en verde; fallos aparte en T-155 y T-156."
         }
       ],
       "runs": [
@@ -1960,8 +1970,19 @@
           "tokens": 1114030,
           "cost_usd": 1.9304912,
           "verdict": "review"
+        },
+        {
+          "agent": "tester",
+          "mode": "verify",
+          "at": "2026-11-04T21:16:44+01:00",
+          "min": 15.9,
+          "turns": 4,
+          "tokens": 191067,
+          "cost_usd": 1.6989358000000006,
+          "verdict": "done"
         }
-      ]
+      ],
+      "verify_started": "2026-11-04T21:00:47+01:00"
     },
     {
       "id": "T-022",
@@ -7105,6 +7126,54 @@
           "msg": "creada"
         }
       ]
+    },
+    {
+      "id": "T-155",
+      "title": "Una fecha sin zona cambia de hora en una máquina con horario de verano",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "media",
+      "estimate_min": 10.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Si el servidor corre en una máquina con cambio de hora, un momento que cae en la hora que se salta se devuelve una hora más tarde: las 02:30 de la noche del cambio salen como las 03:30. La documentación promete que el valor no depende de la máquina, y hoy no se cumple. Se propone leer esas fechas del conector sin pasar por la zona de la máquina. Dentro de un contenedor en UTC no se nota, por eso no salta en la integración continua.\nCómo sabremos si funciona: la misma consulta devuelve la misma hora en cualquier zona, también la noche del cambio.\n## Técnico\nDónde: QueryTools.cell, rama Timestamp (time.toLocalDateTime()), con el valor de rows.getObject en SqlGuard.row. Reproducir: JVM en Europe/Madrid, SELECT TIMESTAMP '2026-03-29 02:30:00' da 2026-03-29T03:30 en vez de 2026-03-29T02:30. Probado también DATE, TIME, TIMESTAMPTZ y fechas de 1500 en UTC, Madrid, Sao Paulo y Kolkata: correctos. Criterio: quitar @Disabled de QueryToolsCellTest.aTimestampInTheSkippedHourKeepsItsValue y dejarlo en verde; ./mk test MODULE=mcp-server.",
+      "deps": [],
+      "created": "2026-11-04T21:12:14+01:00",
+      "updated": "2026-11-04T21:12:14+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-04T21:12:14+01:00",
+          "by": "tester",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-156",
+      "title": "Polaris da un error interno al crear una tabla llamada history",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "baja",
+      "estimate_min": 5.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Crear una tabla con el nombre history falla con un error interno del catálogo; la misma tabla con otro nombre funciona. Hoy no nos afecta, porque ninguna tabla del proyecto se llama así, pero quien la cree recibe un error que no explica nada. Se propone averiguar qué nombres fallan y dejarlo escrito en la wiki.\nCómo sabremos si funciona: la documentación dice qué nombres no se pueden usar y por qué, comprobado con una prueba real.\n## Técnico\nReproducir: CREATE TABLE lh.<ns>.history (id BIGINT) desde DuckDB contra LakehouseStack da HTTP 500 en POST /api/catalog/v1/lakehouse/namespaces/<ns>/tables (2 de 2 intentos); con change_log, correcto. Hipótesis sin comprobar: choca con los nombres de tablas de metadatos de Iceberg (history, snapshots, files...). Mirar el log de Polaris. Criterio: lista comprobada en docs/wiki/componentes/ del catálogo.",
+      "deps": [],
+      "created": "2026-11-04T21:12:19+01:00",
+      "updated": "2026-11-04T21:12:19+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-04T21:12:19+01:00",
+          "by": "tester",
+          "msg": "creada"
+        }
+      ]
     }
   ],
   "runners": {
@@ -7124,13 +7193,13 @@
     "measure": {
       "state": "working",
       "current": "T-021",
-      "message": "desarrollador con T-021",
+      "message": "tester con T-021",
       "pid": 17012,
-      "heartbeat": "2026-11-04T20:49:23+01:00",
+      "heartbeat": "2026-11-04T21:00:47+01:00",
       "enabled": true,
-      "agent": "desarrollador",
-      "started": "2026-11-04T20:49:23+01:00",
-      "live": "live-T-021-desarrollador-20261104-204923.jsonl"
+      "agent": "tester",
+      "started": "2026-11-04T21:00:47+01:00",
+      "live": "live-T-021-tester-20261104-210047.jsonl"
     }
   }
 }
