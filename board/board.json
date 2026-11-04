@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-04T22:34:50+01:00",
+  "updated": "2026-11-04T22:35:16+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -5706,7 +5706,7 @@
       "status": "next",
       "priority": "media",
       "estimate_min": 25.0,
-      "actual_min": null,
+      "actual_min": 0.3,
       "auto": true,
       "manual": null,
       "desc": "Se ha comprobado que una simple consulta de lectura puede dar marcha atrás a una tabla si la conexión permite escribir. Hoy solo el validador lo impediría, y un fallo suyo cambiaría datos. Se propone que todo lo que venga del modelo vaya por una conexión que no puede escribir en el catálogo, y que las reparaciones aprobadas usen otra aparte.\nCómo sabremos si funciona: sin pasar por el validador, la consulta que da marcha atrás falla en cualquier conexión de lectura y la tabla no cambia; la misma operación, lanzada por la vía de reparación, sí se aplica.\n\n## Técnico\nDecisión 20 de docs/architecture.md. Sobre LakehouseSession de T-016.\n- Instancia de lectura: pool con duplicate(), ATTACH con READ_ONLY, memory_limit 400MB. Sin ningún catálogo escribible.\n- Instancia de reparación: conexión única, escribible, memory_limit 256MB; se abre al usarla y se cierra al terminar. Interfaz que acepta plantillas con parámetros, no SQL libre.\n- Statement nuevo por consulta (un error cierra el Statement JDBC).\n- IT en cada conexión del pool: SELECT * FROM iceberg_rollback_to_snapshot(...), INSERT, DELETE y CALL rechazados con 'attached in read-only mode', snapshot actual sin cambiar; la instancia de lectura ve el commit de la de reparación sin volver a adjuntar. ./mk test.",
@@ -5714,9 +5714,9 @@
         "T-016"
       ],
       "created": "2026-11-02T18:14:43+01:00",
-      "updated": "2026-11-02T18:14:43+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-04T22:35:16+01:00",
+      "started_at": "2026-11-04T22:34:57+01:00",
+      "finished_at": "2026-11-04T22:35:16+01:00",
       "log": [
         {
           "t": "2026-11-02T18:14:43+01:00",
@@ -5727,6 +5727,16 @@
           "t": "2026-11-02T22:01:59+01:00",
           "by": "tú",
           "msg": "editada: priority"
+        },
+        {
+          "t": "2026-11-04T22:34:57+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-04T22:35:16+01:00",
+          "by": "desarrollador",
+          "msg": "límite de uso, reintenta tras el reset"
         }
       ]
     },
@@ -7545,14 +7555,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-105",
-      "message": "desarrollador con T-105",
+      "current": "T-106",
+      "message": "desarrollador con T-106",
       "pid": 17012,
-      "heartbeat": "2026-11-04T22:02:49+01:00",
+      "heartbeat": "2026-11-04T22:34:57+01:00",
       "enabled": true,
       "agent": "desarrollador",
-      "started": "2026-11-04T22:02:49+01:00",
-      "live": "live-T-105-desarrollador-20261104-220249.jsonl"
+      "started": "2026-11-04T22:34:57+01:00",
+      "live": "live-T-106-desarrollador-20261104-223457.jsonl"
     }
   }
 }
