@@ -21,7 +21,7 @@
 > replays real e-commerce events into Apache Kafka; the Iceberg Kafka Connect sink writes them to Apache Iceberg tables,
 > catalogued by Apache Polaris on SeaweedFS and queried with DuckDB 2.0. A Spring AI agent reaches them through an MCP server.
 > **Work in progress:** the infrastructure runs and is verified end to end by a smoke test; the producer, MCP server, agent,
-> evals and benchmark are being built. Everything runs in Docker.
+> and evals are being built. Everything runs in Docker.
 
 > [!NOTE]
 > **Estado: infraestructura levantada, aplicación en construcción.** Hoy funciona lo marcado como ✅ en [Qué hay y qué falta](#qué-hay-y-qué-falta).
@@ -81,7 +81,7 @@ una página por cada pieza (qué es, cómo se conecta, cómo está configurada y
 | ⬜ | Capa semántica | Planificado |
 | ⬜ | Self-healing con `make chaos` | Planificado |
 | ⬜ | Data contracts y mantenimiento de Iceberg | Planificado |
-| ⬜ | Evals, benchmark frente a Trino, RBAC y auditoría | Planificado |
+| ⬜ | Evals, RBAC y auditoría | Planificado |
 
 ## Cómo ejecutarlo
 
@@ -109,7 +109,7 @@ cp .env.example .env   # y cambia las contraseñas
 | Apagar | `./mk down` |
 | Apagar y borrar los datos | `docker compose down -v` |
 
-Los objetivos `evals`, `chaos`, `bench` y `demo` ya existen en el `Makefile`, pero todavía avisan de que no están implementados.
+Los objetivos `evals`, `chaos` y `demo` ya existen en el `Makefile`, pero todavía avisan de que no están implementados.
 
 ## Los datos
 
@@ -158,7 +158,7 @@ python board/server.py   # http://localhost:8020
 Es un proyecto de portfolio, no una plataforma de producción, y está a medio construir:
 
 - **El catálogo de Polaris se guarda en Postgres.** Un test demuestra que sobrevive a un reinicio de Polaris en contenedores de prueba; falta comprobarlo en el stack completo.
-- **Un solo nodo de todo.** Un broker y una instancia de cada servicio, con unos 8 GB de RAM para Docker. Trino solo arranca para el benchmark.
+- **Un solo nodo de todo.** Un broker y una instancia de cada servicio, con unos 8 GB de RAM para Docker.
 - **Secretos locales.** Las credenciales son claves estáticas en `.env`, adecuadas para una demo local.
 - **Coste de las evals.** Llaman a un modelo de pago, así que no pueden lanzarse enteras en cada push.
 

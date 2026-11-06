@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-07T00:04:18+01:00",
+  "updated": "2026-11-07T00:40:39+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -5987,18 +5987,18 @@
       "id": "T-108",
       "title": "Retirar Trino y el benchmark del proyecto",
       "owner": "desarrollador",
-      "status": "next",
+      "status": "review",
       "priority": "media",
       "estimate_min": 25.0,
-      "actual_min": null,
+      "actual_min": 36.2,
       "auto": true,
       "manual": null,
       "desc": "La responsable decidió quitar el benchmark con Trino para ahorrar memoria y tarjetas. Hay que eliminar lo que queda para que nadie crea que existe. Cómo sabremos si funciona: el stack y la suite siguen en verde, y una búsqueda de Trino y bench solo encuentra la explicación de esta decisión.\n\n## Técnico\nQuitar: servicio trino y perfil bench de compose.yaml; módulo bench de pom.xml y carpeta bench/; objetivo bench de Makefile; docs/wiki/componentes/trino.md y sus enlaces. Actualizar: README.md, docs/brief.md (funcionalidad 7, módulos, Makefile), CLAUDE.md (línea de Código), docs/architecture.md (decisión con fecha y motivo), docs/wiki (README, 01, 02, 04, 05, duckdb, iceberg, imagen-tools). Conservar en 05-decisiones.md por qué se descartó. Pasar ./mk test y ./mk test-board.",
       "deps": [],
       "created": "2026-11-02T18:18:09+01:00",
-      "updated": "2026-11-02T18:18:09+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-07T00:40:39+01:00",
+      "started_at": "2026-11-07T00:04:26+01:00",
+      "finished_at": "2026-11-07T00:40:39+01:00",
       "log": [
         {
           "t": "2026-11-02T18:18:09+01:00",
@@ -6009,6 +6009,28 @@
           "t": "2026-11-02T18:18:09+01:00",
           "by": "consultor",
           "msg": "Limpieza tras T-087"
+        },
+        {
+          "t": "2026-11-07T00:04:26+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-07T00:40:39+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: Trino y el benchmark retirados del stack, el build, los Dockerfiles y la documentación, con la suite en verde; falta borrar `bench/` y `trino.md` (pendiente del permiso)."
+        }
+      ],
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-07T00:40:39+01:00",
+          "min": 36.2,
+          "turns": 86,
+          "tokens": 1276125,
+          "cost_usd": 1.0640666,
+          "verdict": "review"
         }
       ]
     },
@@ -7867,7 +7889,7 @@
       "id": "T-166",
       "title": "Solicitud de permiso: cmd *",
       "owner": "consultor",
-      "status": "human",
+      "status": "done",
       "priority": "media",
       "estimate_min": 2,
       "actual_min": null,
@@ -7876,7 +7898,7 @@
       "desc": "El agente «tester» necesitaba un comando que no está en su lista de permitidos y se lo bloquearon mientras hacía T-096. No es de solo lectura ni está prohibido, así que lo tiene que validar una persona.\n\nPara qué lo quería: (no lo explicó)\n\nCómo decidir: concede si es seguro repetirlo sin supervisión dentro del proyecto; deniega si escribe fuera, publica, borra o usa la red.\n\n## Técnico\n- Comando: cmd //c mk.cmd ask\n- Patrón que se concedería: cmd *\n- Tarjeta: T-096",
       "deps": [],
       "created": "2026-11-06T23:40:23+01:00",
-      "updated": "2026-11-06T23:40:23+01:00",
+      "updated": "2026-11-07T00:39:55+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -7884,6 +7906,11 @@
           "t": "2026-11-06T23:40:23+01:00",
           "by": "runner",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-07T00:39:55+01:00",
+          "by": "consultor",
+          "msg": "Denegado: cmd * deja ejecutar cualquier cosa. Para Windows ya está permitido mk.cmd directamente."
         }
       ],
       "kind": "permiso",
@@ -7965,14 +7992,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-106",
-      "message": "tester con T-106",
+      "current": "T-108",
+      "message": "desarrollador con T-108",
       "pid": 12228,
-      "heartbeat": "2026-11-06T23:57:44+01:00",
+      "heartbeat": "2026-11-07T00:04:27+01:00",
       "enabled": true,
-      "agent": "tester",
-      "started": "2026-11-06T23:57:44+01:00",
-      "live": "live-T-106-tester-20261106-235744.jsonl"
+      "agent": "desarrollador",
+      "started": "2026-11-07T00:04:27+01:00",
+      "live": "live-T-108-desarrollador-20261107-000427.jsonl"
     }
   }
 }

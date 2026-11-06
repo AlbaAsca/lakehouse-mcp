@@ -18,7 +18,6 @@
     <module>agent</module>
     <module>semantic</module>
     <module>evals</module>
-    <module>bench</module>
     <module>testkit</module>
     <module>maintenance</module>
   </modules>

@@ -99,8 +99,7 @@ El registro que responde a «¿dónde está la versión actual de la tabla `vent
 El lenguaje estándar para preguntar a una tabla: `SELECT count(*) FROM eventos`.
 
 ### Motor de consulta
-El programa que ejecuta el SQL. No tiene por qué guardar los datos. Aquí es [DuckDB](componentes/duckdb.md), que cabe dentro de otro programa. [Trino](componentes/trino.md) es otro motor, pensado para muchas máquinas.
-
+El programa que ejecuta el SQL. No tiene por qué guardar los datos. Aquí es [DuckDB](componentes/duckdb.md), que cabe dentro de otro programa.
 ### Capa semántica
 Un diccionario oficial de métricas de negocio. Define «tasa de conversión» una sola vez, para que nadie la calcule a su manera. [Más](componentes/capa-semantica.md).
 

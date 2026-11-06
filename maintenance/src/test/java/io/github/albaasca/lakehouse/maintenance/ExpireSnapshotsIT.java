@@ -36,7 +36,7 @@ class ExpireSnapshotsIT {
     private static final String DAY = "TIMESTAMP '2026-01-01 10:00:00'";
     /** What the root .dockerignore lets through: Testcontainers does not read it. */
     private static final List<String> CONTEXT = List.of("pom.xml", "producer/pom.xml", "mcp-server/pom.xml", "agent/pom.xml",
-            "semantic/pom.xml", "evals/pom.xml", "bench/pom.xml", "testkit/pom.xml", "maintenance/pom.xml",
+            "semantic/pom.xml", "evals/pom.xml","testkit/pom.xml", "maintenance/pom.xml",
             "maintenance/src/main", "testkit/src/main", "infra/maintenance");
 
     private static LakehouseStack stack;

@@ -8,7 +8,7 @@ SPEEDUP ?= 3600
 TABLE ?= ecommerce.events
 RETENTION ?= P7D
 
-.PHONY: up down download-data seed seed-sample test test-board evals chaos bench demo smoke expire ask
+.PHONY: up down download-data seed seed-sample test test-board evals chaos demo smoke expire ask
 up:
 	docker compose up -d --build --wait
 down:
@@ -45,5 +45,5 @@ expire:
 ask:
 	@test -n "$$Q" || { echo 'Usage: ./mk ask Q="your question"' >&2; exit 2; }
 	docker compose run --rm --build agent ask "$$Q"
-evals chaos bench demo:
+evals chaos demo:
 	@echo "$@: not implemented yet, see the board" && exit 1

@@ -39,7 +39,7 @@ Cada página empieza en lenguaje llano y avanza hasta el detalle técnico. Puede
 | 🟡 | [Servidor MCP](componentes/servidor-mcp.md) | Arranca y sirve `list_tables`, `describe_table`, `run_query` y `time_travel` a un cliente MCP real en los tests, con su [validador de SQL](componentes/servidor-mcp.md#el-validador-de-sql). Su imagen arranca sana y contesta a un cliente MCP en contenedores (T-093) y ya es un servicio del compose. **Sin probar:** `./mk up` con ese servicio. Aún no tiene claves de API |
 | 🟡 | [Agente](componentes/agente.md) (T-094) | Contesta una pregunta consultando por MCP, con tope de llamadas; comprobado con un modelo simulado contra la imagen real del servidor. Gemini por defecto, Claude por configuración. Se pregunta con `./mk ask Q="..."` (imagen probada con modelo simulado). **Sin probar:** con un modelo de verdad (T-097). Aún sin métricas (T-034) |
 | ⬜ | [Capa semántica](componentes/capa-semantica.md) | Solo existen su `pom.xml` y sus [definiciones en palabras](../metrics.md) |
-| ⬜ | Chaos y self-healing, evals, benchmark, RBAC y auditoría | Planificado. `./mk evals`, `chaos`, `bench` y `demo` responden «not implemented yet» |
+| ⬜ | Chaos y self-healing, evals, RBAC y auditoría | Planificado. `./mk evals`, `chaos` y `demo` responden «not implemented yet» |
 
 No hay ninguna cifra de precisión ni de rendimiento porque todavía no se ha medido nada de eso.
 
@@ -61,6 +61,5 @@ Leyenda: ✅ funciona · 🚧 en curso · ⬜ planificado.
 | ✅ [Schema Registry](componentes/schema-registry.md) | ✅ [Polaris](componentes/polaris.md) | 🟡 [Servidor MCP](componentes/servidor-mcp.md) | ✅ [agent-board](componentes/agent-board.md) |
 | ✅ [Kafka Connect e Iceberg sink](componentes/kafka-connect.md) | ✅ [Postgres](componentes/postgres.md) | ⬜ [Capa semántica](componentes/capa-semantica.md) | |
 | 🚧 [Productor](componentes/productor.md) | ✅ [SeaweedFS](componentes/seaweedfs.md) | 🟡 [Agente](componentes/agente.md) | |
-| | | ⬜ [Trino](componentes/trino.md) | |
 
 Los scripts de apoyo del tutorial están en [`ejemplos/`](ejemplos/lh.sh).

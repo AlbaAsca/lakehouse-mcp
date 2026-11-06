@@ -31,7 +31,7 @@ class AgentImageIT {
 
     /** What the root .dockerignore lets through for infra/agent. */
     private static final List<String> CONTEXT = List.of("pom.xml", "producer/pom.xml", "mcp-server/pom.xml", "agent/pom.xml",
-            "semantic/pom.xml", "evals/pom.xml", "bench/pom.xml", "testkit/pom.xml", "maintenance/pom.xml", "agent/src/main",
+            "semantic/pom.xml", "evals/pom.xml","testkit/pom.xml", "maintenance/pom.xml", "agent/src/main",
             "testkit/src/main", "infra/agent");
     private static final String ANSWER = "There are 42 events.\nSource: run_query";
     private static final ObjectMapper JSON = new ObjectMapper();

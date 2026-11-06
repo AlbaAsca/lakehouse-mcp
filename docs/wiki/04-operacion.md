@@ -193,7 +193,7 @@ docker compose exec -T seaweedfs curl -s -o /dev/null -w '%{http_code}\n' -X DEL
 
 **Síntoma (sin probar):** contenedores que se reinician o tests lentos.
 
-**Remedio:** para tests que levanten Connect o Trino, [`docs/architecture.md`](../architecture.md#pruebas-qué-puede-verificar-cada-quién) indica apagar el stack antes. Comprueba el consumo con `docker stats --no-stream`.
+**Remedio:** para tests que levanten Connect, [`docs/architecture.md`](../architecture.md#pruebas-qué-puede-verificar-cada-quién) indica apagar el stack antes. Comprueba el consumo con `docker stats --no-stream`.
 
 ## Integración continua
 

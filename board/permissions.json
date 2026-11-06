@@ -115,5 +115,12 @@
       "at": "2026-11-06T23:57:37+01:00"
     }
   ],
-  "denied": []
+  "denied": [
+    {
+      "pattern": "cmd *",
+      "why": "Abriría cualquier comando de Windows; mk.cmd ya está permitido directamente",
+      "by": "consultor",
+      "at": "2026-11-07T00:39:54+01:00"
+    }
+  ]
 }

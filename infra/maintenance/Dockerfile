@@ -8,7 +8,6 @@ COPY mcp-server/pom.xml mcp-server/
 COPY agent/pom.xml agent/
 COPY semantic/pom.xml semantic/
 COPY evals/pom.xml evals/
-COPY bench/pom.xml bench/
 COPY testkit/pom.xml testkit/
 COPY maintenance/pom.xml maintenance/
 # Downloads in a layer of their own: changing the code does not fetch them again. With no code yet there is nothing to repackage.

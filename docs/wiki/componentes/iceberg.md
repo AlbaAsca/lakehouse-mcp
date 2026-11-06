@@ -23,7 +23,6 @@ No se conecta: no hay ningún contenedor llamado Iceberg. Lo implementan quienes
 | [Polaris](polaris.md) | Implementa el catálogo REST de Iceberg | ✅ |
 | [SeaweedFS](seaweedfs.md) | Guarda metadatos y datos | ✅ |
 | [Servidor MCP](servidor-mcp.md) | A través de DuckDB, previsto | ⬜ |
-| [Trino](trino.md) | Benchmark y quizá expiración, pendiente de T-087 | ⬜ |
 
 ## Cómo funciona por dentro
 

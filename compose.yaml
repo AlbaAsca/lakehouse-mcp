@@ -203,11 +203,6 @@ services:
     mem_limit: 1g
     restart: "no"
 
-  trino:
-    image: trinodb/trino:484
-    profiles: [bench]
-    ports: ["8080:8080"]
-
   # JDK, Maven, make, Docker CLI, DuckDB CLI and Kaggle CLI: nothing is installed on the host.
   tools:
     build: infra/tools

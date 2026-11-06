@@ -10,7 +10,7 @@ Una base de datos que cabe en un programa, como una calculadora muy potente. No 
 
 ## Para qué está aquí y qué pasaría sin él
 
-Es el [motor de consulta](../01-conceptos.md#motor-de-consulta). Convertirá las preguntas del agente en respuestas. La alternativa, [Trino](trino.md), necesita varios GB encendidos siempre. Compararlos es [el benchmark](trino.md), todavía sin medir.
+Es el [motor de consulta](../01-conceptos.md#motor-de-consulta). Convertirá las preguntas del agente en respuestas. Es el único motor de SQL del proyecto ([por qué](../05-decisiones.md#por-qué-no-hay-trino-ni-benchmark)).
 
 ## Cómo se conecta
 
@@ -115,7 +115,7 @@ T-014 comprobó además, con tests en `DuckDbIcebergSpikeIT`:
 
 **Cuidado:** `SELECT * FROM iceberg_rollback_to_snapshot(...)` cambia la tabla si el catálogo es escribible. Detalle y fuentes en [`spike-duckdb-iceberg.md`](../../spike-duckdb-iceberg.md). Por eso el servidor MCP tiene dos instancias, y la del modelo solo adjunta el catálogo con `READ_ONLY` ([decisión 20](../../architecture.md#decisiones), ✅ T-106).
 
-**Sin comprobar:** borrar, hacer rollback, añadir columna o compactar sobre ficheros escritos por el sink real o mientras el sink hace commit, y que Trino lea los ficheros de borrado de DuckDB.
+**Sin comprobar:** borrar, hacer rollback, añadir columna o compactar sobre ficheros escritos por el sink real o mientras el sink hace commit.
 
 ## Qué puede fallar
 

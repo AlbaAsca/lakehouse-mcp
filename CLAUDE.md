@@ -74,6 +74,6 @@ Casi todo el tiempo de una tarjeta es esperar tests, así que cada nivel se pasa
 `docs/wiki/` explica cada pieza a principiantes y expertos. Quien cambie el comportamiento, la configuración o el estado de una pieza actualiza su página en la misma tarjeta (`componentes/<pieza>.md`, y el estado en `docs/wiki/README.md`). Todo comando publicado se ejecuta antes; lo que no, se marca «sin probar». Nunca se presenta como hecho lo planificado.
 
 ## Código
-`producer/` reproduce eventos · `connect/` config del sink · `mcp-server/` tools MCP · `agent/` cliente Spring AI · `semantic/` métricas YAML · `evals/` preguntas y verdad de referencia · `bench/` DuckDB vs Trino · `testkit/` tests con contenedores · `maintenance/` expirar snapshots (proceso de un solo uso) · `infra/` imágenes y scripts · `docs/` diseño y Pages · `board/` panel.
+`producer/` reproduce eventos · `connect/` config del sink · `mcp-server/` tools MCP · `agent/` cliente Spring AI · `semantic/` métricas YAML · `evals/` preguntas y verdad de referencia · `testkit/` tests con contenedores · `maintenance/` expirar snapshots (proceso de un solo uso) · `infra/` imágenes y scripts · `docs/` diseño y Pages · `board/` panel.
 - Dataset con licencia «© Original Authors»: **no subas datos reales al repo**; la muestra de CI es sintética con el mismo esquema.
 - `compose.yaml` no usa bind mounts salvo en `tools`: la configuración va dentro de las imágenes.
