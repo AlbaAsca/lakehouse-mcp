@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-06T23:05:37+01:00",
+  "updated": "2026-11-06T23:07:17+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -7583,18 +7583,18 @@
       "id": "T-164",
       "title": "El protocolo de permisos confunde la palabra del con un comando de borrar",
       "owner": "desarrollador",
-      "status": "next",
+      "status": "review",
       "priority": "alta",
       "estimate_min": 15.0,
-      "actual_min": null,
+      "actual_min": 1.4,
       "auto": true,
       "manual": null,
       "desc": "Cuando un agente crea una tarjeta cuyo texto lleva la palabra del, el protocolo de permisos lo toma por el comando de borrar de Windows y lo deniega. La tarjeta del agente se bloquea en falso: ya ha pasado con T-101, T-105 y otras. Cómo sabremos si funciona: crear una tarjeta con del, rm o cp dentro del texto se permite, y los comandos reales de borrar siguen prohibidos.\n\n## Técnico\nboard/permissions.py, NEVER: (^|\\s)(rm|del|rmdir|...) se aplica a toda la línea, también dentro de argumentos entre comillas. Comprobar solo el primer token de cada comando, o quitar antes el contenido entre comillas. Reproducido: python board/permissions.py check 'python board/board.py add \"x\" --desc \"algo del panel\"' da prohibido. Tests en tests/test_permissions.py con del, rm y cp dentro de comillas, y los casos prohibidos de siempre.",
       "deps": [],
       "created": "2026-11-06T23:00:46+01:00",
-      "updated": "2026-11-06T23:00:46+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-06T23:07:17+01:00",
+      "started_at": "2026-11-06T23:05:53+01:00",
+      "finished_at": "2026-11-06T23:07:17+01:00",
       "log": [
         {
           "t": "2026-11-06T23:00:46+01:00",
@@ -7605,6 +7605,28 @@
           "t": "2026-11-06T23:00:46+01:00",
           "by": "consultor",
           "msg": "Bloquea en falso a varias tarjetas"
+        },
+        {
+          "t": "2026-11-06T23:05:53+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-06T23:07:17+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: Las tarjetas con «del», «rm» o «cp» en el texto ya se permiten; borrar de verdad sigue prohibido y los tests pasan."
+        }
+      ],
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-06T23:07:17+01:00",
+          "min": 1.4,
+          "turns": 11,
+          "tokens": 168463,
+          "cost_usd": 0.2254394,
+          "verdict": "review"
         }
       ]
     }
@@ -7625,14 +7647,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-094",
-      "message": "tester con T-094",
+      "current": "T-164",
+      "message": "desarrollador con T-164",
       "pid": 14136,
-      "heartbeat": "2026-11-06T23:00:48+01:00",
+      "heartbeat": "2026-11-06T23:05:54+01:00",
       "enabled": true,
-      "agent": "tester",
-      "started": "2026-11-06T23:00:48+01:00",
-      "live": "live-T-094-tester-20261106-230048.jsonl"
+      "agent": "desarrollador",
+      "started": "2026-11-06T23:05:54+01:00",
+      "live": "live-T-164-desarrollador-20261106-230554.jsonl"
     }
   }
 }

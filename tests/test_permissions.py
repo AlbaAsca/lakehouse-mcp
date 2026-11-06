@@ -67,6 +67,21 @@ def test_mencionar_un_comando_destructivo_en_una_tarjeta_no_lo_prohibe():
     assert pm.classify('python board/board.py note T-1 "no lanzar docker compose down -v"')[0] != "prohibido"
 
 
+@pytest.mark.parametrize("cmd", [
+    'python board/board.py add "x" --desc "algo del panel"',
+    'python board/board.py add "Quitar rm del script" --owner desarrollador --desc "no usar cp ni mv"',
+    "python board/board.py note T-1 'revisar del y rmdir'",
+])
+def test_del_rm_o_cp_entre_comillas_es_texto(cmd):
+    assert pm.classify(cmd)[0] == "seguro"
+
+
+@pytest.mark.parametrize("cmd", ["del board/board.json", "rm -rf docs", 'cp "a b" c', 'del "board/board.json"',
+                                 'git commit -m "x"', 'powershell -Command "Remove-Item x"', 'bash -c "rm -rf x"'])
+def test_borrar_de_verdad_sigue_prohibido(cmd):
+    assert pm.classify(cmd)[0] == "prohibido"
+
+
 def test_un_permiso_amplio_no_abre_lo_destructivo(monkeypatch, tmp_path):
     """Aunque alguien conceda ./mk * o docker *, la orden al agente lleva la denegación, que en la CLI gana a lo permitido."""
     d = {"allowed": [{"pattern": "./mk *"}, {"pattern": "docker *"}], "denied": []}

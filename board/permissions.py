@@ -78,11 +78,22 @@ def pattern(cmd):
     return f"{toks[0]} *"
 
 
+QUOTED = re.compile(r'"[^"]*"|\'[^\']*\'')
+# Intérpretes de órdenes: lo que va entre comillas es código que se ejecuta, no texto, y se revisa entero.
+SHELL = re.compile(r"^(\S*[\\/])?(bash|sh|zsh|cmd|powershell|pwsh)(\.exe)?(\s|$)", re.I)
+
+
+def unquoted(c):
+    """El comando sin el contenido entre comillas: «del», «rm» o «cp» dentro de un --desc es texto, no un comando."""
+    return re.sub(r"[\"']", " ", c) if SHELL.match(c) else QUOTED.sub('""', c)
+
+
 def classify(cmd):
     """(categoría, patrón, motivo) con categoría en encadenado | prohibido | seguro | revisar."""
     c = cmd.strip()
+    bare = unquoted(c)
     for rx, why in NEVER:
-        if rx.search(c):
+        if rx.search(bare):
             return "prohibido", pattern(c), why
     if ENV_PREFIX.match(c):
         return "encadenado", None, "variables delante del comando: pásalas como argumento del script"
