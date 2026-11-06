@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-06T23:07:17+01:00",
+  "updated": "2026-11-06T23:14:21+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -61,8 +61,8 @@
       "name": "Desarrollador",
       "role": "Implementa las tareas",
       "color": "#7aa2f7",
-      "status": "idle",
-      "current": null
+      "status": "working",
+      "current": "T-096"
     },
     {
       "id": "tester",
@@ -5323,7 +5323,7 @@
       "id": "T-096",
       "title": "Agente: un comando para hacerle preguntas desde el stack",
       "owner": "desarrollador",
-      "status": "next",
+      "status": "doing",
       "priority": "media",
       "estimate_min": 25.0,
       "actual_min": null,
@@ -5335,8 +5335,8 @@
         "T-094"
       ],
       "created": "2026-11-02T17:37:05+01:00",
-      "updated": "2026-11-02T17:37:05+01:00",
-      "started_at": null,
+      "updated": "2026-11-06T23:14:00+01:00",
+      "started_at": "2026-11-06T23:14:00+01:00",
       "finished_at": null,
       "log": [
         {
@@ -5348,6 +5348,11 @@
           "t": "2026-11-02T22:01:55+01:00",
           "by": "tú",
           "msg": "editada: priority"
+        },
+        {
+          "t": "2026-11-06T23:14:00+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
         }
       ]
     },
@@ -5495,10 +5500,10 @@
       "id": "T-101",
       "title": "Revisar cuatro decisiones de arquitectura con lo comprobado en DuckDB",
       "owner": "arquitecto",
-      "status": "next",
+      "status": "done",
       "priority": "alta",
       "estimate_min": 20.0,
-      "actual_min": 5.7,
+      "actual_min": 6.0,
       "auto": true,
       "manual": null,
       "desc": "La prueba de DuckDB con Iceberg confirma lo esencial del diseño, pero cambia varias cosas. Una consulta de lectura puede dar marcha atrás a una tabla, y los analistas no pueden viajar en el tiempo a través de sus vistas. Además, DuckDB ya hace operaciones que el diseño encarga a otras herramientas. Se propone actualizar las decisiones afectadas antes de construir encima, para no programar lo que luego haya que rehacer.\nCómo sabremos si funciona: el documento de arquitectura dice qué forma de viaje en el tiempo se usa, cómo se protege el catálogo y qué puede hacer un analista con snapshots antiguos, sin contradecir lo comprobado.\n\n## Técnico\nHechos y tests en docs/spike-duckdb-iceberg.md, sección «Efecto en las decisiones». Decisión 5: AT (VERSION => id) en vez de snapshot_from_id; valorar quitar Iceberg Java API. Decisión 6: iceberg_rewrite_data_files compacta (min_input_files por defecto 5), pero no hay función de expirar; relacionado con T-087. Decisión 7: añadir las seis reglas del validador. Decisión 12: vista en memory.main para el pool, time travel del analista por decidir. Nueva: dos instancias DuckDB, la del agente solo con ATTACH READ_ONLY. Afecta a T-016, T-019, T-021, T-047, T-054. Actualizar también docs/wiki/05-decisiones.md.",
@@ -5506,9 +5511,9 @@
         "T-014"
       ],
       "created": "2026-11-02T18:05:29+01:00",
-      "updated": "2026-11-06T23:00:46+01:00",
-      "started_at": "2026-11-02T18:10:51+01:00",
-      "finished_at": "2026-11-02T18:16:31+01:00",
+      "updated": "2026-11-06T23:14:21+01:00",
+      "started_at": "2026-11-06T23:14:00+01:00",
+      "finished_at": "2026-11-06T23:14:21+01:00",
       "log": [
         {
           "t": "2026-11-02T18:05:29+01:00",
@@ -5544,6 +5549,16 @@
           "t": "2026-11-06T23:00:46+01:00",
           "by": "consultor",
           "msg": "Bloqueo en falso por el protocolo de permisos (T-164); reintenta cuando esté arreglado"
+        },
+        {
+          "t": "2026-11-06T23:14:00+01:00",
+          "by": "runner",
+          "msg": "empieza arquitecto"
+        },
+        {
+          "t": "2026-11-06T23:14:21+01:00",
+          "by": "arquitecto",
+          "msg": "DONE: Decisiones 5, 6, 7, 12, 20 y 21 actualizadas en arquitectura y wiki; T-105 y T-106 ya existen en el panel."
         }
       ],
       "runs": [
@@ -5556,6 +5571,16 @@
           "tokens": 762715,
           "cost_usd": 1.6059885999999999,
           "verdict": "blocked"
+        },
+        {
+          "agent": "arquitecto",
+          "mode": "work",
+          "at": "2026-11-06T23:14:21+01:00",
+          "min": 0.4,
+          "turns": 6,
+          "tokens": 68618,
+          "cost_usd": 0.1863146,
+          "verdict": "done"
         }
       ]
     },
@@ -7583,7 +7608,7 @@
       "id": "T-164",
       "title": "El protocolo de permisos confunde la palabra del con un comando de borrar",
       "owner": "desarrollador",
-      "status": "review",
+      "status": "done",
       "priority": "alta",
       "estimate_min": 15.0,
       "actual_min": 1.4,
@@ -7592,7 +7617,7 @@
       "desc": "Cuando un agente crea una tarjeta cuyo texto lleva la palabra del, el protocolo de permisos lo toma por el comando de borrar de Windows y lo deniega. La tarjeta del agente se bloquea en falso: ya ha pasado con T-101, T-105 y otras. Cómo sabremos si funciona: crear una tarjeta con del, rm o cp dentro del texto se permite, y los comandos reales de borrar siguen prohibidos.\n\n## Técnico\nboard/permissions.py, NEVER: (^|\\s)(rm|del|rmdir|...) se aplica a toda la línea, también dentro de argumentos entre comillas. Comprobar solo el primer token de cada comando, o quitar antes el contenido entre comillas. Reproducido: python board/permissions.py check 'python board/board.py add \"x\" --desc \"algo del panel\"' da prohibido. Tests en tests/test_permissions.py con del, rm y cp dentro de comillas, y los casos prohibidos de siempre.",
       "deps": [],
       "created": "2026-11-06T23:00:46+01:00",
-      "updated": "2026-11-06T23:07:17+01:00",
+      "updated": "2026-11-06T23:11:48+01:00",
       "started_at": "2026-11-06T23:05:53+01:00",
       "finished_at": "2026-11-06T23:07:17+01:00",
       "log": [
@@ -7615,6 +7640,21 @@
           "t": "2026-11-06T23:07:17+01:00",
           "by": "desarrollador",
           "msg": "REVIEW: Las tarjetas con «del», «rm» o «cp» en el texto ya se permiten; borrar de verdad sigue prohibido y los tests pasan."
+        },
+        {
+          "t": "2026-11-06T23:07:25+01:00",
+          "by": "tester",
+          "msg": "verificando"
+        },
+        {
+          "t": "2026-11-06T23:10:54+01:00",
+          "by": "tester",
+          "msg": "verificando"
+        },
+        {
+          "t": "2026-11-06T23:11:48+01:00",
+          "by": "tester",
+          "msg": "DONE: «del», «rm» y «cp» dentro de las comillas ya no bloquean tarjetas, los borrados reales siguen prohibidos, los tests pasan y he añadido un test de regresión."
         }
       ],
       "runs": [
@@ -7627,34 +7667,45 @@
           "tokens": 168463,
           "cost_usd": 0.2254394,
           "verdict": "review"
+        },
+        {
+          "agent": "tester",
+          "mode": "verify",
+          "at": "2026-11-06T23:11:48+01:00",
+          "min": 0.9,
+          "turns": 12,
+          "tokens": 124256,
+          "cost_usd": 0.2173952,
+          "verdict": "done"
         }
-      ]
+      ],
+      "verify_started": "2026-11-06T23:10:54+01:00"
     }
   ],
   "runners": {
     "think": {
-      "state": "stopped",
-      "current": null,
-      "message": "Runner parado (pid muerto)",
-      "pid": null,
-      "heartbeat": "2026-11-02T21:24:17+01:00",
+      "state": "working",
+      "current": "T-101",
+      "message": "arquitecto con T-101",
+      "pid": 12516,
+      "heartbeat": "2026-11-06T23:14:00+01:00",
       "enabled": true,
       "agent": "arquitecto",
-      "started": "2026-11-02T18:35:01+01:00",
-      "live": "live-T-027-arquitecto-20261102-183501.jsonl",
+      "started": "2026-11-06T23:14:00+01:00",
+      "live": "live-T-101-arquitecto-20261106-231400.jsonl",
       "contrib_at": "2026-11-02T11:46:22+01:00",
       "contrib_agent": "investigador"
     },
     "measure": {
       "state": "working",
-      "current": "T-164",
-      "message": "desarrollador con T-164",
-      "pid": 14136,
-      "heartbeat": "2026-11-06T23:05:54+01:00",
+      "current": "T-096",
+      "message": "desarrollador con T-096",
+      "pid": 12228,
+      "heartbeat": "2026-11-06T23:14:00+01:00",
       "enabled": true,
       "agent": "desarrollador",
-      "started": "2026-11-06T23:05:54+01:00",
-      "live": "live-T-164-desarrollador-20261106-230554.jsonl"
+      "started": "2026-11-06T23:14:00+01:00",
+      "live": "live-T-096-desarrollador-20261106-231400.jsonl"
     }
   }
 }
