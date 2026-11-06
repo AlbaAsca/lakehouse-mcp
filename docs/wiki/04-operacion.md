@@ -47,6 +47,22 @@ SeedCommand - Kafka confirmed 50000 events
 
 **Sin probar:** que las filas lleguen a la tabla en el stack de `compose.yaml` (ese tramo solo está probado en contenedores, con `IngestE2EIT`), la duplicación en la tabla y el arranque limpio con `docker compose down -v`.
 
+## Preguntar al agente
+
+Con el stack levantado y la clave del proveedor en `.env` (`GEMINI_API_KEY` por defecto; con Claude, `AGENT_PROVIDER=anthropic`, `ANTHROPIC_API_KEY` y `AGENT_MODEL`):
+
+```bash
+./mk ask Q="How many rows does the events table have?"
+```
+
+Arranca el agente en un contenedor solo para esa pregunta (servicio `agent`, perfil `agent`, 1 GB), contesta y termina. La primera vez compila la imagen y tarda unos minutos. Si el servidor MCP no está arriba, lo levanta antes.
+
+- **Comillas:** la pregunta va entera entre comillas dobles. Dentro valen espacios, apóstrofos y comillas dobles escapadas en bash (`\"`); en Windows (`mk.cmd`) no se pueden poner comillas dobles dentro. Evita `$`: `make` lo interpreta antes de pasar la pregunta.
+- **Sin clave:** termina con código 5 y un mensaje que dice cuál falta, por ejemplo `GEMINI_API_KEY is missing in .env`, sin traza de Java.
+- Los demás códigos de salida están en [la página del agente](componentes/agente.md#cómo-termina).
+
+Estado de la comprobación: la imagen está probada con un modelo simulado (`AgentImageIT`: la pregunta llega entera y la respuesta sale por stdout; sin clave, código 5) y el paso de la pregunta por `make` con un `docker` falso (`tests/test_agent_compose.py`). **Sin probar:** `./mk ask` en el stack con un modelo de verdad (T-097) y `mk.cmd` en Windows.
+
 ## Expirar snapshots viejos
 
 Cada escritura deja un snapshot y sus ficheros. Este proceso de un solo uso borra los snapshots más antiguos que la retención y los ficheros que solo ellos usaban. No está encendido: arranca, hace su trabajo y termina.

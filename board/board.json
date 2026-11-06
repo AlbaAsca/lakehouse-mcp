@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-06T23:14:21+01:00",
+  "updated": "2026-11-06T23:31:01+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -61,8 +61,8 @@
       "name": "Desarrollador",
       "role": "Implementa las tareas",
       "color": "#7aa2f7",
-      "status": "working",
-      "current": "T-096"
+      "status": "idle",
+      "current": null
     },
     {
       "id": "tester",
@@ -5323,10 +5323,10 @@
       "id": "T-096",
       "title": "Agente: un comando para hacerle preguntas desde el stack",
       "owner": "desarrollador",
-      "status": "doing",
+      "status": "review",
       "priority": "media",
       "estimate_min": 25.0,
-      "actual_min": null,
+      "actual_min": 17.0,
       "auto": true,
       "manual": null,
       "desc": "El agente tiene que poder usarse sin instalar Java ni compilar a mano, igual que el resto de la demo. Se propone un comando que arranque el agente en un contenedor solo cuando haga falta, le pase la pregunta y termine.\nCómo sabremos si funciona: con el stack levantado, el comando devuelve una respuesta del modelo simulado en los tests; sin clave de API, dice claramente que falta en vez de fallar con un error raro.\n\n## Técnico\ninfra/agent/Dockerfile multi-etapa y servicio agent en compose con perfil propio (a demanda, 1 GB, red del stack, ANTHROPIC_API_KEY y AGENT_MODEL desde .env). Objetivo ask en Makefile: ./mk ask Q=pregunta. Comprobar que las comillas y los espacios pasan bien por mk y mk.cmd, también en Windows. Test con ImageFromDockerfile en ./mk test, sin gastar API. Actualizar README, docs/wiki/04-operacion.md y docs/demo-grabacion.md si cambia la sintaxis.",
@@ -5335,9 +5335,9 @@
         "T-094"
       ],
       "created": "2026-11-02T17:37:05+01:00",
-      "updated": "2026-11-06T23:14:00+01:00",
+      "updated": "2026-11-06T23:31:01+01:00",
       "started_at": "2026-11-06T23:14:00+01:00",
-      "finished_at": null,
+      "finished_at": "2026-11-06T23:31:01+01:00",
       "log": [
         {
           "t": "2026-11-02T17:37:05+01:00",
@@ -5353,6 +5353,28 @@
           "t": "2026-11-06T23:14:00+01:00",
           "by": "runner",
           "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-06T23:30:49+01:00",
+          "by": "desarrollador",
+          "msg": "Más de 1,5x: tres pasadas de ./mk test MODULE=agent (~6 min cada una) para aislar que Testcontainers.exposeHostPorts rompía el arranque del stack de AgentIT; se cambió por un modelo falso en su propio contenedor. Sin más trabajo pendiente."
+        },
+        {
+          "t": "2026-11-06T23:31:01+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: `./mk ask Q=...` responde con el modelo simulado y avisa con un mensaje claro si falta la clave; tests en verde, falta la prueba con un modelo real (T-097)."
+        }
+      ],
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-06T23:31:01+01:00",
+          "min": 17.0,
+          "turns": 69,
+          "tokens": 2080382,
+          "cost_usd": 1.6560405999999999,
+          "verdict": "review"
         }
       ]
     },
@@ -7684,11 +7706,11 @@
   ],
   "runners": {
     "think": {
-      "state": "working",
-      "current": "T-101",
-      "message": "arquitecto con T-101",
+      "state": "stopped",
+      "current": null,
+      "message": "Runner parado",
       "pid": 12516,
-      "heartbeat": "2026-11-06T23:14:00+01:00",
+      "heartbeat": "2026-11-06T23:14:26+01:00",
       "enabled": true,
       "agent": "arquitecto",
       "started": "2026-11-06T23:14:00+01:00",

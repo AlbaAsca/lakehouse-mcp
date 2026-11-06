@@ -88,8 +88,9 @@ def test_the_service_builds_the_dockerfile_from_the_root():
 
 
 def test_the_image_test_sends_the_same_context_as_the_dockerignore():
-    # The other image built from the root: tests/test_maintenance_compose.py checks its part.
-    expected = set(dockerignore_paths()) - {"*/pom.xml", "maintenance/src/main", "infra/maintenance"}
+    # The other images built from the root: tests/test_maintenance_compose.py and test_agent_compose.py check their part.
+    expected = set(dockerignore_paths()) - {"*/pom.xml", "maintenance/src/main", "infra/maintenance", "agent/src/main",
+                                            "infra/agent"}
     context = set(it_context())
 
     assert {path for path in context if not path.endswith("/pom.xml")} == expected

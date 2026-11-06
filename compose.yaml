@@ -186,6 +186,23 @@ services:
       S3_REGION: ${S3_REGION}
     restart: "no"
 
+  # One question on demand (`make ask Q=...`), never started by `make up`. Answers and exits.
+  agent:
+    build:
+      context: .
+      dockerfile: infra/agent/Dockerfile
+    profiles: [agent]
+    depends_on:
+      mcp-server: {condition: service_healthy}
+    environment:
+      MCP_SERVER_URL: http://mcp-server:8090
+      AGENT_PROVIDER: ${AGENT_PROVIDER:-google-genai}
+      AGENT_MODEL: ${AGENT_MODEL:-}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+    mem_limit: 1g
+    restart: "no"
+
   trino:
     image: trinodb/trino:484
     profiles: [bench]

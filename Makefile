@@ -8,7 +8,7 @@ SPEEDUP ?= 3600
 TABLE ?= ecommerce.events
 RETENTION ?= P7D
 
-.PHONY: up down download-data seed seed-sample test test-board evals chaos bench demo smoke expire
+.PHONY: up down download-data seed seed-sample test test-board evals chaos bench demo smoke expire ask
 up:
 	docker compose up -d --build --wait
 down:
@@ -40,5 +40,10 @@ seed-sample:
 	@echo "seed-sample: running it again duplicates the rows in the table (docker compose down -v starts clean)."
 expire:
 	docker compose run --rm --build expire-snapshots --table $(TABLE) --retention $(RETENTION)
+# Q="question": read by the shell from the environment (make exports command-line variables), so quotes and
+# apostrophes inside it reach the agent untouched. Starts the stack it needs if it is not up.
+ask:
+	@test -n "$$Q" || { echo 'Usage: ./mk ask Q="your question"' >&2; exit 2; }
+	docker compose run --rm --build agent ask "$$Q"
 evals chaos bench demo:
 	@echo "$@: not implemented yet, see the board" && exit 1

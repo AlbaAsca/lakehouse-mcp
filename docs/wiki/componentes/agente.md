@@ -91,11 +91,15 @@ Todo en [`application.yaml`](../../../agent/src/main/resources/application.yaml)
 
 Un modelo simulado pide un `count(*)` y la cifra que llega a la respuesta es la que escribió el cargador de datos, que nunca pasó por el servidor. Otro no termina nunca y se corta en el tope.
 
-Con un modelo de verdad, **sin probar**: hasta T-096 no hay comando en el stack. Con el stack levantado, la muestra cargada y el jar compilado, sería:
+`AgentImageIT` arranca la imagen del servicio `agent` contra un modelo simulado en otro contenedor: la pregunta, con espacios y comillas, llega entera al modelo y su respuesta sale por stdout. Sin clave, la imagen termina con código 5 diciendo cuál falta.
+
+Con un modelo de verdad, **sin probar** (T-097): con el stack levantado y la muestra cargada,
 
 ```bash
-docker compose run --rm tools java -jar agent/target/agent-0.1.0-SNAPSHOT.jar ask "¿Cuáles son las cinco marcas con más ingresos?" --MCP_SERVER_URL=http://mcp-server:8090
+./mk ask Q="Which five brands have the highest purchase revenue?"
 ```
+
+Detalles de comillas y del arranque en [Operación](../04-operacion.md#preguntar-al-agente).
 
 ## Cómo termina
 
@@ -106,6 +110,7 @@ docker compose run --rm tools java -jar agent/target/agent-0.1.0-SNAPSHOT.jar as
 | 2 | La orden no es `ask <pregunta>` | stderr |
 | 3 | Ha llegado al tope de llamadas | stderr |
 | 4 | Se ha agotado la cuota del proveedor (error 429) | stderr |
+| 5 | Solo en la imagen (`./mk ask`): falta la clave del proveedor elegido, o `AGENT_MODEL` con Claude, o `AGENT_PROVIDER` no es válido | stderr |
 
 ## Qué puede fallar
 

@@ -98,6 +98,7 @@ cp .env.example .env   # y cambia las contraseñas
 | Otras formas | |
 |---|---|
 | Cargar la muestra sintética, sin Kaggle (con el stack arriba; repetirlo duplica filas) | `./mk seed-sample` |
+| Preguntar al agente (con el stack arriba y la clave en `.env`; sin probar con un modelo de verdad) | `./mk ask Q="How many rows does the events table have?"` |
 | Descargar el dataset (necesita `~/.kaggle`) | `./mk download-data` |
 | Otro mes | `./mk download-data MONTH=2019-Nov` |
 | Reproducir el mes en Kafka (con el stack arriba) | `./mk seed` (por defecto 1 % de las sesiones a 3600×) |
