@@ -107,6 +107,12 @@
       "why": "concedido automáticamente a desarrollador (T-020): solo lectura dentro del proyecto",
       "by": "runner",
       "at": "2026-11-04T20:30:20+01:00"
+    },
+    {
+      "pattern": "grep *",
+      "why": "concedido automáticamente a desarrollador (T-106): solo lectura dentro del proyecto",
+      "by": "runner",
+      "at": "2026-11-06T23:57:37+01:00"
     }
   ],
   "denied": []

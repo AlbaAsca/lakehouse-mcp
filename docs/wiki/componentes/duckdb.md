@@ -45,15 +45,17 @@ Para conectarse necesita dos secretos: uno de tipo `iceberg` para Polaris y otro
 
 ### Dentro del servidor MCP
 
-[`LakehouseSession`](../../../mcp-server/src/main/java/io/github/albaasca/lakehouse/mcp/LakehouseSession.java) abre una instancia de DuckDB y reparte varias conexiones. Es de solo lectura: las reparaciones necesitarán otra instancia.
+[`LakehouseSession`](../../../mcp-server/src/main/java/io/github/albaasca/lakehouse/mcp/LakehouseSession.java) abre una instancia de DuckDB y reparte varias conexiones. Es de solo lectura: todo lo que sale del modelo pasa por ella.
+
+Las reparaciones aprobadas usan otra instancia, [`RepairSession`](../../../mcp-server/src/main/java/io/github/albaasca/lakehouse/mcp/RepairSession.java): escribible, con una sola conexión y `memory_limit` de `256MB`, que se abre en cada reparación y se cierra al acabar. No acepta SQL libre, solo plantillas fijas con parámetros de tipo comprobado: una tabla `lh.<namespace>.<tabla>` con nombres simples, un número o un texto entre comillas. Hoy hay una plantilla, `ROLLBACK` (`CALL iceberg_rollback_to_snapshot`). Lo que confirma su efecto es la instancia de lectura ya abierta, sin volver a adjuntar el catálogo (T-106). Todavía no tiene tiempo máximo por sentencia.
 
 | Ajuste | Por defecto | Qué pasa al superarlo o si falta |
 |---|---|---|
 | Conexiones | 4 | Quien espera más que el tiempo máximo recibe `SQLTimeoutException` |
 | Tiempo máximo por consulta | 30 s | La consulta se corta con `SQLTimeoutException` y la conexión sigue sirviendo |
-| `memory_limit` | `512MB` | La consulta falla con `Out of Memory` y la sesión sigue viva |
+| `memory_limit` | `400MB` | La consulta falla con `Out of Memory` y la sesión sigue viva |
 | `temp_directory` | vacío | No se desborda a disco: sin esto, el límite de memoria solo movería el problema al disco |
-| `READ_ONLY` en el `ATTACH` | siempre | Rechaza cualquier escritura, también el `SELECT` de rollback |
+| `READ_ONLY` en el `ATTACH` | siempre | Rechaza cualquier escritura en todas las conexiones: `SELECT` y `CALL` de rollback, `INSERT`, `DELETE` y `DROP` fallan con «attached in read-only mode» y la tabla no cambia |
 | `installExtensions` | `true` | Con `false` no descarga nada: `httpfs`, `avro` e `iceberg` deben estar ya en `extensionDirectory`, o no arranca. Así corre [la imagen del servidor](servidor-mcp.md#la-imagen) (T-093) |
 
 Para los tests, [`SyntheticLoader`](../../../testkit/src/main/java/io/github/albaasca/lakehouse/testkit/SyntheticLoader.java) carga la muestra en una tabla Iceberg sin pasar por Kafka. Los ficheros los escribe DuckDB, no el sink.
@@ -111,7 +113,7 @@ T-014 comprobó además, con tests en `DuckDbIcebergSpikeIT`:
 | Rechazar lo que no es `SELECT` | `json_serialize_sql(...)` | ✅ |
 | Vista sobre tabla Iceberg | `CREATE TEMP VIEW`, `CREATE VIEW memory.main.v` | ✅, sin `AT` a través de la vista |
 
-**Cuidado:** `SELECT * FROM iceberg_rollback_to_snapshot(...)` cambia la tabla si el catálogo es escribible. Detalle y fuentes en [`spike-duckdb-iceberg.md`](../../spike-duckdb-iceberg.md). Por eso el servidor MCP tendrá dos instancias, y la del modelo solo adjunta el catálogo con `READ_ONLY` ([decisión 20](../../architecture.md#decisiones), ⬜ T-106).
+**Cuidado:** `SELECT * FROM iceberg_rollback_to_snapshot(...)` cambia la tabla si el catálogo es escribible. Detalle y fuentes en [`spike-duckdb-iceberg.md`](../../spike-duckdb-iceberg.md). Por eso el servidor MCP tiene dos instancias, y la del modelo solo adjunta el catálogo con `READ_ONLY` ([decisión 20](../../architecture.md#decisiones), ✅ T-106).
 
 **Sin comprobar:** borrar, hacer rollback, añadir columna o compactar sobre ficheros escritos por el sink real o mientras el sink hace commit, y que Trino lea los ficheros de borrado de DuckDB.
 

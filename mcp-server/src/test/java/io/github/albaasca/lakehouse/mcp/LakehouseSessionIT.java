@@ -328,20 +328,70 @@ class LakehouseSessionIT {
         }
     }
 
+    private static String latestSnapshot(LakehouseSession session, String table) throws SQLException {
+        return strings(session, "SELECT snapshot_id FROM iceberg_snapshots('" + table
+                + "') ORDER BY sequence_number DESC LIMIT 1").get(0);
+    }
+
+    /**
+     * Without the validator, a rollback or a write fails on every connection of the pool and the table stays as it was;
+     * the same rollback through the repair instance is applied, and the open read instance sees it.
+     */
     @Test
-    void nothingThroughTheSessionCanChangeATable() throws Exception {
-        try (LakehouseSession session = new LakehouseSession(settings())) {
-            String snapshot = strings(session, "SELECT snapshot_id FROM iceberg_snapshots('" + TABLE + "')").get(0);
-
-            for (String write : List.of(
-                    "DELETE FROM " + TABLE,
-                    "DROP TABLE " + TABLE,
-                    "SELECT * FROM iceberg_rollback_to_snapshot('" + TABLE + "', " + snapshot + ")")) {
-                assertThatThrownBy(() -> strings(session, write)).as(write).hasMessageContaining("read-only");
-            }
-
-            assertThat(strings(session, "SELECT count(*) FROM " + TABLE)).containsExactly("50000");
+    void onlyTheRepairInstanceCanChangeATable() throws Exception {
+        String table = "lh.session_it_repair.events";
+        try (Connection writer = DriverManager.getConnection("jdbc:duckdb:")) {
+            stack.attachDuckDb(writer);
+            SyntheticLoader.load(writer, "session_it_repair", "events");
         }
+        int poolSize = 3;
+        try (LakehouseSession session = new LakehouseSession(settings().withPoolSize(poolSize));
+                Connection writer = DriverManager.getConnection("jdbc:duckdb:")) {
+            String loadedSnapshot = latestSnapshot(session, table);
+            stack.attachDuckDb(writer);
+            try (Statement statement = writer.createStatement()) {
+                statement.execute("INSERT INTO " + LakehouseStack.DUCKDB_CATALOG + ".session_it_repair.events "
+                        + "SELECT * FROM " + LakehouseStack.DUCKDB_CATALOG + ".session_it_repair.events LIMIT 7");
+            }
+            String current = latestSnapshot(session, table);
+            assertThat(current).isNotEqualTo(loadedSnapshot);
+            List<String> writes = List.of(
+                    "SELECT * FROM iceberg_rollback_to_snapshot('" + table + "', " + loadedSnapshot + ")",
+                    "CALL iceberg_rollback_to_snapshot('" + table + "', " + loadedSnapshot + ")",
+                    "INSERT INTO " + table + " SELECT * FROM " + table + " LIMIT 1",
+                    "DELETE FROM " + table,
+                    "DROP TABLE " + table);
+
+            // Nested, so that every connection of the pool is held at once and each one is tried.
+            List<Integer> tried = new ArrayList<>();
+            tryEveryConnection(session, poolSize, writes, tried);
+            assertThat(tried).hasSize(poolSize);
+
+            assertThat(latestSnapshot(session, table)).isEqualTo(current);
+            assertThat(strings(session, "SELECT count(*) FROM " + table)).containsExactly("50007");
+
+            RepairSession.alongside(settings()).apply(RepairSession.ROLLBACK,
+                    Map.of("table", table, "snapshot_id", Long.parseLong(loadedSnapshot)));
+
+            assertThat(strings(session, "SELECT count(*) FROM " + table)).containsExactly("50000");
+        }
+    }
+
+    private static void tryEveryConnection(LakehouseSession session, int left, List<String> writes, List<Integer> tried)
+            throws SQLException {
+        if (left == 0) {
+            return;
+        }
+        session.withConnection(reserved -> {
+            for (String write : writes) {
+                assertThatThrownBy(() -> reserved.execute(write)).as(write)
+                        .isInstanceOf(SQLException.class)
+                        .hasMessageContaining("attached in read-only mode");
+            }
+            tried.add(left);
+            tryEveryConnection(session, left - 1, writes, tried);
+            return null;
+        });
     }
 
     @Test

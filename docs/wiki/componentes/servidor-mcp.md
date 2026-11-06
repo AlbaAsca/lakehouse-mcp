@@ -108,7 +108,7 @@ Sin la conexión con el catálogo el servidor no arranca, porque ninguna herrami
 
 - **Las extensiones de DuckDB vienen dentro.** Las instala al construir `PreloadExtensions.java`, con el mismo driver que usa el servidor, para que coincida la versión. Arrancar no descarga nada.
 - **La salud la mira la propia imagen**: `HEALTHCHECK` contra `/actuator/health`. Solo mira que el proceso conteste: no comprueba el catálogo después de arrancar (T-158 propone cambiarlo si se ve útil).
-- **Memoria.** `-Xmx256m` de los 1 GB del [presupuesto](../../architecture.md#memoria-docker-76-gb); DuckDB va fuera del heap, con `memory_limit` de 512 MB. El reparto prevé 400 MB para lectura: no se ha cambiado. El compose no pone límite al contenedor; el test sí lo arranca limitado a 1 GB, con una carga mínima, y aguanta. Bajo carga real no se ha medido.
+- **Memoria.** `-Xmx256m` de los 1 GB del [presupuesto](../../architecture.md#memoria-docker-76-gb); DuckDB va fuera del heap, con `memory_limit` de 400 MB en la instancia de lectura y 256 MB en la de reparación, esta solo mientras repara (T-106). El compose no pone límite al contenedor; el test sí lo arranca limitado a 1 GB, con una carga mínima, y aguanta. Bajo carga real no se ha medido.
 
 ## Cómo probarlo tú mismo
 

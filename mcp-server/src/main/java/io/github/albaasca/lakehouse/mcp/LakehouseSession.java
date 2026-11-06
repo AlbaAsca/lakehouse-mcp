@@ -22,7 +22,8 @@ import org.duckdb.DuckDBConnection;
  * Read-only access to the Iceberg catalog through one embedded DuckDB instance and a small pool of its connections.
  *
  * <p>The catalog is attached {@code READ_ONLY} so that even a {@code SELECT} cannot change a table, whatever the SQL
- * validator lets through (docs/spike-duckdb-iceberg.md, question 5). Repairs will need an instance of their own.
+ * validator lets through (docs/spike-duckdb-iceberg.md, question 5). Repairs go through {@link RepairSession}, a
+ * separate instance: no connection here can ever reach a writable catalog (docs/architecture.md, decision 20).
  */
 public final class LakehouseSession implements AutoCloseable {
 
@@ -46,7 +47,7 @@ public final class LakehouseSession implements AutoCloseable {
             Path extensionDirectory, boolean installExtensions) {
 
         public static Settings of(Catalog catalog, Storage storage) {
-            return new Settings(catalog, storage, 4, Duration.ofSeconds(30), "512MB", null, true);
+            return new Settings(catalog, storage, 4, Duration.ofSeconds(30), "400MB", null, true);
         }
 
         public Settings withPoolSize(int size) {
@@ -93,7 +94,7 @@ public final class LakehouseSession implements AutoCloseable {
         });
         try {
             try (Statement statement = root.createStatement()) {
-                for (String sql : startup(settings)) {
+                for (String sql : startup(settings, true)) {
                     statement.execute(sql);
                 }
             }
@@ -106,7 +107,8 @@ public final class LakehouseSession implements AutoCloseable {
         }
     }
 
-    private static List<String> startup(Settings settings) {
+    /** Shared with {@link RepairSession}: the only difference between the two instances is {@code READ_ONLY}. */
+    static List<String> startup(Settings settings, boolean readOnly) {
         Catalog catalog = settings.catalog();
         Storage storage = settings.storage();
         List<String> sql = new ArrayList<>();
@@ -128,7 +130,7 @@ public final class LakehouseSession implements AutoCloseable {
         sql.add("CREATE SECRET lakehouse_polaris (TYPE iceberg, CLIENT_ID " + quote(catalog.clientId())
                 + ", CLIENT_SECRET " + quote(catalog.clientSecret()) + ", OAUTH2_SERVER_URI "
                 + quote(catalog.uri() + "/api/catalog/v1/oauth/tokens") + ", OAUTH2_SCOPE 'PRINCIPAL_ROLE:ALL')");
-        sql.add("ATTACH " + quote(catalog.name()) + " AS " + CATALOG_ALIAS + " (TYPE iceberg, READ_ONLY, URI "
+        sql.add("ATTACH " + quote(catalog.name()) + " AS " + CATALOG_ALIAS + " (TYPE iceberg, " + (readOnly ? "READ_ONLY, " : "") + "URI "
                 + quote(catalog.uri() + "/api/catalog") + ", SECRET lakehouse_polaris, ACCESS_DELEGATION_MODE 'none')");
         return sql;
     }

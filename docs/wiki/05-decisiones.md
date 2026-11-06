@@ -41,7 +41,7 @@ MinIO quedó descartado porque su repositorio comunitario está archivado. Seawe
 | Compactar con DuckDB ([6](../architecture.md#decisiones)) | No hace falta encender otro servicio | ⬜ T-047 |
 | Expirar snapshots con un proceso aparte que usa la API Java de Iceberg ([6](../architecture.md#decisiones)) | DuckDB no sabe y Trino se va (T-087). [Cómo se usa](04-operacion.md#expirar-snapshots-viejos) | ✅ T-105 |
 | Validar SQL con el parser de DuckDB, con seis reglas ([7](../architecture.md#decisiones)) | Mismo dialecto que el motor, y acepta solo lo que conoce | ⬜ T-019 |
-| Dos instancias de DuckDB, una sin poder escribir ([20](../architecture.md#decisiones)) | Si el validador falla, una consulta sigue sin poder cambiar el catálogo. No protege los ficheros de S3 | ⬜ T-106 |
+| Dos instancias de DuckDB, una sin poder escribir ([20](../architecture.md#decisiones)) | Si el validador falla, una consulta sigue sin poder cambiar el catálogo. No protege los ficheros de S3 | ✅ T-106 |
 | Viaje en el tiempo solo por `time_travel` ([21](../architecture.md#decisiones)) | El analista consulta el pasado con el mismo enmascarado | ⬜ T-021, T-054 |
 | Métricas en YAML ([8](../architecture.md#decisiones)) | Sin servicio de más por cuatro métricas | ⬜ T-031 |
 | Arreglos de catálogo cerrado con aprobación externa ([9](../architecture.md#decisiones)) | El modelo no puede autoaprobarse | ⬜ T-026 |
