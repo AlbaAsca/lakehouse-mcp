@@ -185,6 +185,40 @@ class ExpireSnapshotsIT {
         assertThat(filesInStore("rolled_back")).doesNotContainAnyElementsOf(deleteFiles);
     }
 
+    /**
+     * Every column of every row, against a reference written by hand (not read from the table): two partitions, a
+     * delete, a compaction and two expirations must not change a single value.
+     */
+    @Test
+    void theCurrentRowsKeepEveryColumnAfterExpiring() throws Exception {
+        String t = events("columns");
+        exec("INSERT INTO " + t + " VALUES (1, TIMESTAMP '2026-01-01 10:00:00', 'view', 100),"
+                + " (2, TIMESTAMP '2026-01-01 11:30:00', 'cart', 200)");
+        exec("INSERT INTO " + t + " VALUES (3, TIMESTAMP '2026-01-02 09:15:00', 'purchase', 300),"
+                + " (4, TIMESTAMP '2026-01-02 23:59:59', 'view', NULL)");
+        exec("DELETE FROM " + t + " WHERE event_id = 2");
+        List<String> expected = List.of(
+                "1|2026-01-01 10:00:00|view|100",
+                "3|2026-01-02 09:15:00|purchase|300",
+                "4|2026-01-02 23:59:59|view|null");
+        String select = "SELECT event_id, strftime(ts, '%Y-%m-%d %H:%M:%S'), event_type, user_id FROM " + t
+                + " ORDER BY event_id";
+        assertThat(query(select)).containsExactlyElementsOf(expected);
+        query("CALL iceberg_rewrite_data_files('" + t + "', min_input_files => 2)");
+
+        String first = runImage("columns", "--retention", "PT0S");
+        exec("INSERT INTO " + t + " VALUES (5, TIMESTAMP '2026-01-03 00:00:00', 'cart', 500)");
+        String second = runImage("columns", "--retention", "PT0S");
+
+        assertThat(first).contains("-> 1", "files that could not be deleted: 0");
+        assertThat(second).contains("snapshots: 2 -> 1", "files that could not be deleted: 0");
+        assertThat(query(select)).containsExactlyElementsOf(List.of(
+                expected.get(0), expected.get(1), expected.get(2), "5|2026-01-03 00:00:00|cart|500"));
+        assertThat(filesInStore("columns")).filteredOn(file -> !file.contains("/metadata/"))
+                .containsExactlyInAnyOrderElementsOf(query(
+                        "SELECT file_path FROM iceberg_metadata(" + t + ") WHERE status != 'DELETED'"));
+    }
+
     private static String runImage(String table, String cutoffOption, String cutoff) {
         Path root = LakehouseStack.repositoryRoot();
         ImageFromDockerfile image = new ImageFromDockerfile("lakehouse-testkit-maintenance", false)

@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-06T23:42:55+01:00",
+  "updated": "2026-11-06T23:49:07+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -5745,7 +5745,7 @@
       "id": "T-105",
       "title": "Mantenimiento: expirar snapshots viejos",
       "owner": "desarrollador",
-      "status": "review",
+      "status": "done",
       "priority": "media",
       "estimate_min": 40.0,
       "actual_min": 34.4,
@@ -5756,7 +5756,7 @@
         "T-087"
       ],
       "created": "2026-11-02T18:14:35+01:00",
-      "updated": "2026-11-06T23:42:55+01:00",
+      "updated": "2026-11-06T23:49:07+01:00",
       "started_at": "2026-11-06T23:40:28+01:00",
       "finished_at": "2026-11-06T23:42:49+01:00",
       "log": [
@@ -5814,6 +5814,21 @@
           "t": "2026-11-06T23:42:55+01:00",
           "by": "desarrollador",
           "msg": "REVIEW: Expiración de snapshots con el módulo `maintenance` y `./mk expire`, tests del módulo en verde; falta probarla sobre la tabla real del sink."
+        },
+        {
+          "t": "2026-11-06T23:43:01+01:00",
+          "by": "tester",
+          "msg": "verificando"
+        },
+        {
+          "t": "2026-11-06T23:48:58+01:00",
+          "by": "consultor",
+          "msg": "Tester: diff revisado, ./mk test MODULE=maintenance en verde (6 IT con la imagen real + unitarios) y tests de compose en verde. Añadido IT theCurrentRowsKeepEveryColumnAfterExpiring: verdad escrita a mano, filas columna a columna (2 particiones, borrado, compactación, 2 expiraciones) y almacén = ficheros referenciados. CI develop roja por QueryToolsEdgeIT, ya cubierto por T-163."
+        },
+        {
+          "t": "2026-11-06T23:49:07+01:00",
+          "by": "tester",
+          "msg": "DONE: Expiración verificada con tests del módulo en verde y comprobación directa del almacén, más un test nuevo que compara las filas columna a columna con una referencia escrita a mano."
         }
       ],
       "runs": [
@@ -5836,8 +5851,19 @@
           "tokens": 165197,
           "cost_usd": 0.25141440000000004,
           "verdict": "review"
+        },
+        {
+          "agent": "tester",
+          "mode": "verify",
+          "at": "2026-11-06T23:49:07+01:00",
+          "min": 6.1,
+          "turns": 17,
+          "tokens": 486711,
+          "cost_usd": 0.70601,
+          "verdict": "done"
         }
-      ]
+      ],
+      "verify_started": "2026-11-06T23:43:01+01:00"
     },
     {
       "id": "T-106",
@@ -7834,13 +7860,13 @@
     "measure": {
       "state": "working",
       "current": "T-105",
-      "message": "desarrollador con T-105",
+      "message": "tester con T-105",
       "pid": 12228,
-      "heartbeat": "2026-11-06T23:40:29+01:00",
+      "heartbeat": "2026-11-06T23:43:01+01:00",
       "enabled": true,
-      "agent": "desarrollador",
-      "started": "2026-11-06T23:40:29+01:00",
-      "live": "live-T-105-desarrollador-20261106-234029.jsonl"
+      "agent": "tester",
+      "started": "2026-11-06T23:43:01+01:00",
+      "live": "live-T-105-tester-20261106-234301.jsonl"
     }
   }
 }
