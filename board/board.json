@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-06T23:57:37+01:00",
+  "updated": "2026-11-07T00:04:18+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -5869,7 +5869,7 @@
       "id": "T-106",
       "title": "Consulta: separar la conexión de lectura de la de reparación",
       "owner": "desarrollador",
-      "status": "review",
+      "status": "done",
       "priority": "media",
       "estimate_min": 25.0,
       "actual_min": 8.7,
@@ -5880,7 +5880,7 @@
         "T-016"
       ],
       "created": "2026-11-02T18:14:43+01:00",
-      "updated": "2026-11-06T23:57:37+01:00",
+      "updated": "2026-11-07T00:04:18+01:00",
       "started_at": "2026-11-06T23:49:15+01:00",
       "finished_at": "2026-11-06T23:57:37+01:00",
       "log": [
@@ -5923,6 +5923,16 @@
           "t": "2026-11-06T23:57:37+01:00",
           "by": "runner",
           "msg": "✓ permiso concedido automáticamente: grep * (solo lectura dentro del proyecto); se reintenta"
+        },
+        {
+          "t": "2026-11-06T23:57:43+01:00",
+          "by": "tester",
+          "msg": "verificando"
+        },
+        {
+          "t": "2026-11-07T00:04:18+01:00",
+          "by": "tester",
+          "msg": "DONE: la lectura no puede cambiar tablas en ninguna conexión del pool y la reparación sí se aplica, con tests de contenedores en verde; el hueco de volver a adjuntar el catálogo queda en T-168."
         }
       ],
       "runs": [
@@ -5935,8 +5945,19 @@
           "tokens": 1097646,
           "cost_usd": 0.9630559999999999,
           "verdict": "review"
+        },
+        {
+          "agent": "tester",
+          "mode": "verify",
+          "at": "2026-11-07T00:04:18+01:00",
+          "min": 6.6,
+          "turns": 20,
+          "tokens": 377079,
+          "cost_usd": 0.47057540000000003,
+          "verdict": "done"
         }
-      ]
+      ],
+      "verify_started": "2026-11-06T23:57:43+01:00"
     },
     {
       "id": "T-107",
@@ -7897,6 +7918,35 @@
           "msg": "creada"
         }
       ]
+    },
+    {
+      "id": "T-168",
+      "title": "Consulta: impedir que la conexión de lectura vuelva a adjuntar el catálogo con escritura",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "media",
+      "estimate_min": 30.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "La conexión de lectura adjunta el catálogo en solo lectura, pero conserva la credencial del catálogo y no bloquea su configuración. Si el validador fallara, una consulta podría adjuntar el mismo catálogo otra vez sin solo lectura y dar marcha atrás a una tabla, que es justo lo que la separación de conexiones quiere evitar. Se propone confirmarlo con un test y cerrarlo (bloquear la configuración tras el arranque o impedir nuevos adjuntos), sin romper la lectura del almacén.\nCómo sabremos si funciona: sin pasar por el validador, adjuntar el catálogo de nuevo desde una conexión de lectura falla y la tabla no cambia; las consultas normales siguen funcionando.\n## Técnico\nLakehouseSession.startup(settings, true) deja CREATE SECRET lakehouse_polaris y no hace SET lock_configuration = true ni limita ATTACH. Hipótesis sin probar: reserved.execute(\"ATTACH '<catalog>' AS w (TYPE iceberg, URI '<uri>/api/catalog', SECRET lakehouse_polaris, ACCESS_DELEGATION_MODE 'none')\") y luego CALL iceberg_rollback_to_snapshot('w.ns.t', id) cambiaría la tabla. Criterio: IT en LakehouseSessionIT que intente ese ATTACH (y SET/RESET de opciones) en cada conexión del pool y espere error, snapshot actual sin cambios; LakehouseSessionIT y QueryToolsIT en verde. Ojo: enable_external_access=false puede romper httpfs/S3, medirlo. Encontrado verificando T-106.",
+      "deps": [],
+      "created": "2026-11-07T00:04:01+01:00",
+      "updated": "2026-11-07T00:04:09+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-07T00:04:01+01:00",
+          "by": "tester",
+          "msg": "creada"
+        },
+        {
+          "t": "2026-11-07T00:04:09+01:00",
+          "by": "consultor",
+          "msg": "descripción reescrita"
+        }
+      ]
     }
   ],
   "runners": {
@@ -7916,13 +7966,13 @@
     "measure": {
       "state": "working",
       "current": "T-106",
-      "message": "desarrollador con T-106",
+      "message": "tester con T-106",
       "pid": 12228,
-      "heartbeat": "2026-11-06T23:49:16+01:00",
+      "heartbeat": "2026-11-06T23:57:44+01:00",
       "enabled": true,
-      "agent": "desarrollador",
-      "started": "2026-11-06T23:49:15+01:00",
-      "live": "live-T-106-desarrollador-20261106-234916.jsonl"
+      "agent": "tester",
+      "started": "2026-11-06T23:57:44+01:00",
+      "live": "live-T-106-tester-20261106-235744.jsonl"
     }
   }
 }
