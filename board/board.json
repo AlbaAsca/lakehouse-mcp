@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-06T23:40:23+01:00",
+  "updated": "2026-11-06T23:42:55+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -5745,10 +5745,10 @@
       "id": "T-105",
       "title": "Mantenimiento: expirar snapshots viejos",
       "owner": "desarrollador",
-      "status": "next",
+      "status": "review",
       "priority": "media",
       "estimate_min": 40.0,
-      "actual_min": 32.0,
+      "actual_min": 34.4,
       "auto": true,
       "manual": null,
       "desc": "Cada escritura deja un snapshot y sus ficheros, y con el tiempo ocupan cada vez más. El motor de consulta compacta, pero no sabe expirar, así que hace falta otra herramienta. Cuál depende de si Trino se queda en el proyecto: si se queda, basta con usarlo; si se va, se añade un proceso pequeño que solo se ejecuta cuando se pide.\nCómo sabremos si funciona: tras expirar quedan solo los snapshots dentro de la retención, las filas actuales son idénticas una a una y los ficheros que ya nadie usa desaparecen del almacén.\n\n## Técnico\nBloqueada por T-087. Decisión 6 de docs/architecture.md.\n- Si Trino se queda: ALTER TABLE ... EXECUTE expire_snapshots sobre T-044, ajustando iceberg.expire-snapshots.min-retention (7 días por defecto). Unos 15 min.\n- Si Trino se va: módulo o imagen de un solo uso con iceberg-core e iceberg-aws 1.12.0 (RESTCatalog, table.expireSnapshots()), nunca dentro de mcp-server. Unos 40 min.\n- Caso obligatorio: tabla con ficheros de borrado escritos por DuckDB y compactada por T-047. Comprobar en SeaweedFS que los ficheros de datos y de borrado sin referencias desaparecen, no solo que baje el recuento de iceberg_snapshots.\n- IT con ./mk test.",
@@ -5756,9 +5756,9 @@
         "T-087"
       ],
       "created": "2026-11-02T18:14:35+01:00",
-      "updated": "2026-11-06T23:00:46+01:00",
-      "started_at": "2026-11-04T22:02:49+01:00",
-      "finished_at": "2026-11-04T22:34:50+01:00",
+      "updated": "2026-11-06T23:42:55+01:00",
+      "started_at": "2026-11-06T23:40:28+01:00",
+      "finished_at": "2026-11-06T23:42:49+01:00",
       "log": [
         {
           "t": "2026-11-02T18:14:35+01:00",
@@ -5799,6 +5799,21 @@
           "t": "2026-11-06T23:00:46+01:00",
           "by": "consultor",
           "msg": "Bloqueo en falso por el protocolo de permisos (T-164); reintenta cuando esté arreglado"
+        },
+        {
+          "t": "2026-11-06T23:40:28+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-06T23:42:49+01:00",
+          "by": "desarrollador",
+          "msg": "Reintento tras T-164: maintenance en verde (IT con imagen real + unitarios). T-162 ya creada. Pendiente probar sobre ecommerce.events cuando exista."
+        },
+        {
+          "t": "2026-11-06T23:42:55+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: Expiración de snapshots con el módulo `maintenance` y `./mk expire`, tests del módulo en verde; falta probarla sobre la tabla real del sink."
         }
       ],
       "runs": [
@@ -5811,6 +5826,16 @@
           "tokens": 3148192,
           "cost_usd": 3.369236999999999,
           "verdict": "blocked"
+        },
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-06T23:42:55+01:00",
+          "min": 2.4,
+          "turns": 10,
+          "tokens": 165197,
+          "cost_usd": 0.25141440000000004,
+          "verdict": "review"
         }
       ]
     },
@@ -7808,14 +7833,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-096",
-      "message": "tester con T-096",
+      "current": "T-105",
+      "message": "desarrollador con T-105",
       "pid": 12228,
-      "heartbeat": "2026-11-06T23:31:08+01:00",
+      "heartbeat": "2026-11-06T23:40:29+01:00",
       "enabled": true,
-      "agent": "tester",
-      "started": "2026-11-06T23:31:08+01:00",
-      "live": "live-T-096-tester-20261106-233108.jsonl"
+      "agent": "desarrollador",
+      "started": "2026-11-06T23:40:29+01:00",
+      "live": "live-T-105-desarrollador-20261106-234029.jsonl"
     }
   }
 }
