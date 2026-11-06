@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-06T23:31:01+01:00",
+  "updated": "2026-11-06T23:40:23+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -5323,7 +5323,7 @@
       "id": "T-096",
       "title": "Agente: un comando para hacerle preguntas desde el stack",
       "owner": "desarrollador",
-      "status": "review",
+      "status": "done",
       "priority": "media",
       "estimate_min": 25.0,
       "actual_min": 17.0,
@@ -5332,10 +5332,11 @@
       "desc": "El agente tiene que poder usarse sin instalar Java ni compilar a mano, igual que el resto de la demo. Se propone un comando que arranque el agente en un contenedor solo cuando haga falta, le pase la pregunta y termine.\nCómo sabremos si funciona: con el stack levantado, el comando devuelve una respuesta del modelo simulado en los tests; sin clave de API, dice claramente que falta en vez de fallar con un error raro.\n\n## Técnico\ninfra/agent/Dockerfile multi-etapa y servicio agent en compose con perfil propio (a demanda, 1 GB, red del stack, ANTHROPIC_API_KEY y AGENT_MODEL desde .env). Objetivo ask en Makefile: ./mk ask Q=pregunta. Comprobar que las comillas y los espacios pasan bien por mk y mk.cmd, también en Windows. Test con ImageFromDockerfile en ./mk test, sin gastar API. Actualizar README, docs/wiki/04-operacion.md y docs/demo-grabacion.md si cambia la sintaxis.",
       "deps": [
         "T-093",
-        "T-094"
+        "T-094",
+        "T-166"
       ],
       "created": "2026-11-02T17:37:05+01:00",
-      "updated": "2026-11-06T23:31:01+01:00",
+      "updated": "2026-11-06T23:40:23+01:00",
       "started_at": "2026-11-06T23:14:00+01:00",
       "finished_at": "2026-11-06T23:31:01+01:00",
       "log": [
@@ -5363,6 +5364,26 @@
           "t": "2026-11-06T23:31:01+01:00",
           "by": "desarrollador",
           "msg": "REVIEW: `./mk ask Q=...` responde con el modelo simulado y avisa con un mensaje claro si falta la clave; tests en verde, falta la prueba con un modelo real (T-097)."
+        },
+        {
+          "t": "2026-11-06T23:31:07+01:00",
+          "by": "tester",
+          "msg": "verificando"
+        },
+        {
+          "t": "2026-11-06T23:40:23+01:00",
+          "by": "tester",
+          "msg": "DONE: `./mk ask` responde con el modelo simulado y avisa claramente si falta la clave, con los tests del módulo y los de Python en verde; abierta T-165 porque la guía promete el código de salida 5 y el comando devuelve 2."
+        },
+        {
+          "t": "2026-11-06T23:40:23+01:00",
+          "by": "tester",
+          "msg": "⚠ 1 comandos denegados: cmd //c mk.cmd ask"
+        },
+        {
+          "t": "2026-11-06T23:40:23+01:00",
+          "by": "runner",
+          "msg": "? permiso solicitado: cmd * (T-166); la tarjeta espera la decisión"
         }
       ],
       "runs": [
@@ -5375,8 +5396,19 @@
           "tokens": 2080382,
           "cost_usd": 1.6560405999999999,
           "verdict": "review"
+        },
+        {
+          "agent": "tester",
+          "mode": "verify",
+          "at": "2026-11-06T23:40:23+01:00",
+          "min": 9.2,
+          "turns": 21,
+          "tokens": 524740,
+          "cost_usd": 0.5257327999999999,
+          "verdict": "done"
         }
-      ]
+      ],
+      "verify_started": "2026-11-06T23:31:07+01:00"
     },
     {
       "id": "T-097",
@@ -7702,6 +7734,62 @@
         }
       ],
       "verify_started": "2026-11-06T23:10:54+01:00"
+    },
+    {
+      "id": "T-165",
+      "title": "La guía dice que preguntar sin clave termina con código 5, pero el comando devuelve 2",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "baja",
+      "estimate_min": 10.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Al lanzar la pregunta al agente sin clave, el mensaje es claro, pero el comando que usa la gente devuelve el código 2 (el de make al fallar), no el 5 que promete la guía de operación. Quien automatice algo mirando ese código se llevará una sorpresa. Se propone o bien propagar el código del agente, o bien corregir la guía para que diga lo que pasa de verdad.«\n»Cómo sabremos si funciona: lo que la guía dice sobre el código de salida coincide con lo que devuelve el comando al probarlo sin clave.«\n»## Técnico«\n»Reproducir (T-096): ./mk ask \"Q=hola\" GEMINI_API_KEY=  → stderr 'GEMINI_API_KEY is missing in .env', 'make: *** [Makefile:47: ask] Error 5', exit 2. docs/wiki/04-operacion.md (Preguntar al agente, 'Sin clave: termina con código 5') y la tabla de docs/wiki/componentes/agente.md#cómo-termina. Opción: corregir docs (el 5 es del contenedor; ./mk devuelve 2). Propagar exige que make salga con ese código, que GNU make no hace.",
+      "deps": [],
+      "created": "2026-11-06T23:40:11+01:00",
+      "updated": "2026-11-06T23:40:11+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-06T23:40:11+01:00",
+          "by": "tester",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-166",
+      "title": "Solicitud de permiso: cmd *",
+      "owner": "consultor",
+      "status": "human",
+      "priority": "media",
+      "estimate_min": 2,
+      "actual_min": null,
+      "auto": false,
+      "manual": "Abre la tarjeta y pulsa «Conceder» o «Denegar».",
+      "desc": "El agente «tester» necesitaba un comando que no está en su lista de permitidos y se lo bloquearon mientras hacía T-096. No es de solo lectura ni está prohibido, así que lo tiene que validar una persona.\n\nPara qué lo quería: (no lo explicó)\n\nCómo decidir: concede si es seguro repetirlo sin supervisión dentro del proyecto; deniega si escribe fuera, publica, borra o usa la red.\n\n## Técnico\n- Comando: cmd //c mk.cmd ask\n- Patrón que se concedería: cmd *\n- Tarjeta: T-096",
+      "deps": [],
+      "created": "2026-11-06T23:40:23+01:00",
+      "updated": "2026-11-06T23:40:23+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-06T23:40:23+01:00",
+          "by": "runner",
+          "msg": "creada"
+        }
+      ],
+      "kind": "permiso",
+      "perm": {
+        "pattern": "cmd *",
+        "command": "cmd //c mk.cmd ask",
+        "agent": "tester",
+        "task": "T-096",
+        "why": ""
+      }
     }
   ],
   "runners": {
@@ -7721,13 +7809,13 @@
     "measure": {
       "state": "working",
       "current": "T-096",
-      "message": "desarrollador con T-096",
+      "message": "tester con T-096",
       "pid": 12228,
-      "heartbeat": "2026-11-06T23:14:00+01:00",
+      "heartbeat": "2026-11-06T23:31:08+01:00",
       "enabled": true,
-      "agent": "desarrollador",
-      "started": "2026-11-06T23:14:00+01:00",
-      "live": "live-T-096-desarrollador-20261106-231400.jsonl"
+      "agent": "tester",
+      "started": "2026-11-06T23:31:08+01:00",
+      "live": "live-T-096-tester-20261106-233108.jsonl"
     }
   }
 }
