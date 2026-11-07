@@ -180,6 +180,19 @@ def test_fallo_de_git_conserva_lo_apuntado_y_se_anota_en_la_tarjeta(repo, monkey
     assert _committed(g) == ["board/board.json", "mio.py"]
 
 
+def test_estado_intermedio_no_commitea_y_el_final_recoge_todo(repo):
+    root, g = repo
+    before = runner.snapshot()
+    (root / "mio.py").write_text("x", encoding="utf-8")
+    (root / "gen.txt").write_text("y", encoding="utf-8")
+    (root / "board/board.json").write_text("1", encoding="utf-8")
+    assert runner.save(before, "T-1", "chore: T-1", "review") is True
+    assert g("log", "--format=%s", "-1").strip() == "init"
+    assert runner.claims() == {"T-1": {"gen.txt", "mio.py"}}
+    assert runner.save(runner.snapshot(), "T-1", "chore: T-1", "done") is True
+    assert _committed(g) == ["board/board.json", "gen.txt", "mio.py"]
+
+
 def test_git_retry_supera_un_bloqueo_pasajero(repo, monkeypatch):
     root, g = repo
     before = runner.snapshot()

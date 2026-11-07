@@ -293,8 +293,16 @@ def commit_own(before, msg, tid=None):
     return files
 
 
-def save(before, tid, msg):
-    """Guarda y sube la tarjeta. Si git falla lo deja anotado en ella: sus ficheros siguen apuntados y entran en su siguiente commit."""
+FINAL = ("done", "blocked", "human")  # estados que cierran la tarjeta: solo entonces hay commit
+
+
+def save(before, tid, msg, new=None):
+    """Guarda y sube la tarjeta. Si git falla lo deja anotado en ella: sus ficheros siguen apuntados y entran en su siguiente commit.
+    Si `new` es un estado intermedio (review, next…) no hay commit: lo cambiado se apunta y entra en el commit final de la tarjeta."""
+    if new is not None and new not in FINAL:
+        after = snapshot()
+        claim(tid, sorted(p for p, v in after.items() if before.get(p) != v and p != "board/board.json"))
+        return True
     try:
         commit_own(before, msg, tid)
     except GitError as e:
@@ -658,7 +666,7 @@ def main():
                         if a["id"] == "tester" and a.get("current") == tid:
                             a.update(status="idle", current=None)
                 bd.update(free)
-            save(before, tid, f"chore(runner): {tid} {verdict} by {agent}")
+            save(before, tid, f"chore(runner): {tid} {verdict} by {agent}", new)
             print(f"  → {new} en {r['secs'] / 60:.1f} min · {summary}")
 
             if verdict in ("limit", "cut"):  # sin fallo contado; parar hasta el reset (la ejecución programada reintenta)

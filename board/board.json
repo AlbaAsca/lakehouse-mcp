@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-07T18:36:00+01:00",
+  "updated": "2026-11-07T18:37:42+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -10400,26 +10400,48 @@
       "id": "T-186",
       "title": "Un commit por tarjeta terminada, no por cada cambio de estado",
       "owner": "desarrollador",
-      "status": "next",
+      "status": "review",
       "priority": "alta",
       "estimate_min": 30.0,
-      "actual_min": null,
+      "actual_min": 1.6,
       "auto": true,
       "manual": null,
       "desc": "Hoy el runner sube un commit a develop por cada cambio de estado, y cada uno lanza una CI larga que casi siempre se cancela. Se propone agrupar: un commit cuando la tarjeta llega a hecho o fallo, y los cambios intermedios solo en el panel local. Cómo sabremos si funciona: una tarjeta normal genera un único commit en develop. ## Técnico: board/runner.py save() en las líneas de chore(runner).",
       "deps": [],
       "created": "2026-11-07T18:15:54+01:00",
-      "updated": "2026-11-07T18:16:02+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-07T18:37:42+01:00",
+      "started_at": "2026-11-07T18:36:04+01:00",
+      "finished_at": "2026-11-07T18:37:42+01:00",
       "log": [
         {
           "t": "2026-11-07T18:15:54+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-07T18:36:04+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-07T18:37:42+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: save() solo hace commit y push en estados finales (done/blocked/human); en intermedios apunta los ficheros para el commit final; test nuevo y 39 tests verdes."
         }
       ],
-      "rank": 4
+      "rank": 4,
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-07T18:37:42+01:00",
+          "min": 1.6,
+          "turns": 14,
+          "tokens": 168198,
+          "cost_usd": 0.1286791,
+          "verdict": "review"
+        }
+      ]
     },
     {
       "id": "T-187",
@@ -10567,14 +10589,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-185",
-      "message": "tester con T-185",
+      "current": "T-186",
+      "message": "desarrollador con T-186",
       "pid": 21320,
-      "heartbeat": "2026-11-07T18:35:28+01:00",
+      "heartbeat": "2026-11-07T18:36:04+01:00",
       "enabled": true,
-      "agent": "tester",
-      "started": "2026-11-07T18:35:28+01:00",
-      "live": "live-T-185-tester-20261107-183528.jsonl"
+      "agent": "desarrollador",
+      "started": "2026-11-07T18:36:04+01:00",
+      "live": "live-T-186-desarrollador-20261107-183604.jsonl"
     }
   }
 }
