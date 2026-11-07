@@ -69,7 +69,10 @@ class AgentIT {
     @DynamicPropertySource
     static void theRealServer(DynamicPropertyRegistry registry) throws Exception {
         registry.add("MCP_SERVER_URL", startTheServer());
+        registry.add("agent.mcp.analyst-key", () -> ANALYST_KEY);
     }
+
+    private static final String ANALYST_KEY = "analyst-it-key";
 
     private static java.util.function.Supplier<Object> startTheServer() throws Exception {
         LakehouseStack stack = LakehouseStack.shared();
@@ -90,7 +93,9 @@ class AgentIT {
                         "POLARIS_CLIENT_SECRET", LakehouseStack.CLIENT_SECRET,
                         "S3_ACCESS_KEY", LakehouseStack.S3_ACCESS_KEY,
                         "S3_SECRET_KEY", LakehouseStack.S3_SECRET_KEY,
-                        "S3_REGION", LakehouseStack.S3_REGION))
+                        "S3_REGION", LakehouseStack.S3_REGION,
+                        "MCP_ANALYST_KEY", ANALYST_KEY,
+                        "MCP_ADMIN_KEY", "admin-it-key"))
                 .withExposedPorts(PORT)
                 .waitingFor(Wait.forHealthcheck().withStartupTimeout(Duration.ofMinutes(3)));
         server.start();
