@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-07T16:11:31+01:00",
+  "updated": "2026-11-07T16:13:30+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -2537,7 +2537,7 @@
       "id": "T-031",
       "title": "Semántica: métricas en YAML que coincidan con la referencia",
       "owner": "desarrollador",
-      "status": "review",
+      "status": "done",
       "priority": "alta",
       "estimate_min": 35.0,
       "actual_min": 4.4,
@@ -2549,7 +2549,7 @@
         "T-016"
       ],
       "created": "2026-11-02T11:37:59+01:00",
-      "updated": "2026-11-07T16:11:31+01:00",
+      "updated": "2026-11-07T16:13:30+01:00",
       "started_at": "2026-11-07T16:07:09+01:00",
       "finished_at": "2026-11-07T16:11:31+01:00",
       "log": [
@@ -2567,6 +2567,16 @@
           "t": "2026-11-07T16:11:31+01:00",
           "by": "desarrollador",
           "msg": "REVIEW: las cuatro métricas YAML y `MetricCatalog` coinciden con la referencia en el total y en cada día; los tests del módulo `semantic` pasan."
+        },
+        {
+          "t": "2026-11-07T16:11:40+01:00",
+          "by": "tester",
+          "msg": "verificando"
+        },
+        {
+          "t": "2026-11-07T16:13:30+01:00",
+          "by": "tester",
+          "msg": "DONE: las 4 métricas YAML coinciden con la referencia en total y por día, y los tests del módulo semantic pasan (9 unitarios y 3 de integración)."
         }
       ],
       "runs": [
@@ -2579,8 +2589,19 @@
           "tokens": 638009,
           "cost_usd": 0.5364221,
           "verdict": "review"
+        },
+        {
+          "agent": "tester",
+          "mode": "verify",
+          "at": "2026-11-07T16:13:30+01:00",
+          "min": 1.8,
+          "turns": 9,
+          "tokens": 133846,
+          "cost_usd": 0.1124029,
+          "verdict": "done"
         }
-      ]
+      ],
+      "verify_started": "2026-11-07T16:11:40+01:00"
     },
     {
       "id": "T-032",
@@ -9288,13 +9309,13 @@
     "measure": {
       "state": "working",
       "current": "T-031",
-      "message": "desarrollador con T-031",
+      "message": "tester con T-031",
       "pid": 19764,
-      "heartbeat": "2026-11-07T16:07:10+01:00",
+      "heartbeat": "2026-11-07T16:11:41+01:00",
       "enabled": true,
-      "agent": "desarrollador",
-      "started": "2026-11-07T16:07:09+01:00",
-      "live": "live-T-031-desarrollador-20261107-160709.jsonl"
+      "agent": "tester",
+      "started": "2026-11-07T16:11:41+01:00",
+      "live": "live-T-031-tester-20261107-161141.jsonl"
     }
   }
 }
