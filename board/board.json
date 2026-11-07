@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-07T15:27:16+01:00",
+  "updated": "2026-11-07T15:27:57+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -7735,7 +7735,7 @@
       "id": "T-144",
       "title": "La portada de la wiki no menciona la lectura del catálogo del servidor",
       "owner": "desarrollador",
-      "status": "review",
+      "status": "blocked",
       "priority": "baja",
       "estimate_min": 3.0,
       "actual_min": null,
@@ -7744,7 +7744,7 @@
       "desc": "La tabla de estado de la portada de la wiki dice qué existe ya en el servidor, y cita la conexión y el validador, pero no la lectura del catálogo, que ya funciona. Quien la lea cree que el servidor tiene menos de lo que tiene. Se propone añadirla a esa línea con un enlace a su explicación.\nCómo sabremos si funciona: la línea del servidor en la portada nombra la lectura del catálogo y su enlace lleva a la sección correcta.\n## Técnico\ndocs/wiki/README.md línea 39: añadir CatalogReader (T-017) con enlace a componentes/duckdb.md#dentro-del-servidor-mcp. Solo documentación, sin tests.",
       "deps": [],
       "created": "2026-11-03T10:26:11+01:00",
-      "updated": "2026-11-07T15:22:12+01:00",
+      "updated": "2026-11-07T15:27:57+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -7762,6 +7762,39 @@
           "t": "2026-11-07T15:22:12+01:00",
           "by": "consultor",
           "msg": "portada: servidor MCP y DuckDB enlazan la lectura del catálogo; tabla de estado simplificada"
+        },
+        {
+          "t": "2026-11-07T15:27:23+01:00",
+          "by": "tester",
+          "msg": "verificando"
+        },
+        {
+          "t": "2026-11-07T15:27:57+01:00",
+          "by": "tester",
+          "msg": "BLOCKED: la portada nombra la lectura del catálogo con un enlace válido (test nuevo en verde); el enlace roto de `evals.md` queda registrado como T-177."
+        },
+        {
+          "t": "2026-11-07T15:27:57+01:00",
+          "by": "tester",
+          "msg": "⚠ 1 comandos denegados: python board/board.py add \"Un enlace roto de la wiki impide publicarla\" --owner "
+        },
+        {
+          "t": "2026-11-07T15:27:57+01:00",
+          "by": "runner",
+          "msg": "✗ «python board/board.py add \"Un enlace roto de la wiki impide publicarla\" --owner desarrolla»: varios comandos, tuberías, redirecciones o heredoc: lanza cada comando por separado y crea ficheros con Write/Edit"
+        }
+      ],
+      "verify_started": "2026-11-07T15:27:23+01:00",
+      "runs": [
+        {
+          "agent": "tester",
+          "mode": "verify",
+          "at": "2026-11-07T15:27:57+01:00",
+          "min": 0.5,
+          "turns": 12,
+          "tokens": 173761,
+          "cost_usd": 0.1300597,
+          "verdict": "blocked"
         }
       ]
     },
@@ -8826,6 +8859,30 @@
           "msg": "descripción reescrita"
         }
       ]
+    },
+    {
+      "id": "T-177",
+      "title": "Un enlace roto de la wiki impide publicarla",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "media",
+      "estimate_min": 5.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "La página de evals de la wiki enlaza mal al script de la verdad de referencia de calidad, y el test que convierte la wiki real falla, así que no se podría publicar. Se propone corregir la ruta relativa del enlace.\nCómo sabremos si funciona: el test test_la_wiki_real_se_convierte pasa en verde.\n## Técnico\ndocs/wiki/componentes/evals.md usa ../../evals/truth/compute_quality_truth.py; debe ser ../../../evals/truth/compute_quality_truth.py (el fichero existe). Reproducir: python -m pytest tests/test_publish_wiki.py",
+      "deps": [],
+      "created": "2026-11-07T15:27:52+01:00",
+      "updated": "2026-11-07T15:27:52+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-07T15:27:52+01:00",
+          "by": "tester",
+          "msg": "creada"
+        }
+      ]
     }
   ],
   "runners": {
@@ -8844,14 +8901,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-171",
-      "message": "tester con T-171",
+      "current": "T-144",
+      "message": "tester con T-144",
       "pid": 19764,
-      "heartbeat": "2026-11-07T15:21:20+01:00",
+      "heartbeat": "2026-11-07T15:27:24+01:00",
       "enabled": true,
       "agent": "tester",
-      "started": "2026-11-07T15:21:20+01:00",
-      "live": "live-T-171-tester-20261107-152120.jsonl"
+      "started": "2026-11-07T15:27:24+01:00",
+      "live": "live-T-144-tester-20261107-152724.jsonl"
     }
   }
 }
