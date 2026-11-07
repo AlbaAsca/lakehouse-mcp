@@ -118,7 +118,7 @@ Detalles de comillas y del arranque en [Operación](../04-operacion.md#preguntar
 - **Servidor MCP caído.** El agente no arranca y suelta una traza larga de Spring que termina en `Client failed to initialize`.
 - **Coste.** Cada vuelta del bucle se paga con Claude y gasta cuota con Gemini, de ahí el tope y una [evaluación acotada](../../architecture.md#decisiones) (decisión 17).
 - **Inventar cifras.** Las instrucciones lo prohíben, pero nada lo garantiza todavía: lo medirán las evals.
-- **SQL libre del modelo.** Esta versión no tiene aún `get_metric`: el modelo escribe su SQL, que pasa por el [validador](servidor-mcp.md#el-validador-de-sql). Las métricas llegan con T-034.
+- **SQL libre del modelo.** Las instrucciones piden usar `list_metrics`/`get_metric` para las preguntas de negocio y `run_query` solo si ninguna métrica encaja (T-034), pero nada obliga al modelo: si escribe su SQL, pasa por el [validador](servidor-mcp.md#el-validador-de-sql). Un test con modelo simulado comprueba que la llamada a `get_metric` llega al servidor real y su resultado a la respuesta; que un modelo real la prefiera lo medirán las evals.
 - **Depender de un modelo.** Los tests usan un modelo simulado, así que no detectan cambios en la API del proveedor.
 
 ## Para saber más

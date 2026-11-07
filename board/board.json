@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-07T16:38:49+01:00",
+  "updated": "2026-11-07T16:46:15+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -2721,10 +2721,10 @@
       "id": "T-034",
       "title": "Agente: cliente Spring AI que responde preguntas por MCP",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "review",
       "priority": "alta",
       "estimate_min": 20.0,
-      "actual_min": null,
+      "actual_min": 7.3,
       "auto": true,
       "manual": null,
       "desc": "Con la primera versión ya contestando por consultas, falta lo que hace fiable al agente: que para las preguntas de negocio use las métricas definidas, en vez de improvisar su propio cálculo.\nCómo sabremos si funciona: con un modelo simulado que pide una métrica, el agente hace la llamada real y su resultado llega al modelo y a la respuesta.\n\n## Técnico\nEl cliente, la entrada ask y el tope de iteraciones están en T-094. Aquí: system prompt en recursos que prefiere get_metric sobre SQL, y test con ChatModel simulado que pide get_metric contra servidor MCP real, en ./mk test y sin clave de API. Actualizar docs/wiki/componentes de agente. Título pendiente de ajustar en el panel: ver docs/architecture.md, sección Recorrido mínimo.",
@@ -2733,9 +2733,9 @@
         "T-021"
       ],
       "created": "2026-11-02T11:38:12+01:00",
-      "updated": "2026-11-02T17:37:10+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-07T16:46:15+01:00",
+      "started_at": "2026-11-07T16:38:56+01:00",
+      "finished_at": "2026-11-07T16:46:15+01:00",
       "log": [
         {
           "t": "2026-11-02T11:38:12+01:00",
@@ -2751,6 +2751,28 @@
           "t": "2026-11-02T17:37:10+01:00",
           "by": "arquitecto",
           "msg": "descripción reescrita"
+        },
+        {
+          "t": "2026-11-07T16:38:56+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-07T16:46:15+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: prompt que prefiere get_metric, test AgentIT con modelo simulado contra el servidor real, wiki actualizada y tests del módulo agent sin errores."
+        }
+      ],
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-07T16:46:15+01:00",
+          "min": 7.3,
+          "turns": 24,
+          "tokens": 483797,
+          "cost_usd": 0.2643085,
+          "verdict": "review"
         }
       ]
     },
@@ -9380,14 +9402,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-033",
-      "message": "tester con T-033",
+      "current": "T-034",
+      "message": "desarrollador con T-034",
       "pid": 19764,
-      "heartbeat": "2026-11-07T16:32:14+01:00",
+      "heartbeat": "2026-11-07T16:38:57+01:00",
       "enabled": true,
-      "agent": "tester",
-      "started": "2026-11-07T16:32:14+01:00",
-      "live": "live-T-033-tester-20261107-163214.jsonl"
+      "agent": "desarrollador",
+      "started": "2026-11-07T16:38:57+01:00",
+      "live": "live-T-034-desarrollador-20261107-163857.jsonl"
     }
   }
 }

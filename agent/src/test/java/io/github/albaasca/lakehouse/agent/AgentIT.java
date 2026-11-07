@@ -8,6 +8,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.github.albaasca.lakehouse.testkit.LakehouseStack;
 import io.github.albaasca.lakehouse.testkit.SyntheticLoader;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -84,6 +85,7 @@ class AgentIT {
                 .withNetwork(stack.network())
                 .withEnv(Map.of(
                         "MCP_SERVER_ADDRESS", "0.0.0.0",
+                        "PIPELINE_NAMESPACE", NS,
                         "POLARIS_CLIENT_ID", LakehouseStack.CLIENT_ID,
                         "POLARIS_CLIENT_SECRET", LakehouseStack.CLIENT_SECRET,
                         "S3_ACCESS_KEY", LakehouseStack.S3_ACCESS_KEY,
@@ -127,6 +129,30 @@ class AgentIT {
     }
 
     @Test
+    void aMetricTheModelAsksForIsComputedByTheRealServerAndReachesTheAnswer() throws Exception {
+        JsonNode truth = JSON.readTree(Files.readString(
+                LakehouseStack.repositoryRoot().resolve("evals/truth/metrics.json")));
+        long orders = truth.get("total").get("average_ticket").get("orders").asLong();
+        model().script(prompt -> model().prompts.size() == 1
+                ? callsTool("get_metric", "{\"name\":\"average_ticket\"}")
+                : says("There were " + metricValue(toolJson(lastToolResponse(prompt)), "orders") + " orders.\n"
+                        + "Source: get_metric average_ticket"));
+
+        Agent.Answer answer = agent.ask("What is the average ticket?");
+
+        assertThat(orders).isPositive();
+        assertThat(answer.outcome()).isEqualTo(Agent.Outcome.ANSWERED);
+        assertThat(answer.text()).isEqualTo("There were " + orders + " orders.\nSource: get_metric average_ticket");
+        assertThat(toolJson(lastToolResponse(model().prompts.getLast())).get("definition").get("description").asString())
+                .isNotBlank();
+    }
+
+    private static long metricValue(JsonNode metric, String column) {
+        int index = metric.get("columns").valueStream().map(JsonNode::asString).toList().indexOf(column);
+        return metric.get("rows").get(0).get(index).asLong();
+    }
+
+    @Test
     void theModelIsOfferedTheServerToolsAndTheSystemPrompt() {
         model().script(prompt -> says("Nothing to look up"));
 
@@ -136,8 +162,8 @@ class AgentIT {
         assertThat(((ToolCallingChatOptions) prompt.getOptions()).getToolCallbacks())
                 .extracting(callback -> callback.getToolDefinition().name())
                 .containsExactlyInAnyOrder("list_tables", "describe_table", "run_query", "time_travel",
-                        "pipeline_health", "data_quality_check");
-        assertThat(prompt.getSystemMessage().getText()).contains("Never invent");
+                        "pipeline_health", "data_quality_check", "list_metrics", "get_metric");
+        assertThat(prompt.getSystemMessage().getText()).contains("Never invent").contains("get_metric");
     }
 
     @Test
