@@ -16,6 +16,9 @@ DOCKERIGNORE = (ROOT / ".dockerignore").read_text(encoding="utf-8")
 ARCHITECTURE = (ROOT / "docs/architecture.md").read_text(encoding="utf-8")
 
 
+OPS_FIXED = {"OPS_DB_URL": "jdbc:postgresql://postgres:5432/ops", "OPS_DB_USER": "polaris"}
+
+
 def service(text=None):
     match = re.search(r"^  mcp-server:\n((?:(?:    .*)?\n)+?)(?=^  \S|^\S)", text or COMPOSE, re.MULTILINE)
     assert match, "mcp-server is not a service of compose.yaml"
@@ -62,13 +65,20 @@ def test_the_service_passes_every_variable_the_server_requires():
 
 def test_the_required_variables_come_from_the_env_example():
     for name, value in compose_environment().items():
-        if name != "MCP_SERVER_ADDRESS":
+        if name in OPS_FIXED:
+            assert value == OPS_FIXED[name]
+        elif name == "OPS_DB_PASSWORD":
+            # The ops database shares the postgres password, with the same default as the postgres service.
+            assert value == "${POSTGRES_PASSWORD:-change-me-postgres}"
+            assert re.search(r"^POSTGRES_PASSWORD=\S", ENV_EXAMPLE, re.MULTILINE)
+        elif name != "MCP_SERVER_ADDRESS":
             assert value == f"${{{name}}}"
             assert re.search(rf"^{name}=\S", ENV_EXAMPLE, re.MULTILINE), f"{name} is not in .env.example"
 
 
 def test_the_image_test_runs_the_same_variables_as_the_service():
-    assert sorted(it_environment()) == sorted(compose_environment())
+    # The image test runs without the ops database (optional: the server starts without OPS_DB_URL).
+    assert sorted(it_environment()) == sorted(n for n in compose_environment() if not n.startswith("OPS_DB_"))
     assert compose_environment()["MCP_SERVER_ADDRESS"] == "0.0.0.0"
     assert '"MCP_SERVER_ADDRESS", "0.0.0.0"' in IT
 
