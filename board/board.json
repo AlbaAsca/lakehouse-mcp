@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-07T17:11:18+01:00",
+  "updated": "2026-11-07T17:14:40+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -2915,7 +2915,7 @@
       "id": "T-036",
       "title": "Agente: investigar por qué cayeron las compras",
       "owner": "desarrollador",
-      "status": "review",
+      "status": "done",
       "priority": "alta",
       "estimate_min": 35.0,
       "actual_min": 4.8,
@@ -2928,7 +2928,7 @@
         "T-022"
       ],
       "created": "2026-11-02T11:38:28+01:00",
-      "updated": "2026-11-07T17:11:18+01:00",
+      "updated": "2026-11-07T17:14:40+01:00",
       "started_at": "2026-11-07T17:06:28+01:00",
       "finished_at": "2026-11-07T17:11:18+01:00",
       "log": [
@@ -2946,6 +2946,16 @@
           "t": "2026-11-07T17:11:18+01:00",
           "by": "desarrollador",
           "msg": "REVIEW: guía de investigación añadida al prompt del sistema y 2 tests nuevos en verde (orden de pasos y caída plantada: día y marca)."
+        },
+        {
+          "t": "2026-11-07T17:11:25+01:00",
+          "by": "tester",
+          "msg": "verificando"
+        },
+        {
+          "t": "2026-11-07T17:14:40+01:00",
+          "by": "tester",
+          "msg": "DONE: guía de investigación verificada: tests del módulo agent en verde, orden de pasos y caída plantada (día y marca) confirmados."
         }
       ],
       "runs": [
@@ -2958,8 +2968,19 @@
           "tokens": 424430,
           "cost_usd": 0.26249079999999997,
           "verdict": "review"
+        },
+        {
+          "agent": "tester",
+          "mode": "verify",
+          "at": "2026-11-07T17:14:40+01:00",
+          "min": 3.2,
+          "turns": 11,
+          "tokens": 163567,
+          "cost_usd": 0.1266432,
+          "verdict": "done"
         }
-      ]
+      ],
+      "verify_started": "2026-11-07T17:11:25+01:00"
     },
     {
       "id": "T-037",
@@ -9534,13 +9555,13 @@
     "measure": {
       "state": "working",
       "current": "T-036",
-      "message": "desarrollador con T-036",
+      "message": "tester con T-036",
       "pid": 19764,
-      "heartbeat": "2026-11-07T17:06:30+01:00",
+      "heartbeat": "2026-11-07T17:11:26+01:00",
       "enabled": true,
-      "agent": "desarrollador",
-      "started": "2026-11-07T17:06:29+01:00",
-      "live": "live-T-036-desarrollador-20261107-170629.jsonl"
+      "agent": "tester",
+      "started": "2026-11-07T17:11:26+01:00",
+      "live": "live-T-036-tester-20261107-171126.jsonl"
     }
   }
 }
