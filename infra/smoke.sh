@@ -3,6 +3,13 @@
 set -eu
 curl -fsS http://schema-registry:8081/subjects >/dev/null && echo "schema-registry ok"
 curl -fsS http://connect:8083/connector-plugins | jq -e 'map(.class)|index("org.apache.iceberg.connect.IcebergSinkConnector")' >/dev/null && echo "iceberg sink plugin ok"
+# The container stays healthy with a FAILED task (T-141): rows would pile up in the topic without anyone noticing.
+curl -fsS 'http://connect:8083/connectors?expand=status' | jq -er '
+  [to_entries[] | .key as $n | .value.status | ([.connector] + (if (.tasks | length) == 0 then [{id: "-", state: "NO TASKS"}] else .tasks end))[]
+   | select(.state != "RUNNING") | "\($n) \(.id // "connector"): \(.state) \((.trace // "") | split("\n")[0])"] as $bad
+  | if length == 0 then error("no connectors registered: run ./mk up")
+    elif ($bad | length) > 0 then error(($bad | join("\n")) + "\nrestart: ./mk up (connect-init restarts failed tasks)")
+    else "connectors running: \(keys | join(", "))" end'
 duckdb -c "
 INSTALL iceberg; LOAD iceberg; INSTALL httpfs; LOAD httpfs;
 CREATE SECRET s3 (TYPE s3, KEY_ID '$S3_ACCESS_KEY', SECRET '$S3_SECRET_KEY', REGION '$S3_REGION', ENDPOINT 'seaweedfs:8333', URL_STYLE 'path', USE_SSL false);

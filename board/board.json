@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-07T15:03:13+01:00",
+  "updated": "2026-11-07T15:06:18+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -4335,6 +4335,11 @@
           "t": "2026-11-02T17:30:26+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-07T15:06:08+01:00",
+          "by": "consultor",
+          "msg": "T-141 ya hace que ./mk smoke falle si un conector o tarea no está RUNNING (o no hay tareas). Revisar si queda algo por hacer aquí o cerrarla."
         }
       ]
     },
@@ -7582,18 +7587,18 @@
       "id": "T-141",
       "title": "El conector hacia la tabla se muere tras una pausa del equipo y no vuelve solo",
       "owner": "desarrollador",
-      "status": "next",
+      "status": "review",
       "priority": "alta",
       "estimate_min": 30.0,
-      "actual_min": null,
+      "actual_min": 3.0,
       "auto": true,
       "manual": null,
       "desc": "Con el stack levantado, la parte del conector que escribe en la tabla lleva parada desde antes de cargar la muestra, así que las filas enviadas se quedan en la cola y no llegan a la tabla. Nada lo avisa: el servicio sigue marcado como sano y solo un reinicio manual lo levantaría. Se propone que el conector se recupere solo o que el arranque y la comprobación del stack lo detecten, porque la demo depende de este tramo y T-092 y T-097 lo necesitan.\nCómo sabremos si funciona: tras una pausa o reinicio de Kafka, una carga de la muestra termina con todas sus filas en la tabla, o el fallo se avisa claramente.\n\n## Técnico\nVisto al verificar T-091. Tarea iceberg-sink-0 en FAILED desde 2026-11-02 21:33:03 (conector RUNNING, contenedor healthy): ConnectException 'Cannot retrieve members for consumer group: connect-iceberg-sink', causa GroupIdNotFoundException, en CommitterImpl.hasLeaderPartition <- close <- onPartitionsLost (iceberg-kafka-connect 1.12.0). Hipótesis sin confirmar: sesión perdida con el PC suspendido, y el grupo no existe porque el sink nunca confirmó offsets con el topic vacío. Datos: ecommerce.events con end offset 50000 y sin grupo connect-iceberg-sink en kafka-consumer-groups --all-groups. Relacionada con T-078 (la comprobación rápida no detecta un conector roto). Criterio: reproducir la pérdida de sesión con el topic vacío (por ejemplo docker pause de connect más allá del timeout), y después de ella 50.000 filas en la tabla sin reinicio manual, o estado de error visible en ./mk smoke o ./mk up. Para hacerlo limpio: docker compose down -v antes de medir.",
       "deps": [],
       "created": "2026-11-03T10:04:50+01:00",
-      "updated": "2026-11-07T14:40:42+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-07T15:06:18+01:00",
+      "started_at": "2026-11-07T15:03:20+01:00",
+      "finished_at": "2026-11-07T15:06:18+01:00",
       "log": [
         {
           "t": "2026-11-03T10:04:50+01:00",
@@ -7609,6 +7614,33 @@
           "t": "2026-11-07T14:40:42+01:00",
           "by": "consultor",
           "msg": "Versión 0.1.0"
+        },
+        {
+          "t": "2026-11-07T15:03:20+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-07T15:06:02+01:00",
+          "by": "consultor",
+          "msg": "Hecho: connect/register.sh, tras el PUT, pide POST /connectors/<name>/restart?includeTasks=true&onlyFailed=true (reintenta 404/409/5xx; si no, solo avisa) -> ./mk up revive la tarea FAILED. infra/smoke.sh falla con nombre, estado y 1a linea del trace si un conector o tarea no esta RUNNING (o no hay tareas/conectores). Tests: tests/test_connect_register.py (+4) y tests/test_smoke.py (nuevo, jq real, se salta sin jq). SIN PROBAR en el stack: no tengo permiso para docker pause/compose down -v ni ./mk up|smoke; falta que el tester reproduzca (down -v, up, docker pause connect > session timeout, unpause, ./mk smoke debe fallar; ./mk up y carga de muestra -> 50000 filas). No arregla la causa (GroupIdNotFound en onPartitionsLost de iceberg-kafka-connect 1.12.0): la tarea sigue muriendo, pero se detecta y ./mk up la recupera. Para la wiki (kafka-connect.md, 04-operacion.md): sintoma tarea FAILED con contenedor sano, remedio ./mk up; smoke ahora comprueba estado del conector."
+        },
+        {
+          "t": "2026-11-07T15:06:18+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: `./mk smoke` avisa de un conector o tarea caídos y `./mk up` reinicia las tareas caídas; tests en verde, falta reproducirlo en el stack real."
+        }
+      ],
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-07T15:06:18+01:00",
+          "min": 3.0,
+          "turns": 26,
+          "tokens": 441249,
+          "cost_usd": 0.5872561999999999,
+          "verdict": "review"
         }
       ]
     },
@@ -8718,14 +8750,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-133",
-      "message": "tester con T-133",
+      "current": "T-141",
+      "message": "desarrollador con T-141",
       "pid": 19764,
-      "heartbeat": "2026-11-07T15:02:46+01:00",
+      "heartbeat": "2026-11-07T15:03:20+01:00",
       "enabled": true,
-      "agent": "tester",
-      "started": "2026-11-07T15:02:46+01:00",
-      "live": "live-T-133-tester-20261107-150246.jsonl"
+      "agent": "desarrollador",
+      "started": "2026-11-07T15:03:20+01:00",
+      "live": "live-T-141-desarrollador-20261107-150320.jsonl"
     }
   }
 }
