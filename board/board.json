@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-07T15:21:10+01:00",
+  "updated": "2026-11-07T15:27:16+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -7735,7 +7735,7 @@
       "id": "T-144",
       "title": "La portada de la wiki no menciona la lectura del catálogo del servidor",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "review",
       "priority": "baja",
       "estimate_min": 3.0,
       "actual_min": null,
@@ -7744,7 +7744,7 @@
       "desc": "La tabla de estado de la portada de la wiki dice qué existe ya en el servidor, y cita la conexión y el validador, pero no la lectura del catálogo, que ya funciona. Quien la lea cree que el servidor tiene menos de lo que tiene. Se propone añadirla a esa línea con un enlace a su explicación.\nCómo sabremos si funciona: la línea del servidor en la portada nombra la lectura del catálogo y su enlace lleva a la sección correcta.\n## Técnico\ndocs/wiki/README.md línea 39: añadir CatalogReader (T-017) con enlace a componentes/duckdb.md#dentro-del-servidor-mcp. Solo documentación, sin tests.",
       "deps": [],
       "created": "2026-11-03T10:26:11+01:00",
-      "updated": "2026-11-03T10:26:18+01:00",
+      "updated": "2026-11-07T15:22:12+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -7757,6 +7757,11 @@
           "t": "2026-11-03T10:26:18+01:00",
           "by": "consultor",
           "msg": "descripción reescrita"
+        },
+        {
+          "t": "2026-11-07T15:22:12+01:00",
+          "by": "consultor",
+          "msg": "portada: servidor MCP y DuckDB enlazan la lectura del catálogo; tabla de estado simplificada"
         }
       ]
     },
@@ -8386,7 +8391,7 @@
       "id": "T-165",
       "title": "La guía dice que preguntar sin clave termina con código 5, pero el comando devuelve 2",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "review",
       "priority": "baja",
       "estimate_min": 10.0,
       "actual_min": null,
@@ -8395,7 +8400,7 @@
       "desc": "Al lanzar la pregunta al agente sin clave, el mensaje es claro, pero el comando que usa la gente devuelve el código 2 (el de make al fallar), no el 5 que promete la guía de operación. Quien automatice algo mirando ese código se llevará una sorpresa. Se propone o bien propagar el código del agente, o bien corregir la guía para que diga lo que pasa de verdad.«\n»Cómo sabremos si funciona: lo que la guía dice sobre el código de salida coincide con lo que devuelve el comando al probarlo sin clave.«\n»## Técnico«\n»Reproducir (T-096): ./mk ask \"Q=hola\" GEMINI_API_KEY=  → stderr 'GEMINI_API_KEY is missing in .env', 'make: *** [Makefile:47: ask] Error 5', exit 2. docs/wiki/04-operacion.md (Preguntar al agente, 'Sin clave: termina con código 5') y la tabla de docs/wiki/componentes/agente.md#cómo-termina. Opción: corregir docs (el 5 es del contenedor; ./mk devuelve 2). Propagar exige que make salga con ese código, que GNU make no hace.",
       "deps": [],
       "created": "2026-11-06T23:40:11+01:00",
-      "updated": "2026-11-06T23:40:11+01:00",
+      "updated": "2026-11-07T15:21:18+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -8408,6 +8413,11 @@
           "t": "2026-11-07T15:20:27+01:00",
           "by": "consultor",
           "msg": "Corregido en 04-operacion.md y agente.md: el código de salida sin clave es 2."
+        },
+        {
+          "t": "2026-11-07T15:21:18+01:00",
+          "by": "consultor",
+          "msg": "código de salida corregido a 2"
         }
       ]
     },
@@ -8505,7 +8515,7 @@
       "id": "T-169",
       "title": "Borrar la carpeta del benchmark y la página de Trino que quedaron",
       "owner": "consultor",
-      "status": "backlog",
+      "status": "review",
       "priority": "media",
       "estimate_min": 2.0,
       "actual_min": null,
@@ -8514,7 +8524,7 @@
       "desc": "Al retirar Trino y el benchmark quedaron dos ficheros que el desarrollador no pudo borrar por falta de permiso: la carpeta del benchmark (solo su pom) y la página de Trino en la wiki. Ya nada los enlaza ni los construye, pero quien los vea puede creer que el benchmark existe. Hay que borrarlos.«\n»Cómo sabremos si funciona: no quedan esos ficheros en el repositorio y el test que lo comprueba pasa de «fallo esperado» a pasar, quitándole la marca.«\n»## Técnico«\n»git rm -r bench docs/wiki/componentes/trino.md (bench/target es local, sin seguimiento). Después quitar @pytest.mark.xfail de test_removed_files_are_gone y la entrada trino.md de ALLOWED en tests/test_no_trino.py; ./mk test-board en verde. Opcional: docs/spike-duckdb-iceberg.md:157 y :173 siguen hablando de Trino como pendiente; añadir una nota de que T-087/T-108 lo retiró.",
       "deps": [],
       "created": "2026-11-07T00:42:24+01:00",
-      "updated": "2026-11-07T00:42:24+01:00",
+      "updated": "2026-11-07T15:21:18+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -8527,6 +8537,11 @@
           "t": "2026-11-07T15:20:27+01:00",
           "by": "consultor",
           "msg": "Pendiente: git rm bench/ y docs/wiki/componentes/trino.md (borrado denegado en esta sesión; hazlo tú)."
+        },
+        {
+          "t": "2026-11-07T15:21:18+01:00",
+          "by": "consultor",
+          "msg": "bench y página de Trino borrados"
         }
       ]
     },
@@ -8558,7 +8573,7 @@
       "id": "T-171",
       "title": "La integración continua está en rojo: el servidor MCP no arranca sin Kafka",
       "owner": "desarrollador",
-      "status": "review",
+      "status": "done",
       "priority": "alta",
       "estimate_min": 25.0,
       "actual_min": 12.8,
@@ -8567,7 +8582,7 @@
       "desc": "Desde el último commit, la CI falla en Java: el servidor MCP intenta hablar con Kafka al arrancar para la salud del pipeline, no lo encuentra y no llega a levantarse, y detrás falla el agente. Mientras siga en rojo no se puede subir nada a main. Cómo sabremos si funciona: la CI de develop vuelve a verde, y el servidor arranca aunque Kafka no esté, informando del problema en pipeline_health.\n\n## Técnico\nRun de CI sobre 5e5ee36: TimeoutException Timed out waiting for a node assignment (AdminClient mcp-server-pipeline-health, fetchMetadata), luego Exception encountered during context initialization en mcp-server y en agent. Revisar si los tests de contexto necesitan Kafka o si el cliente debe crearse de forma perezosa. ./mk test MODULE=mcp-server y MODULE=agent.",
       "deps": [],
       "created": "2026-11-07T13:57:53+01:00",
-      "updated": "2026-11-07T15:21:10+01:00",
+      "updated": "2026-11-07T15:27:16+01:00",
       "started_at": "2026-11-07T15:08:22+01:00",
       "finished_at": "2026-11-07T15:21:10+01:00",
       "log": [
@@ -8600,6 +8615,16 @@
           "t": "2026-11-07T15:21:10+01:00",
           "by": "desarrollador",
           "msg": "REVIEW: La CI fallaba porque AgentIT esperaba 4 herramientas y el servidor ya expone 6, no por Kafka; test corregido y `mcp-server` y `agent` en verde en local."
+        },
+        {
+          "t": "2026-11-07T15:21:19+01:00",
+          "by": "tester",
+          "msg": "verificando"
+        },
+        {
+          "t": "2026-11-07T15:27:16+01:00",
+          "by": "tester",
+          "msg": "DONE: AgentIT pasa en local con las 6 herramientas (agent: 8 IT en verde); la CI de develop sigue pendiente de confirmar el verde."
         }
       ],
       "runs": [
@@ -8612,8 +8637,19 @@
           "tokens": 652503,
           "cost_usd": 0.48775120000000005,
           "verdict": "review"
+        },
+        {
+          "agent": "tester",
+          "mode": "verify",
+          "at": "2026-11-07T15:27:16+01:00",
+          "min": 5.9,
+          "turns": 9,
+          "tokens": 119988,
+          "cost_usd": 0.07805450000000001,
+          "verdict": "done"
         }
-      ]
+      ],
+      "verify_started": "2026-11-07T15:21:19+01:00"
     },
     {
       "id": "T-172",
@@ -8809,13 +8845,13 @@
     "measure": {
       "state": "working",
       "current": "T-171",
-      "message": "desarrollador con T-171",
+      "message": "tester con T-171",
       "pid": 19764,
-      "heartbeat": "2026-11-07T15:08:23+01:00",
+      "heartbeat": "2026-11-07T15:21:20+01:00",
       "enabled": true,
-      "agent": "desarrollador",
-      "started": "2026-11-07T15:08:23+01:00",
-      "live": "live-T-171-desarrollador-20261107-150823.jsonl"
+      "agent": "tester",
+      "started": "2026-11-07T15:21:20+01:00",
+      "live": "live-T-171-tester-20261107-152120.jsonl"
     }
   }
 }
