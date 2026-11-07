@@ -194,7 +194,8 @@ def uncommitted():
 def build_prompt(t, mode, agent):
     hist = "\n".join(f"- {l['t'][:16]} {l['by']}: {l['msg']}" for l in t.get("log", [])[-8:])
     if mode == "verify":
-        dirty = [p for p in uncommitted() if not p.startswith("board/")]
+        own = claims().get(t["id"], set())  # lo de esta tarjeta se commitea al cerrarla: se verifica en el árbol de trabajo
+        dirty = [p for p in uncommitted() if not p.startswith("board/") and p not in own]
         head = (f"Eres el TESTER. Verifica la tarea {t['id']} «{t['title']}» que el {t['owner']} ha dejado en Revisión.\n"
                 "Revisa el cambio (git log/diff), pasa los tests del módulo, prueba el comportamiento y añade un test que cubra la tarea si no existe. Mira también la última CI de develop (CLAUDE.md, Tests por niveles).")
         if dirty:
@@ -202,6 +203,9 @@ def build_prompt(t, mode, agent):
                      + ", ".join(dirty[:30])
                      + ". Si el código de la tarjeta depende de alguno (import, referencia, test, config), la verificación FALLA: "
                        "devuelve la tarjeta con un mensaje que nombre ese fichero, porque en una copia limpia no compilaría.")
+        if own:
+            head += ("\n\nLos ficheros de esta tarjeta aún no están commiteados (el runner los guarda al cerrarla): "
+                     "verifícalos en el árbol de trabajo (git status/diff), no los rechaces por eso: " + ", ".join(sorted(own)[:30]))
         states = STATES_QA
     else:
         head = f"Eres el agente «{agent}». Ejecuta la tarea {t['id']}: {t['title']}"
@@ -309,6 +313,7 @@ def commit_own(before, msg, tid=None):
     return files
 
 
+MAX_REJECTS = 3  # rechazos seguidos del tester tras los que la tarjeta se bloquea (T-192)
 FINAL = ("done", "blocked", "human")  # estados que cierran la tarjeta: solo entonces hay commit
 
 
@@ -508,13 +513,26 @@ def finish(tid, mode, agent, r):
             new = {"done": "done", "fail": "next", "human": "human"}.get(verdict, "blocked")
             if new == "next":
                 t["owner"] = "desarrollador"
+                prev = [x for x in t.get("runs", []) if x.get("mode") == "verify"]
+                fails = 0
+                for x in reversed(prev):
+                    if x.get("verdict") != "fail":
+                        break
+                    fails += 1
+                fails += 1  # este rechazo (aún no está en runs)
+                if fails > 1 and prev[-1].get("summary") == summary:
+                    bd.log(t, "runner", f"⚠ rechazo idéntico al anterior ({fails} seguidos)")
+                if fails >= MAX_REJECTS:
+                    new = "blocked"
+                    bd.log(t, "runner", f"Bloqueada tras {fails} rechazos seguidos del tester: "
+                                        f"el desarrollador no avanza. Último motivo: {summary[:200]}")
         else:
             new = {"done": "done", "review": "review", "human": "human"}.get(verdict, "blocked")
             if new == "done" and agent == "desarrollador":
                 new = "review"  # el código siempre lo verifica el tester
         runs = t.setdefault("runs", [])
         runs.append(dict(agent=agent, mode=mode, at=now(), min=round(r["secs"] / 60, 1), turns=r["turns"],
-                         tokens=toks or None, cost_usd=r["cost"], verdict=verdict))
+                         tokens=toks or None, cost_usd=r["cost"], verdict=verdict, summary=summary[:200]))
         if verdict == "human" and summary:
             t["manual"], t["auto"] = summary, False
         bd.set_status(b, t, new, agent, f"{verdict.upper()}: {summary}")
