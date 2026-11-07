@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-07T16:32:05+01:00",
+  "updated": "2026-11-07T16:38:49+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -2646,7 +2646,7 @@
       "id": "T-033",
       "title": "Semántica: herramienta get_metric",
       "owner": "desarrollador",
-      "status": "review",
+      "status": "done",
       "priority": "alta",
       "estimate_min": 25.0,
       "actual_min": 18.5,
@@ -2658,7 +2658,7 @@
         "T-020"
       ],
       "created": "2026-11-02T11:38:06+01:00",
-      "updated": "2026-11-07T16:32:05+01:00",
+      "updated": "2026-11-07T16:38:49+01:00",
       "started_at": "2026-11-07T16:13:37+01:00",
       "finished_at": "2026-11-07T16:32:05+01:00",
       "log": [
@@ -2681,6 +2681,16 @@
           "t": "2026-11-07T16:32:05+01:00",
           "by": "desarrollador",
           "msg": "REVIEW: get_metric y list_metrics en mcp-server, con tests unitarios e integración contra metrics.json en verde."
+        },
+        {
+          "t": "2026-11-07T16:32:13+01:00",
+          "by": "tester",
+          "msg": "verificando"
+        },
+        {
+          "t": "2026-11-07T16:38:49+01:00",
+          "by": "tester",
+          "msg": "DONE: get_metric y list_metrics verificados: tests unitarios e IT en verde, valores iguales a la referencia, métrica inexistente lista las disponibles; la CI roja ya está cubierta por tarjetas existentes."
         }
       ],
       "runs": [
@@ -2693,8 +2703,19 @@
           "tokens": 1554155,
           "cost_usd": 0.6369062,
           "verdict": "review"
+        },
+        {
+          "agent": "tester",
+          "mode": "verify",
+          "at": "2026-11-07T16:38:49+01:00",
+          "min": 6.6,
+          "turns": 13,
+          "tokens": 223035,
+          "cost_usd": 0.18154969999999998,
+          "verdict": "done"
         }
-      ]
+      ],
+      "verify_started": "2026-11-07T16:32:13+01:00"
     },
     {
       "id": "T-034",
@@ -9360,13 +9381,13 @@
     "measure": {
       "state": "working",
       "current": "T-033",
-      "message": "desarrollador con T-033",
+      "message": "tester con T-033",
       "pid": 19764,
-      "heartbeat": "2026-11-07T16:13:38+01:00",
+      "heartbeat": "2026-11-07T16:32:14+01:00",
       "enabled": true,
-      "agent": "desarrollador",
-      "started": "2026-11-07T16:13:37+01:00",
-      "live": "live-T-033-desarrollador-20261107-161337.jsonl"
+      "agent": "tester",
+      "started": "2026-11-07T16:32:14+01:00",
+      "live": "live-T-033-tester-20261107-163214.jsonl"
     }
   }
 }
