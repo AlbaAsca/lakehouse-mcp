@@ -58,10 +58,10 @@ Con el stack levantado y la clave del proveedor en `.env` (`GEMINI_API_KEY` por 
 Arranca el agente en un contenedor solo para esa pregunta (servicio `agent`, perfil `agent`, 1 GB), contesta y termina. La primera vez compila la imagen y tarda unos minutos. Si el servidor MCP no está arriba, lo levanta antes.
 
 - **Comillas:** la pregunta va entera entre comillas dobles. Dentro valen espacios, apóstrofos y comillas dobles escapadas en bash (`\"`); en Windows (`mk.cmd`) no se pueden poner comillas dobles dentro. Evita `$`: `make` lo interpreta antes de pasar la pregunta.
-- **Sin clave:** termina con código 2 y un mensaje que dice cuál falta, por ejemplo `GEMINI_API_KEY is missing in .env`, sin traza de Java.
+- **Sin clave:** la imagen del agente termina con código 5, pero `./mk ask` devuelve 2 (es el código de `make` al fallar un paso; no propaga el 5). El mensaje dice cuál falta, por ejemplo `GEMINI_API_KEY is missing in .env`, sin traza de Java.
 - Los demás códigos de salida están en [la página del agente](componentes/agente.md#cómo-termina).
 
-Estado de la comprobación: la imagen está probada con un modelo simulado (`AgentImageIT`: la pregunta llega entera y la respuesta sale por stdout; sin clave, código 2) y el paso de la pregunta por `make` con un `docker` falso (`tests/test_agent_compose.py`). **Sin probar:** `./mk ask` en el stack con un modelo de verdad (T-097) y `mk.cmd` en Windows.
+Estado de la comprobación: la imagen está probada con un modelo simulado (`AgentImageIT`: la pregunta llega entera y la respuesta sale por stdout; sin clave, código 5) y el paso de la pregunta por `make` con un `docker` falso (`tests/test_agent_compose.py`). **Sin probar:** `./mk ask` en el stack con un modelo de verdad (T-097) y `mk.cmd` en Windows.
 
 ## Expirar snapshots viejos
 

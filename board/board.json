@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-07T15:44:33+01:00",
+  "updated": "2026-11-07T15:45:09+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -8477,18 +8477,18 @@
       "id": "T-165",
       "title": "La guía dice que preguntar sin clave termina con código 5, pero el comando devuelve 2",
       "owner": "desarrollador",
-      "status": "next",
+      "status": "review",
       "priority": "baja",
       "estimate_min": 10.0,
-      "actual_min": 0.0,
+      "actual_min": 0.5,
       "auto": true,
       "manual": null,
       "desc": "Al lanzar la pregunta al agente sin clave, el mensaje es claro, pero el comando que usa la gente devuelve el código 2 (el de make al fallar), no el 5 que promete la guía de operación. Quien automatice algo mirando ese código se llevará una sorpresa. Se propone o bien propagar el código del agente, o bien corregir la guía para que diga lo que pasa de verdad.«\n»Cómo sabremos si funciona: lo que la guía dice sobre el código de salida coincide con lo que devuelve el comando al probarlo sin clave.«\n»## Técnico«\n»Reproducir (T-096): ./mk ask \"Q=hola\" GEMINI_API_KEY=  → stderr 'GEMINI_API_KEY is missing in .env', 'make: *** [Makefile:47: ask] Error 5', exit 2. docs/wiki/04-operacion.md (Preguntar al agente, 'Sin clave: termina con código 5') y la tabla de docs/wiki/componentes/agente.md#cómo-termina. Opción: corregir docs (el 5 es del contenedor; ./mk devuelve 2). Propagar exige que make salga con ese código, que GNU make no hace.",
       "deps": [],
       "created": "2026-11-06T23:40:11+01:00",
-      "updated": "2026-11-07T15:28:37+01:00",
-      "started_at": "2026-11-07T15:28:23+01:00",
-      "finished_at": "2026-11-07T15:28:25+01:00",
+      "updated": "2026-11-07T15:45:09+01:00",
+      "started_at": "2026-11-07T15:44:38+01:00",
+      "finished_at": "2026-11-07T15:45:09+01:00",
       "log": [
         {
           "t": "2026-11-06T23:40:11+01:00",
@@ -8529,6 +8529,16 @@
           "t": "2026-11-07T15:28:37+01:00",
           "by": "tester",
           "msg": "FAIL: la guía sigue incoherente: dice 2 para la imagen (el IT exige 5) y la tabla de agente.md:113 sigue diciendo 5 para `./mk ask`, que devuelve 2."
+        },
+        {
+          "t": "2026-11-07T15:44:38+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-07T15:45:09+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: guía unificada: la imagen sin clave sale con 5 y `./mk ask` con 2, en 04-operacion.md y agente.md."
         }
       ],
       "verify_started": "2026-11-07T15:28:03+01:00",
@@ -8542,6 +8552,16 @@
           "tokens": 121349,
           "cost_usd": 0.08548570000000001,
           "verdict": "fail"
+        },
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-07T15:45:09+01:00",
+          "min": 0.5,
+          "turns": 11,
+          "tokens": 115131,
+          "cost_usd": 0.0823472,
+          "verdict": "review"
         }
       ]
     },
@@ -9155,14 +9175,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-081",
-      "message": "tester con T-081",
+      "current": "T-165",
+      "message": "desarrollador con T-165",
       "pid": 19764,
-      "heartbeat": "2026-11-07T15:43:43+01:00",
+      "heartbeat": "2026-11-07T15:44:39+01:00",
       "enabled": true,
-      "agent": "tester",
-      "started": "2026-11-07T15:43:43+01:00",
-      "live": "live-T-081-tester-20261107-154343.jsonl"
+      "agent": "desarrollador",
+      "started": "2026-11-07T15:44:39+01:00",
+      "live": "live-T-165-desarrollador-20261107-154439.jsonl"
     }
   }
 }
