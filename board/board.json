@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-07T21:11:01+01:00",
+  "updated": "2026-11-07T21:14:36+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -35,9 +35,10 @@
     "enabled": true,
     "state": "stopped",
     "current": null,
-    "heartbeat": "2026-11-07T20:43:08+01:00",
+    "heartbeat": "2026-11-07T21:13:35+01:00",
     "message": "Parado desde el panel",
-    "pid": null
+    "pid": null,
+    "live": "live-dbg-tester-20261107-211335.jsonl"
   },
   "agents": [
     {
@@ -15244,51 +15245,141 @@
       "id": "T-194",
       "title": "Runner y panel: arreglar siete fallos pequeños del ejecutor automático",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "next",
       "priority": "media",
       "estimate_min": 85.0,
-      "actual_min": null,
+      "actual_min": 3.3,
       "auto": true,
       "manual": null,
       "desc": "El ejecutor automático tiene varios fallos pequeños (permisos que confunden «del», un permiso demasiado amplio, ficheros guardados que el agente no cambió, el botón Reanudar, avisos de límite mal interpretados, errores de API con JSON como motivo y avisos de comandos denegados perdidos). Se arreglan juntos en una sola entrega. Cómo sabremos si funciona: cada punto de la lista tiene su test o comprobación en verde y las tarjetas absorbidas quedan cerradas con nota.\n\n## Técnico\nAbsorbe (criterios en el historial de cada una):\n- T-095: Que los permisos no confundan la palabra «del» con el comando de borrar\n- T-123: Cerrar el permiso demasiado amplio de los tests en el ejecutor automático\n- T-128: El runner guarda en una tarjeta un fichero que su agente no llegó a cambiar\n- T-134: El botón Reanudar no despierta a un carril que se pausó solo\n- T-148: Un agente que termina bien pero cita el aviso de límite se toma por cortado\n- T-149: Un error de la API deja la tarjeta bloqueada con JSON como motivo\n- T-151: Un agente cortado pierde el aviso de sus comandos denegados",
-      "deps": [],
+      "deps": [
+        "T-204",
+        "T-205",
+        "T-206"
+      ],
       "created": "2026-11-07T20:36:53+01:00",
-      "updated": "2026-11-07T20:36:53+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-07T21:14:32+01:00",
+      "started_at": "2026-11-07T21:11:12+01:00",
+      "finished_at": "2026-11-07T21:14:32+01:00",
       "log": [
         {
           "t": "2026-11-07T20:36:53+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-07T21:11:12+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-07T21:14:25+01:00",
+          "by": "consultor",
+          "msg": "Hecho: claim_stream (T-128), is_usage_limit con RESULT (T-148), error de API=corte sin JSON (T-149), denegados en rama cortada (T-151), ALLOWED estrecho (T-123), Reanudar cubre carriles (T-134); T-095 ya estaba resuelto (unquoted + tests). Tests en tests/test_runner.py y test_board.py. Un test preexistente falla en Windows por línea de comandos larga: T-203."
+        },
+        {
+          "t": "2026-11-07T21:14:32+01:00",
+          "by": "desarrollador",
+          "msg": "BLOCKED: seis fallos del runner y el panel arreglados con tests en verde; T-095 ya estaba resuelto y queda un test en rojo por el límite de línea de comandos de Windows (T-203)."
+        },
+        {
+          "t": "2026-11-07T21:14:32+01:00",
+          "by": "desarrollador",
+          "msg": "⚠ 5 comandos denegados: grep -n -A0 \"\" /dev/null | Grep | C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\board\\runner.py | C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\tests\\test_runner.py | python board/board.py followup \"Runner: la línea de comandos de la CLI pasa de 3"
+        },
+        {
+          "t": "2026-11-07T21:14:32+01:00",
+          "by": "runner",
+          "msg": "✓ permiso concedido automáticamente: grep * (solo lectura dentro del proyecto); se reintenta"
+        },
+        {
+          "t": "2026-11-07T21:14:32+01:00",
+          "by": "runner",
+          "msg": "? permiso solicitado: Grep * (T-204); la tarjeta espera la decisión"
+        },
+        {
+          "t": "2026-11-07T21:14:32+01:00",
+          "by": "runner",
+          "msg": "? permiso solicitado: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\board\\runner.py * (T-205); la tarjeta espera la decisión"
+        },
+        {
+          "t": "2026-11-07T21:14:32+01:00",
+          "by": "runner",
+          "msg": "? permiso solicitado: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\tests\\test_runner.py * (T-206); la tarjeta espera la decisión"
+        },
+        {
+          "t": "2026-11-07T21:14:32+01:00",
+          "by": "runner",
+          "msg": "✓ permiso concedido automáticamente: python * (solo lectura dentro del proyecto); se reintenta"
+        },
+        {
+          "t": "2026-11-07T21:14:32+01:00",
+          "by": "runner",
+          "msg": "se reintentará con los permisos resueltos"
         }
       ],
-      "rank": 300
+      "rank": 300,
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-07T21:14:32+01:00",
+          "min": 3.3,
+          "turns": 58,
+          "tokens": 1296642,
+          "cost_usd": 0.5470929000000001,
+          "verdict": "blocked",
+          "summary": "seis fallos del runner y el panel arreglados con tests en verde; T-095 ya estaba resuelto y queda un test en rojo por el límite de línea de comandos de Windows (T-203)."
+        }
+      ]
     },
     {
       "id": "T-195",
       "title": "Servidor MCP: robustez al arrancar y al avisar de fallos",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "blocked",
       "priority": "media",
       "estimate_min": 55.0,
-      "actual_min": null,
+      "actual_min": 0.0,
       "auto": true,
       "manual": null,
       "desc": "Cuando faltan claves o se pierde el catálogo, el servidor MCP arranca igual o no avisa bien. Se arreglan juntos arranque, salud, memoria de DuckDB y el mensaje del agente cuando el servidor no responde. Cómo sabremos si funciona: cada punto de la lista tiene su test o comprobación en verde y las tarjetas absorbidas quedan cerradas con nota.\n\n## Técnico\nAbsorbe (criterios en el historial de cada una):\n- T-154: El servidor MCP arranca aunque falten las claves del almacén\n- T-158: Que la salud del servidor MCP avise si se pierde el catálogo\n- T-159: Servidor MCP: alinear la memoria de DuckDB con el reparto previsto\n- T-160: Agente: explicar en una línea que el servidor de datos no responde",
       "deps": [],
       "created": "2026-11-07T20:36:55+01:00",
-      "updated": "2026-11-07T20:36:55+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-07T21:14:36+01:00",
+      "started_at": "2026-11-07T21:14:36+01:00",
+      "finished_at": "2026-11-07T21:14:36+01:00",
       "log": [
         {
           "t": "2026-11-07T20:36:55+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-07T21:14:36+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-07T21:14:36+01:00",
+          "by": "desarrollador",
+          "msg": "BLOCKED: [WinError 206] El nombre del archivo o la extensión es demasiado largo"
         }
       ],
-      "rank": 300
+      "rank": 300,
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-07T21:14:36+01:00",
+          "min": 0.0,
+          "turns": null,
+          "tokens": null,
+          "cost_usd": null,
+          "verdict": "blocked",
+          "summary": "[WinError 206] El nombre del archivo o la extensión es demasiado largo"
+        }
+      ]
     },
     {
       "id": "T-196",
@@ -15468,14 +15559,134 @@
           "msg": "creada"
         }
       ]
+    },
+    {
+      "id": "T-203",
+      "title": "Runner: la línea de comandos de la CLI pasa de 32.000 caracteres en Windows",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "baja",
+      "estimate_min": 25.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Al lanzar al agente, el runner pasa unas 1.260 reglas de denegar como argumentos y la línea mide unos 37.000 caracteres; Windows admite 32.767 y Popen falla con WinError 206. Se propone pasarlas en un fichero de ajustes en vez de por línea de comandos. Cómo sabremos si funciona: test_un_proceso_real_que_muere_sin_mensaje_final_es_un_corte pasa en Windows.\n## Técnico\nboard/runner.py run_claude: DENIED incluye pm.never_rules() (34,8k caracteres). Ya ocurría antes de T-194. Verificar que la CLI acepta permissions.deny vía --settings.",
+      "deps": [],
+      "created": "2026-11-07T21:13:57+01:00",
+      "updated": "2026-11-07T21:13:57+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-07T21:13:57+01:00",
+          "by": "desarrollador",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-204",
+      "title": "Solicitud de permiso: Grep *",
+      "owner": "consultor",
+      "status": "human",
+      "priority": "media",
+      "estimate_min": 2,
+      "actual_min": null,
+      "auto": false,
+      "manual": "Abre la tarjeta y pulsa «Conceder» o «Denegar».",
+      "desc": "El agente «desarrollador» necesitaba un comando que no está en su lista de permitidos y se lo bloquearon mientras hacía T-194. No es de solo lectura ni está prohibido, así que lo tiene que validar una persona.\n\nPara qué lo quería: (no lo explicó)\n\nCómo decidir: concede si es seguro repetirlo sin supervisión dentro del proyecto; deniega si escribe fuera, publica, borra o usa la red.\n\n## Técnico\n- Comando: Grep\n- Patrón que se concedería: Grep *\n- Tarjeta: T-194",
+      "deps": [],
+      "created": "2026-11-07T21:14:32+01:00",
+      "updated": "2026-11-07T21:14:32+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-07T21:14:32+01:00",
+          "by": "runner",
+          "msg": "creada"
+        }
+      ],
+      "kind": "permiso",
+      "perm": {
+        "pattern": "Grep *",
+        "command": "Grep",
+        "agent": "desarrollador",
+        "task": "T-194",
+        "why": ""
+      }
+    },
+    {
+      "id": "T-205",
+      "title": "Solicitud de permiso: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\board\\runner.py *",
+      "owner": "consultor",
+      "status": "human",
+      "priority": "media",
+      "estimate_min": 2,
+      "actual_min": null,
+      "auto": false,
+      "manual": "Abre la tarjeta y pulsa «Conceder» o «Denegar».",
+      "desc": "El agente «desarrollador» necesitaba un comando que no está en su lista de permitidos y se lo bloquearon mientras hacía T-194. No es de solo lectura ni está prohibido, así que lo tiene que validar una persona.\n\nPara qué lo quería: (no lo explicó)\n\nCómo decidir: concede si es seguro repetirlo sin supervisión dentro del proyecto; deniega si escribe fuera, publica, borra o usa la red.\n\n## Técnico\n- Comando: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\board\\runner.py\n- Patrón que se concedería: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\board\\runner.py *\n- Tarjeta: T-194",
+      "deps": [],
+      "created": "2026-11-07T21:14:32+01:00",
+      "updated": "2026-11-07T21:14:32+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-07T21:14:32+01:00",
+          "by": "runner",
+          "msg": "creada"
+        }
+      ],
+      "kind": "permiso",
+      "perm": {
+        "pattern": "C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\board\\runner.py *",
+        "command": "C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\board\\runner.py",
+        "agent": "desarrollador",
+        "task": "T-194",
+        "why": ""
+      }
+    },
+    {
+      "id": "T-206",
+      "title": "Solicitud de permiso: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\tests\\test_runner.py *",
+      "owner": "consultor",
+      "status": "human",
+      "priority": "media",
+      "estimate_min": 2,
+      "actual_min": null,
+      "auto": false,
+      "manual": "Abre la tarjeta y pulsa «Conceder» o «Denegar».",
+      "desc": "El agente «desarrollador» necesitaba un comando que no está en su lista de permitidos y se lo bloquearon mientras hacía T-194. No es de solo lectura ni está prohibido, así que lo tiene que validar una persona.\n\nPara qué lo quería: (no lo explicó)\n\nCómo decidir: concede si es seguro repetirlo sin supervisión dentro del proyecto; deniega si escribe fuera, publica, borra o usa la red.\n\n## Técnico\n- Comando: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\tests\\test_runner.py\n- Patrón que se concedería: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\tests\\test_runner.py *\n- Tarjeta: T-194",
+      "deps": [],
+      "created": "2026-11-07T21:14:32+01:00",
+      "updated": "2026-11-07T21:14:32+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-07T21:14:32+01:00",
+          "by": "runner",
+          "msg": "creada"
+        }
+      ],
+      "kind": "permiso",
+      "perm": {
+        "pattern": "C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\tests\\test_runner.py *",
+        "command": "C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\tests\\test_runner.py",
+        "agent": "desarrollador",
+        "task": "T-194",
+        "why": ""
+      }
     }
   ],
   "runners": {
     "think": {
       "state": "stopped",
       "current": null,
-      "message": "Runner parado",
-      "pid": 24696,
+      "message": "Runner parado (pid muerto)",
+      "pid": null,
       "heartbeat": "2026-11-07T20:45:04+01:00",
       "enabled": true,
       "agent": "arquitecto",
@@ -15486,14 +15697,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-114",
-      "message": "tester con T-114",
-      "pid": 22896,
-      "heartbeat": "2026-11-07T21:06:00+01:00",
+      "current": "T-195",
+      "message": "desarrollador con T-195",
+      "pid": 24920,
+      "heartbeat": "2026-11-07T21:14:36+01:00",
       "enabled": true,
-      "agent": "tester",
-      "started": "2026-11-07T21:06:00+01:00",
-      "live": "live-T-114-tester-20261107-210600.jsonl"
+      "agent": "desarrollador",
+      "started": "2026-11-07T21:14:36+01:00",
+      "live": "live-T-195-desarrollador-20261107-211436.jsonl"
     }
   }
 }
