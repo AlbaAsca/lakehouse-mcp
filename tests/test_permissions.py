@@ -15,13 +15,24 @@ import permissions as pm  # noqa: E402
 import runner  # noqa: E402
 
 
+def test_saltos_de_linea_dentro_de_comillas_son_texto_no_encadenado():
+    """T-174: una descripción de varias líneas no es una cadena de comandos; dos comandos en líneas distintas sí."""
+    desc = 'python board/board.py add "Título" --owner tester --desc "Arriba llano.\n\n## Técnico\nx; y | z && w"'
+    assert pm.classify(desc)[0] == "seguro"
+    assert pm.classify("python board/board.py note T-1 'a\nb'")[0] == "seguro"
+    assert pm.classify("python board/board.py list\ngit status")[0] == "encadenado"
+    assert pm.classify('python board/board.py add "x"\npython evil.py')[0] == "encadenado"
+    assert pm.classify('python board/board.py add "x" --desc "a $(whoami)"')[0] == "encadenado"
+    assert pm.classify('python board/board.py add "x" --desc "a `whoami`"')[0] == "encadenado"
+    assert pm.classify('python board/board.py add "x" --desc "a" > out.txt')[0] == "encadenado"
+
+
 def test_clasifica_los_comandos_que_se_denegaron_de_verdad():
     assert pm.classify("git show 98cb191 -- board/board.py")[:2] == ("seguro", "git show*")
     assert pm.classify(".venv/Scripts/python board/board.py list")[0] == "seguro"
     assert pm.classify("git tag --list base-v*")[1] == "git tag --list*"
     assert pm.classify("ZERO_N=28 python scripts/run.py")[0] == "encadenado"
     assert pm.classify("cat >> tests/x.py <<'EOF'")[0] == "encadenado"
-    assert pm.classify('python board/board.py add "x" --desc "a\nb"')[0] == "encadenado"
     assert pm.classify("git push origin main")[0] == "prohibido"
     assert pm.classify("kaggle competitions submit -c x")[0] == "prohibido"
     assert pm.classify("python -m pip install x")[0] == "prohibido"
@@ -80,6 +91,12 @@ def test_del_rm_o_cp_entre_comillas_es_texto(cmd):
                                  'git commit -m "x"', 'powershell -Command "Remove-Item x"', 'bash -c "rm -rf x"'])
 def test_borrar_de_verdad_sigue_prohibido(cmd):
     assert pm.classify(cmd)[0] == "prohibido"
+
+
+@pytest.mark.parametrize("cmd", ['"rm" -rf docs', "'del' board/board.json", '"cp" a b'])
+def test_quitar_comillas_no_vuelve_seguro_un_comando_entrecomillado(cmd):
+    """T-164: quitar el texto entre comillas no puede dejar pasar el propio comando entre comillas sin revisión."""
+    assert pm.classify(cmd)[0] in ("prohibido", "revisar")
 
 
 def test_un_permiso_amplio_no_abre_lo_destructivo(monkeypatch, tmp_path):
