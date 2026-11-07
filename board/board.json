@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-07T16:46:15+01:00",
+  "updated": "2026-11-07T16:49:41+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -2721,7 +2721,7 @@
       "id": "T-034",
       "title": "Agente: cliente Spring AI que responde preguntas por MCP",
       "owner": "desarrollador",
-      "status": "review",
+      "status": "done",
       "priority": "alta",
       "estimate_min": 20.0,
       "actual_min": 7.3,
@@ -2733,7 +2733,7 @@
         "T-021"
       ],
       "created": "2026-11-02T11:38:12+01:00",
-      "updated": "2026-11-07T16:46:15+01:00",
+      "updated": "2026-11-07T16:49:41+01:00",
       "started_at": "2026-11-07T16:38:56+01:00",
       "finished_at": "2026-11-07T16:46:15+01:00",
       "log": [
@@ -2761,6 +2761,16 @@
           "t": "2026-11-07T16:46:15+01:00",
           "by": "desarrollador",
           "msg": "REVIEW: prompt que prefiere get_metric, test AgentIT con modelo simulado contra el servidor real, wiki actualizada y tests del módulo agent sin errores."
+        },
+        {
+          "t": "2026-11-07T16:46:22+01:00",
+          "by": "tester",
+          "msg": "verificando"
+        },
+        {
+          "t": "2026-11-07T16:49:41+01:00",
+          "by": "tester",
+          "msg": "DONE: T-034 verificada: prompt con get_metric y AgentIT con modelo simulado contra el servidor real en verde (6/6)."
         }
       ],
       "runs": [
@@ -2773,8 +2783,19 @@
           "tokens": 483797,
           "cost_usd": 0.2643085,
           "verdict": "review"
+        },
+        {
+          "agent": "tester",
+          "mode": "verify",
+          "at": "2026-11-07T16:49:41+01:00",
+          "min": 3.3,
+          "turns": 8,
+          "tokens": 108869,
+          "cost_usd": 0.08121080000000001,
+          "verdict": "done"
         }
-      ]
+      ],
+      "verify_started": "2026-11-07T16:46:22+01:00"
     },
     {
       "id": "T-035",
@@ -9403,13 +9424,13 @@
     "measure": {
       "state": "working",
       "current": "T-034",
-      "message": "desarrollador con T-034",
+      "message": "tester con T-034",
       "pid": 19764,
-      "heartbeat": "2026-11-07T16:38:57+01:00",
+      "heartbeat": "2026-11-07T16:46:23+01:00",
       "enabled": true,
-      "agent": "desarrollador",
-      "started": "2026-11-07T16:38:57+01:00",
-      "live": "live-T-034-desarrollador-20261107-163857.jsonl"
+      "agent": "tester",
+      "started": "2026-11-07T16:46:23+01:00",
+      "live": "live-T-034-tester-20261107-164623.jsonl"
     }
   }
 }
