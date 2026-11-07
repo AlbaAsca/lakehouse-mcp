@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-07T17:48:04+01:00",
+  "updated": "2026-11-07T17:48:46+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -2986,7 +2986,7 @@
       "id": "T-037",
       "title": "Chaos: comando chaos, duplicados y partición vacía",
       "owner": "desarrollador",
-      "status": "blocked",
+      "status": "done",
       "priority": "alta",
       "estimate_min": 35.0,
       "actual_min": 9.3,
@@ -2998,7 +2998,7 @@
         "T-017"
       ],
       "created": "2026-11-02T11:38:29+01:00",
-      "updated": "2026-11-07T17:30:55+01:00",
+      "updated": "2026-11-07T17:48:36+01:00",
       "started_at": "2026-11-07T17:14:47+01:00",
       "finished_at": "2026-11-07T17:24:07+01:00",
       "log": [
@@ -3046,6 +3046,11 @@
           "t": "2026-11-07T17:30:55+01:00",
           "by": "runner",
           "msg": "✗ «python board/board.py add \"Chaos: conectar «make chaos» y probar los argumentos del comand»: varios comandos, tuberías, redirecciones o heredoc: lanza cada comando por separado y crea ficheros con Write/Edit"
+        },
+        {
+          "t": "2026-11-07T17:48:36+01:00",
+          "by": "consultor",
+          "msg": "Verificada por el tester; los seguimientos pendientes ya tienen tarjeta propia, así que no bloquea."
         }
       ],
       "runs": [
@@ -3458,7 +3463,7 @@
       "id": "T-050",
       "title": "Seguridad: roles analyst y admin en las herramientas",
       "owner": "desarrollador",
-      "status": "blocked",
+      "status": "done",
       "priority": "alta",
       "estimate_min": 35.0,
       "actual_min": 11.2,
@@ -3470,7 +3475,7 @@
         "T-020"
       ],
       "created": "2026-11-02T11:39:42+01:00",
-      "updated": "2026-11-07T17:42:14+01:00",
+      "updated": "2026-11-07T17:48:37+01:00",
       "started_at": "2026-11-07T17:31:01+01:00",
       "finished_at": "2026-11-07T17:42:14+01:00",
       "log": [
@@ -3513,6 +3518,11 @@
           "t": "2026-11-07T17:42:14+01:00",
           "by": "runner",
           "msg": "✗ «python board/board.py add \"Seguridad: prueba de punta a punta de 401 y aprobaciones solo d»: varios comandos, tuberías, redirecciones o heredoc: lanza cada comando por separado y crea ficheros con Write/Edit"
+        },
+        {
+          "t": "2026-11-07T17:48:37+01:00",
+          "by": "consultor",
+          "msg": "Verificada por el tester; los seguimientos pendientes ya tienen tarjeta propia, así que no bloquea."
         }
       ],
       "runs": [
@@ -5706,6 +5716,11 @@
           "t": "2026-11-02T18:34:57+01:00",
           "by": "consultor",
           "msg": "Espera a T-046 o T-055; no debe consumir ejecuciones hasta entonces"
+        },
+        {
+          "t": "2026-11-07T17:48:37+01:00",
+          "by": "consultor",
+          "msg": "Sigue bloqueada a propósito: espera a T-046 o T-055."
         }
       ],
       "runs": [
@@ -6313,6 +6328,11 @@
           "t": "2026-11-07T14:40:39+01:00",
           "by": "consultor",
           "msg": "Entra en la versión 0.1.0 (T-175)."
+        },
+        {
+          "t": "2026-11-07T17:48:37+01:00",
+          "by": "consultor",
+          "msg": "Sigue bloqueada a propósito: espera al cupo diario de Gemini (08:00)."
         }
       ]
     },
@@ -6886,7 +6906,7 @@
       "id": "T-107",
       "title": "Que un comentario en Te necesita llegue a quien debe leerlo",
       "owner": "desarrollador",
-      "status": "review",
+      "status": "done",
       "priority": "alta",
       "estimate_min": 30.0,
       "actual_min": 1.2,
@@ -6895,7 +6915,7 @@
       "desc": "La responsable contestó en T-083 y nadie lo leyó durante horas: el runner no coge tarjetas de Te necesita y el consultor no recibe aviso. Se propone que comentar una de esas tarjetas la haga avanzar, o que se vea claramente como contestada. Cómo sabremos si funciona: al comentar una tarjeta de agente, vuelve a la cola con el comentario en su historial; en una de consultor, el panel y board.py list la marcan como respondida.\n\n## Técnico\nboard/server.py (endpoint de nota) y board/runner.py: el historial de los últimos 8 registros ya llega al prompt al trabajar la tarjeta. Mover de human a next si el dueño es un agente y el autor es tú. Añadir marca para las de consultor. Test en tests/test_board.py. En CLAUDE.md: el consultor revisa las respuestas de Te necesita al empezar cada turno.",
       "deps": [],
       "created": "2026-11-02T18:15:58+01:00",
-      "updated": "2026-11-07T17:48:04+01:00",
+      "updated": "2026-11-07T17:48:46+01:00",
       "started_at": "2026-11-07T17:47:32+01:00",
       "finished_at": "2026-11-07T17:48:04+01:00",
       "log": [
@@ -6943,6 +6963,16 @@
           "t": "2026-11-07T17:48:04+01:00",
           "by": "desarrollador",
           "msg": "REVIEW: el panel muestra `[RESPONDIDA]` en las tarjetas con `answered`, que era lo que faltaba tras el FAIL del tester."
+        },
+        {
+          "t": "2026-11-07T17:48:09+01:00",
+          "by": "tester",
+          "msg": "verificando"
+        },
+        {
+          "t": "2026-11-07T17:48:46+01:00",
+          "by": "tester",
+          "msg": "DONE: comentar en Te necesita devuelve a `next` las tarjetas de agente y marca `[RESPONDIDA]` las del consultor, en `board.py list` y en el panel; los tests del panel pasan (9)."
         }
       ],
       "runs": [
@@ -6975,9 +7005,19 @@
           "tokens": 77245,
           "cost_usd": 0.0583469,
           "verdict": "review"
+        },
+        {
+          "agent": "tester",
+          "mode": "verify",
+          "at": "2026-11-07T17:48:46+01:00",
+          "min": 0.6,
+          "turns": 5,
+          "tokens": 65243,
+          "cost_usd": 0.06416740000000001,
+          "verdict": "done"
         }
       ],
-      "verify_started": "2026-11-07T17:46:56+01:00"
+      "verify_started": "2026-11-07T17:48:09+01:00"
     },
     {
       "id": "T-108",
@@ -8435,7 +8475,7 @@
       "id": "T-144",
       "title": "La portada de la wiki no menciona la lectura del catálogo del servidor",
       "owner": "desarrollador",
-      "status": "blocked",
+      "status": "done",
       "priority": "baja",
       "estimate_min": 3.0,
       "actual_min": null,
@@ -8444,7 +8484,7 @@
       "desc": "La tabla de estado de la portada de la wiki dice qué existe ya en el servidor, y cita la conexión y el validador, pero no la lectura del catálogo, que ya funciona. Quien la lea cree que el servidor tiene menos de lo que tiene. Se propone añadirla a esa línea con un enlace a su explicación.\nCómo sabremos si funciona: la línea del servidor en la portada nombra la lectura del catálogo y su enlace lleva a la sección correcta.\n## Técnico\ndocs/wiki/README.md línea 39: añadir CatalogReader (T-017) con enlace a componentes/duckdb.md#dentro-del-servidor-mcp. Solo documentación, sin tests.",
       "deps": [],
       "created": "2026-11-03T10:26:11+01:00",
-      "updated": "2026-11-07T15:27:57+01:00",
+      "updated": "2026-11-07T17:48:37+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -8482,6 +8522,11 @@
           "t": "2026-11-07T15:27:57+01:00",
           "by": "runner",
           "msg": "✗ «python board/board.py add \"Un enlace roto de la wiki impide publicarla\" --owner desarrolla»: varios comandos, tuberías, redirecciones o heredoc: lanza cada comando por separado y crea ficheros con Write/Edit"
+        },
+        {
+          "t": "2026-11-07T17:48:37+01:00",
+          "by": "consultor",
+          "msg": "Verificada por el tester; los seguimientos pendientes ya tienen tarjeta propia, así que no bloquea."
         }
       ],
       "verify_started": "2026-11-07T15:27:23+01:00",
@@ -9920,6 +9965,32 @@
           "msg": "creada"
         }
       ]
+    },
+    {
+      "id": "T-183",
+      "title": "Chaos: conectar «make chaos» y probar los argumentos del comando",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "baja",
+      "estimate_min": 20.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "El comando chaos existe pero falta enlazarlo desde mk y probar sus argumentos. Cómo sabremos si funciona: ./mk chaos duplicates y empty-partition ejecutan la inyección y informan qué han hecho.",
+      "deps": [
+        "T-037"
+      ],
+      "created": "2026-11-07T17:48:36+01:00",
+      "updated": "2026-11-07T17:48:36+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-07T17:48:36+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ]
     }
   ],
   "runners": {
@@ -9939,13 +10010,13 @@
     "measure": {
       "state": "working",
       "current": "T-107",
-      "message": "desarrollador con T-107",
+      "message": "tester con T-107",
       "pid": 17208,
-      "heartbeat": "2026-11-07T17:47:32+01:00",
+      "heartbeat": "2026-11-07T17:48:09+01:00",
       "enabled": true,
-      "agent": "desarrollador",
-      "started": "2026-11-07T17:47:32+01:00",
-      "live": "live-T-107-desarrollador-20261107-174732.jsonl"
+      "agent": "tester",
+      "started": "2026-11-07T17:48:09+01:00",
+      "live": "live-T-107-tester-20261107-174809.jsonl"
     }
   }
 }
