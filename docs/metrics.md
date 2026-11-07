@@ -189,3 +189,14 @@ Descartado: ordenar por número de compras. Con precios muy distintos, premia lo
 | 2 | beta | 120,00 | 1 | 0,162162 |
 
 `revenue_without_brand` = 500,00.
+
+## Ambigüedades resueltas por la verdad de referencia (T-029)
+
+Encontradas al calcular los valores sin mirar el YAML. Las cifras de la muestra están en `evals/truth/metrics.json`.
+
+- **`price` vacío en una compra:** no es > 0, así que la compra no es válida para el dinero (ticket y marcas); sigue contando en el embudo y el abandono.
+- **Redondeo:** a la mitad hacia arriba (half-up), solo al presentar. El orden de las marcas usa los ingresos ya redondeados a 2 decimales.
+- **Primer evento de la sesión:** el de menor `event_time` entre `view`, `cart` y `purchase`; los de otro tipo no la abren.
+- **Mayúsculas en `event_type`** (`Purchase`): es otro tipo y se ignora.
+- **`share` con ingresos 0:** nulo.
+- **Pedidos de varios días:** una sesión con compras válidas en dos días es un pedido en cada día y uno solo en el total.
