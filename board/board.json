@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-07T18:21:46+01:00",
+  "updated": "2026-11-07T18:26:09+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -9980,7 +9980,7 @@
       "id": "T-176",
       "title": "La integración continua está en rojo: el test del agente no conoce las herramientas nuevas del servidor",
       "owner": "desarrollador",
-      "status": "review",
+      "status": "blocked",
       "priority": "alta",
       "estimate_min": 5.0,
       "actual_min": 0.5,
@@ -9989,7 +9989,7 @@
       "desc": "La comprobación automática de develop falla. Un test del agente revisa que el modelo recibe exactamente cierta lista de herramientas del servidor, pero esa lista se quedó antigua: no incluye la salud del pipeline ni, desde ahora, el chequeo de calidad de datos. Se propone actualizar la lista y que siga siendo exacta, para que una herramienta nueva o perdida haga saltar el test.\nCómo sabremos si funciona: la integración continua de develop vuelve a verde y el test del agente lista las seis herramientas actuales.\n## Técnico\n- CI run 42371334878 (commit T-023): agent/AgentIT.theModelIsOfferedTheServerToolsAndTheSystemPrompt:138, containsExactlyInAnyOrder sin pipeline_health.\n- Tras T-025 el servidor expone también data_quality_check (ver McpServerIT): lista esperada = list_tables, describe_table, run_query, time_travel, pipeline_health, data_quality_check.\n- Criterio: ./mk test MODULE=agent en verde y CI de develop verde.",
       "deps": [],
       "created": "2026-11-07T14:49:06+01:00",
-      "updated": "2026-11-07T18:21:46+01:00",
+      "updated": "2026-11-07T18:26:09+01:00",
       "started_at": "2026-11-07T18:21:17+01:00",
       "finished_at": "2026-11-07T18:21:46+01:00",
       "log": [
@@ -10022,6 +10022,16 @@
           "t": "2026-11-07T18:21:46+01:00",
           "by": "desarrollador",
           "msg": "REVIEW: la lista exacta del test ya está actualizada (8 herramientas); queda confirmar el verde en la CI de develop."
+        },
+        {
+          "t": "2026-11-07T18:21:49+01:00",
+          "by": "tester",
+          "msg": "verificando"
+        },
+        {
+          "t": "2026-11-07T18:26:09+01:00",
+          "by": "tester",
+          "msg": "BLOCKED: la lista de 8 herramientas es correcta, pero `AgentIT` falla al cargar el contexto porque el agente no envía la clave al servidor MCP; hay que esperar a T-180 para ver el verde."
         }
       ],
       "rank": 1,
@@ -10035,8 +10045,19 @@
           "tokens": 123266,
           "cost_usd": 0.08845300000000002,
           "verdict": "review"
+        },
+        {
+          "agent": "tester",
+          "mode": "verify",
+          "at": "2026-11-07T18:26:09+01:00",
+          "min": 4.3,
+          "turns": 32,
+          "tokens": 604503,
+          "cost_usd": 0.2960803,
+          "verdict": "blocked"
         }
-      ]
+      ],
+      "verify_started": "2026-11-07T18:21:49+01:00"
     },
     {
       "id": "T-177",
@@ -10144,6 +10165,11 @@
           "t": "2026-11-07T18:06:35+01:00",
           "by": "consultor",
           "msg": "Prioridad alta sin dependencias: pasa a Próximo (CI en rojo primero)."
+        },
+        {
+          "t": "2026-11-07T18:26:02+01:00",
+          "by": "consultor",
+          "msg": "Tester (T-176): AgentIT no carga el contexto (6 errores: el cliente MCP no inicia) porque el servidor exige Bearer y el agente no envia clave. Al cerrar esta tarjeta, AgentIT debe pasar MCP_ANALYST_KEY/MCP_ADMIN_KEY al contenedor del servidor y la misma clave al agente; solo asi se podra ver verde la lista de 8 herramientas (T-176)."
         }
       ],
       "rank": 30
@@ -10451,13 +10477,13 @@
     "measure": {
       "state": "working",
       "current": "T-176",
-      "message": "desarrollador con T-176",
+      "message": "tester con T-176",
       "pid": 20872,
-      "heartbeat": "2026-11-07T18:21:17+01:00",
+      "heartbeat": "2026-11-07T18:21:49+01:00",
       "enabled": true,
-      "agent": "desarrollador",
-      "started": "2026-11-07T18:21:17+01:00",
-      "live": "live-T-176-desarrollador-20261107-182117.jsonl"
+      "agent": "tester",
+      "started": "2026-11-07T18:21:49+01:00",
+      "live": "live-T-176-tester-20261107-182149.jsonl"
     }
   }
 }
