@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-07T20:27:08+01:00",
+  "updated": "2026-11-07T20:31:38+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -14770,18 +14770,18 @@
       "id": "T-192",
       "title": "Cortar los bucles entre desarrollador y tester",
       "owner": "desarrollador",
-      "status": "next",
+      "status": "done",
       "priority": "alta",
       "estimate_min": 20.0,
-      "actual_min": null,
+      "actual_min": 0.9,
       "auto": true,
       "manual": null,
       "desc": "Si el tester rechaza una tarjeta y el desarrollador la vuelve a entregar sin cambios, se repite sin fin (T-188 dio más de 100 vueltas y gastó dinero sin avanzar). Se propone que, tras 3 rechazos seguidos, la tarjeta pase a bloqueada con una nota que diga el motivo, y que el runner avise si el rechazo es idéntico al anterior. Cómo sabremos si funciona: un test simula 4 rechazos iguales y la tarjeta queda bloqueada a la tercera sin más ejecuciones. ## Técnico: board/runner.py (contador de verdict fail consecutivos en t['runs']).",
       "deps": [],
       "created": "2026-11-07T20:12:12+01:00",
-      "updated": "2026-11-07T20:12:12+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-07T20:31:38+01:00",
+      "started_at": "2026-11-07T20:30:06+01:00",
+      "finished_at": "2026-11-07T20:31:02+01:00",
       "log": [
         {
           "t": "2026-11-07T20:12:12+01:00",
@@ -14792,9 +14792,53 @@
           "t": "2026-11-07T20:26:37+01:00",
           "by": "consultor",
           "msg": "Causa raíz del bucle de T-188: el runner no commiteaba los ficheros del desarrollador antes de que el tester verificara, y el tester rechaza lo no commiteado. Además del tope de 3 rechazos, hay que commitear el trabajo antes de pasar a verificar (o decirle al tester que mire el árbol de trabajo)."
+        },
+        {
+          "t": "2026-11-07T20:30:06+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-07T20:31:02+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: tope de 3 rechazos seguidos, aviso de rechazo idéntico y ficheros de la tarjeta verificables sin commit; tests del runner en verde (42)."
+        },
+        {
+          "t": "2026-11-07T20:31:04+01:00",
+          "by": "tester",
+          "msg": "verificando"
+        },
+        {
+          "t": "2026-11-07T20:31:38+01:00",
+          "by": "tester",
+          "msg": "DONE: tope de 3 rechazos seguidos, aviso de rechazo idéntico y ficheros de la tarjeta verificables sin commit; 42 tests del runner pasan y la CI de develop está en verde."
         }
       ],
-      "rank": 1
+      "rank": 1,
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-07T20:31:02+01:00",
+          "min": 0.9,
+          "turns": 17,
+          "tokens": 200072,
+          "cost_usd": 0.1496945,
+          "verdict": "review"
+        },
+        {
+          "agent": "tester",
+          "mode": "verify",
+          "at": "2026-11-07T20:31:38+01:00",
+          "min": 0.5,
+          "turns": 5,
+          "tokens": 49234,
+          "cost_usd": 0.0598717,
+          "verdict": "done",
+          "summary": "tope de 3 rechazos seguidos, aviso de rechazo idéntico y ficheros de la tarjeta verificables sin commit; 42 tests del runner pasan y la CI de develop está en verde."
+        }
+      ],
+      "verify_started": "2026-11-07T20:31:04+01:00"
     },
     {
       "id": "T-193",
@@ -14850,14 +14894,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-188",
-      "message": "tester con T-188",
-      "pid": 4512,
-      "heartbeat": "2026-11-07T20:26:48+01:00",
+      "current": "T-192",
+      "message": "tester con T-192",
+      "pid": 22176,
+      "heartbeat": "2026-11-07T20:31:05+01:00",
       "enabled": true,
       "agent": "tester",
-      "started": "2026-11-07T20:26:47+01:00",
-      "live": "live-T-188-tester-20261107-202648.jsonl"
+      "started": "2026-11-07T20:31:04+01:00",
+      "live": "live-T-192-tester-20261107-203105.jsonl"
     }
   }
 }

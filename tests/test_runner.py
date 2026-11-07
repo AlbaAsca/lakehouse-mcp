@@ -366,6 +366,21 @@ def test_agente_cortado_vuelve_a_su_estado_sin_json_en_el_registro(monkeypatch, 
     assert not any("session_id" in e["msg"] or "{" in e["msg"] for e in t["log"])
 
 
+def test_tres_rechazos_seguidos_bloquean_la_tarjeta():
+    tid = _new_card("review")
+    r = dict(text="RESULT: fail — falta Foo.java", err="", code=0, secs=5, turns=1, cost=None, usage={}, is_error=False)
+    out = []
+    for _ in range(3):
+        out.append(runner.finish(tid, "verify", "tester", r)[0])
+        if out[-1] == "next":  # el desarrollador la vuelve a entregar sin cambios
+            runner.bd.update(lambda b: runner.bd.set_status(b, runner.bd.task(b, tid), "review", "desarrollador", "entrega"))
+    assert out == ["next", "next", "blocked"]
+    t = runner.bd.task(runner.bd.load(), tid)
+    assert t["status"] == "blocked"
+    assert any("Bloqueada tras 3 rechazos" in e["msg"] for e in t["log"])
+    assert any("idéntico" in e["msg"] for e in t["log"])
+
+
 def test_corte_con_stderr_lo_da_como_motivo():
     r = dict(text="", err="Error:\n  conexión perdida", cut=True)
     assert runner.interruption(r) == ("cut", f"{runner.CUT_MSG}: Error: conexión perdida")
