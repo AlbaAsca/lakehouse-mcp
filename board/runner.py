@@ -45,9 +45,12 @@ ALLOWED = ["Read", "Edit", "Write", "Glob", "Grep", "WebSearch", "WebFetch",
            "Bash(python *)", "Bash(git status*)", "Bash(git diff*)", "Bash(git log*)",
            "Bash(ls*)", "Bash(cat *)", "Bash(head *)", "Bash(tail *)", "Bash(wc *)", "Bash(mkdir *)", "Bash(diff *)",
            # en Windows la CLI puede usar PowerShell en vez de Bash: mismos permisos
-           "Bash(./mvnw *)", "Bash(./mk test*)", "Bash(./mk evals*)", "Bash(make test*)", "Bash(make evals*)",
+           "Bash(./mvnw *)", "Bash(./mk test)", "Bash(./mk test MODULE=*)", "Bash(./mk test MAVEN_ARGS=*)", "Bash(./mk test-board)",
+           "Bash(./mk evals*)", "Bash(make test)", "Bash(make test MODULE=*)", "Bash(make test MAVEN_ARGS=*)",
+           "Bash(make test-board)", "Bash(make evals*)",
            "Bash(docker compose ps*)", "Bash(docker compose logs*)",
-           "PowerShell(.\\mvnw.cmd *)", "PowerShell(.\\mk.cmd test*)", "PowerShell(.\\mk.cmd evals*)",
+           "PowerShell(.\\mvnw.cmd *)", "PowerShell(.\\mk.cmd test)", "PowerShell(.\\mk.cmd test MODULE=*)",
+           "PowerShell(.\\mk.cmd test MAVEN_ARGS=*)", "PowerShell(.\\mk.cmd test-board)","PowerShell(.\\mk.cmd evals*)",
            "PowerShell(docker compose ps*)", "PowerShell(docker compose logs*)",
            "PowerShell(python *)", "PowerShell(git status*)", "PowerShell(git diff*)", "PowerShell(git log*)",
            "PowerShell(Get-ChildItem*)", "PowerShell(Get-Content*)"]
@@ -287,6 +290,36 @@ def tool_paths(line):
     return out
 
 
+def claim_stream(tag, line, pending):
+    """Apunta un fichero solo cuando su escritura (Write/Edit) ha salido bien: un tool_result con error o denegado no lo apunta.
+    `pending` guarda {id de tool_use: rutas} hasta ver su resultado; lo que quede al cortarse se apunta con claim_pending."""
+    if "tool_use" not in line and "tool_result" not in line:
+        return
+    try:
+        content = json.loads(line)["message"]["content"]
+    except (json.JSONDecodeError, KeyError, TypeError):
+        return
+    for c in content if isinstance(content, list) else []:
+        if not isinstance(c, dict):
+            continue
+        if c.get("type") == "tool_use":
+            paths = tool_paths(json.dumps({"message": {"content": [c]}}))
+            if paths:
+                pending[c.get("id")] = paths
+        elif c.get("type") == "tool_result":
+            paths = pending.pop(c.get("tool_use_id"), None)
+            failed = c.get("is_error") or DENIED_MARK in json.dumps(c.get("content"), ensure_ascii=False)
+            if paths and not failed:
+                claim(tag, paths)
+
+
+def claim_pending(tag, pending):
+    """Corte entre tool_use y tool_result: no se sabe si se escribió, así que se apunta (no se pierde trabajo)."""
+    for paths in pending.values():
+        claim(tag, paths)
+    pending.clear()
+
+
 def claim(tid, paths):
     """Apunta los ficheros de la tarjeta al momento: sobrevive a un corte y el otro carril sabe que no son suyos."""
     if not paths:
@@ -350,6 +383,15 @@ def save(before, tid, msg, new=None):
 MAX_TURNS = {"experto": 40, "investigador": 25, "tester": 40, "desarrollador": 60, "arquitecto": 40}
 
 
+def deny_settings():
+    """Las reglas de denegación son más de mil: en la línea de comandos pasan de los 32 767 caracteres de Windows
+    (WinError 206). Van en un fichero de ajustes."""
+    path = LOGDIR / "deny-settings.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps({"permissions": {"deny": [*DENIED, *pm.rules()[1]]}}), encoding="utf-8")
+    return path
+
+
 def run_claude(claude, prompt, agent, timeout_s, tag="run", max_turns=80):
     """Lanza al agente con salida en streaming: cada evento (texto, herramienta, resultado) se guarda al momento en
     board/runs/live-<tag>-<agente>-<fecha>.jsonl para verlo en directo desde el panel. No cuesta tokens extra:
@@ -357,17 +399,18 @@ def run_claude(claude, prompt, agent, timeout_s, tag="run", max_turns=80):
     # --strict-mcp-config sin --mcp-config: el agente no carga ningún MCP del proyecto (p. ej. uno que publique o envíe algo fuera)
     cmd = [claude, "-p", "--agent", agent, "--output-format", "stream-json", "--verbose", "--strict-mcp-config",
            "--permission-mode", "acceptEdits", "--permission-prompts", "none",
-           "--max-turns", str(max_turns), "--allowedTools", *ALLOWED, *pm.rules()[0], "--disallowedTools", *DENIED, *pm.rules()[1]]
+           "--max-turns", str(max_turns), "--allowedTools", *ALLOWED, *pm.rules()[0],
+           "--settings", str(deny_settings())]
     live = LOGDIR / f"live-{tag}-{agent}-{datetime.now():%Y%m%d-%H%M%S}.jsonl"
     set_runner(live=live.name)
     errf = live.with_suffix(".err")
-    t0, data, lines, killed = time.time(), {}, [], []
+    t0, data, lines, killed, pending = time.time(), {}, [], [], {}
     try:
         with errf.open("w", encoding="utf-8") as ef:  # stderr a fichero: un pipe lleno bloquearía al agente
             p = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=ef,
                                  text=True, encoding="utf-8", errors="replace", cwd=ROOT)
     except OSError as e:
-        return dict(text="", err=str(e), code=-1, secs=0, turns=None, cost=None, usage={}, is_error=True)
+        return dict(denied=[], text="", err=str(e), code=-1, secs=0, turns=None, cost=None, usage={}, is_error=True, cut=False)
     timer = threading.Timer(timeout_s, lambda: (killed.append(1), p.kill()))
     timer.start()
     try:
@@ -378,7 +421,7 @@ def run_claude(claude, prompt, agent, timeout_s, tag="run", max_turns=80):
                 f.write(line)
                 f.flush()
                 lines.append(line)
-                claim(tag, tool_paths(line))
+                claim_stream(tag, line, pending)
                 if '"type":"result"' in line.replace(" ", ""):
                     try:
                         data = json.loads(line)
@@ -387,6 +430,7 @@ def run_claude(claude, prompt, agent, timeout_s, tag="run", max_turns=80):
         code = p.wait()
     finally:
         timer.cancel()
+        claim_pending(tag, pending)
     err = errf.read_text(encoding="utf-8", errors="replace")
     errf.unlink(missing_ok=True)
     if killed:
@@ -396,10 +440,15 @@ def run_claude(claude, prompt, agent, timeout_s, tag="run", max_turns=80):
     out_of_turns = data.get("subtype") == "error_max_turns"  # repetirlo daría lo mismo: es un fallo, no un corte
     if out_of_turns and not err:
         err = f"agotó el máximo de {max_turns} turnos sin mensaje final"
+    # Error de la API (p. ej. 529 sobrecarga): el «resultado» es el error, no un veredicto. Se trata como un corte (T-149).
+    api_error = (data.get("is_error") is True and not out_of_turns and not killed
+                 and not any(RESULT_RE.search(l) for l in text.splitlines()))
+    if api_error:
+        err = f"error de la API: {text}" if text.strip() else err
     return dict(denied=denied_commands(lines), text=text, err=err[-2000:] if err else "", code=code, secs=time.time() - t0,
                 turns=data.get("num_turns"), cost=data.get("total_cost_usd"), usage=data.get("usage") or {},
                 is_error=out_of_turns or data.get("is_error", code != 0),
-                cut=not text.strip() and not killed and not out_of_turns)
+                cut=(not text.strip() or api_error) and not killed and not out_of_turns)
 
 
 DENIED_MARK = "Permission for this tool use was denied"
@@ -477,7 +526,16 @@ CUT_MSG = "agente cortado sin mensaje final, se reintentará"
 
 def is_usage_limit(r):
     """La salida de Claude indica que se agotó el límite de uso (no es un fallo de la tarea)."""
-    return bool(LIMIT_RE.search(f"{r.get('text') or ''}\n{r.get('err') or ''}"))
+    text = r.get("text") or ""
+    if any(RESULT_RE.search(l) for l in text.splitlines()):  # terminó y dio veredicto: citar el aviso no es toparse con él
+        return False
+    return bool(LIMIT_RE.search(f"{text}\n{r.get('err') or ''}"))
+
+
+def clean_reason(s):
+    """Motivo legible para el log: una línea, sin el JSON que pueda traer un error de la API."""
+    s = " ".join((s or "").split())
+    return s.split("{", 1)[0].strip(" :")[-200:]
 
 
 def interruption(r):
@@ -485,7 +543,7 @@ def interruption(r):
     if is_usage_limit(r):
         return "limit", LIMIT_MSG
     if r.get("cut"):
-        err = " ".join((r.get("err") or "").split())[-200:]
+        err = clean_reason(r.get("err"))
         return "cut", f"{CUT_MSG}: {err}" if err else CUT_MSG
     return None
 
@@ -499,6 +557,15 @@ def finish(tid, mode, agent, r):
             t = bd.task(b, tid)
             new = "review" if mode == "verify" else "next"
             bd.set_status(b, t, new, agent, msg)
+            cut_denied = r.get("denied") or []
+            if cut_denied:  # también cortado: lo denegado queda anotado y se abre la solicitud (T-151)
+                bd.log(t, agent, f"⚠ {len(cut_denied)} comandos denegados: "
+                       + " | ".join(" ".join(d.split())[:80] for d in cut_denied))
+                notes, _granted, requests = permission_protocol(b, t, cut_denied, r.get("text"), agent)
+                for n in notes:
+                    bd.log(t, "runner", n)
+                if requests:
+                    t["deps"] = sorted(set(t.get("deps") or []) | set(requests))
             for a in b["agents"]:
                 if a["id"] == agent and a.get("current") == tid:
                     a.update(status="idle", current=None)
