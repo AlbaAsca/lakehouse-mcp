@@ -92,8 +92,26 @@ def test_java_job_runs_the_whole_build_on_jdk_25():
 
 
 def test_no_test_is_skipped_by_the_build_command():
-    assert not re.search(r"skip|-Dtest=|-pl\b|-Dit\.test|--fail-never|-fae|-Dmaven\.test\.failure", code(CI), re.I)
+    # Only the fast step may skip the integration tests, and only with -DskipITs.
+    text = re.sub(r"-DskipITs\b", "", code(CI))
+    assert not re.search(r"skip|-Dtest=|-pl\b|-Dit\.test|--fail-never|-fae|-Dmaven\.test\.failure", text, re.I)
     assert "continue-on-error" not in code(CI)
+
+
+def steps(java_job):
+    return re.split(r"^      - ", java_job, flags=re.M)
+
+
+def test_fast_step_skips_only_integration_tests_and_full_step_runs_on_main_prs_to_main_and_nightly():
+    java = job(CI, "java")
+    fast = [s for s in steps(java) if "-DskipITs" in s]
+    full = [s for s in steps(java) if re.search(r"run: mvn -B -ntp verify$", s, re.M)]
+    assert len(fast) == 1 and len(full) == 1
+    for trigger in ("github.event_name == 'schedule'", "github.ref == 'refs/heads/main'", "github.base_ref == 'main'"):
+        assert trigger in full[0]
+        assert trigger in fast[0]  # negated there: fast runs exactly when full does not
+    assert "!(" in fast[0] and "!(" not in full[0]
+    assert re.search(r"^  schedule:", on_block(CI), re.M)
 
 
 def test_python_job_runs_the_whole_tests_folder():
