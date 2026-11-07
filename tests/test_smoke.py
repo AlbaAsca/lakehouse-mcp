@@ -85,6 +85,16 @@ def test_connector_without_tasks_fails(tmp_path):
     assert "NO TASKS" in result.stdout + result.stderr
 
 
+def test_smoke_script_drops_what_it_creates():
+    """T-078: the check must leave no table nor namespace behind (needs neither sh nor jq)."""
+    sql = SCRIPT.read_text(encoding="utf-8")
+    for create, drop in (("CREATE SCHEMA IF NOT EXISTS lh.smoke", "DROP SCHEMA lh.smoke"),
+                         ("CREATE TABLE lh.smoke.t", "DROP TABLE lh.smoke.t")):
+        assert create in sql and drop in sql
+        assert sql.index(drop) > sql.index(create)
+    assert sql.index("DROP TABLE lh.smoke.t") < sql.index("DROP SCHEMA lh.smoke")
+
+
 def test_no_connector_registered_fails(tmp_path):
     result = run_smoke(tmp_path, {})
 
