@@ -1,0 +1,358 @@
+{
+  "source": "testdata/synthetic-events.csv.gz",
+  "rules": [
+    "Día = los 10 primeros caracteres de event_time (UTC).",
+    "Nulo = campo vacío; se listan todas las columnas, también con 0.",
+    "Duplicados exactos = copias sobrantes de filas idénticas en las 9 columnas (filas - filas distintas).",
+    "price fuera de rango = price <= 0, separado en cero y negativo; price vacío cuenta como nulo, no aquí.",
+    "Volumen por día y event_type sin quitar duplicados."
+  ],
+  "totals": {
+    "rows": 50000,
+    "distinct_rows": 49750,
+    "duplicate_copies": 250,
+    "nulls": {
+      "event_time": 0,
+      "event_type": 0,
+      "product_id": 0,
+      "category_id": 0,
+      "category_code": 11952,
+      "brand": 5029,
+      "price": 0,
+      "user_id": 0,
+      "user_session": 50
+    },
+    "price_zero": 100,
+    "price_negative": 102,
+    "price_out_of_range": 202,
+    "rows_by_event_type": {
+      "cart": 6860,
+      "purchase": 3295,
+      "view": 39845
+    }
+  },
+  "by_day": {
+    "2024-03-01": {
+      "rows": 3610,
+      "rows_by_event_type": {
+        "cart": 495,
+        "purchase": 244,
+        "view": 2871
+      },
+      "nulls": {
+        "event_time": 0,
+        "event_type": 0,
+        "product_id": 0,
+        "category_id": 0,
+        "category_code": 858,
+        "brand": 369,
+        "price": 0,
+        "user_id": 0,
+        "user_session": 4
+      },
+      "duplicate_copies": 21,
+      "price_zero": 8,
+      "price_negative": 6,
+      "price_out_of_range": 14
+    },
+    "2024-03-02": {
+      "rows": 3723,
+      "rows_by_event_type": {
+        "cart": 504,
+        "purchase": 252,
+        "view": 2967
+      },
+      "nulls": {
+        "event_time": 0,
+        "event_type": 0,
+        "product_id": 0,
+        "category_id": 0,
+        "category_code": 873,
+        "brand": 387,
+        "price": 0,
+        "user_id": 0,
+        "user_session": 3
+      },
+      "duplicate_copies": 15,
+      "price_zero": 9,
+      "price_negative": 6,
+      "price_out_of_range": 15
+    },
+    "2024-03-03": {
+      "rows": 3560,
+      "rows_by_event_type": {
+        "cart": 465,
+        "purchase": 243,
+        "view": 2852
+      },
+      "nulls": {
+        "event_time": 0,
+        "event_type": 0,
+        "product_id": 0,
+        "category_id": 0,
+        "category_code": 816,
+        "brand": 383,
+        "price": 0,
+        "user_id": 0,
+        "user_session": 2
+      },
+      "duplicate_copies": 15,
+      "price_zero": 9,
+      "price_negative": 11,
+      "price_out_of_range": 20
+    },
+    "2024-03-04": {
+      "rows": 3688,
+      "rows_by_event_type": {
+        "cart": 520,
+        "purchase": 254,
+        "view": 2914
+      },
+      "nulls": {
+        "event_time": 0,
+        "event_type": 0,
+        "product_id": 0,
+        "category_id": 0,
+        "category_code": 875,
+        "brand": 388,
+        "price": 0,
+        "user_id": 0,
+        "user_session": 3
+      },
+      "duplicate_copies": 20,
+      "price_zero": 9,
+      "price_negative": 11,
+      "price_out_of_range": 20
+    },
+    "2024-03-05": {
+      "rows": 3672,
+      "rows_by_event_type": {
+        "cart": 510,
+        "purchase": 263,
+        "view": 2899
+      },
+      "nulls": {
+        "event_time": 0,
+        "event_type": 0,
+        "product_id": 0,
+        "category_id": 0,
+        "category_code": 879,
+        "brand": 398,
+        "price": 0,
+        "user_id": 0,
+        "user_session": 2
+      },
+      "duplicate_copies": 17,
+      "price_zero": 9,
+      "price_negative": 4,
+      "price_out_of_range": 13
+    },
+    "2024-03-06": {
+      "rows": 3314,
+      "rows_by_event_type": {
+        "cart": 456,
+        "purchase": 225,
+        "view": 2633
+      },
+      "nulls": {
+        "event_time": 0,
+        "event_type": 0,
+        "product_id": 0,
+        "category_id": 0,
+        "category_code": 845,
+        "brand": 318,
+        "price": 0,
+        "user_id": 0,
+        "user_session": 7
+      },
+      "duplicate_copies": 14,
+      "price_zero": 2,
+      "price_negative": 5,
+      "price_out_of_range": 7
+    },
+    "2024-03-07": {
+      "rows": 3568,
+      "rows_by_event_type": {
+        "cart": 485,
+        "purchase": 244,
+        "view": 2839
+      },
+      "nulls": {
+        "event_time": 0,
+        "event_type": 0,
+        "product_id": 0,
+        "category_id": 0,
+        "category_code": 914,
+        "brand": 348,
+        "price": 0,
+        "user_id": 0,
+        "user_session": 5
+      },
+      "duplicate_copies": 11,
+      "price_zero": 5,
+      "price_negative": 5,
+      "price_out_of_range": 10
+    },
+    "2024-03-08": {
+      "rows": 3560,
+      "rows_by_event_type": {
+        "cart": 497,
+        "purchase": 239,
+        "view": 2824
+      },
+      "nulls": {
+        "event_time": 0,
+        "event_type": 0,
+        "product_id": 0,
+        "category_id": 0,
+        "category_code": 834,
+        "brand": 395,
+        "price": 0,
+        "user_id": 0,
+        "user_session": 6
+      },
+      "duplicate_copies": 22,
+      "price_zero": 9,
+      "price_negative": 14,
+      "price_out_of_range": 23
+    },
+    "2024-03-09": {
+      "rows": 3483,
+      "rows_by_event_type": {
+        "cart": 465,
+        "purchase": 232,
+        "view": 2786
+      },
+      "nulls": {
+        "event_time": 0,
+        "event_type": 0,
+        "product_id": 0,
+        "category_id": 0,
+        "category_code": 865,
+        "brand": 327,
+        "price": 0,
+        "user_id": 0,
+        "user_session": 1
+      },
+      "duplicate_copies": 15,
+      "price_zero": 6,
+      "price_negative": 8,
+      "price_out_of_range": 14
+    },
+    "2024-03-10": {
+      "rows": 3356,
+      "rows_by_event_type": {
+        "cart": 480,
+        "purchase": 150,
+        "view": 2726
+      },
+      "nulls": {
+        "event_time": 0,
+        "event_type": 0,
+        "product_id": 0,
+        "category_id": 0,
+        "category_code": 757,
+        "brand": 326,
+        "price": 0,
+        "user_id": 0,
+        "user_session": 3
+      },
+      "duplicate_copies": 21,
+      "price_zero": 5,
+      "price_negative": 6,
+      "price_out_of_range": 11
+    },
+    "2024-03-11": {
+      "rows": 3490,
+      "rows_by_event_type": {
+        "cart": 474,
+        "purchase": 239,
+        "view": 2777
+      },
+      "nulls": {
+        "event_time": 0,
+        "event_type": 0,
+        "product_id": 0,
+        "category_id": 0,
+        "category_code": 914,
+        "brand": 298,
+        "price": 0,
+        "user_id": 0,
+        "user_session": 0
+      },
+      "duplicate_copies": 17,
+      "price_zero": 5,
+      "price_negative": 4,
+      "price_out_of_range": 9
+    },
+    "2024-03-12": {
+      "rows": 3844,
+      "rows_by_event_type": {
+        "cart": 535,
+        "purchase": 253,
+        "view": 3056
+      },
+      "nulls": {
+        "event_time": 0,
+        "event_type": 0,
+        "product_id": 0,
+        "category_id": 0,
+        "category_code": 907,
+        "brand": 369,
+        "price": 0,
+        "user_id": 0,
+        "user_session": 5
+      },
+      "duplicate_copies": 22,
+      "price_zero": 8,
+      "price_negative": 7,
+      "price_out_of_range": 15
+    },
+    "2024-03-13": {
+      "rows": 3536,
+      "rows_by_event_type": {
+        "cart": 499,
+        "purchase": 233,
+        "view": 2804
+      },
+      "nulls": {
+        "event_time": 0,
+        "event_type": 0,
+        "product_id": 0,
+        "category_id": 0,
+        "category_code": 803,
+        "brand": 339,
+        "price": 0,
+        "user_id": 0,
+        "user_session": 7
+      },
+      "duplicate_copies": 21,
+      "price_zero": 5,
+      "price_negative": 9,
+      "price_out_of_range": 14
+    },
+    "2024-03-14": {
+      "rows": 3596,
+      "rows_by_event_type": {
+        "cart": 475,
+        "purchase": 224,
+        "view": 2897
+      },
+      "nulls": {
+        "event_time": 0,
+        "event_type": 0,
+        "product_id": 0,
+        "category_id": 0,
+        "category_code": 812,
+        "brand": 384,
+        "price": 0,
+        "user_id": 0,
+        "user_session": 2
+      },
+      "duplicate_copies": 19,
+      "price_zero": 11,
+      "price_negative": 6,
+      "price_out_of_range": 17
+    }
+  }
+}
