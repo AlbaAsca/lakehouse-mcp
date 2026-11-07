@@ -39,6 +39,8 @@ spring:
               url: ${MCP_SERVER_URL:http://localhost:8090}
 
 agent:
+  mcp:
+    analyst-key: ${MCP_ANALYST_KEY:}
   limits:
     # 0 is no limit. Tokens (input + output) and USD per question, USD per run; the USD ones need the prices of the model.
     max-tokens: ${AGENT_MAX_TOKENS:200000}

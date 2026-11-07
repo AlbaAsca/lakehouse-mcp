@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-07T20:44:55+01:00",
+  "updated": "2026-11-07T20:47:14+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -69,8 +69,8 @@
       "name": "Tester",
       "role": "Verifica, escribe tests y busca fallos",
       "color": "#9ece6a",
-      "status": "working",
-      "current": "T-180"
+      "status": "idle",
+      "current": null
     },
     {
       "id": "investigador",
@@ -10258,7 +10258,7 @@
       "id": "T-180",
       "title": "Agente: enviar la clave de analista al servidor MCP",
       "owner": "desarrollador",
-      "status": "review",
+      "status": "done",
       "priority": "alta",
       "estimate_min": 20.0,
       "actual_min": 2.9,
@@ -10267,7 +10267,7 @@
       "desc": "Desde que el servidor exige clave, el agente no puede conectarse: no envía ninguna. Se propone que lea su clave de analista y la mande en cada llamada, y que compose se la pase.\nCómo sabremos si funciona: ./mk ask contesta con el servidor protegido.\n## Técnico\nAñadir MCP_ANALYST_KEY al servicio agent de compose.yaml y un McpSyncHttpClientRequestCustomizer (Spring AI) que ponga Authorization: Bearer; verificar el nombre de la API en la documentación. Ajustar tests/test_agent_compose.py. Seguir con T-042 (consola aprueba con MCP_ADMIN_KEY).",
       "deps": [],
       "created": "2026-11-07T17:42:05+01:00",
-      "updated": "2026-11-07T20:34:33+01:00",
+      "updated": "2026-11-07T20:47:14+01:00",
       "started_at": "2026-11-07T20:31:42+01:00",
       "finished_at": "2026-11-07T20:34:33+01:00",
       "log": [
@@ -10305,6 +10305,11 @@
           "t": "2026-11-07T20:43:17+01:00",
           "by": "tester",
           "msg": "verificando"
+        },
+        {
+          "t": "2026-11-07T20:47:14+01:00",
+          "by": "tester",
+          "msg": "DONE: T-180 verificado en diff y tests de módulo; el recorrido con servidor protegido (`AgentIT`, `./mk ask`) queda sin ejecutar y lo cubrirá la CI/T-176."
         }
       ],
       "rank": 3,
@@ -10319,6 +10324,17 @@
           "cost_usd": 0.2462939,
           "verdict": "review",
           "summary": "el agente envía `Authorization: Bearer` con `MCP_ANALYST_KEY` (compose, `application.yaml`, customizador y `AgentIT`); compila y los tests unitarios pasan, pero `AgentIT` con el servidor protegido sig"
+        },
+        {
+          "agent": "tester",
+          "mode": "verify",
+          "at": "2026-11-07T20:47:14+01:00",
+          "min": 3.9,
+          "turns": 11,
+          "tokens": 113909,
+          "cost_usd": 0.0930719,
+          "verdict": "done",
+          "summary": "T-180 verificado en diff y tests de módulo; el recorrido con servidor protegido (`AgentIT`, `./mk ask`) queda sin ejecutar y lo cubrirá la CI/T-176."
         }
       ],
       "verify_started": "2026-11-07T20:43:17+01:00"
@@ -15317,11 +15333,11 @@
   ],
   "runners": {
     "think": {
-      "state": "working",
-      "current": "T-191",
-      "message": "arquitecto con T-191",
+      "state": "stopped",
+      "current": null,
+      "message": "Runner parado",
       "pid": 24696,
-      "heartbeat": "2026-11-07T20:44:47+01:00",
+      "heartbeat": "2026-11-07T20:45:04+01:00",
       "enabled": true,
       "agent": "arquitecto",
       "started": "2026-11-07T20:44:47+01:00",

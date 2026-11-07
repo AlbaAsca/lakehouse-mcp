@@ -202,6 +202,7 @@ services:
       mcp-server: {condition: service_healthy}
     environment:
       MCP_SERVER_URL: http://mcp-server:8090
+      MCP_ANALYST_KEY: ${MCP_ANALYST_KEY:-}
       AGENT_PROVIDER: ${AGENT_PROVIDER:-google-genai}
       AGENT_MODEL: ${AGENT_MODEL:-}
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}

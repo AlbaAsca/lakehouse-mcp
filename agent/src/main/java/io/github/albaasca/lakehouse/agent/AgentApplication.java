@@ -1,5 +1,6 @@
 package io.github.albaasca.lakehouse.agent;
 
+import io.modelcontextprotocol.client.transport.customizer.McpSyncHttpClientRequestCustomizer;
 import java.util.List;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.model.ChatModel;
@@ -38,6 +39,16 @@ public class AgentApplication {
             public Object postProcessAfterInitialization(Object bean, String name) {
                 return bean instanceof ChatModel model && !(bean instanceof MeteredChatModel)
                         ? new MeteredChatModel(model, meter.getObject()) : bean;
+            }
+        };
+    }
+
+    /** The server asks for a Bearer key on every call; the agent is an analyst. Without a key, no header. */
+    @Bean
+    McpSyncHttpClientRequestCustomizer analystKey(@Value("${agent.mcp.analyst-key:}") String key) {
+        return (builder, method, endpoint, body, context) -> {
+            if (!key.isBlank()) {
+                builder.setHeader("Authorization", "Bearer " + key);
             }
         };
     }
