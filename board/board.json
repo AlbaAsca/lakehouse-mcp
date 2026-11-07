@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-07T17:24:07+01:00",
+  "updated": "2026-11-07T17:30:55+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -2986,7 +2986,7 @@
       "id": "T-037",
       "title": "Chaos: comando chaos, duplicados y partición vacía",
       "owner": "desarrollador",
-      "status": "review",
+      "status": "blocked",
       "priority": "alta",
       "estimate_min": 35.0,
       "actual_min": 9.3,
@@ -2998,7 +2998,7 @@
         "T-017"
       ],
       "created": "2026-11-02T11:38:29+01:00",
-      "updated": "2026-11-07T17:24:07+01:00",
+      "updated": "2026-11-07T17:30:55+01:00",
       "started_at": "2026-11-07T17:14:47+01:00",
       "finished_at": "2026-11-07T17:24:07+01:00",
       "log": [
@@ -3026,6 +3026,26 @@
           "t": "2026-11-07T17:24:07+01:00",
           "by": "runner",
           "msg": "✗ «grep -n \"COLUMNS\" -A3 testdata/../testkit/src/main/java/io/github/albaasca/lakehouse/testk»: varios comandos, tuberías, redirecciones o heredoc: lanza cada comando por separado y crea ficheros con Write/Edit"
+        },
+        {
+          "t": "2026-11-07T17:24:13+01:00",
+          "by": "tester",
+          "msg": "verificando"
+        },
+        {
+          "t": "2026-11-07T17:30:55+01:00",
+          "by": "tester",
+          "msg": "BLOCKED: T-037 verificada: ChaosIT 3/3 y mcp-server en verde; duplicados y partición vacía dan las filas previstas y el rollback las restaura."
+        },
+        {
+          "t": "2026-11-07T17:30:55+01:00",
+          "by": "tester",
+          "msg": "⚠ 1 comandos denegados: python board/board.py add \"Chaos: conectar «make chaos» y probar los argumentos "
+        },
+        {
+          "t": "2026-11-07T17:30:55+01:00",
+          "by": "runner",
+          "msg": "✗ «python board/board.py add \"Chaos: conectar «make chaos» y probar los argumentos del comand»: varios comandos, tuberías, redirecciones o heredoc: lanza cada comando por separado y crea ficheros con Write/Edit"
         }
       ],
       "runs": [
@@ -3038,8 +3058,19 @@
           "tokens": 623179,
           "cost_usd": 0.3313187000000001,
           "verdict": "review"
+        },
+        {
+          "agent": "tester",
+          "mode": "verify",
+          "at": "2026-11-07T17:30:55+01:00",
+          "min": 6.7,
+          "turns": 11,
+          "tokens": 258376,
+          "cost_usd": 0.1681686,
+          "verdict": "blocked"
         }
-      ]
+      ],
+      "verify_started": "2026-11-07T17:24:13+01:00"
     },
     {
       "id": "T-038",
@@ -9587,13 +9618,13 @@
     "measure": {
       "state": "working",
       "current": "T-037",
-      "message": "desarrollador con T-037",
+      "message": "tester con T-037",
       "pid": 19764,
-      "heartbeat": "2026-11-07T17:14:48+01:00",
+      "heartbeat": "2026-11-07T17:24:14+01:00",
       "enabled": true,
-      "agent": "desarrollador",
-      "started": "2026-11-07T17:14:47+01:00",
-      "live": "live-T-037-desarrollador-20261107-171447.jsonl"
+      "agent": "tester",
+      "started": "2026-11-07T17:24:14+01:00",
+      "live": "live-T-037-tester-20261107-172414.jsonl"
     }
   }
 }
