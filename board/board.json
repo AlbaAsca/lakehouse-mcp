@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-07T14:53:10+01:00",
+  "updated": "2026-11-07T14:59:16+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -1988,7 +1988,7 @@
       "id": "T-022",
       "title": "MCP: pipeline_health (retraso, frescura, último snapshot)",
       "owner": "desarrollador",
-      "status": "review",
+      "status": "done",
       "priority": "alta",
       "estimate_min": 35.0,
       "actual_min": 66.8,
@@ -2000,7 +2000,7 @@
         "T-013"
       ],
       "created": "2026-11-02T11:37:14+01:00",
-      "updated": "2026-11-07T14:53:10+01:00",
+      "updated": "2026-11-07T14:59:16+01:00",
       "started_at": "2026-11-07T14:52:51+01:00",
       "finished_at": "2026-11-07T14:53:10+01:00",
       "log": [
@@ -2058,6 +2058,16 @@
           "t": "2026-11-07T14:53:10+01:00",
           "by": "desarrollador",
           "msg": "REVIEW: `pipeline_health` está terminada y sus tests pasaron en verde; el bloqueo era falso y el único error de la pasada completa es ajeno, ya apuntado en T-170."
+        },
+        {
+          "t": "2026-11-07T14:53:16+01:00",
+          "by": "tester",
+          "msg": "verificando"
+        },
+        {
+          "t": "2026-11-07T14:59:16+01:00",
+          "by": "tester",
+          "msg": "DONE: `pipeline_health` verificada: tests unitarios 12/12 e integración con Kafka real 8/8; `McpServerIT` en verde; CI de develop sin rojos (canceladas y una pendiente)."
         }
       ],
       "runs": [
@@ -2080,8 +2090,19 @@
           "tokens": 46991,
           "cost_usd": 0.117757,
           "verdict": "review"
+        },
+        {
+          "agent": "tester",
+          "mode": "verify",
+          "at": "2026-11-07T14:59:16+01:00",
+          "min": 6.0,
+          "turns": 10,
+          "tokens": 130069,
+          "cost_usd": 0.11272140000000001,
+          "verdict": "done"
         }
-      ]
+      ],
+      "verify_started": "2026-11-07T14:53:16+01:00"
     },
     {
       "id": "T-023",
@@ -5735,6 +5756,11 @@
           "t": "2026-11-02T21:59:11+01:00",
           "by": "consultor",
           "msg": "Incluir también Tests por niveles en la plantilla, cuando la medición confirme que ahorra tiempo."
+        },
+        {
+          "t": "2026-11-07T14:53:46+01:00",
+          "by": "consultor",
+          "msg": "Las lecciones y reglas ya están en agent-board (d3b7fcf): tests por niveles, versiones, traspaso, menos tarjetas, topes de turnos. Falta el código: T-073, T-082, T-084, T-085, T-164 y, cuando esté, T-174."
         }
       ]
     },
@@ -8549,13 +8575,13 @@
     "measure": {
       "state": "working",
       "current": "T-022",
-      "message": "desarrollador con T-022",
+      "message": "tester con T-022",
       "pid": 19764,
-      "heartbeat": "2026-11-07T14:52:52+01:00",
+      "heartbeat": "2026-11-07T14:53:17+01:00",
       "enabled": true,
-      "agent": "desarrollador",
-      "started": "2026-11-07T14:52:52+01:00",
-      "live": "live-T-022-desarrollador-20261107-145252.jsonl"
+      "agent": "tester",
+      "started": "2026-11-07T14:53:17+01:00",
+      "live": "live-T-022-tester-20261107-145317.jsonl"
     }
   }
 }
