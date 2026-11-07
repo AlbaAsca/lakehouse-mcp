@@ -157,7 +157,7 @@ def pick(b, lane="all"):
     """Siguiente tarea ejecutable: (tarea, modo) con modo 'verify' o 'work'. Las verificaciones van al carril measure."""
     # tareas que necesitan algo del responsable (manual) solo corren cuando el responsable las mueve a Próximo
     ok = lambda t: t["owner"] != "consultor" and t.get("kind") != "contrib" and bd.deps_done(b, t) and (t.get("auto", True) or t["status"] == "next")
-    key = lambda t: (bd.PRIO.get(t.get("priority"), 1), t["id"])
+    key = lambda t: (bd.rank_of(t), t["id"])
     rev = sorted([t for t in b["tasks"] if t["status"] == "review" and ok(t)], key=key) if lane in ("all", "measure") else []
     if rev:
         return rev[0], "verify"

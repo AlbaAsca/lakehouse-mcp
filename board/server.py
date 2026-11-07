@@ -78,7 +78,7 @@ def get_board():
     return Response(json.dumps(b, ensure_ascii=False), media_type="application/json", headers={"Cache-Control": "no-store"})
 
 
-EDITABLE = {"title", "owner", "priority", "estimate_min", "desc", "deps", "manual"}
+EDITABLE = {"title", "owner", "priority", "rank", "estimate_min", "desc", "deps", "manual"}
 
 
 @app.patch("/api/board/task/{tid}")

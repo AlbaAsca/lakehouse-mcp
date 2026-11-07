@@ -169,6 +169,7 @@ dialog h3{margin:0;grid-column:1/-1;font-size:15px}
 const $ = (s) => document.querySelector(s);
 let B = null, filter = null, editing = false, dragId = null;
 const PR = { alta: 0, media: 1, baja: 2 };
+const rk = t => Number.isInteger(t.rank) ? t.rank : ({ alta: 100, media: 500, baja: 900 }[t.priority] ?? 500);
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const fmtMin = (m) => m == null ? "–" : m < 1 ? "<1 min" : m < 60 ? Math.round(m) + " min" : (m / 60).toFixed(1).replace(".", ",") + " h";
 const minsSince = (t) => t ? (Date.now() - new Date(t)) / 60000 : 0;
@@ -265,7 +266,7 @@ function render() {
     const mine = B.tasks.filter((t) => t.owner === a.id);
     const cur = B.tasks.find((t) => t.id === a.current);
     const nxt = mine.filter((t) => ORD.includes(t.status) && t.id !== a.current)
-      .sort((x, y) => ORD.indexOf(x.status) - ORD.indexOf(y.status) || PR[x.priority] - PR[y.priority])[0];
+      .sort((x, y) => ORD.indexOf(x.status) - ORD.indexOf(y.status) || rk(x) - rk(y))[0];
     const load = mine.filter((t) => t.status !== "done").reduce((s, t) => s + (t.estimate_min || 10), 0) * f;
     return `<div class="agent ${filter === a.id ? "sel" : ""}" style="--c:${a.color}" data-a="${a.id}">
       <div class="top"><span class="dot" style="background:${a.color}"></span><span class="name">${esc(a.name)}</span><span class="badge ${a.status}">${a.status === "working" ? "Trabajando" : "Libre"}</span></div>
@@ -280,7 +281,7 @@ function render() {
 
   $("#board").innerHTML = B.columns.map((c) => {
     const ts = B.tasks.filter((t) => t.status === c.id && (!filter || t.owner === filter))
-      .sort((x, y) => c.id === "done" ? (y.finished_at || "").localeCompare(x.finished_at || "") : PR[x.priority] - PR[y.priority] || x.id.localeCompare(y.id));
+      .sort((x, y) => c.id === "done" ? (y.finished_at || "").localeCompare(x.finished_at || "") : rk(x) - rk(y) || x.id.localeCompare(y.id));
     const m = c.id === "done" ? ts.reduce((s, t) => s + (realMin(t) || 0), 0) : ts.reduce((s, t) => s + (t.estimate_min || 0), 0);
     const body = c.id === "done" ? doneGrid(ts) : ts.map(card).join("");
     return `<section class="col ${c.id}" data-s="${c.id}"><h2><span>${c.name}</span><span>${ts.length}${m ? " · " + fmtMin(m) : ""}</span></h2>
@@ -314,7 +315,7 @@ function card(t) {
   const pct = est && real != null ? Math.min(100, real / est * 100) : 0;
   const manual = (t.status === "human" || t.owner === "consultor") && t.status !== "done" && t.manual;
   return `<article class="card ${live ? "live" : ""}" draggable="true" data-id="${t.id}" style="--c:${a.color}">
-    <div class="meta"><span>${t.id}</span><span class="prio ${t.priority}">${t.priority}</span><span class="tm">${tm}</span></div>
+    <div class="meta"><span>${t.id}</span><span class="prio ${t.priority}">${t.priority}</span><span title="orden de ejecución (1 primero)">#${rk(t)}</span><span class="tm">${tm}</span></div>
     <div class="t">${t.answered ? "<b style='color:var(--acc)'>[RESPONDIDA]</b> " : ""}${esc(t.title)}</div>
     ${manual ? `<div class="manual"><b>Tú:</b> ${esc(t.manual)}</div>` : ""}
     <div class="meta"><span class="dot" style="background:${a.color}"></span>${esc(a.name)}${t.deps?.length ? ` · depende de ${t.deps.join(", ")}` : ""}${t.runs?.length ? ` · ${t.runs.length} ejecuc.` : ""}</div>
