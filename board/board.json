@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-07T21:14:41+01:00",
+  "updated": "2026-11-07T21:14:47+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -15433,26 +15433,49 @@
       "id": "T-197",
       "title": "Pruebas y entorno: cinco fallos pequeños que ensucian la CI",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "blocked",
       "priority": "media",
       "estimate_min": 45.0,
-      "actual_min": null,
+      "actual_min": 0.0,
       "auto": true,
       "manual": null,
       "desc": "Pruebas que fallan por la hora o por variables de compose, el stack sin su base de datos, un error de Polaris con la tabla history y el tiempo máximo de reparación. Se arreglan juntos para dejar la CI limpia. Cómo sabremos si funciona: cada punto de la lista tiene su test o comprobación en verde y las tarjetas absorbidas quedan cerradas con nota.\n\n## Técnico\nAbsorbe (criterios en el historial de cada una):\n- T-068: El stack levantado funciona sin su base de datos\n- T-156: Polaris da un error interno al crear una tabla llamada history\n- T-163: Un test del servidor falla al azar según la hora a la que se lanza\n- T-167: Reparación: ponerle tiempo máximo a cada operación\n- T-179: Dos pruebas del panel fallan por las variables del servidor MCP en compose",
       "deps": [],
       "created": "2026-11-07T20:36:59+01:00",
-      "updated": "2026-11-07T20:36:59+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-07T21:14:47+01:00",
+      "started_at": "2026-11-07T21:14:46+01:00",
+      "finished_at": "2026-11-07T21:14:47+01:00",
       "log": [
         {
           "t": "2026-11-07T20:36:59+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-07T21:14:46+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-07T21:14:47+01:00",
+          "by": "desarrollador",
+          "msg": "BLOCKED: [WinError 206] El nombre del archivo o la extensión es demasiado largo"
         }
       ],
-      "rank": 300
+      "rank": 300,
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-07T21:14:47+01:00",
+          "min": 0.0,
+          "turns": null,
+          "tokens": null,
+          "cost_usd": null,
+          "verdict": "blocked",
+          "summary": "[WinError 206] El nombre del archivo o la extensión es demasiado largo"
+        }
+      ]
     },
     {
       "id": "T-198",
@@ -15720,14 +15743,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-196",
-      "message": "desarrollador con T-196",
+      "current": "T-197",
+      "message": "desarrollador con T-197",
       "pid": 24920,
-      "heartbeat": "2026-11-07T21:14:41+01:00",
+      "heartbeat": "2026-11-07T21:14:46+01:00",
       "enabled": true,
       "agent": "desarrollador",
-      "started": "2026-11-07T21:14:41+01:00",
-      "live": "live-T-196-desarrollador-20261107-211441.jsonl"
+      "started": "2026-11-07T21:14:46+01:00",
+      "live": "live-T-197-desarrollador-20261107-211446.jsonl"
     }
   }
 }
