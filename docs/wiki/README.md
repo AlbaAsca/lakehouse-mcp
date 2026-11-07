@@ -6,7 +6,7 @@ Piensa en una tienda online. Cada clic es una nota. Las notas llegan por una cin
 
 Cada página empieza en lenguaje llano y avanza hasta el detalle técnico. Puedes parar donde quieras.
 
-> **Fecha de esta foto:** 2 de noviembre de 2026, sobre la rama `develop` en el commit `129dee6`. El proyecto se está construyendo mientras se escribe esto: si algo no coincide, mandan el código y [el panel](componentes/agent-board.md).
+> **Fecha de esta foto:** 7 de noviembre de 2026, sobre la rama `develop` en el commit `090b32f`. El proyecto se está construyendo mientras se escribe esto: si algo no coincide, mandan el código y [el panel](componentes/agent-board.md).
 
 ## Dos rutas de lectura
 
@@ -26,20 +26,16 @@ Cada página empieza en lenguaje llano y avanza hasta el detalle técnico. Puede
 
 ## Qué funciona hoy
 
-| | Pieza | Estado real |
+| | Pieza | Estado en una línea (el detalle y lo «sin probar» están en su página) |
 |---|---|---|
-| ✅ | Stack en Docker Compose con healthchecks | Levantado y comprobado |
-| ✅ | Tabla Iceberg creada, escrita y leída desde DuckDB, pasando por Polaris y SeaweedFS | `./mk smoke`, y [el tutorial](03-probarlo.md) |
-| ✅ | El catálogo sobrevive a un reinicio de Polaris (T-002, T-005) | Guardado en Postgres. El reinicio no se repitió para esta wiki: consta en la tarjeta T-005 |
-| ✅ | Imagen `tools` con JDK, Maven, make, DuckDB y Kaggle | Versiones comprobadas |
-| ✅ | Muestra sintética de 50.000 filas para tests | `testdata/synthetic-events.csv.gz` |
-| 🚧 | Productor Java (T-008, T-011, T-013) | Lectura, muestreo, orden y envío a Kafka con tests en verde sobre la muestra sintética. `./mk seed-sample` carga la muestra en el stack (T-091). Falta probar `./mk seed` con el CSV real. [Detalle](componentes/productor.md) |
-| ✅ | Conector hacia Iceberg (T-012, T-072) | La tarea sale `RUNNING` y un evento llega a la tabla, comprobado en contenedores; `./mk up` sobre un stack ya existente termina sin error. **Sin probar:** `./mk up` desde cero, un evento en el stack de `compose.yaml` y el mes real. [Detalle](componentes/kafka-connect.md) |
-| 🚧 | Ingesta de principio a fin (T-015, T-018) | La muestra sintética llega del CSV a la tabla fila a fila, comprobado en contenedores (`IngestE2EIT`). **Sin probar:** el stack de `compose.yaml` y el mes real |
-| 🟡 | [Servidor MCP](componentes/servidor-mcp.md) | Arranca y sirve `list_tables`, `describe_table`, `run_query`, `time_travel`, `pipeline_health` y `data_quality_check` a un cliente MCP real en los tests, con su [validador de SQL](componentes/servidor-mcp.md#el-validador-de-sql). Su imagen arranca sana y contesta a un cliente MCP en contenedores (T-093) y ya es un servicio del compose. **Sin probar:** `./mk up` con ese servicio. Aún no tiene claves de API |
-| 🟡 | [Agente](componentes/agente.md) (T-094) | Contesta una pregunta consultando por MCP, con tope de llamadas; comprobado con un modelo simulado contra la imagen real del servidor. Gemini por defecto, Claude por configuración. Se pregunta con `./mk ask Q="..."` (imagen probada con modelo simulado). **Sin probar:** con un modelo de verdad (T-097). Aún sin métricas (T-034) |
-| ⬜ | [Capa semántica](componentes/capa-semantica.md) | Solo existen su `pom.xml` y sus [definiciones en palabras](../metrics.md) |
-| ⬜ | Chaos y self-healing, evals, RBAC y auditoría | Planificado. `./mk evals`, `chaos` y `demo` responden «not implemented yet» |
+| ✅ | Stack en Docker Compose, tabla Iceberg escrita y leída desde DuckDB | `./mk smoke` y [el tutorial](03-probarlo.md) |
+| ✅ | Catálogo persistente, imagen `tools`, muestra sintética | [Polaris](componentes/polaris.md), [Postgres](componentes/postgres.md), [Imagen tools](componentes/imagen-tools.md) |
+| ✅ | Conector hacia Iceberg | [Kafka Connect](componentes/kafka-connect.md) |
+| 🚧 | Productor y ingesta de principio a fin | [Productor](componentes/productor.md) |
+| 🟡 | Servidor MCP: seis herramientas, validador de SQL y lectura del catálogo con DuckDB | [Servidor MCP](componentes/servidor-mcp.md), [DuckDB](componentes/duckdb.md#dentro-del-servidor-mcp) |
+| 🟡 | Agente: contesta por MCP con tope de llamadas; Gemini por defecto, Claude por configuración | [Agente](componentes/agente.md) |
+| ⬜ | Capa semántica | [Capa semántica](componentes/capa-semantica.md) |
+| ⬜ | Chaos y self-healing, RBAC y auditoría | Planificado: `./mk chaos` y `./mk demo` responden «not implemented yet» |
 
 No hay ninguna cifra de precisión ni de rendimiento porque todavía no se ha medido nada de eso.
 
