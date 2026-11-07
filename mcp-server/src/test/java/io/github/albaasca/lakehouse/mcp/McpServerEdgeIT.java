@@ -71,6 +71,7 @@ class McpServerEdgeIT {
         registry.add("lakehouse.storage.access-key", () -> LakehouseStack.S3_ACCESS_KEY);
         registry.add("lakehouse.storage.secret-key", () -> LakehouseStack.S3_SECRET_KEY);
         registry.add("lakehouse.storage.region", () -> LakehouseStack.S3_REGION);
+        registry.add("lakehouse.security.analyst-key", () -> "analyst-it-key");
     }
 
     @BeforeAll
@@ -96,7 +97,8 @@ class McpServerEdgeIT {
 
     private McpSyncClient client() {
         if (client == null) {
-            client = McpClient.sync(HttpClientStreamableHttpTransport.builder("http://localhost:" + port).build()).build();
+            client = McpClient.sync(HttpClientStreamableHttpTransport.builder("http://localhost:" + port)
+                    .requestBuilder(java.net.http.HttpRequest.newBuilder().header("Authorization", "Bearer analyst-it-key")).build()).build();
             client.initialize();
         }
         return client;

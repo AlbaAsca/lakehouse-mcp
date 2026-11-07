@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-07T17:30:55+01:00",
+  "updated": "2026-11-07T17:42:14+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -3458,10 +3458,10 @@
       "id": "T-050",
       "title": "Seguridad: roles analyst y admin en las herramientas",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "blocked",
       "priority": "alta",
       "estimate_min": 35.0,
-      "actual_min": null,
+      "actual_min": 11.2,
       "auto": true,
       "manual": null,
       "desc": "Hoy cualquiera con acceso al servidor podría aprobar y aplicar arreglos. Se separan los roles: el analista lee y propone, y solo el administrador aplica y aprueba. El agente usa una clave de analista, lo que hace real la aprobación humana.\nCómo sabremos si funciona: una tabla de pruebas recorre herramienta por rol y comprueba permitido o denegado; sin clave, todo da 401 salvo la salud.\n\n## Técnico\n- Spring Security + claves API por .env (MCP_ANALYST_KEY, MCP_ADMIN_KEY; añadir a .env.example con valores de ejemplo, comparación en tiempo constante).\n- analyst: list_tables, describe_table, run_query, get_metric, pipeline_health, data_quality_check, time_travel, propose_fix. admin: además apply_fix y POST /fix-proposals/{id}/approvals.\n- Confirmar con T-042: la consola aprueba con admin, el modelo opera con analyst, y apply_fix lo ejecuta el programa o un rol separado.\n- Tocará adaptar ITs anteriores. Verificación: ./mk test.",
@@ -3470,9 +3470,9 @@
         "T-020"
       ],
       "created": "2026-11-02T11:39:42+01:00",
-      "updated": "2026-11-02T11:39:42+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-07T17:42:14+01:00",
+      "started_at": "2026-11-07T17:31:01+01:00",
+      "finished_at": "2026-11-07T17:42:14+01:00",
       "log": [
         {
           "t": "2026-11-02T11:39:42+01:00",
@@ -3483,6 +3483,48 @@
           "t": "2026-11-04T20:30:09+01:00",
           "by": "consultor",
           "msg": "T-020: la cadena openUntilApiKeys de McpServerApplication deja todo abierto y sin CSRF; hay que sustituirla. También sale en el log una contraseña generada que hoy no protege nada. Mientras no haya claves, una web abierta en el navegador podría llamar a /mcp en localhost: la especificación MCP pide validar la cabecera Origin; comprobarlo aquí."
+        },
+        {
+          "t": "2026-11-07T17:31:01+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-07T17:42:14+01:00",
+          "by": "desarrollador",
+          "msg": "BLOCKED: roles analyst/admin con claves Bearer, 401 sin clave y 403 por rol y por Origin; tests de mcp-server en verde; falta que el agente envíe su clave (T-180) y la prueba de punta a punta (T-181)"
+        },
+        {
+          "t": "2026-11-07T17:42:14+01:00",
+          "by": "desarrollador",
+          "msg": "⚠ 3 comandos denegados: find / -name \"spring-ai-mcp-*.jar\" -o -name \"spring-ai-autoconfigure-mcp-client* | python board/board.py add \"Agente: enviar la clave de analista al servidor MCP\"  | python board/board.py add \"Seguridad: prueba de punta a punta de 401 y aprobacio"
+        },
+        {
+          "t": "2026-11-07T17:42:14+01:00",
+          "by": "runner",
+          "msg": "✗ «find / -name \"spring-ai-mcp-*.jar\" -o -name \"spring-ai-autoconfigure-mcp-client*.jar\" 2>/d»: varios comandos, tuberías, redirecciones o heredoc: lanza cada comando por separado y crea ficheros con Write/Edit"
+        },
+        {
+          "t": "2026-11-07T17:42:14+01:00",
+          "by": "runner",
+          "msg": "✗ «python board/board.py add \"Agente: enviar la clave de analista al servidor MCP\" --owner de»: varios comandos, tuberías, redirecciones o heredoc: lanza cada comando por separado y crea ficheros con Write/Edit"
+        },
+        {
+          "t": "2026-11-07T17:42:14+01:00",
+          "by": "runner",
+          "msg": "✗ «python board/board.py add \"Seguridad: prueba de punta a punta de 401 y aprobaciones solo d»: varios comandos, tuberías, redirecciones o heredoc: lanza cada comando por separado y crea ficheros con Write/Edit"
+        }
+      ],
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-07T17:42:14+01:00",
+          "min": 11.2,
+          "turns": 62,
+          "tokens": 1290880,
+          "cost_usd": 0.6432639999999998,
+          "verdict": "blocked"
         }
       ]
     },
@@ -9599,6 +9641,54 @@
           "msg": "creada"
         }
       ]
+    },
+    {
+      "id": "T-180",
+      "title": "Agente: enviar la clave de analista al servidor MCP",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "alta",
+      "estimate_min": 20.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Desde que el servidor exige clave, el agente no puede conectarse: no envía ninguna. Se propone que lea su clave de analista y la mande en cada llamada, y que compose se la pase.\nCómo sabremos si funciona: ./mk ask contesta con el servidor protegido.\n## Técnico\nAñadir MCP_ANALYST_KEY al servicio agent de compose.yaml y un McpSyncHttpClientRequestCustomizer (Spring AI) que ponga Authorization: Bearer; verificar el nombre de la API en la documentación. Ajustar tests/test_agent_compose.py. Seguir con T-042 (consola aprueba con MCP_ADMIN_KEY).",
+      "deps": [],
+      "created": "2026-11-07T17:42:05+01:00",
+      "updated": "2026-11-07T17:42:05+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-07T17:42:05+01:00",
+          "by": "desarrollador",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-181",
+      "title": "Seguridad: prueba de punta a punta de 401 y aprobaciones solo de admin",
+      "owner": "tester",
+      "status": "backlog",
+      "priority": "media",
+      "estimate_min": 20.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Las pruebas actuales comprueban el filtro de claves y las herramientas por rol, pero no recorren la aplicación entera con peticiones HTTP.\nCómo sabremos si funciona: con la aplicación levantada, sin clave da 401 (salvo la salud), el analista recibe 403 al aprobar y el administrador 201.\n## Técnico\nIT con SpringBootTest + Postgres ops: GET /actuator/health 200 sin clave; /mcp y /fix-proposals 401 sin clave; POST /fix-proposals/{id}/approvals 403 con analyst y 201 con admin; apply_fix 403 con analyst; Origin ajeno 403.",
+      "deps": [],
+      "created": "2026-11-07T17:42:06+01:00",
+      "updated": "2026-11-07T17:42:06+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-07T17:42:06+01:00",
+          "by": "desarrollador",
+          "msg": "creada"
+        }
+      ]
     }
   ],
   "runners": {
@@ -9617,14 +9707,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-037",
-      "message": "tester con T-037",
+      "current": "T-050",
+      "message": "desarrollador con T-050",
       "pid": 19764,
-      "heartbeat": "2026-11-07T17:24:14+01:00",
+      "heartbeat": "2026-11-07T17:31:02+01:00",
       "enabled": true,
-      "agent": "tester",
-      "started": "2026-11-07T17:24:14+01:00",
-      "live": "live-T-037-tester-20261107-172414.jsonl"
+      "agent": "desarrollador",
+      "started": "2026-11-07T17:31:01+01:00",
+      "live": "live-T-050-desarrollador-20261107-173102.jsonl"
     }
   }
 }

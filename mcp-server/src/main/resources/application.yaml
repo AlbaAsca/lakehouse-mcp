@@ -15,7 +15,6 @@ spring:
           completion: false
 
 server:
-  # Loopback until the API keys of T-050: the endpoint has no authentication yet.
   address: ${MCP_SERVER_ADDRESS:127.0.0.1}
   port: ${MCP_SERVER_PORT:8090}
 
@@ -33,6 +32,12 @@ lakehouse:
     access-key: ${S3_ACCESS_KEY}
     secret-key: ${S3_SECRET_KEY}
     region: ${S3_REGION}
+  # Bearer keys. Blank = nobody has that role (everything but /actuator/health answers 401). admin: also apply_fix and
+  # POST /fix-proposals/{id}/approvals. The agent gets only the analyst key. allowed-origins: besides localhost.
+  security:
+    analyst-key: ${MCP_ANALYST_KEY:}
+    admin-key: ${MCP_ADMIN_KEY:}
+    allowed-origins: ${MCP_ALLOWED_ORIGINS:}
   # Proposals of propose_fix. Empty url: the tools propose_fix and apply_fix and /fix-proposals are not offered.
   ops:
     url: ${OPS_DB_URL:}

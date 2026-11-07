@@ -166,10 +166,12 @@ services:
       S3_ACCESS_KEY: ${S3_ACCESS_KEY}
       S3_SECRET_KEY: ${S3_SECRET_KEY}
       S3_REGION: ${S3_REGION}
+      MCP_ANALYST_KEY: ${MCP_ANALYST_KEY}
+      MCP_ADMIN_KEY: ${MCP_ADMIN_KEY}
       OPS_DB_URL: jdbc:postgresql://postgres:5432/ops
       OPS_DB_USER: polaris
       OPS_DB_PASSWORD: ${POSTGRES_PASSWORD:-change-me-postgres}
-    # Host loopback only: no authentication until the API keys of T-050. Other services reach it at mcp-server:8090.
+    # Host loopback only, and every call needs a Bearer key (analyst or admin). Other services reach it at mcp-server:8090.
     ports: ["127.0.0.1:8090:8090"]
 
   # One run on demand (`make expire`), never started by `make up`. Takes its arguments from the command line.

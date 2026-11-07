@@ -24,7 +24,8 @@ import org.springframework.security.web.SecurityFilterChain;
 /** The MCP server. It does not start without the catalog: every tool would fail anyway. */
 @SpringBootApplication
 @EnableConfigurationProperties({McpServerApplication.LakehouseProperties.class,
-        McpServerApplication.PipelineProperties.class, McpServerApplication.QualityProperties.class})
+        McpServerApplication.PipelineProperties.class, McpServerApplication.QualityProperties.class,
+        McpServerApplication.SecurityProperties.class})
 public class McpServerApplication {
 
     @ConfigurationProperties("lakehouse")
@@ -140,14 +141,29 @@ public class McpServerApplication {
         }
     }
 
-    /**
-     * No authentication until the API keys of T-050, which is why the server only listens on loopback by default.
-     * Without this chain the security starter answers 401 to everything, and CSRF rejects every POST to the endpoint.
-     */
+    /** API keys of the two roles (see {@link McpSecurity}). Blank means nobody holds that role. */
+    @ConfigurationProperties("lakehouse.security")
+    record SecurityProperties(String analystKey, String adminKey, List<String> allowedOrigins) {}
+
     @Bean
-    SecurityFilterChain openUntilApiKeys(HttpSecurity http) throws Exception {
-        return http.csrf(csrf -> csrf.disable())
-                .authorizeHttpRequests(requests -> requests.anyRequest().permitAll())
-                .build();
+    SecurityFilterChain apiKeys(HttpSecurity http, SecurityProperties security) throws Exception {
+        return McpSecurity.chain(http, security.analystKey(), security.adminKey(), security.allowedOrigins());
+    }
+
+    /** Declaring a provider stops Spring Boot from generating a user and logging its password: there are no users. */
+    @Bean
+    org.springframework.security.authentication.AuthenticationProvider noPasswordLogin() {
+        return new org.springframework.security.authentication.AuthenticationProvider() {
+            @Override
+            public org.springframework.security.core.Authentication authenticate(
+                    org.springframework.security.core.Authentication authentication) {
+                return null;
+            }
+
+            @Override
+            public boolean supports(Class<?> authentication) {
+                return false;
+            }
+        };
     }
 }
