@@ -96,6 +96,12 @@ public class McpServerApplication {
                 new QualityTools.Drift(pipeline.namespace(), pipeline.table(), quality.subject(), registry));
     }
 
+    @Bean
+    MetricTools metricTools(LakehouseSession session, PipelineProperties pipeline) {
+        return new MetricTools(session, io.github.albaasca.lakehouse.semantic.MetricCatalog.load(),
+                LakehouseSession.CATALOG_ALIAS + "." + pipeline.namespace() + "." + pipeline.table());
+    }
+
     /** Postgres database {@code ops}, where proposals live. An empty url turns propose_fix and apply_fix off. */
     @ConfigurationProperties("lakehouse.ops")
     record OpsProperties(String url, String user, String password) {}

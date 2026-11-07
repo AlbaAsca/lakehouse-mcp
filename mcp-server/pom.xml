@@ -45,6 +45,11 @@
       <artifactId>spring-boot-starter-test</artifactId>
       <scope>test</scope>
     </dependency>
+    <!-- The metrics (YAML) that get_metric serves. -->
+    <dependency>
+      <groupId>io.github.albaasca</groupId>
+      <artifactId>semantic</artifactId>
+    </dependency>
     <dependency>
       <groupId>io.github.albaasca</groupId>
       <artifactId>testkit</artifactId>

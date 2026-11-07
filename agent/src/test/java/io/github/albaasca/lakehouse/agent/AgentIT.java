@@ -45,7 +45,7 @@ class AgentIT {
     /** The same paths as McpServerImageIT: what the root .dockerignore lets through. */
     private static final List<String> CONTEXT = List.of("pom.xml", "producer/pom.xml", "mcp-server/pom.xml", "agent/pom.xml",
             "semantic/pom.xml", "evals/pom.xml","testkit/pom.xml", "maintenance/pom.xml", "mcp-server/src/main",
-            "testkit/src/main", "infra/mcp-server");
+            "semantic/src/main", "testkit/src/main", "infra/mcp-server");
     private static final ObjectMapper JSON = new ObjectMapper();
 
     private static GenericContainer<?> server;

@@ -123,7 +123,7 @@ class McpServerIT {
         assertThat(client().getServerCapabilities().completions()).isNull();
         assertThat(tools).extracting(Tool::name)
                 .containsExactlyInAnyOrder("list_tables", "describe_table", "run_query", "time_travel", "pipeline_health",
-                        "data_quality_check");
+                        "data_quality_check", "list_metrics", "get_metric");
         assertThat(tools).allSatisfy(tool -> {
             assertThat(tool.description()).isNotBlank();
             assertThat(tool.annotations().readOnlyHint()).isTrue();

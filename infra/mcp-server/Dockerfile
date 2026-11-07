@@ -14,6 +14,7 @@ COPY maintenance/pom.xml maintenance/
 RUN mvn -B -q -pl mcp-server -am -Dmaven.test.skip=true -Dspring-boot.repackage.skip=true package
 # mcp-server only uses testkit in its tests, but Maven still needs it in the build.
 COPY testkit/src/main testkit/src/main
+COPY semantic/src/main semantic/src/main
 COPY mcp-server/src/main mcp-server/src/main
 RUN mvn -B -q -pl mcp-server -am -Dmaven.test.skip=true package
 RUN mkdir /out && cp mcp-server/target/mcp-server-*.jar /out/mcp-server.jar
