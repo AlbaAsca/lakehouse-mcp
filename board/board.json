@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-07T16:07:03+01:00",
+  "updated": "2026-11-07T16:11:31+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -2537,10 +2537,10 @@
       "id": "T-031",
       "title": "Semántica: métricas en YAML que coincidan con la referencia",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "review",
       "priority": "alta",
       "estimate_min": 35.0,
-      "actual_min": null,
+      "actual_min": 4.4,
       "auto": true,
       "manual": null,
       "desc": "Las métricas se escriben en YAML para que el agente las use en lugar de improvisar SQL, y que cambiar una definición no suponga tocar Java. Se comprueban contra la referencia del tester, día a día.\nCómo sabremos si funciona: las cuatro métricas coinciden con evals/truth/metrics.json en todos los días; un YAML mal formado falla al arrancar con un mensaje claro.\n\n## Técnico\n- semantic/src/main/resources/metrics/*.yaml: name, description, sql, parameters (from, to, limit), unit. Biblioteca semantic: MetricCatalog con carga y validación.\n- Parámetros por bind, nunca por concatenación.\n- SemanticMetricsIT en ./mk test con LakehouseStack, tolerancia 1e-6.",
@@ -2549,14 +2549,36 @@
         "T-016"
       ],
       "created": "2026-11-02T11:37:59+01:00",
-      "updated": "2026-11-02T11:37:59+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-07T16:11:31+01:00",
+      "started_at": "2026-11-07T16:07:09+01:00",
+      "finished_at": "2026-11-07T16:11:31+01:00",
       "log": [
         {
           "t": "2026-11-02T11:37:59+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-07T16:07:09+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-07T16:11:31+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: las cuatro métricas YAML y `MetricCatalog` coinciden con la referencia en el total y en cada día; los tests del módulo `semantic` pasan."
+        }
+      ],
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-07T16:11:31+01:00",
+          "min": 4.4,
+          "turns": 35,
+          "tokens": 638009,
+          "cost_usd": 0.5364221,
+          "verdict": "review"
         }
       ]
     },
@@ -9265,14 +9287,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-029",
-      "message": "tester con T-029",
+      "current": "T-031",
+      "message": "desarrollador con T-031",
       "pid": 19764,
-      "heartbeat": "2026-11-07T16:05:30+01:00",
+      "heartbeat": "2026-11-07T16:07:10+01:00",
       "enabled": true,
-      "agent": "tester",
-      "started": "2026-11-07T16:05:29+01:00",
-      "live": "live-T-029-tester-20261107-160529.jsonl"
+      "agent": "desarrollador",
+      "started": "2026-11-07T16:07:09+01:00",
+      "live": "live-T-031-desarrollador-20261107-160709.jsonl"
     }
   }
 }

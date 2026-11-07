@@ -1,0 +1,36 @@
+# Rules: docs/metrics.md. Session = user_session; a session belongs to the UTC day of its first event.
+name: conversion_funnel
+description: >-
+  Sessions that reach view, cart and purchase, and the rate between steps. A step contains the next ones
+  (a purchase counts as reaching cart). Rates are null when there are no sessions.
+unit: sessions and ratio (0 to 1, 6 decimals)
+parameters:
+  - name: from
+    type: date
+  - name: to
+    type: date
+sql: |
+  WITH ev AS (
+    SELECT DISTINCT * FROM ${table}
+    WHERE event_type IN ('view', 'cart', 'purchase') AND user_session IS NOT NULL AND user_session <> ''
+  ),
+  s AS (
+    SELECT user_session,
+           CAST(timezone('UTC', min(event_time)) AS DATE) AS day,
+           bool_or(event_type IN ('cart', 'purchase')) AS reached_cart,
+           bool_or(event_type = 'purchase') AS reached_purchase
+    FROM ev GROUP BY user_session
+  ),
+  w AS (
+    SELECT * FROM s
+    WHERE (CAST(:from AS DATE) IS NULL OR day >= CAST(:from AS DATE))
+      AND (CAST(:to AS DATE) IS NULL OR day <= CAST(:to AS DATE))
+  )
+  SELECT count(*) AS view_sessions,
+         count(*) FILTER (WHERE reached_cart) AS cart_sessions,
+         count(*) FILTER (WHERE reached_purchase) AS purchase_sessions,
+         round(CAST(count(*) FILTER (WHERE reached_cart) AS DOUBLE) / NULLIF(count(*), 0), 6) AS view_to_cart,
+         round(CAST(count(*) FILTER (WHERE reached_purchase) AS DOUBLE)
+               / NULLIF(count(*) FILTER (WHERE reached_cart), 0), 6) AS cart_to_purchase,
+         round(CAST(count(*) FILTER (WHERE reached_purchase) AS DOUBLE) / NULLIF(count(*), 0), 6) AS view_to_purchase
+  FROM w
