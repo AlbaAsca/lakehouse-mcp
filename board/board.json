@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-07T15:42:07+01:00",
+  "updated": "2026-11-07T15:43:05+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -8890,7 +8890,7 @@
       "id": "T-174",
       "title": "Crear una tarjeta con varias líneas de descripción se deniega como si fueran varios comandos",
       "owner": "desarrollador",
-      "status": "review",
+      "status": "done",
       "priority": "alta",
       "estimate_min": 20.0,
       "actual_min": 1.0,
@@ -8899,7 +8899,7 @@
       "desc": "Los agentes escriben descripciones con saltos de línea, como piden las normas (lenguaje llano arriba y ## Técnico debajo), pero el protocolo de permisos ve el salto de línea y lo toma por varios comandos encadenados. La tarjeta del agente se bloquea en falso: ya les ha pasado a T-017, T-022 y T-027. Cómo sabremos si funciona: un board.py add con saltos de línea dentro de las comillas de --desc se permite, y dos comandos de verdad en líneas distintas se siguen rechazando.\n\n## Técnico\nboard/permissions.py, CHAIN: \n cuenta aunque esté dentro de comillas. Ignorar lo que va entre comillas antes de buscar encadenados, igual que T-164 hizo para del/rm. Alternativa: board.py add --desc-file. Tests en tests/test_permissions.py.",
       "deps": [],
       "created": "2026-11-07T14:39:45+01:00",
-      "updated": "2026-11-07T15:42:07+01:00",
+      "updated": "2026-11-07T15:43:05+01:00",
       "started_at": "2026-11-07T15:41:07+01:00",
       "finished_at": "2026-11-07T15:42:07+01:00",
       "log": [
@@ -8927,6 +8927,16 @@
           "t": "2026-11-07T15:42:07+01:00",
           "by": "desarrollador",
           "msg": "REVIEW: los saltos de línea y separadores dentro de comillas ya no cuentan como comandos encadenados; los comandos de verdad en líneas distintas se siguen rechazando, con tests."
+        },
+        {
+          "t": "2026-11-07T15:42:13+01:00",
+          "by": "tester",
+          "msg": "verificando"
+        },
+        {
+          "t": "2026-11-07T15:43:05+01:00",
+          "by": "tester",
+          "msg": "DONE: las descripciones de varias líneas ya se permiten y los comandos encadenados de verdad se siguen rechazando; los tests de permisos pasan."
         }
       ],
       "runs": [
@@ -8939,8 +8949,19 @@
           "tokens": 123702,
           "cost_usd": 0.2066386,
           "verdict": "review"
+        },
+        {
+          "agent": "tester",
+          "mode": "verify",
+          "at": "2026-11-07T15:43:05+01:00",
+          "min": 0.8,
+          "turns": 10,
+          "tokens": 117502,
+          "cost_usd": 0.0815955,
+          "verdict": "done"
         }
-      ]
+      ],
+      "verify_started": "2026-11-07T15:42:13+01:00"
     },
     {
       "id": "T-175",
@@ -9082,13 +9103,13 @@
     "measure": {
       "state": "working",
       "current": "T-174",
-      "message": "desarrollador con T-174",
+      "message": "tester con T-174",
       "pid": 19764,
-      "heartbeat": "2026-11-07T15:41:08+01:00",
+      "heartbeat": "2026-11-07T15:42:14+01:00",
       "enabled": true,
-      "agent": "desarrollador",
-      "started": "2026-11-07T15:41:08+01:00",
-      "live": "live-T-174-desarrollador-20261107-154108.jsonl"
+      "agent": "tester",
+      "started": "2026-11-07T15:42:14+01:00",
+      "live": "live-T-174-tester-20261107-154214.jsonl"
     }
   }
 }
