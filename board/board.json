@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-07T16:05:21+01:00",
+  "updated": "2026-11-07T16:07:03+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -2463,10 +2463,10 @@
       "id": "T-029",
       "title": "Semántica: verdad de referencia de las métricas",
       "owner": "tester",
-      "status": "backlog",
+      "status": "done",
       "priority": "alta",
       "estimate_min": 25.0,
-      "actual_min": null,
+      "actual_min": 1.6,
       "auto": true,
       "manual": null,
       "desc": "Antes de que exista el SQL de las métricas, el tester calcula sus valores correctos desde el fichero sintético, partiendo solo de las definiciones escritas. Si el documento es ambiguo, se descubre aquí.\nCómo sabremos si funciona: un JSON de referencia da cada métrica por día y las ambigüedades encontradas quedan resueltas en docs/metrics.md.\n\n## Técnico\nevals/truth/compute_metrics_truth.py (Python estándar) escribe evals/truth/metrics.json: las cuatro métricas por día y global, top 10 de marcas. Sin mirar semantic/. Comprueba los ejemplos a mano de docs/metrics.md. Test de que el JSON está al día con la muestra (./mk test-board).",
@@ -2474,14 +2474,36 @@
         "T-027"
       ],
       "created": "2026-11-02T11:37:45+01:00",
-      "updated": "2026-11-02T11:37:45+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-07T16:07:03+01:00",
+      "started_at": "2026-11-07T16:05:29+01:00",
+      "finished_at": "2026-11-07T16:07:03+01:00",
       "log": [
         {
           "t": "2026-11-02T11:37:45+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-07T16:05:29+01:00",
+          "by": "runner",
+          "msg": "empieza tester"
+        },
+        {
+          "t": "2026-11-07T16:07:03+01:00",
+          "by": "tester",
+          "msg": "DONE: verdad de referencia de métricas calculada en `evals/truth/metrics.json`, con 9 tests en verde y las ambigüedades resueltas en `docs/metrics.md`."
+        }
+      ],
+      "runs": [
+        {
+          "agent": "tester",
+          "mode": "work",
+          "at": "2026-11-07T16:07:03+01:00",
+          "min": 1.6,
+          "turns": 16,
+          "tokens": 368442,
+          "cost_usd": 0.2964311,
+          "verdict": "done"
         }
       ]
     },
@@ -9243,14 +9265,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-026",
-      "message": "tester con T-026",
+      "current": "T-029",
+      "message": "tester con T-029",
       "pid": 19764,
-      "heartbeat": "2026-11-07T15:59:18+01:00",
+      "heartbeat": "2026-11-07T16:05:30+01:00",
       "enabled": true,
       "agent": "tester",
-      "started": "2026-11-07T15:59:18+01:00",
-      "live": "live-T-026-tester-20261107-155918.jsonl"
+      "started": "2026-11-07T16:05:29+01:00",
+      "live": "live-T-029-tester-20261107-160529.jsonl"
     }
   }
 }
