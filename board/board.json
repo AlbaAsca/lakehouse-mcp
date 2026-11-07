@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-07T15:43:05+01:00",
+  "updated": "2026-11-07T15:43:37+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -4500,18 +4500,18 @@
       "id": "T-081",
       "title": "Probar un modelo más barato según el rol del agente",
       "owner": "desarrollador",
-      "status": "next",
+      "status": "review",
       "priority": "media",
       "estimate_min": 30.0,
-      "actual_min": null,
+      "actual_min": 0.5,
       "auto": true,
       "manual": null,
       "desc": "Todos los agentes usan el modelo de la sesión y ya agotamos el cupo una vez. Se propone probar un modelo más barato en el tester y en tarjetas mecánicas, comparando si se le escapan fallos. Cómo sabremos si funciona: las tarjetas gastan menos cupo y, en una comparación con fallos sembrados a propósito, el modelo barato detecta los mismos.\n\n## Técnico\nCampo model en la cabecera de .claude/agents/*.md. Comparar coste con total_cost_usd de board/runs/live-*.jsonl. Sembrar 3-5 fallos en una rama de prueba. Anotar el resultado en la tarjeta; no cambiar el modelo por defecto si se escapa alguno.",
       "deps": [],
       "created": "2026-11-02T17:30:57+01:00",
-      "updated": "2026-11-07T14:50:54+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-07T15:43:37+01:00",
+      "started_at": "2026-11-07T15:43:10+01:00",
+      "finished_at": "2026-11-07T15:43:37+01:00",
       "log": [
         {
           "t": "2026-11-02T17:30:57+01:00",
@@ -4527,6 +4527,33 @@
           "t": "2026-11-07T14:50:54+01:00",
           "by": "consultor",
           "msg": "Medir el cambio a Sonnet"
+        },
+        {
+          "t": "2026-11-07T15:43:10+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-07T15:43:32+01:00",
+          "by": "consultor",
+          "msg": "Medición coste (scripts/analysis/tester_cost.py, total_cost_usd de board/runs/live-*-tester-*.jsonl): antes de Sonnet 45 verificaciones (42 con coste), media 0,92 USD, mediana 0,80. Con Sonnet 11 verificaciones (T-133..T-174), media 0,10 USD, mediana 0,095 (~9x menos; las tarjetas no son idénticas, pero la diferencia es amplia). Fallos escapados: no medibles desde aquí (sin acceso a la CI); falta que el consultor confirme que ninguna de esas 11 tarjetas dio un fallo posterior en CI. Si no hay ninguno, mantener Sonnet; no se ha sembrado rama de prueba."
+        },
+        {
+          "t": "2026-11-07T15:43:37+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: El tester con Sonnet cuesta unas 9 veces menos (media 0,10 frente a 0,92 USD en 11 verificaciones frente a 45), pero los fallos escapados no se pueden medir sin la CI; el consultor debe confirmarlos antes de dejarlo fijo."
+        }
+      ],
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-07T15:43:37+01:00",
+          "min": 0.4,
+          "turns": 8,
+          "tokens": 106357,
+          "cost_usd": 0.09078339999999999,
+          "verdict": "review"
         }
       ]
     },
@@ -9102,14 +9129,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-174",
-      "message": "tester con T-174",
+      "current": "T-081",
+      "message": "desarrollador con T-081",
       "pid": 19764,
-      "heartbeat": "2026-11-07T15:42:14+01:00",
+      "heartbeat": "2026-11-07T15:43:11+01:00",
       "enabled": true,
-      "agent": "tester",
-      "started": "2026-11-07T15:42:14+01:00",
-      "live": "live-T-174-tester-20261107-154214.jsonl"
+      "agent": "desarrollador",
+      "started": "2026-11-07T15:43:11+01:00",
+      "live": "live-T-081-desarrollador-20261107-154311.jsonl"
     }
   }
 }
