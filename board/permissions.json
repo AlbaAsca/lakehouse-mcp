@@ -113,6 +113,12 @@
       "why": "concedido automáticamente a desarrollador (T-106): solo lectura dentro del proyecto",
       "by": "runner",
       "at": "2026-11-06T23:57:37+01:00"
+    },
+    {
+      "pattern": "python *",
+      "why": "concedido automáticamente a tester (T-107): solo lectura dentro del proyecto",
+      "by": "runner",
+      "at": "2026-11-07T17:47:29+01:00"
     }
   ],
   "denied": [
@@ -121,6 +127,30 @@
       "why": "Abriría cualquier comando de Windows; mk.cmd ya está permitido directamente",
       "by": "consultor",
       "at": "2026-11-07T00:39:54+01:00"
+    },
+    {
+      "pattern": "./mk seed*",
+      "why": "Carga datos en el stack compartido: duplicó la tabla de la demo. Solo el responsable",
+      "by": "consultor",
+      "at": "2026-11-07T14:35:37+01:00"
+    },
+    {
+      "pattern": ".\\mk.cmd seed*",
+      "why": "Carga datos en el stack compartido: duplicó la tabla de la demo. Solo el responsable",
+      "by": "consultor",
+      "at": "2026-11-07T14:35:37+01:00"
+    },
+    {
+      "pattern": "make seed*",
+      "why": "Carga datos en el stack compartido: duplicó la tabla de la demo. Solo el responsable",
+      "by": "consultor",
+      "at": "2026-11-07T14:35:38+01:00"
+    },
+    {
+      "pattern": "mk.cmd seed*",
+      "why": "Carga datos en el stack compartido: duplicó la tabla de la demo. Solo el responsable",
+      "by": "consultor",
+      "at": "2026-11-07T14:35:38+01:00"
     }
   ]
 }
