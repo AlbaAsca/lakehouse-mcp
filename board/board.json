@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-07T17:42:14+01:00",
+  "updated": "2026-11-07T17:42:53+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -4756,10 +4756,10 @@
       "id": "T-078",
       "title": "Que la comprobación rápida detecte un conector roto",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "review",
       "priority": "alta",
       "estimate_min": 25.0,
-      "actual_min": null,
+      "actual_min": 0.6,
       "auto": true,
       "manual": null,
       "desc": "Hoy ./mk smoke dice que todo va bien aunque la tarea del conector de Iceberg haya fallado, así que da una falsa tranquilidad. Se propone que compruebe que el conector funciona y que un evento de prueba llega de verdad a una tabla. Cómo sabremos si funciona: con el conector roto a propósito, smoke falla y dice por qué; con el conector sano, pasa y no deja restos.\n\n## Técnico\ninfra/smoke.sh: exigir connector.state y tasks[*].state RUNNING en /connectors/iceberg-sink/status, con espera acotada; enviar un evento de prueba y comprobar que aparece en la tabla desde DuckDB. Limpiar lo creado, también el namespace smoke que hoy se queda. Actualizar docs/wiki/04-operacion.md y componentes/kafka-connect.md.",
@@ -4767,9 +4767,9 @@
         "T-072"
       ],
       "created": "2026-11-02T17:30:26+01:00",
-      "updated": "2026-11-02T17:30:26+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-07T17:42:53+01:00",
+      "started_at": "2026-11-07T17:42:20+01:00",
+      "finished_at": "2026-11-07T17:42:53+01:00",
       "log": [
         {
           "t": "2026-11-02T17:30:26+01:00",
@@ -4780,6 +4780,33 @@
           "t": "2026-11-07T15:06:08+01:00",
           "by": "consultor",
           "msg": "T-141 ya hace que ./mk smoke falle si un conector o tarea no está RUNNING (o no hay tareas). Revisar si queda algo por hacer aquí o cerrarla."
+        },
+        {
+          "t": "2026-11-07T17:42:20+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-07T17:42:47+01:00",
+          "by": "consultor",
+          "msg": "Hecho: el estado RUNNING lo cubrió T-141; ahora smoke.sh borra también el namespace smoke. Evento de prueba hasta la tabla: T-182. Wiki (04-operacion.md l.147): ya no queda el namespace smoke (siguen los ficheros huérfanos)."
+        },
+        {
+          "t": "2026-11-07T17:42:53+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: smoke.sh ya borra el namespace smoke y T-141 cubre el estado del conector; el evento de prueba hasta la tabla queda en T-182. Tests omitidos aquí, sin ejecutar."
+        }
+      ],
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-07T17:42:53+01:00",
+          "min": 0.5,
+          "turns": 10,
+          "tokens": 126417,
+          "cost_usd": 0.1176513,
+          "verdict": "review"
         }
       ]
     },
@@ -9689,6 +9716,30 @@
           "msg": "creada"
         }
       ]
+    },
+    {
+      "id": "T-182",
+      "title": "La comprobación rápida debería mandar un evento de prueba hasta la tabla",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "baja",
+      "estimate_min": 30.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "La comprobación rápida ya falla si el conector está roto, pero no prueba que un evento llegue de verdad a la tabla. Se propone enviar un evento de prueba y buscarlo en la tabla. Cómo sabremos si funciona: con el conector sano el evento aparece y se limpia; roto, falla. \n## Técnico\nsmoke.sh corre en la imagen tools sin cliente Kafka/Avro: hace falta enviar vía schema-registry y un productor (o el REST de Connect); decidir también cómo borrar la fila de prueba de ecommerce.events sin ensuciar los datos.",
+      "deps": [],
+      "created": "2026-11-07T17:42:44+01:00",
+      "updated": "2026-11-07T17:42:44+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-07T17:42:44+01:00",
+          "by": "desarrollador",
+          "msg": "creada"
+        }
+      ]
     }
   ],
   "runners": {
@@ -9707,14 +9758,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-050",
-      "message": "desarrollador con T-050",
+      "current": "T-078",
+      "message": "desarrollador con T-078",
       "pid": 19764,
-      "heartbeat": "2026-11-07T17:31:02+01:00",
+      "heartbeat": "2026-11-07T17:42:21+01:00",
       "enabled": true,
       "agent": "desarrollador",
-      "started": "2026-11-07T17:31:01+01:00",
-      "live": "live-T-050-desarrollador-20261107-173102.jsonl"
+      "started": "2026-11-07T17:42:21+01:00",
+      "live": "live-T-078-desarrollador-20261107-174221.jsonl"
     }
   }
 }

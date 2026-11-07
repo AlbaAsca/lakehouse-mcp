@@ -21,5 +21,6 @@ CREATE TABLE lh.smoke.t (id INT, v VARCHAR);
 INSERT INTO lh.smoke.t VALUES (1,'ok');
 SELECT * FROM lh.smoke.t;
 DROP TABLE lh.smoke.t;
+DROP SCHEMA lh.smoke;
 "
 echo "duckdb -> polaris -> seaweedfs ok"
