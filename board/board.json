@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-07T14:59:16+01:00",
+  "updated": "2026-11-07T14:59:39+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -4066,18 +4066,18 @@
       "id": "T-075",
       "title": "El README presenta «./mk seed» como si ya se hubiera probado",
       "owner": "desarrollador",
-      "status": "next",
+      "status": "review",
       "priority": "alta",
       "estimate_min": 3.0,
-      "actual_min": null,
+      "actual_min": 0.3,
       "auto": true,
       "manual": null,
       "desc": "El README da dos órdenes para lanzar el productor sin avisar de que nunca se han ejecutado con el CSV real. La norma del proyecto pide marcar como «sin probar» todo comando que no se haya ejecutado, y la página del productor en la wiki sí lo hace. Se propone añadir el mismo aviso al README y quitarlo cuando el responsable lance el comando.\nCómo sabremos si funciona: quien lea el README ve que el comando está sin probar, igual que en la wiki.\n## Técnico\nREADME.md líneas 101-102, filas de la tabla con ./mk seed. Añadir «sin probar». Detectado al verificar T-013.",
       "deps": [],
       "created": "2026-11-02T17:00:03+01:00",
-      "updated": "2026-11-07T14:40:45+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-07T14:59:39+01:00",
+      "started_at": "2026-11-07T14:59:23+01:00",
+      "finished_at": "2026-11-07T14:59:39+01:00",
       "log": [
         {
           "t": "2026-11-02T17:00:03+01:00",
@@ -4098,6 +4098,28 @@
           "t": "2026-11-07T14:40:45+01:00",
           "by": "consultor",
           "msg": "Versión 0.1.0"
+        },
+        {
+          "t": "2026-11-07T14:59:23+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-07T14:59:39+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: Marcadas como «sin probar» las dos órdenes de `./mk seed` en el README, igual que en la wiki."
+        }
+      ],
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-07T14:59:39+01:00",
+          "min": 0.3,
+          "turns": 4,
+          "tokens": 56590,
+          "cost_usd": 0.0976956,
+          "verdict": "review"
         }
       ]
     },
@@ -8574,14 +8596,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-022",
-      "message": "tester con T-022",
+      "current": "T-075",
+      "message": "desarrollador con T-075",
       "pid": 19764,
-      "heartbeat": "2026-11-07T14:53:17+01:00",
+      "heartbeat": "2026-11-07T14:59:24+01:00",
       "enabled": true,
-      "agent": "tester",
-      "started": "2026-11-07T14:53:17+01:00",
-      "live": "live-T-022-tester-20261107-145317.jsonl"
+      "agent": "desarrollador",
+      "started": "2026-11-07T14:59:24+01:00",
+      "live": "live-T-075-desarrollador-20261107-145924.jsonl"
     }
   }
 }

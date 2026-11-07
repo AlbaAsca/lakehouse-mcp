@@ -101,8 +101,8 @@ cp .env.example .env   # y cambia las contraseñas
 | Preguntar al agente (con el stack arriba y la clave en `.env`; sin probar con un modelo de verdad) | `./mk ask Q="How many rows does the events table have?"` |
 | Descargar el dataset (necesita `~/.kaggle`) | `./mk download-data` |
 | Otro mes | `./mk download-data MONTH=2019-Nov` |
-| Reproducir el mes en Kafka (con el stack arriba) | `./mk seed` (por defecto 1 % de las sesiones a 3600×) |
-| Otra muestra, velocidad o mes | `./mk seed MONTH=2019-Nov SAMPLE=0.1 SPEEDUP=60` |
+| Reproducir el mes en Kafka (con el stack arriba; sin probar con el CSV real) | `./mk seed` (por defecto 1 % de las sesiones a 3600×) |
+| Otra muestra, velocidad o mes (sin probar con el CSV real) | `./mk seed MONTH=2019-Nov SAMPLE=0.1 SPEEDUP=60` |
 | Ver el estado de los servicios | `docker compose ps` |
 | Ver los logs de un servicio | `docker compose logs --tail 50 connect` |
 | Maven dentro del contenedor | `./mvnw verify` |
