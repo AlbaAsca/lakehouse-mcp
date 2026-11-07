@@ -11,6 +11,9 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -91,6 +94,44 @@ public class McpServerApplication {
                 : SchemaRegistryFields.of(url, quality.subject(), pipeline.timeout());
         return new QualityTools(session, reader, settings,
                 new QualityTools.Drift(pipeline.namespace(), pipeline.table(), quality.subject(), registry));
+    }
+
+    /** Postgres database {@code ops}, where proposals live. An empty url turns propose_fix and apply_fix off. */
+    @ConfigurationProperties("lakehouse.ops")
+    record OpsProperties(String url, String user, String password) {}
+
+    /** propose_fix, apply_fix and the approval resource: only with an ops database, or there is nowhere to keep proposals. */
+    @Configuration
+    @ConditionalOnExpression("!'${lakehouse.ops.url:}'.isEmpty()")
+    @EnableConfigurationProperties(OpsProperties.class)
+    static class OpsConfiguration {
+
+        @Bean
+        FixProposalStore fixProposalStore(OpsProperties ops) throws SQLException {
+            return new PostgresFixProposalStore(ops.url(), ops.user(), ops.password()).initialize();
+        }
+
+        @Bean
+        FixProposals fixProposals(FixProposalStore store, CatalogReader reader, LakehouseProperties lakehouse) {
+            RepairSession repair = RepairSession.alongside(lakehouse.settings());
+            return new FixProposals(store, List.of(new RollbackSnapshot(reader, repair)), Clock.systemUTC());
+        }
+
+        @Bean
+        FixTools fixTools(FixProposals proposals) {
+            return new FixTools(proposals);
+        }
+
+        @Bean
+        @ConditionalOnMissingBean
+        ApprovalGate approvalGate() {
+            return ApprovalGate.OPEN;
+        }
+
+        @Bean
+        FixProposalController fixProposalController(FixProposals proposals, ApprovalGate gate) {
+            return new FixProposalController(proposals, gate);
+        }
     }
 
     /**

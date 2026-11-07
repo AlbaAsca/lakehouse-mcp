@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-07T15:45:47+01:00",
+  "updated": "2026-11-07T15:59:10+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -2262,10 +2262,10 @@
       "id": "T-026",
       "title": "MCP: propose_fix y apply_fix con aprobación humana",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "review",
       "priority": "alta",
       "estimate_min": 45.0,
-      "actual_min": null,
+      "actual_min": 13.3,
       "auto": true,
       "manual": null,
       "desc": "El agente puede proponer arreglos, pero solo se aplican si una persona los aprueba. Para que eso sea real y no una formalidad, los arreglos son de una lista cerrada y la aprobación entra por una vía a la que el modelo no tiene acceso. Esta tarjeta deja el mecanismo y un primer arreglo.\nCómo sabremos si funciona: aplicar sin aprobar falla y no cambia nada; tras aprobar, se aplica una vez; repetirlo no lo aplica de nuevo.\n\n## Técnico\n- Base ops en Postgres (decisión 10): fix_proposals con id, acción, parámetros, motivo, efecto esperado, estado, approved_by, timestamps. Flyway o SQL de arranque.\n- propose_fix(action, params, reason) con enum cerrado; apply_fix(proposal_id) idempotente.\n- REST con HATEOAS: GET /fix-proposals, GET /fix-proposals/{id}, POST /fix-proposals/{id}/approvals, con links a las acciones disponibles. La credencial se añade de verdad en la tarjeta de RBAC; aquí, deja el punto de corte listo y documentado.\n- Primer arreglo: ROLLBACK_SNAPSHOT con CALL iceberg_rollback_to_snapshot('t', id), por la instancia de reparación de T-106 (decisiones 5 y 20). Interfaz FixAction para añadir los demás.\n- IT: flujo completo sobre LakehouseStack. ./mk test.",
@@ -2273,9 +2273,9 @@
         "T-021"
       ],
       "created": "2026-11-02T11:37:33+01:00",
-      "updated": "2026-11-02T18:15:05+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-07T15:59:10+01:00",
+      "started_at": "2026-11-07T15:45:53+01:00",
+      "finished_at": "2026-11-07T15:59:10+01:00",
       "log": [
         {
           "t": "2026-11-02T11:37:33+01:00",
@@ -2286,6 +2286,33 @@
           "t": "2026-11-02T18:15:05+01:00",
           "by": "consultor",
           "msg": "descripción reescrita"
+        },
+        {
+          "t": "2026-11-07T15:45:53+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-07T15:59:00+01:00",
+          "by": "consultor",
+          "msg": "Hecho. Para la wiki: nuevas piezas FixAction/FixProposals/FixTools, REST /fix-proposals (ApprovalGate = punto de corte para T-050; hoy abierto), base ops en Postgres (tabla fix_proposals creada al arrancar, sin Flyway), env OPS_DB_URL/USER/PASSWORD (vacío = herramientas apagadas). Testkit: LakehouseStack expone opsJdbcUrl(). compose: mcp-server depende de postgres. mcp-server verify en verde (129 IT + unitarios)."
+        },
+        {
+          "t": "2026-11-07T15:59:10+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: propose_fix/apply_fix con aprobación por REST y ROLLBACK_SNAPSHOT hechos; tests de mcp-server en verde, incluido el flujo completo sobre LakehouseStack."
+        }
+      ],
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-07T15:59:10+01:00",
+          "min": 13.3,
+          "turns": 53,
+          "tokens": 1299664,
+          "cost_usd": 0.7791062000000001,
+          "verdict": "review"
         }
       ]
     },
@@ -9195,14 +9222,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-165",
-      "message": "tester con T-165",
+      "current": "T-026",
+      "message": "desarrollador con T-026",
       "pid": 19764,
-      "heartbeat": "2026-11-07T15:45:16+01:00",
+      "heartbeat": "2026-11-07T15:45:54+01:00",
       "enabled": true,
-      "agent": "tester",
-      "started": "2026-11-07T15:45:15+01:00",
-      "live": "live-T-165-tester-20261107-154516.jsonl"
+      "agent": "desarrollador",
+      "started": "2026-11-07T15:45:53+01:00",
+      "live": "live-T-026-desarrollador-20261107-154553.jsonl"
     }
   }
 }
