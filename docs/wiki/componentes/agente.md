@@ -91,7 +91,7 @@ Todo en [`application.yaml`](../../../agent/src/main/resources/application.yaml)
 
 Un modelo simulado pide un `count(*)` y la cifra que llega a la respuesta es la que escribió el cargador de datos, que nunca pasó por el servidor. Otro no termina nunca y se corta en el tope.
 
-`AgentImageIT` arranca la imagen del servicio `agent` contra un modelo simulado en otro contenedor: la pregunta, con espacios y comillas, llega entera al modelo y su respuesta sale por stdout. Sin clave, la imagen termina con código 5 diciendo cuál falta.
+`AgentImageIT` arranca la imagen del servicio `agent` contra un modelo simulado en otro contenedor: la pregunta, con espacios y comillas, llega entera al modelo y su respuesta sale por stdout. Sin clave, la imagen termina con código 2 diciendo cuál falta.
 
 Con un modelo de verdad, **sin probar** (T-097): con el stack levantado y la muestra cargada,
 

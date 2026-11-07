@@ -135,7 +135,8 @@ class AgentIT {
         var prompt = model().prompts.getFirst();
         assertThat(((ToolCallingChatOptions) prompt.getOptions()).getToolCallbacks())
                 .extracting(callback -> callback.getToolDefinition().name())
-                .containsExactlyInAnyOrder("list_tables", "describe_table", "run_query", "time_travel");
+                .containsExactlyInAnyOrder("list_tables", "describe_table", "run_query", "time_travel",
+                        "pipeline_health", "data_quality_check");
         assertThat(prompt.getSystemMessage().getText()).contains("Never invent");
     }
 

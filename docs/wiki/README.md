@@ -43,7 +43,7 @@ Cada página empieza en lenguaje llano y avanza hasta el detalle técnico. Puede
 
 No hay ninguna cifra de precisión ni de rendimiento porque todavía no se ha medido nada de eso.
 
-Leyenda: ✅ funciona · 🚧 en curso · ⬜ planificado.
+Leyenda: ✅ funciona · 🟡 funciona en parte (mira «Sin probar») · 🚧 en curso · ⬜ planificado.
 
 ## Índice
 
@@ -60,6 +60,7 @@ Leyenda: ✅ funciona · 🚧 en curso · ⬜ planificado.
 | ✅ [Kafka](componentes/kafka.md) | ✅ [Iceberg](componentes/iceberg.md) | ✅ [DuckDB](componentes/duckdb.md) | ✅ [Imagen tools](componentes/imagen-tools.md) |
 | ✅ [Schema Registry](componentes/schema-registry.md) | ✅ [Polaris](componentes/polaris.md) | 🟡 [Servidor MCP](componentes/servidor-mcp.md) | ✅ [agent-board](componentes/agent-board.md) |
 | ✅ [Kafka Connect e Iceberg sink](componentes/kafka-connect.md) | ✅ [Postgres](componentes/postgres.md) | ⬜ [Capa semántica](componentes/capa-semantica.md) | |
-| 🚧 [Productor](componentes/productor.md) | ✅ [SeaweedFS](componentes/seaweedfs.md) | 🟡 [Agente](componentes/agente.md) | |
+| 🚧 [Productor](componentes/productor.md) | ✅ [SeaweedFS](componentes/seaweedfs.md) | 🟡 [Agente](componentes/agente.md) | ✅ [Testkit](componentes/testkit.md) |
+| | | 🚧 [Evals](componentes/evals.md) | ✅ [Mantenimiento](componentes/maintenance.md) |
 
 Los scripts de apoyo del tutorial están en [`ejemplos/`](ejemplos/lh.sh).

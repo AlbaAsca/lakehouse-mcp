@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-07T15:08:16+01:00",
+  "updated": "2026-11-07T15:21:10+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -8403,6 +8403,11 @@
           "t": "2026-11-06T23:40:11+01:00",
           "by": "tester",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-07T15:20:27+01:00",
+          "by": "consultor",
+          "msg": "Corregido en 04-operacion.md y agente.md: el código de salida sin clave es 2."
         }
       ]
     },
@@ -8517,6 +8522,11 @@
           "t": "2026-11-07T00:42:24+01:00",
           "by": "tester",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-07T15:20:27+01:00",
+          "by": "consultor",
+          "msg": "Pendiente: git rm bench/ y docs/wiki/componentes/trino.md (borrado denegado en esta sesión; hazlo tú)."
         }
       ]
     },
@@ -8548,18 +8558,18 @@
       "id": "T-171",
       "title": "La integración continua está en rojo: el servidor MCP no arranca sin Kafka",
       "owner": "desarrollador",
-      "status": "next",
+      "status": "review",
       "priority": "alta",
       "estimate_min": 25.0,
-      "actual_min": null,
+      "actual_min": 12.8,
       "auto": true,
       "manual": null,
       "desc": "Desde el último commit, la CI falla en Java: el servidor MCP intenta hablar con Kafka al arrancar para la salud del pipeline, no lo encuentra y no llega a levantarse, y detrás falla el agente. Mientras siga en rojo no se puede subir nada a main. Cómo sabremos si funciona: la CI de develop vuelve a verde, y el servidor arranca aunque Kafka no esté, informando del problema en pipeline_health.\n\n## Técnico\nRun de CI sobre 5e5ee36: TimeoutException Timed out waiting for a node assignment (AdminClient mcp-server-pipeline-health, fetchMetadata), luego Exception encountered during context initialization en mcp-server y en agent. Revisar si los tests de contexto necesitan Kafka o si el cliente debe crearse de forma perezosa. ./mk test MODULE=mcp-server y MODULE=agent.",
       "deps": [],
       "created": "2026-11-07T13:57:53+01:00",
-      "updated": "2026-11-07T13:57:54+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-07T15:21:10+01:00",
+      "started_at": "2026-11-07T15:08:22+01:00",
+      "finished_at": "2026-11-07T15:21:10+01:00",
       "log": [
         {
           "t": "2026-11-07T13:57:53+01:00",
@@ -8575,6 +8585,33 @@
           "t": "2026-11-07T14:40:41+01:00",
           "by": "consultor",
           "msg": "Entra en la versión 0.1.0 (T-175)."
+        },
+        {
+          "t": "2026-11-07T15:08:22+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-07T15:21:04+01:00",
+          "by": "consultor",
+          "msg": "Causa real (run 42379003984): fallaba AgentIT.theModelIsOfferedTheServerToolsAndTheSystemPrompt, que esperaba exactamente 4 tools y el servidor ya expone 6 (pipeline_health, data_quality_check). El TimeoutException de Kafka es un WARN esperado de PipelineHealthTest y los 'context initialization' son tests de fallo intencionados; KafkaLag ya crea el cliente por llamada. Arreglo: lista de tools actualizada en AgentIT. mcp-server y agent en verde en local. Wiki: sin cambios."
+        },
+        {
+          "t": "2026-11-07T15:21:10+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: La CI fallaba porque AgentIT esperaba 4 herramientas y el servidor ya expone 6, no por Kafka; test corregido y `mcp-server` y `agent` en verde en local."
+        }
+      ],
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-07T15:21:10+01:00",
+          "min": 12.8,
+          "turns": 25,
+          "tokens": 652503,
+          "cost_usd": 0.48775120000000005,
+          "verdict": "review"
         }
       ]
     },
@@ -8771,14 +8808,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-141",
-      "message": "tester con T-141",
+      "current": "T-171",
+      "message": "desarrollador con T-171",
       "pid": 19764,
-      "heartbeat": "2026-11-07T15:06:24+01:00",
+      "heartbeat": "2026-11-07T15:08:23+01:00",
       "enabled": true,
-      "agent": "tester",
-      "started": "2026-11-07T15:06:24+01:00",
-      "live": "live-T-141-tester-20261107-150624.jsonl"
+      "agent": "desarrollador",
+      "started": "2026-11-07T15:08:23+01:00",
+      "live": "live-T-171-desarrollador-20261107-150823.jsonl"
     }
   }
 }
