@@ -30,6 +30,10 @@ Estados: `backlog` → `next` → `doing` → `review` → `done`, más `human` 
 llanas (qué problema hay, qué se propone y por qué) y una línea «Cómo sabremos si funciona: …». Los datos técnicos (ficheros,
 funciones, números, criterio exacto) van al final, debajo de una línea `## Técnico`; el panel la muestra plegada.
 
+## Tamaño y orden de las tarjetas
+- Una tarjeta es una **entrega de unos 30–90 minutos de agente**. Los fallos o mejoras pequeños (<15 min) del mismo ámbito se agrupan en una sola tarjeta que los lista en `## Técnico`; las absorbidas se cierran con nota «Absorbida en T-xxx». Solo van sueltos los urgentes o los que bloquean la CI.
+- Orden de ejecución: `rank` de 1 (primero) a 1000 (último), `python board/board.py rank T-012 40`. Sin `rank` se deriva de la prioridad (alta 100, media 500, baja 900). El runner coge Revisión, Próximo y Backlog, y dentro de cada uno por `rank`. 900 = después de la versión en curso.
+
 ## Estimaciones
 En **minutos de agente**. El tiempo real NO se escribe: se mide con `started_at`/`finished_at` al pasar por `doing`.
 Calibración inicial (ajústala con los datos del panel): lo nuevo o de calidad difícil de medir tarda **2–3×** lo
