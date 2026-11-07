@@ -53,6 +53,8 @@ class IngestE2EIT {
     static void sendTheSampleThroughThePipeline() throws Exception {
         connect = ConnectWorker.shared();
         stack = LakehouseStack.sharedStreaming();
+        // What kafka-init does in compose.yaml: the topic exists, with its partitions, before the connector subscribes.
+        KafkaEventSink.ensureTopic(stack.kafkaBootstrapServers(), "ecommerce.events");
         connect.register(COMMIT_INTERVAL);
         connect.awaitRunningTask();
 
@@ -87,6 +89,16 @@ class IngestE2EIT {
         assertThat(single("SELECT count(*) FROM " + TABLE)).isEqualTo(SAMPLE_ROWS);
         assertThat(rows("(" + CSV_ROWS + ") EXCEPT ALL (" + TABLE_ROWS + ") LIMIT 20")).as("only in the CSV").isEmpty();
         assertThat(rows("(" + TABLE_ROWS + ") EXCEPT ALL (" + CSV_ROWS + ") LIMIT 20")).as("only in the table").isEmpty();
+    }
+
+    /** The sink's subscription must not have auto-created the topic with the broker default of one partition (T-114). */
+    @Test
+    void theEventsTopicKeepsItsPartitions() throws Exception {
+        try (org.apache.kafka.clients.admin.Admin admin = org.apache.kafka.clients.admin.Admin.create(java.util.Map.<String, Object>of(
+                "bootstrap.servers", stack.kafkaBootstrapServers()))) {
+            assertThat(admin.describeTopics(List.of("ecommerce.events")).allTopicNames().get()
+                    .get("ecommerce.events").partitions()).hasSize(KafkaEventSink.PARTITIONS);
+        }
     }
 
     /** The amounts documented in infra/synthetic/README.md: nothing upstream cleaned the sample on the way. */
