@@ -63,7 +63,8 @@ RULES = """Reglas (modo autónomo, permisos: solo código y tests):
 - Sigue CLAUDE.md. Trabaja SOLO en esta tarea. Si ves otras mejoras o bugs, regístralos con
   prioridad baja salvo que rompan algo o bloqueen el trabajo (el consultor las ordena antes de cada versión), y antes
   comprueba con `python board/board.py list` que no existen ya:
-  `python board/board.py add "Título" --owner <rol> --est <minutos de agente> --prio <alta|media|baja> --desc "..." --by {owner}`.
+  `python board/board.py followup "Título" "descripción" --owner <rol> --est <minutos de agente> --by {owner}`
+  (más simple que `add`: entra en backlog con prioridad baja; `--prio` opcional).
   Las estimaciones son en MINUTOS DE AGENTE (lo que tardarías tú), no horas humanas.
 - Cómo escribir la descripción de una tarjeta (la lee una persona, no un robot):
   arriba, 2-4 frases en lenguaje llano: qué problema hay, qué idea probamos y por qué; después una línea
@@ -107,7 +108,7 @@ CONTRIB_RULES = """Eres el agente «{agent}» y hoy no hay tareas asignadas para
 1. Ponte al día: CLAUDE.md, `python board/board.py list` y docs/.
 2. Dentro de tu rol: {focus}
 3. Solo si aporta de verdad: registra como mucho 2 tarjetas con
-   `python board/board.py add "Título" --owner <rol> --est <min> --prio <alta|media|baja> --desc "<lenguaje llano; datos técnicos debajo de ## Técnico>" --by {agent}`
+   `python board/board.py followup "Título" "<lenguaje llano; datos técnicos debajo de ## Técnico>" --owner <rol> --est <min> --by {agent}`
    y/o deja el detalle en docs/NOTAS-{agent}.md (fecha + hallazgo + fuente). No dupliques tarjetas ni notas existentes.
 4. No cambies código: eso va por tarjeta.
 - NO edites board/board.json a mano. NO instales nada ni hagas git push. Responde en español.
@@ -470,7 +471,7 @@ def finish(tid, mode, agent, r):
     verdict = m.group(1).lower() if m else ("blocked" if r["is_error"] else "review")
     summary = (m.group(2).strip() if m else (r["err"] or r["text"][-300:]).strip())[:400] or "sin resumen"
     denied = r.get("denied") or []
-    if any("board.py add" in d for d in denied) and verdict in ("done", "review"):
+    if any("board.py add" in d or "board.py followup" in d for d in denied) and verdict in ("done", "review"):
         verdict = "blocked"  # las tarjetas que debía crear no existen
     warn = (f"⚠ {len(denied)} comandos denegados: " + " | ".join(" ".join(d.split())[:80] for d in denied)) if denied else None
     u = r["usage"]

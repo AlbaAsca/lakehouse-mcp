@@ -36,6 +36,12 @@ def test_note_acepta_msg(board):
     assert [l["msg"] for l in log][-2:] == ["hola", "posicional"]
 
 
+def test_followup_simple(board):
+    tid = cli(board, "followup", "Seguir", "Texto llano", "--by", "tester").strip().split()[-1]
+    t = next(t for t in json.loads((board / "board.json").read_text(encoding="utf-8"))["tasks"] if t["id"] == tid)
+    assert (t["status"], t["priority"], t["owner"], t["desc"]) == ("backlog", "baja", "desarrollador", "Texto llano")
+
+
 def test_flujo_de_tarea(board):
     tid = cli(board, "add", "Probar el panel", "--owner", "desarrollador", "--est", "10", "--prio", "alta").strip().split()[-1]
     cli(board, "move", tid, "doing", "--by", "desarrollador")

@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-07T18:33:54+01:00",
+  "updated": "2026-11-07T18:35:24+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -10332,26 +10332,48 @@
       "id": "T-185",
       "title": "Los agentes no pueden crear tarjetas de seguimiento y se pierden",
       "owner": "desarrollador",
-      "status": "next",
+      "status": "review",
       "priority": "alta",
       "estimate_min": 25.0,
-      "actual_min": null,
+      "actual_min": 1.4,
       "auto": true,
       "manual": null,
       "desc": "Cuando un agente quiere dejar una tarea nueva, el runner le deniega el comando y la tarjeta acaba bloqueada sin motivo real. Se propone un comando permitido y simple (por ejemplo «board.py followup») que el runner acepte, y cambiar las instrucciones de los agentes para usarlo. Cómo sabremos si funciona: un agente crea un seguimiento sin ningún comando denegado y la tarjeta no se bloquea. ## Técnico: board/runner.py (lista de permisos y prompts de los agentes), board/board.py.",
       "deps": [],
       "created": "2026-11-07T18:15:53+01:00",
-      "updated": "2026-11-07T18:16:02+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-07T18:35:24+01:00",
+      "started_at": "2026-11-07T18:33:58+01:00",
+      "finished_at": "2026-11-07T18:35:24+01:00",
       "log": [
         {
           "t": "2026-11-07T18:15:53+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-07T18:33:58+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-07T18:35:24+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: añadido `board.py followup` (backlog, prioridad baja), prompts de los agentes actualizados, test añadido y tests en verde."
         }
       ],
-      "rank": 3
+      "rank": 3,
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-07T18:35:24+01:00",
+          "min": 1.4,
+          "turns": 17,
+          "tokens": 156886,
+          "cost_usd": 0.11987629999999999,
+          "verdict": "review"
+        }
+      ]
     },
     {
       "id": "T-186",
@@ -10524,14 +10546,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-184",
-      "message": "tester con T-184",
+      "current": "T-185",
+      "message": "desarrollador con T-185",
       "pid": 20872,
-      "heartbeat": "2026-11-07T18:32:03+01:00",
+      "heartbeat": "2026-11-07T18:33:59+01:00",
       "enabled": true,
-      "agent": "tester",
-      "started": "2026-11-07T18:32:03+01:00",
-      "live": "live-T-184-tester-20261107-183203.jsonl"
+      "agent": "desarrollador",
+      "started": "2026-11-07T18:33:59+01:00",
+      "live": "live-T-185-desarrollador-20261107-183359.jsonl"
     }
   }
 }

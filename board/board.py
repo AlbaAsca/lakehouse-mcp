@@ -199,6 +199,10 @@ def main():
     a.add_argument("--prio", default="media", choices=list(PRIO)); a.add_argument("--desc", default="")
     a.add_argument("--status", default="backlog", choices=STATES); a.add_argument("--manual")
     a.add_argument("--by", default="consultor"); a.add_argument("--deps", default="", help="T-001,T-002")
+    fu = sp.add_parser("followup", help="tarjeta de seguimiento simple (backlog, prioridad baja)")
+    fu.add_argument("title"); fu.add_argument("desc", nargs="?", default="")
+    fu.add_argument("--owner", default="desarrollador"); fu.add_argument("--est", type=float, default=15)
+    fu.add_argument("--prio", default="baja", choices=list(PRIO)); fu.add_argument("--by", default="consultor")
     n = sp.add_parser("note"); n.add_argument("id"); n.add_argument("text", nargs="?"); n.add_argument("--msg")
     n.add_argument("--by", default="consultor")
     d = sp.add_parser("desc"); d.add_argument("id"); d.add_argument("text"); d.add_argument("--by", default="consultor")
@@ -222,6 +226,9 @@ def main():
             t["deps"] = [d.strip() for d in o.deps.split(",") if d.strip()]
             return t["id"]
         print(update(f))
+        return
+    if o.cmd == "followup":
+        print(update(lambda b: new_task(b, o.title, o.owner, o.est, o.prio, _unescape(o.desc), "backlog", None, o.by)["id"]))
         return
     if o.cmd == "move":
         update(lambda b: set_status(b, task(b, o.id), o.status, o.by, o.msg)); return
