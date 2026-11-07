@@ -32,6 +32,16 @@ services:
       timeout: 15s
       retries: 12
 
+  # Creates the events topic before the connector exists: otherwise the sink's subscription auto-creates it with 1
+  # partition and the producer (KafkaEventSink.PARTITIONS = 6) finds it already there (T-114). Idempotent.
+  kafka-init:
+    image: apache/kafka:4.4.0
+    depends_on:
+      kafka: {condition: service_healthy}
+    entrypoint: ["/opt/kafka/bin/kafka-topics.sh", "--bootstrap-server", "kafka:9092", "--create", "--if-not-exists",
+                 "--topic", "ecommerce.events", "--partitions", "6", "--replication-factor", "1"]
+    restart: "no"
+
   schema-registry:
     image: confluentinc/cp-schema-registry:8.4.0
     depends_on:
@@ -116,6 +126,7 @@ services:
       kafka: {condition: service_healthy}
       schema-registry: {condition: service_healthy}
       lakehouse-init: {condition: service_completed_successfully}
+      kafka-init: {condition: service_completed_successfully}
     environment:
       CONNECT_BOOTSTRAP_SERVERS: kafka:9092
       CONNECT_REST_ADVERTISED_HOST_NAME: connect
