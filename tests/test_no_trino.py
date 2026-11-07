@@ -26,6 +26,8 @@ ALLOWED = {
     "docs/wiki/componentes/duckdb.md",  # only the link to «por qué no hay Trino»
     "docs/wiki/componentes/trino.md",  # pending deletion, see test_removed_files_are_gone
     "tests/test_no_trino.py",
+    "CHANGELOG.md",  # records the removal in 0.1.0
+    "docs/handoff.md",  # the consultant's list of decisions in force
 }
 
 
