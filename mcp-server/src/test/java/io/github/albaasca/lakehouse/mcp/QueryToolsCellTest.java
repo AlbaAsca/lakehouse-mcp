@@ -12,7 +12,6 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.TimeZone;
 import java.util.stream.Stream;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -36,7 +35,7 @@ class QueryToolsCellTest {
                 Statement statement = connection.createStatement();
                 ResultSet rows = statement.executeQuery("SELECT " + expression)) {
             rows.next();
-            return QueryTools.cell(rows.getObject(1));
+            return QueryTools.cell(SqlGuard.value(rows, 1));
         } finally {
             TimeZone.setDefault(before);
         }
@@ -61,7 +60,6 @@ class QueryToolsCellTest {
     }
 
     /** 02:30 does not exist in Madrid that night: the clock jumps from 02:00 to 03:00. Today it reads 03:30. */
-    @Disabled("T-155")
     @Test
     void aTimestampInTheSkippedHourKeepsItsValue() throws Exception {
         assertThat(driverValue("TIMESTAMP '2026-03-29 02:30:00'", "Europe/Madrid")).isEqualTo("2026-03-29T02:30");

@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-07T22:09:53+01:00",
+  "updated": "2026-11-07T22:37:43+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -15560,18 +15560,18 @@
       "id": "T-196",
       "title": "Consulta y catálogo: cuatro pequeños fallos de lectura de datos",
       "owner": "desarrollador",
-      "status": "next",
+      "status": "done",
       "priority": "media",
       "estimate_min": 50.0,
-      "actual_min": 0.0,
+      "actual_min": 27.7,
       "auto": true,
       "manual": null,
       "desc": "Funciones habituales que el validador rechaza, tablas de espacios de nombres anidados que no salen, subconsultas repetidas y fechas sin zona. Se atienden juntas en una sola entrega. Cómo sabremos si funciona: cada punto de la lista tiene su test o comprobación en verde y las tarjetas absorbidas quedan cerradas con nota.\n\n## Técnico\nAbsorbe (criterios en el historial de cada una):\n- T-116: Consulta: permitir funciones habituales que el validador rechaza\n- T-138: Las tablas de un espacio de nombres anidado no aparecen hasta que alguien las lee\n- T-146: Consulta: comprobar si unas pocas subconsultas con nombre que se leen varias veces pueden colgar el servidor\n- T-155: Una fecha sin zona cambia de hora en una máquina con horario de verano",
       "deps": [],
       "created": "2026-11-07T20:36:57+01:00",
-      "updated": "2026-11-07T21:32:54+01:00",
-      "started_at": "2026-11-07T21:14:41+01:00",
-      "finished_at": "2026-11-07T21:14:41+01:00",
+      "updated": "2026-11-07T22:37:43+01:00",
+      "started_at": "2026-11-07T22:10:03+01:00",
+      "finished_at": "2026-11-07T22:37:43+01:00",
       "log": [
         {
           "t": "2026-11-07T20:36:57+01:00",
@@ -15592,6 +15592,26 @@
           "t": "2026-11-07T21:32:54+01:00",
           "by": "consultor",
           "msg": "Desbloqueada: el error era la línea de comandos demasiado larga (más de 1 200 reglas de denegación); ahora van en un fichero de ajustes."
+        },
+        {
+          "t": "2026-11-07T22:10:03+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-07T22:37:36+01:00",
+          "by": "consultor",
+          "msg": "Hecho: T-116 (if, count_if/countif, like_escape en SqlGuard + casos), T-155 (SqlGuard.value lee TIMESTAMP como LocalDateTime; test reactivado), T-146 (SqlGuardFanOutTest en JVM aparte: 3 referencias por eslabón, termina en 7 s, exit 0), T-138 (límite documentado en duckdb.md; test lo fija). mcp-server en verde, sin fallos en informes. Wiki: duckdb.md ya actualizada."
+        },
+        {
+          "t": "2026-11-07T22:37:43+01:00",
+          "by": "runner",
+          "msg": "Sin verificación aparte del tester (no toca seguridad, datos reales ni punta a punta); la CI revisa."
+        },
+        {
+          "t": "2026-11-07T22:37:43+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: T-116, T-155 y T-146 hechos con tests; T-138 queda como límite documentado en la wiki, sin arreglar."
         }
       ],
       "rank": 300,
@@ -15606,6 +15626,17 @@
           "cost_usd": null,
           "verdict": "blocked",
           "summary": "[WinError 206] El nombre del archivo o la extensión es demasiado largo"
+        },
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-07T22:37:43+01:00",
+          "min": 27.7,
+          "turns": 49,
+          "tokens": 1615156,
+          "cost_usd": 0.5538288,
+          "verdict": "review",
+          "summary": "T-116, T-155 y T-146 hechos con tests; T-138 queda como límite documentado en la wiki, sin arreglar."
         }
       ]
     },
@@ -16017,14 +16048,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-195",
-      "message": "desarrollador con T-195",
+      "current": "T-196",
+      "message": "desarrollador con T-196",
       "pid": 20936,
-      "heartbeat": "2026-11-07T21:42:50+01:00",
+      "heartbeat": "2026-11-07T22:10:03+01:00",
       "enabled": true,
       "agent": "desarrollador",
-      "started": "2026-11-07T21:42:49+01:00",
-      "live": "live-T-195-desarrollador-20261107-214250.jsonl",
+      "started": "2026-11-07T22:10:03+01:00",
+      "live": "live-T-196-desarrollador-20261107-221003.jsonl",
       "pause_reason": null
     }
   }

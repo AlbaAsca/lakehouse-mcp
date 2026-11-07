@@ -123,6 +123,7 @@ T-014 comprobó además, con tests en `DuckDbIcebergSpikeIT`:
 - **Cada ejecución tarda unos segundos de más.** `tools` se crea desde cero, y `INSTALL` vuelve a descargar las extensiones. Necesita internet.
 - **Una lectura de S3 atascada puede tardar más que el tiempo máximo en cortarse.** Sin probar: el test corta una consulta que calcula, no una que espera a la red.
 - **`Deprecated implicit conversion of unbound identifiers`.** Pasa el nombre como texto: `iceberg_snapshots('lh.ns.tabla')`, no `iceberg_snapshots(lh.ns.tabla)`.
+- **Una tabla de un espacio de nombres anidado no sale al listar en una sesión nueva.** Límite conocido (T-138): `information_schema.tables` solo ve esos espacios cuando la sesión ya ha leído una tabla suya por su nombre; hasta entonces `listTables`, `describe` y `snapshots` dicen que no existe. Los datos del proyecto viven en un espacio de un solo nivel, así que no afecta. Lo fija `CatalogReaderEdgeIT.aNestedNamespaceIsOnlySeenAfterTheSessionHasReadIt`.
 - **Error 400 al crear una tabla.** Falta `ACCESS_DELEGATION_MODE 'none'`.
 - **Fallos al leer ficheros.** Sin probar en este stack. Revisa primero el secreto S3 y el endpoint.
 
