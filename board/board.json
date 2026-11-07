@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-07T18:32:00+01:00",
+  "updated": "2026-11-07T18:33:54+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -10254,7 +10254,7 @@
       "id": "T-184",
       "title": "CI en rojo: fallan los tests de integración de mcp-server",
       "owner": "desarrollador",
-      "status": "review",
+      "status": "done",
       "priority": "alta",
       "estimate_min": 30.0,
       "actual_min": 5.8,
@@ -10263,7 +10263,7 @@
       "desc": "La CI de develop falla en mcp-server (maven-failsafe, tests de integración) desde las tarjetas de seguridad (T-050) y chaos (T-037). Mientras esté en rojo no hay señal fiable. Cómo sabremos si funciona: mvn verify de mcp-server en verde en la CI. ## Técnico: ver gh run view --log-failed del último fallo en develop.",
       "deps": [],
       "created": "2026-11-07T18:05:40+01:00",
-      "updated": "2026-11-07T18:32:00+01:00",
+      "updated": "2026-11-07T18:33:54+01:00",
       "started_at": "2026-11-07T18:26:12+01:00",
       "finished_at": "2026-11-07T18:32:00+01:00",
       "log": [
@@ -10291,6 +10291,16 @@
           "t": "2026-11-07T18:32:00+01:00",
           "by": "desarrollador",
           "msg": "REVIEW: pytest y wiki arreglados; los IT de mcp-server ya pasaban; AgentIT sigue rojo por T-180/T-176."
+        },
+        {
+          "t": "2026-11-07T18:32:03+01:00",
+          "by": "tester",
+          "msg": "verificando"
+        },
+        {
+          "t": "2026-11-07T18:33:54+01:00",
+          "by": "tester",
+          "msg": "DONE: pytest completo en verde (288 passed) con los arreglos de compose, wiki y no_trino; los IT de mcp-server no fallaban en la CI anterior; AgentIT sigue rojo por T-180/T-176, fuera de esta tarjeta."
         }
       ],
       "rank": 2,
@@ -10304,8 +10314,19 @@
           "tokens": 2230504,
           "cost_usd": 0.7054416000000002,
           "verdict": "review"
+        },
+        {
+          "agent": "tester",
+          "mode": "verify",
+          "at": "2026-11-07T18:33:54+01:00",
+          "min": 1.9,
+          "turns": 11,
+          "tokens": 98038,
+          "cost_usd": 0.0780709,
+          "verdict": "done"
         }
-      ]
+      ],
+      "verify_started": "2026-11-07T18:32:03+01:00"
     },
     {
       "id": "T-185",
@@ -10504,13 +10525,13 @@
     "measure": {
       "state": "working",
       "current": "T-184",
-      "message": "desarrollador con T-184",
+      "message": "tester con T-184",
       "pid": 20872,
-      "heartbeat": "2026-11-07T18:26:12+01:00",
+      "heartbeat": "2026-11-07T18:32:03+01:00",
       "enabled": true,
-      "agent": "desarrollador",
-      "started": "2026-11-07T18:26:12+01:00",
-      "live": "live-T-184-desarrollador-20261107-182612.jsonl"
+      "agent": "tester",
+      "started": "2026-11-07T18:32:03+01:00",
+      "live": "live-T-184-tester-20261107-183203.jsonl"
     }
   }
 }
