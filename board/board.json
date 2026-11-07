@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-07T17:43:33+01:00",
+  "updated": "2026-11-07T17:44:31+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -4835,10 +4835,10 @@
       "id": "T-079",
       "title": "Que el tester verifique sobre una copia limpia del commit",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "review",
       "priority": "alta",
       "estimate_min": 30.0,
-      "actual_min": null,
+      "actual_min": 0.9,
       "auto": true,
       "manual": null,
       "desc": "T-011 pasó la revisión porque el tester veía ficheros que no estaban subidos, y develop quedó sin compilar para los demás. Se propone que la verificación corra sobre una copia limpia de lo confirmado. Cómo sabremos si funciona: una tarjeta cuyo código depende de un fichero sin confirmar falla la verificación, con un mensaje que nombra ese fichero.\n\n## Técnico\nboard/runner.py, modo verify: crear un git worktree del commit de la tarjeta y lanzar ahí al tester, o, si lo anterior complica los permisos, comprobar antes de verificar que git status no tiene cambios de la tarjeta sin confirmar y que compila un git archive del commit. El worktree necesita .env (ignorado por git) y el proyecto Compose compartido no debe chocar. Añadir test en tests/test_runner.py; respetar que los tests no tocan el panel ni procesos reales. Documentar en docs/wiki/componentes/agent-board.md.",
@@ -4846,14 +4846,36 @@
         "T-073"
       ],
       "created": "2026-11-02T17:30:26+01:00",
-      "updated": "2026-11-02T17:30:26+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-07T17:44:31+01:00",
+      "started_at": "2026-11-07T17:43:39+01:00",
+      "finished_at": "2026-11-07T17:44:31+01:00",
       "log": [
         {
           "t": "2026-11-02T17:30:26+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-07T17:43:39+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-07T17:44:31+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: el prompt de verificación lista los ficheros sin confirmar y ordena fallar la tarjeta nombrando el fichero; sin worktree, con test añadido y tests del runner en verde."
+        }
+      ],
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-07T17:44:31+01:00",
+          "min": 0.8,
+          "turns": 14,
+          "tokens": 129803,
+          "cost_usd": 0.1162048,
+          "verdict": "review"
         }
       ]
     },
@@ -9779,14 +9801,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-078",
-      "message": "tester con T-078",
+      "current": "T-079",
+      "message": "desarrollador con T-079",
       "pid": 19764,
-      "heartbeat": "2026-11-07T17:42:59+01:00",
+      "heartbeat": "2026-11-07T17:43:40+01:00",
       "enabled": true,
-      "agent": "tester",
-      "started": "2026-11-07T17:42:59+01:00",
-      "live": "live-T-078-tester-20261107-174259.jsonl"
+      "agent": "desarrollador",
+      "started": "2026-11-07T17:43:40+01:00",
+      "live": "live-T-079-desarrollador-20261107-174340.jsonl"
     }
   }
 }
