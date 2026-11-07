@@ -154,10 +154,26 @@ def other_instance(b, lane):
     return None
 
 
-def pick(b, lane="all"):
-    """Siguiente tarea ejecutable: (tarea, modo) con modo 'verify' o 'work'. Las verificaciones van al carril measure."""
+def ci_is_red(branch="develop"):
+    """True si la última ejecución completada de la CI en `branch` falló. Sin gh o sin red: False (no bloquea)."""
+    try:
+        r = subprocess.run(["gh", "run", "list", "--branch", branch, "--status", "completed", "--limit", "1",
+                            "--json", "conclusion"], capture_output=True, text=True, timeout=30)
+        runs = json.loads(r.stdout) if r.returncode == 0 and r.stdout.strip() else []
+    except (OSError, subprocess.SubprocessError, ValueError):
+        return False
+    return bool(runs) and runs[0].get("conclusion") == "failure"
+
+
+def is_ci_card(t):
+    return re.search(r"\bCI\b", t.get("title", "")) is not None
+
+
+def pick(b, lane="all", ci_red=False):
+    """Siguiente tarea ejecutable: (tarea, modo) con modo 'verify' o 'work'. Las verificaciones van al carril measure.
+    Con la CI en rojo (`ci_red`) solo se cogen tarjetas de arreglo de CI (título con «CI»)."""
     # tareas que necesitan algo del responsable (manual) solo corren cuando el responsable las mueve a Próximo
-    ok = lambda t: t["owner"] != "consultor" and t.get("kind") != "contrib" and bd.deps_done(b, t) and (t.get("auto", True) or t["status"] == "next")
+    ok = lambda t: t["owner"] != "consultor" and t.get("kind") != "contrib" and bd.deps_done(b, t) and (t.get("auto", True) or t["status"] == "next") and (not ci_red or is_ci_card(t))
     key = lambda t: (bd.rank_of(t), t["id"])
     rev = sorted([t for t in b["tasks"] if t["status"] == "review" and ok(t)], key=key) if lane in ("all", "measure") else []
     if rev:
@@ -625,9 +641,11 @@ def main():
             b = bd.load()
             if bd.lane_state(b, LANE).get("pause_reason"):  # reanudado: el motivo de la pausa anterior ya no vale
                 set_runner(pause_reason=None)
-            t, mode = pick(b, LANE)
+            red = ci_is_red()
+            t, mode = pick(b, LANE, ci_red=True) if red else pick(b, LANE)
             if not t:
-                set_runner(state="idle", current=None, message="Sin tareas ejecutables")
+                set_runner(state="idle", current=None,
+                           message="CI en rojo: solo tarjetas de arreglo de CI" if red else "Sin tareas ejecutables")
                 if o.contribute and contribute(o) and o.dry_run:
                     break
                 if o.once or o.until_idle:
