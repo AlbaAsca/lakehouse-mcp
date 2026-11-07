@@ -105,6 +105,18 @@ def test_claude_still_needs_a_model(tmp_path):
     assert "AGENT_MODEL is missing in .env" in out.stderr
 
 
+def test_the_guide_matches_the_exit_codes_of_the_image_and_of_mk_ask():
+    # T-165: image without key exits 5 (AgentImageIT), ./mk ask exits 2 (make).
+    ops = (ROOT / "docs/wiki/04-operacion.md").read_text(encoding="utf-8")
+    comp = (ROOT / "docs/wiki/componentes/agente.md").read_text(encoding="utf-8")
+
+    assert "isEqualTo(5)" in IT
+    assert "termina con código 5, pero `./mk ask` devuelve 2" in ops
+    assert "la imagen termina con código 5" in comp
+    assert "sale con 2" in comp
+    assert "termina con código 2" not in ops + comp
+
+
 def test_the_image_test_sends_what_the_dockerfile_copies():
     block = re.search(r"CONTEXT = List\.of\((.*?)\);", IT, re.DOTALL)
     assert block, "AgentImageIT no longer lists its build context"
