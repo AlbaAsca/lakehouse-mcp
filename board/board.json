@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-07T16:13:30+01:00",
+  "updated": "2026-11-07T16:32:05+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -2646,10 +2646,10 @@
       "id": "T-033",
       "title": "Semántica: herramienta get_metric",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "review",
       "priority": "alta",
       "estimate_min": 25.0,
-      "actual_min": null,
+      "actual_min": 18.5,
       "auto": true,
       "manual": null,
       "desc": "Pone las métricas al alcance del agente. Debe poder descubrir qué métricas hay y pedir una por nombre y fechas, en lugar de escribir su propio SQL.\nCómo sabremos si funciona: pedir por MCP cada métrica devuelve los valores de la referencia; una métrica inexistente devuelve la lista de las disponibles.\n\n## Técnico\nget_metric(name, from, to, limit) y list_metrics (o descripción dinámica de la tool). mcp-server depende de semantic. La salida incluye la definición textual. IT por MCP real contra metrics.json. ./mk test.",
@@ -2658,14 +2658,41 @@
         "T-020"
       ],
       "created": "2026-11-02T11:38:06+01:00",
-      "updated": "2026-11-02T11:38:06+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-07T16:32:05+01:00",
+      "started_at": "2026-11-07T16:13:37+01:00",
+      "finished_at": "2026-11-07T16:32:05+01:00",
       "log": [
         {
           "t": "2026-11-02T11:38:06+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-07T16:13:37+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-07T16:31:55+01:00",
+          "by": "consultor",
+          "msg": "Wiki: mcp-server tiene ahora list_metrics y get_metric (dependencia de semantic; Dockerfile e IT de imagen copian semantic/src/main)."
+        },
+        {
+          "t": "2026-11-07T16:32:05+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: get_metric y list_metrics en mcp-server, con tests unitarios e integración contra metrics.json en verde."
+        }
+      ],
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-07T16:32:05+01:00",
+          "min": 18.5,
+          "turns": 62,
+          "tokens": 1554155,
+          "cost_usd": 0.6369062,
+          "verdict": "review"
         }
       ]
     },
@@ -9290,6 +9317,30 @@
           "msg": "creada"
         }
       ]
+    },
+    {
+      "id": "T-179",
+      "title": "Dos pruebas del panel fallan por las variables del servidor MCP en compose",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "baja",
+      "estimate_min": 10.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Dos pruebas de tests/test_mcp_server_compose.py fallan: compose.yaml da valores fijos a las variables OPS_DB_* y la prueba de imagen no incluye las mismas variables.\nCómo sabremos si funciona: python -m pytest tests/test_mcp_server_compose.py pasa en verde.\n## Técnico\ntest_the_required_variables_come_from_the_env_example y test_the_image_test_runs_the_same_variables_as_the_service. Detectado en T-033, no causado por ella.",
+      "deps": [],
+      "created": "2026-11-07T16:31:54+01:00",
+      "updated": "2026-11-07T16:31:54+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-07T16:31:54+01:00",
+          "by": "desarrollador",
+          "msg": "creada"
+        }
+      ]
     }
   ],
   "runners": {
@@ -9308,14 +9359,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-031",
-      "message": "tester con T-031",
+      "current": "T-033",
+      "message": "desarrollador con T-033",
       "pid": 19764,
-      "heartbeat": "2026-11-07T16:11:41+01:00",
+      "heartbeat": "2026-11-07T16:13:38+01:00",
       "enabled": true,
-      "agent": "tester",
-      "started": "2026-11-07T16:11:41+01:00",
-      "live": "live-T-031-tester-20261107-161141.jsonl"
+      "agent": "desarrollador",
+      "started": "2026-11-07T16:13:37+01:00",
+      "live": "live-T-033-desarrollador-20261107-161337.jsonl"
     }
   }
 }

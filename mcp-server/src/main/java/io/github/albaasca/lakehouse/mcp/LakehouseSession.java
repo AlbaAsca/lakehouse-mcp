@@ -3,6 +3,7 @@ package io.github.albaasca.lakehouse.mcp;
 import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLTimeoutException;
@@ -186,6 +187,22 @@ public final class LakehouseSession implements AutoCloseable {
                     return reader.read(rows);
                 }
             });
+        }
+
+        /** Runs a prepared statement (values bound, never written into the text) under the same timeout. */
+        public <T> T query(io.github.albaasca.lakehouse.semantic.BoundQuery bound, RowReader<T> reader)
+                throws SQLException {
+            try (PreparedStatement statement = bound.prepare(connection);
+                    Timeout timeout = new Timeout(statement)) {
+                try (ResultSet rows = statement.executeQuery()) {
+                    return reader.read(rows);
+                } catch (SQLException e) {
+                    if (timeout.fired()) {
+                        throw new SQLTimeoutException("Query exceeded " + settings.queryTimeout(), e);
+                    }
+                    throw e;
+                }
+            }
         }
 
         /** Runs a statement without rows, such as {@code CREATE VIEW}: the driver refuses those in {@code executeQuery}. */

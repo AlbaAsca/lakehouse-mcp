@@ -3,6 +3,7 @@
 !pom.xml
 !*/pom.xml
 !mcp-server/src/main
+!semantic/src/main
 !maintenance/src/main
 !agent/src/main
 !testkit/src/main

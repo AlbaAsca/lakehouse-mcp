@@ -41,7 +41,7 @@ class McpServerImageIT {
     /** What the root .dockerignore lets through: Testcontainers does not read it. */
     private static final List<String> CONTEXT = List.of("pom.xml", "producer/pom.xml", "mcp-server/pom.xml", "agent/pom.xml",
             "semantic/pom.xml", "evals/pom.xml","testkit/pom.xml", "maintenance/pom.xml", "mcp-server/src/main",
-            "testkit/src/main", "infra/mcp-server");
+            "semantic/src/main", "testkit/src/main", "infra/mcp-server");
     private static final ObjectMapper JSON = new ObjectMapper();
 
     private static GenericContainer<?> server;
