@@ -72,6 +72,7 @@ Todo en [`application.yaml`](../../../agent/src/main/resources/application.yaml)
 | `AGENT_MODEL` | `gemini-2.5-flash` con Gemini; obligatoria con Claude | El modelo. Vacía cuenta como no definida: `ask.sh` la quita antes de arrancar Java, porque compose la pasa vacía si falta en `.env` |
 | `GEMINI_API_KEY`, `ANTHROPIC_API_KEY` | vacías | Solo se exige la del proveedor elegido |
 | `AGENT_MAX_TOOL_CALLS` | `10` | Tope de llamadas a herramientas por pregunta |
+| `AGENT_MODEL_TIMEOUT` | `300s` | Tiempo máximo de una pregunta entera (modelo y herramientas); `0s` lo desactiva. Al pasarse, una línea en stderr y código 6 |
 | `MCP_SERVER_URL` | `http://localhost:8090` | Dónde está el servidor |
 | `AGENT_MCP_TIMEOUT` | `60s` | Espera máxima de cada llamada al servidor |
 
@@ -110,6 +111,7 @@ Detalles de comillas y del arranque en [Operación](../04-operacion.md#preguntar
 | 2 | La orden no es `ask <pregunta>` | stderr |
 | 3 | Ha llegado al tope de llamadas | stderr |
 | 4 | Se ha agotado la cuota del proveedor (error 429) | stderr |
+| 6 | La pregunta ha pasado de `AGENT_MODEL_TIMEOUT` sin respuesta (modelo colgado o muy lento) | stderr |
 | 5 | Solo en la imagen (`./mk ask` lo muestra como `Error 5` de make pero sale con 2): falta la clave del proveedor elegido, o `AGENT_MODEL` con Claude, o `AGENT_PROVIDER` no es válido | stderr |
 
 ## Qué puede fallar
