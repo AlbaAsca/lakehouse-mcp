@@ -113,6 +113,15 @@ def test_wiki_documents_the_same_jobs_and_timeouts():
         assert re.search(rf"^\| `{name}` \|.*\| {timeout(job(CI, name))} min \|$", wiki, re.M)
 
 
+def test_wiki_gives_github_run_as_proven_and_explains_cancellation():
+    wiki = (ROOT / "docs/wiki/04-operacion.md").read_text(encoding="utf-8")
+    section = wiki[wiki.index("Integración continua"):]
+    assert "Sin probar: la ejecución en GitHub" not in section
+    assert "**Probado en GitHub**" in section
+    assert "41494026662" in section and "8,5 min" in section
+    assert re.search(r"\*\*Cancelación:\*\*.*pull requests.*`develop` y `main` no se cancela", section, re.S)
+
+
 # The helpers above must really detect a workflow that lost what the card asks for.
 @pytest.mark.parametrize(
     "broken",

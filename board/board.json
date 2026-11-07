@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-07T15:00:44+01:00",
+  "updated": "2026-11-07T15:01:34+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -6458,7 +6458,7 @@
       "id": "T-113",
       "title": "La guía de operación aún dice que la integración continua está sin probar",
       "owner": "desarrollador",
-      "status": "review",
+      "status": "done",
       "priority": "alta",
       "estimate_min": 5.0,
       "actual_min": 0.4,
@@ -6467,7 +6467,7 @@
       "desc": "La guía afirma que la ejecución en GitHub está sin probar, pero ya ha terminado en verde varias veces. Tampoco explica que en develop y main no se cancela una ejecución en curso, solo en pull requests. Se propone actualizar ese párrafo con lo medido para que quien la lea no dude de algo ya comprobado.\nCómo sabremos si funciona: la guía da como probada la ejecución en GitHub, con su duración real, y explica cuándo se cancelan las ejecuciones.\n\n## Técnico\n- docs/wiki/04-operacion.md, línea 153 («Sin probar: la ejecución en GitHub, y mvn -B -ntp verify fuera de la imagen tools»), sección Integración continua.\n- Medido: run 41492653907 (49dfc13), java 10 min; run 41494026662 (3c213dc), java 8,5 min, 197 tests Java y 115 de pytest, sin omitidos.\n- Criterio: quitar «sin probar» de ambas cosas, sustituir la previsión por los tiempos medidos y documentar cancel-in-progress solo en pull_request.",
       "deps": [],
       "created": "2026-11-02T18:59:05+01:00",
-      "updated": "2026-11-07T15:00:44+01:00",
+      "updated": "2026-11-07T15:01:34+01:00",
       "started_at": "2026-11-07T15:00:22+01:00",
       "finished_at": "2026-11-07T15:00:44+01:00",
       "log": [
@@ -6500,6 +6500,16 @@
           "t": "2026-11-07T15:00:44+01:00",
           "by": "desarrollador",
           "msg": "REVIEW: La guía da como probada la ejecución en GitHub, con su duración real, y explica cuándo se cancelan las ejecuciones."
+        },
+        {
+          "t": "2026-11-07T15:00:52+01:00",
+          "by": "tester",
+          "msg": "verificando"
+        },
+        {
+          "t": "2026-11-07T15:01:34+01:00",
+          "by": "tester",
+          "msg": "DONE: La guía da la CI como probada con los tiempos medidos (10 y 8,5 min) y documenta que solo se cancela en pull requests; he añadido un test de regresión y los 18 tests del módulo pasan."
         }
       ],
       "runs": [
@@ -6512,8 +6522,19 @@
           "tokens": 79021,
           "cost_usd": 0.1340662,
           "verdict": "review"
+        },
+        {
+          "agent": "tester",
+          "mode": "verify",
+          "at": "2026-11-07T15:01:34+01:00",
+          "min": 0.7,
+          "turns": 18,
+          "tokens": 176268,
+          "cost_usd": 0.1428801,
+          "verdict": "done"
         }
-      ]
+      ],
+      "verify_started": "2026-11-07T15:00:52+01:00"
     },
     {
       "id": "T-114",
@@ -8640,13 +8661,13 @@
     "measure": {
       "state": "working",
       "current": "T-113",
-      "message": "desarrollador con T-113",
+      "message": "tester con T-113",
       "pid": 19764,
-      "heartbeat": "2026-11-07T15:00:22+01:00",
+      "heartbeat": "2026-11-07T15:00:53+01:00",
       "enabled": true,
-      "agent": "desarrollador",
-      "started": "2026-11-07T15:00:22+01:00",
-      "live": "live-T-113-desarrollador-20261107-150022.jsonl"
+      "agent": "tester",
+      "started": "2026-11-07T15:00:53+01:00",
+      "live": "live-T-113-tester-20261107-150053.jsonl"
     }
   }
 }
