@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-07T16:49:41+01:00",
+  "updated": "2026-11-07T16:56:33+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -2801,10 +2801,10 @@
       "id": "T-035",
       "title": "Agente: topes de iteraciones, tokens y gasto",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "review",
       "priority": "alta",
       "estimate_min": 30.0,
-      "actual_min": null,
+      "actual_min": 6.8,
       "auto": true,
       "manual": null,
       "desc": "Un agente que entra en bucle puede gastar mucho sin que nadie lo vea. Se fijan límites por pregunta y por ejecución, y al alcanzarlos el agente para y lo dice, en lugar de seguir o fallar sin explicación.\nCómo sabremos si funciona: un modelo simulado que nunca termina se corta en el tope exacto, con un mensaje claro y el uso registrado.\n\n## Técnico\nmax-tool-iterations, max-tokens y presupuesto en USD por ejecución (a partir del usage y un precio configurable). Log con tokens y coste por pregunta; errores de tool se devuelven al modelo. Test con ChatModel simulado. ./mk test.",
@@ -2812,14 +2812,41 @@
         "T-034"
       ],
       "created": "2026-11-02T11:38:28+01:00",
-      "updated": "2026-11-02T11:38:28+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-07T16:56:33+01:00",
+      "started_at": "2026-11-07T16:49:48+01:00",
+      "finished_at": "2026-11-07T16:56:33+01:00",
       "log": [
         {
           "t": "2026-11-02T11:38:28+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-07T16:49:48+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-07T16:56:25+01:00",
+          "by": "consultor",
+          "msg": "Hecho: UsageMeter + MeteredChatModel (envuelve el ChatModel por BeanPostProcessor), Outcome.BUDGET (exit 5), AGENT_MAX_TOKENS (200000), AGENT_MAX_USD_PER_QUESTION/PER_RUN, AGENT_USD_PER_MILLION_INPUT/OUTPUT (0=sin limite); uso por llamada y pregunta a stderr con prefijo [usage]. Tope de tool-calls ya existia (T-094). Tests: BudgetTest; ProviderConfigurationTest ajustado. Wiki agente.md: anadir variables y exit 5. AgentIT (contenedores) no ejecutado."
+        },
+        {
+          "t": "2026-11-07T16:56:33+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: topes de tokens y de gasto (por pregunta y por ejecución) con parada clara, resultado BUDGET y uso registrado; tests unitarios del módulo en verde, AgentIT no ejecutado"
+        }
+      ],
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-07T16:56:33+01:00",
+          "min": 6.7,
+          "turns": 40,
+          "tokens": 744230,
+          "cost_usd": 0.43081540000000007,
+          "verdict": "review"
         }
       ]
     },
@@ -9423,14 +9450,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-034",
-      "message": "tester con T-034",
+      "current": "T-035",
+      "message": "desarrollador con T-035",
       "pid": 19764,
-      "heartbeat": "2026-11-07T16:46:23+01:00",
+      "heartbeat": "2026-11-07T16:49:49+01:00",
       "enabled": true,
-      "agent": "tester",
-      "started": "2026-11-07T16:46:23+01:00",
-      "live": "live-T-034-tester-20261107-164623.jsonl"
+      "agent": "desarrollador",
+      "started": "2026-11-07T16:49:49+01:00",
+      "live": "live-T-035-desarrollador-20261107-164949.jsonl"
     }
   }
 }

@@ -24,7 +24,8 @@ class ProviderConfigurationTest {
         try (var context = start(NO_MCP, "--GEMINI_API_KEY=fake", "--AGENT_MODEL=some-gemini", "--ANTHROPIC_API_KEY=")) {
             ChatModel model = context.getBean(ChatModel.class);
 
-            assertThat(model).isInstanceOf(GoogleGenAiChatModel.class);
+            assertThat(model).isInstanceOf(MeteredChatModel.class);
+            assertThat(((MeteredChatModel) model).delegate()).isInstanceOf(GoogleGenAiChatModel.class);
             assertThat(model.getOptions().getModel()).isEqualTo("some-gemini");
         }
     }
@@ -42,7 +43,7 @@ class ProviderConfigurationTest {
                 "--AGENT_MODEL=some-claude")) {
             ChatModel model = context.getBean(ChatModel.class);
 
-            assertThat(model).isInstanceOf(AnthropicChatModel.class);
+            assertThat(((MeteredChatModel) model).delegate()).isInstanceOf(AnthropicChatModel.class);
             assertThat(model.getOptions().getModel()).isEqualTo("some-claude");
         }
     }
