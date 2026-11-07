@@ -204,7 +204,9 @@ docker compose exec -T seaweedfs curl -s -o /dev/null -w '%{http_code}\n' -X DEL
 | `java` | JDK 25 y `mvn -B -ntp verify`, con Testcontainers sobre el Docker del runner | 60 min |
 | `board-and-scripts` | Python 3.12 y `python -m pytest tests -q` | 10 min |
 
-**Sin probar:** la ejecución en GitHub, y `mvn -B -ntp verify` fuera de la imagen `tools`. Los tiempos máximos son una previsión, no una medida.
+**Probado en GitHub** (así que `mvn -B -ntp verify` también corre bien fuera de la imagen `tools`): el run 41492653907 (`49dfc13`) terminó en verde con `java` en 10 min, y el run 41494026662 (`3c213dc`) en 8,5 min, con 197 tests Java y 115 de pytest, ninguno omitido. Los tiempos máximos de la tabla son un tope de seguridad, no lo que tarda.
+
+**Cancelación:** las ejecuciones se agrupan por rama (`concurrency: ci-<ref>`). Solo en pull requests un push nuevo cancela la ejecución en curso; en `develop` y `main` no se cancela nada, porque cada tarjeta terminada hace push y cancelar allí impediría que alguna ejecución llegara a terminar. GitHub deja como mucho una en curso y otra pendiente por rama.
 
 Si `java` falla, la ejecución muestra el uso de disco y guarda los informes de los tests en el artefacto `test-reports`.
 

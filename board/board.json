@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-07T15:00:10+01:00",
+  "updated": "2026-11-07T15:00:44+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -6458,18 +6458,18 @@
       "id": "T-113",
       "title": "La guía de operación aún dice que la integración continua está sin probar",
       "owner": "desarrollador",
-      "status": "next",
+      "status": "review",
       "priority": "alta",
       "estimate_min": 5.0,
-      "actual_min": null,
+      "actual_min": 0.4,
       "auto": true,
       "manual": null,
       "desc": "La guía afirma que la ejecución en GitHub está sin probar, pero ya ha terminado en verde varias veces. Tampoco explica que en develop y main no se cancela una ejecución en curso, solo en pull requests. Se propone actualizar ese párrafo con lo medido para que quien la lea no dude de algo ya comprobado.\nCómo sabremos si funciona: la guía da como probada la ejecución en GitHub, con su duración real, y explica cuándo se cancelan las ejecuciones.\n\n## Técnico\n- docs/wiki/04-operacion.md, línea 153 («Sin probar: la ejecución en GitHub, y mvn -B -ntp verify fuera de la imagen tools»), sección Integración continua.\n- Medido: run 41492653907 (49dfc13), java 10 min; run 41494026662 (3c213dc), java 8,5 min, 197 tests Java y 115 de pytest, sin omitidos.\n- Criterio: quitar «sin probar» de ambas cosas, sustituir la previsión por los tiempos medidos y documentar cancel-in-progress solo en pull_request.",
       "deps": [],
       "created": "2026-11-02T18:59:05+01:00",
-      "updated": "2026-11-07T14:40:47+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-07T15:00:44+01:00",
+      "started_at": "2026-11-07T15:00:22+01:00",
+      "finished_at": "2026-11-07T15:00:44+01:00",
       "log": [
         {
           "t": "2026-11-02T18:59:05+01:00",
@@ -6490,6 +6490,28 @@
           "t": "2026-11-07T14:40:47+01:00",
           "by": "consultor",
           "msg": "Versión 0.1.0"
+        },
+        {
+          "t": "2026-11-07T15:00:22+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-07T15:00:44+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: La guía da como probada la ejecución en GitHub, con su duración real, y explica cuándo se cancelan las ejecuciones."
+        }
+      ],
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-07T15:00:44+01:00",
+          "min": 0.4,
+          "turns": 6,
+          "tokens": 79021,
+          "cost_usd": 0.1340662,
+          "verdict": "review"
         }
       ]
     },
@@ -8617,14 +8639,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-075",
-      "message": "tester con T-075",
+      "current": "T-113",
+      "message": "desarrollador con T-113",
       "pid": 19764,
-      "heartbeat": "2026-11-07T14:59:48+01:00",
+      "heartbeat": "2026-11-07T15:00:22+01:00",
       "enabled": true,
-      "agent": "tester",
-      "started": "2026-11-07T14:59:47+01:00",
-      "live": "live-T-075-tester-20261107-145948.jsonl"
+      "agent": "desarrollador",
+      "started": "2026-11-07T15:00:22+01:00",
+      "live": "live-T-113-desarrollador-20261107-150022.jsonl"
     }
   }
 }
