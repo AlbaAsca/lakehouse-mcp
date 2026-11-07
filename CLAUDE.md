@@ -34,6 +34,8 @@ funciones, números, criterio exacto) van al final, debajo de una línea `## Té
 - Una tarjeta es una **entrega de unos 30–90 minutos de agente**. Los fallos o mejoras pequeños (<15 min) del mismo ámbito se agrupan en una sola tarjeta que los lista en `## Técnico`; las absorbidas se cierran con nota «Absorbida en T-xxx». Solo van sueltos los urgentes o los que bloquean la CI.
 - Orden de ejecución: `rank` de 1 (primero) a 1000 (último), `python board/board.py rank T-012 40`. Sin `rank` se deriva de la prioridad (alta 100, media 500, baja 900). El runner coge Revisión, Próximo y Backlog, y dentro de cada uno por `rank`. 900 = después de la versión en curso.
 
+- **Verificación:** solo pasa por el tester lo que toca seguridad, datos reales, `testkit`/`compose.yaml`/`connect/`/`infra/` o el recorrido de punta a punta (`needs_tester` en `board/runner.py`, o `verify: true` en la tarjeta). El resto lo da por hecho el desarrollador con los tests de su módulo en verde y la CI como revisor.
+
 ## Estimaciones
 En **minutos de agente**. El tiempo real NO se escribe: se mide con `started_at`/`finished_at` al pasar por `doing`.
 Calibración inicial (ajústala con los datos del panel): lo nuevo o de calidad difícil de medir tarda **2–3×** lo

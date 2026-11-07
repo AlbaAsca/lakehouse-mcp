@@ -169,6 +169,18 @@ def is_ci_card(t):
     return re.search(r"\bCI\b", t.get("title", "")) is not None
 
 
+TESTER_WORDS = ("seguridad", "roles", "datos reales", "csv real", "modelo real", "punta a punta", "recorrido",
+                "testkit", "compose.yaml", "connect/", "infra/", "rollback", "aprobación")
+
+
+def needs_tester(t):
+    """Solo se verifica aparte lo que toca seguridad, datos reales o la integración de punta a punta (CLAUDE.md)."""
+    if t.get("verify") or t.get("owner") == "tester":
+        return True
+    text = f"{t.get('title', '')} {t.get('desc', '')}".lower()
+    return any(w in text for w in TESTER_WORDS)
+
+
 def pick(b, lane="all", ci_red=False):
     """Siguiente tarea ejecutable: (tarea, modo) con modo 'verify' o 'work'. Las verificaciones van al carril measure.
     Con la CI en rojo (`ci_red`) solo se cogen tarjetas de arreglo de CI (título con «CI»)."""
@@ -529,7 +541,10 @@ def finish(tid, mode, agent, r):
         else:
             new = {"done": "done", "review": "review", "human": "human"}.get(verdict, "blocked")
             if new == "done" and agent == "desarrollador":
-                new = "review"  # el código siempre lo verifica el tester
+                new = "review"
+            if new == "review" and agent == "desarrollador" and not needs_tester(t):
+                new = "done"  # tarjeta pequeña: sus tests de módulo en verde y la CI hacen de revisor
+                bd.log(t, "runner", "Sin verificación aparte del tester (no toca seguridad, datos reales ni punta a punta); la CI revisa.")
         runs = t.setdefault("runs", [])
         runs.append(dict(agent=agent, mode=mode, at=now(), min=round(r["secs"] / 60, 1), turns=r["turns"],
                          tokens=toks or None, cost_usd=r["cost"], verdict=verdict, summary=summary[:200]))
