@@ -76,6 +76,16 @@ def _committed(g):
     return g("show", "--name-only", "--format=", "HEAD").split()
 
 
+def test_verify_avisa_de_ficheros_sin_confirmar(repo):
+    root, g = repo
+    t = {"id": "T-1", "title": "x", "owner": "desarrollador", "log": []}
+    assert "NO están en git" not in runner.build_prompt(t, "verify", "tester")
+    (root / "Falta.java").write_text("x", encoding="utf-8")
+    p = runner.build_prompt(t, "verify", "tester")
+    assert "NO están en git" in p and "Falta.java" in p
+    assert "Falta.java" not in runner.build_prompt(t, "work", "desarrollador")
+
+
 def test_commit_solo_con_ficheros_propios(repo):
     tmp_path, g = repo
     (tmp_path / "previo.txt").write_text("a medias", encoding="utf-8")  # trabajo del otro carril ya en curso

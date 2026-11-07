@@ -168,11 +168,23 @@ def pick(b, lane="all"):
     return None, None
 
 
+def uncommitted():
+    """Rutas con cambios sin confirmar (modificadas o nuevas sin ignorar). Vacía si no hay git."""
+    r = git("status", "--porcelain", "-uall")
+    return [l[3:] for l in (r.stdout.splitlines() if r else []) if len(l) > 3]
+
+
 def build_prompt(t, mode, agent):
     hist = "\n".join(f"- {l['t'][:16]} {l['by']}: {l['msg']}" for l in t.get("log", [])[-8:])
     if mode == "verify":
+        dirty = [p for p in uncommitted() if not p.startswith("board/")]
         head = (f"Eres el TESTER. Verifica la tarea {t['id']} «{t['title']}» que el {t['owner']} ha dejado en Revisión.\n"
                 "Revisa el cambio (git log/diff), pasa los tests del módulo, prueba el comportamiento y añade un test que cubra la tarea si no existe. Mira también la última CI de develop (CLAUDE.md, Tests por niveles).")
+        if dirty:
+            head += ("\n\nVERIFICA SOLO LO CONFIRMADO: estos ficheros NO están en git (cambios sin confirmar o nuevos): "
+                     + ", ".join(dirty[:30])
+                     + ". Si el código de la tarjeta depende de alguno (import, referencia, test, config), la verificación FALLA: "
+                       "devuelve la tarjeta con un mensaje que nombre ese fichero, porque en una copia limpia no compilaría.")
         states = STATES_QA
     else:
         head = f"Eres el agente «{agent}». Ejecuta la tarea {t['id']}: {t['title']}"
