@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-07T15:30:09+01:00",
+  "updated": "2026-11-07T15:30:32+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -8726,7 +8726,7 @@
       "id": "T-172",
       "title": "El agente falla si AGENT_MODEL está vacío en vez de usar el modelo por defecto",
       "owner": "desarrollador",
-      "status": "review",
+      "status": "done",
       "priority": "alta",
       "estimate_min": 15.0,
       "actual_min": 1.4,
@@ -8735,7 +8735,7 @@
       "desc": "Si .env no define AGENT_MODEL, compose le pasa una cadena vacía y el agente falla con model is required, en vez de usar el modelo por defecto. Quien clone el repo se lo encontraría en su primera pregunta. Cómo sabremos si funciona: sin AGENT_MODEL en .env, ./mk ask usa el modelo por defecto del proveedor, y un test lo cubre.\n\n## Técnico\ncompose.yaml: AGENT_MODEL: ${AGENT_MODEL:-} pasa vacío. Lo detectó el ensayo de T-097 (IllegalArgumentException: model is required, google-genai 1.65.0). Que el agente ignore un modelo vacío o fije un valor por defecto documentado en .env.example. Actualizar docs/wiki/componentes/agente.md.",
       "deps": [],
       "created": "2026-11-07T13:59:20+01:00",
-      "updated": "2026-11-07T15:30:09+01:00",
+      "updated": "2026-11-07T15:30:32+01:00",
       "started_at": "2026-11-07T15:28:42+01:00",
       "finished_at": "2026-11-07T15:30:09+01:00",
       "log": [
@@ -8768,6 +8768,16 @@
           "t": "2026-11-07T15:30:09+01:00",
           "by": "desarrollador",
           "msg": "REVIEW: si AGENT_MODEL llega vacío, `ask.sh` lo descarta y se usa el modelo por defecto, con tests; el límite de tiempo va en T-178."
+        },
+        {
+          "t": "2026-11-07T15:30:15+01:00",
+          "by": "tester",
+          "msg": "verificando"
+        },
+        {
+          "t": "2026-11-07T15:30:32+01:00",
+          "by": "tester",
+          "msg": "DONE: `ask.sh` descarta AGENT_MODEL vacío, por lo que Spring usa gemini-2.5-flash; con anthropic sigue exigiendo modelo, y los tests de `tests/test_agent_compose.py` pasan (8 ok)."
         }
       ],
       "runs": [
@@ -8780,8 +8790,19 @@
           "tokens": 368438,
           "cost_usd": 0.5035575999999999,
           "verdict": "review"
+        },
+        {
+          "agent": "tester",
+          "mode": "verify",
+          "at": "2026-11-07T15:30:32+01:00",
+          "min": 0.3,
+          "turns": 8,
+          "tokens": 62866,
+          "cost_usd": 0.058218599999999995,
+          "verdict": "done"
         }
-      ]
+      ],
+      "verify_started": "2026-11-07T15:30:15+01:00"
     },
     {
       "id": "T-173",
@@ -8991,13 +9012,13 @@
     "measure": {
       "state": "working",
       "current": "T-172",
-      "message": "desarrollador con T-172",
+      "message": "tester con T-172",
       "pid": 19764,
-      "heartbeat": "2026-11-07T15:28:43+01:00",
+      "heartbeat": "2026-11-07T15:30:16+01:00",
       "enabled": true,
-      "agent": "desarrollador",
-      "started": "2026-11-07T15:28:43+01:00",
-      "live": "live-T-172-desarrollador-20261107-152843.jsonl"
+      "agent": "tester",
+      "started": "2026-11-07T15:30:15+01:00",
+      "live": "live-T-172-tester-20261107-153015.jsonl"
     }
   }
 }
