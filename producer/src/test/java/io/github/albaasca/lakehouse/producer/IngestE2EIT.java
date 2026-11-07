@@ -30,7 +30,7 @@ class IngestE2EIT {
 
     private static final Path SAMPLE = Path.of("../testdata/synthetic-events.csv.gz").toAbsolutePath().normalize();
     private static final int SAMPLE_ROWS = 50_000;
-    private static final Duration COMMIT_INTERVAL = Duration.ofSeconds(10);
+    private static final Duration COMMIT_INTERVAL = Duration.ofSeconds(5);
     private static final Duration ROWS_TIMEOUT = Duration.ofMinutes(5);
     private static final String TABLE = "lh.ecommerce.events";
     private static final String COLUMNS =
@@ -68,7 +68,7 @@ class IngestE2EIT {
 
         awaitEveryRow();
         // A commit that repeats files would come after the count first adds up.
-        Thread.sleep(COMMIT_INTERVAL.multipliedBy(3).toMillis());
+        Thread.sleep(COMMIT_INTERVAL.multipliedBy(2).toMillis());
         duckDb = openDuckDb();
     }
 
