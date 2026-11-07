@@ -152,7 +152,8 @@ class AgentIT {
         Agent.Answer answer = agent.ask("Remove the table");
 
         String rejection = lastToolResponse(model().prompts.get(1));
-        assertThat(rejection).contains("Error calling tool");
+        // A JSON object, which is what Gemini needs to read it (T-173).
+        assertThat(JSON.readTree(rejection).get("error").asString()).contains("Error calling tool");
         assertThat(answer).isEqualTo(new Agent.Answer(Agent.Outcome.ANSWERED, Long.toString(loadedRows)));
     }
 

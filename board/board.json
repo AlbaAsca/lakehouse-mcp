@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-07T15:30:32+01:00",
+  "updated": "2026-11-07T15:35:36+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -8808,18 +8808,18 @@
       "id": "T-173",
       "title": "El agente se cae cuando una herramienta devuelve un error, en vez de explicarlo",
       "owner": "desarrollador",
-      "status": "next",
+      "status": "review",
       "priority": "alta",
       "estimate_min": 25.0,
-      "actual_min": null,
+      "actual_min": 5.0,
       "auto": true,
       "manual": null,
       "desc": "Si el validador rechaza una consulta, el servidor MCP devuelve el error como texto y el agente con Gemini se cae al intentar leerlo como JSON. Lo correcto es que el modelo reciba el rechazo y se lo explique al usuario: es justo lo que la demo quiere enseñar. Cómo sabremos si funciona: pedirle al agente que lea /etc/passwd con SQL termina con una explicación del rechazo, no con una traza.\n\n## Técnico\nEnsayo de T-097 con gemini-3.5-flash: RuntimeException Failed to parse JSON: Error calling tool: [TextContent[... text=Table function read_text not allowed ...]] en GoogleGenAiChatModel.parseJsonToMap (spring-ai-google-genai 2.0.2). Revisar cómo devuelve los errores ToolResults/el cliente MCP (envolver en JSON) y añadir test del agente con un error de herramienta.",
       "deps": [],
       "created": "2026-11-07T14:35:37+01:00",
-      "updated": "2026-11-07T14:37:12+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-07T15:35:36+01:00",
+      "started_at": "2026-11-07T15:30:38+01:00",
+      "finished_at": "2026-11-07T15:35:36+01:00",
       "log": [
         {
           "t": "2026-11-07T14:35:37+01:00",
@@ -8835,6 +8835,33 @@
           "t": "2026-11-07T14:40:42+01:00",
           "by": "consultor",
           "msg": "Entra en la versión 0.1.0 (T-175)."
+        },
+        {
+          "t": "2026-11-07T15:30:38+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-07T15:35:27+01:00",
+          "by": "consultor",
+          "msg": "Agente: ToolErrors envuelve los callbacks MCP; un error de herramienta llega al modelo como {\"error\": \"...\"} (JSON que Gemini sí parsea). Tests: AgentTest.aToolErrorReachesTheModelAsJsonItCanExplain + AgentIT ajustado, módulo agent en verde. Wiki: mencionar que los rechazos llegan al modelo como JSON. Falta probarlo contra Gemini real (no hay clave en modo autónomo)."
+        },
+        {
+          "t": "2026-11-07T15:35:36+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: los errores de herramienta llegan al modelo como `{\"error\": ...}` (JSON que Gemini puede leer), con test nuevo y tests de `agent` en verde; falta probarlo con Gemini de verdad."
+        }
+      ],
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-07T15:35:36+01:00",
+          "min": 4.9,
+          "turns": 27,
+          "tokens": 504180,
+          "cost_usd": 0.5260236,
+          "verdict": "review"
         }
       ]
     },
@@ -9011,14 +9038,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-172",
-      "message": "tester con T-172",
+      "current": "T-173",
+      "message": "desarrollador con T-173",
       "pid": 19764,
-      "heartbeat": "2026-11-07T15:30:16+01:00",
+      "heartbeat": "2026-11-07T15:30:39+01:00",
       "enabled": true,
-      "agent": "tester",
-      "started": "2026-11-07T15:30:15+01:00",
-      "live": "live-T-172-tester-20261107-153015.jsonl"
+      "agent": "desarrollador",
+      "started": "2026-11-07T15:30:38+01:00",
+      "live": "live-T-173-desarrollador-20261107-153038.jsonl"
     }
   }
 }
