@@ -91,7 +91,7 @@ Todo en [`application.yaml`](../../../agent/src/main/resources/application.yaml)
 
 Un modelo simulado pide un `count(*)` y la cifra que llega a la respuesta es la que escribió el cargador de datos, que nunca pasó por el servidor. Otro no termina nunca y se corta en el tope.
 
-`AgentImageIT` arranca la imagen del servicio `agent` contra un modelo simulado en otro contenedor: la pregunta, con espacios y comillas, llega entera al modelo y su respuesta sale por stdout. Sin clave, la imagen termina con código 2 diciendo cuál falta.
+`AgentImageIT` arranca la imagen del servicio `agent` contra un modelo simulado en otro contenedor: la pregunta, con espacios y comillas, llega entera al modelo y su respuesta sale por stdout. Sin clave, la imagen termina con código 5 diciendo cuál falta.
 
 Con un modelo de verdad, **sin probar** (T-097): con el stack levantado y la muestra cargada,
 
@@ -110,7 +110,7 @@ Detalles de comillas y del arranque en [Operación](../04-operacion.md#preguntar
 | 2 | La orden no es `ask <pregunta>` | stderr |
 | 3 | Ha llegado al tope de llamadas | stderr |
 | 4 | Se ha agotado la cuota del proveedor (error 429) | stderr |
-| 5 | Solo en la imagen (`./mk ask`): falta la clave del proveedor elegido, o `AGENT_MODEL` con Claude, o `AGENT_PROVIDER` no es válido | stderr |
+| 5 | Solo en la imagen (`./mk ask` lo muestra como `Error 5` de make pero sale con 2): falta la clave del proveedor elegido, o `AGENT_MODEL` con Claude, o `AGENT_PROVIDER` no es válido | stderr |
 
 ## Qué puede fallar
 
