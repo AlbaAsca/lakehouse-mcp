@@ -315,7 +315,7 @@ function card(t) {
   const manual = (t.status === "human" || t.owner === "consultor") && t.status !== "done" && t.manual;
   return `<article class="card ${live ? "live" : ""}" draggable="true" data-id="${t.id}" style="--c:${a.color}">
     <div class="meta"><span>${t.id}</span><span class="prio ${t.priority}">${t.priority}</span><span class="tm">${tm}</span></div>
-    <div class="t">${esc(t.title)}</div>
+    <div class="t">${t.answered ? "<b style='color:var(--acc)'>[RESPONDIDA]</b> " : ""}${esc(t.title)}</div>
     ${manual ? `<div class="manual"><b>Tú:</b> ${esc(t.manual)}</div>` : ""}
     <div class="meta"><span class="dot" style="background:${a.color}"></span>${esc(a.name)}${t.deps?.length ? ` · depende de ${t.deps.join(", ")}` : ""}${t.runs?.length ? ` · ${t.runs.length} ejecuc.` : ""}</div>
     ${t.status === "doing" && est ? `<div class="bar ${real > est ? "over" : ""}"><i style="width:${pct}%"></i></div>` : ""}
