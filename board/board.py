@@ -27,6 +27,13 @@ STATES = ["backlog", "next", "doing", "review", "human", "blocked", "done"]
 COLUMNS = [("backlog", "Backlog"), ("next", "Próximo"), ("doing", "En curso"), ("review", "Revisión"),
            ("human", "Te necesita"), ("blocked", "Bloqueado"), ("done", "Hecho")]
 PRIO = {"alta": 0, "media": 1, "baja": 2}
+DEFAULT_RANK = {"alta": 100, "media": 500, "baja": 900}
+
+
+def rank_of(t):
+    """Orden de ejecución, 1 (primero) a 1000 (último). Sin rank explícito, deriva de la prioridad."""
+    r = t.get("rank")
+    return r if isinstance(r, int) else DEFAULT_RANK.get(t.get("priority"), 500)
 
 
 def now():
@@ -195,6 +202,7 @@ def main():
     n = sp.add_parser("note"); n.add_argument("id"); n.add_argument("text", nargs="?"); n.add_argument("--msg")
     n.add_argument("--by", default="consultor")
     d = sp.add_parser("desc"); d.add_argument("id"); d.add_argument("text"); d.add_argument("--by", default="consultor")
+    r = sp.add_parser("rank"); r.add_argument("id"); r.add_argument("n", type=int, help="1 (primero) a 1000 (último)")
     e = sp.add_parser("estimate"); e.add_argument("id"); e.add_argument("minutes", type=float)
     sp.add_parser("check")
     o = p.parse_args()
@@ -226,6 +234,12 @@ def main():
         def g(b):
             t = task(b, o.id); t["desc"], t["updated"] = _unescape(o.text), now(); log(t, o.by, "descripción reescrita")
         update(g); return
+    if o.cmd == "rank":
+        assert 1 <= o.n <= 1000, "rank entre 1 y 1000"
+        def rk(b):
+            t = task(b, o.id); t["rank"], t["updated"] = o.n, now()
+            return f"{o.id} rank {o.n}"
+        print(update(rk)); return
     if o.cmd == "estimate":
         def f(b):
             t = task(b, o.id); t["estimate_min"] = o.minutes; log(t, "consultor", f"estimación {o.minutes:g} min")
