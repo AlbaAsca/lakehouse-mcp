@@ -22,7 +22,10 @@ public class FixTools {
 
     @McpTool(name = "propose_fix", description = "Proposes a repair; it changes nothing until a person approves it outside "
             + "this conversation. action is from a closed list. ROLLBACK_SNAPSHOT takes params namespace, table and "
-            + "snapshotId (a snapshot of that table, from describe_table) and takes the table back to it. Give the "
+            + "snapshotId (a snapshot of that table, from describe_table) and takes the table back to it. "
+            + "DEDUPLICATE_PARTITION takes namespace, table, day (yyyy-MM-dd, UTC) and sinceSnapshotId (the last snapshot "
+            + "before the duplicates arrived) and deletes only the exact copies written after that snapshot on that day; "
+            + "duplicates the source already had stay. Give the "
             + "reason: the person reads it to decide. Answers the proposal, with its id and status PROPOSED.",
             annotations = @McpAnnotations(title = "Propose a fix", readOnlyHint = false, destructiveHint = false,
                     idempotentHint = false, openWorldHint = false))

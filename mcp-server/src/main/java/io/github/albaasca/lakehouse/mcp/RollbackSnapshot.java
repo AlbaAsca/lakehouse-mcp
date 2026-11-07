@@ -70,7 +70,7 @@ final class RollbackSnapshot implements FixAction {
         return value;
     }
 
-    private static long whole(Object value) {
+    static long whole(Object value) {
         if (value instanceof Long || value instanceof Integer) {
             return ((Number) value).longValue();
         }

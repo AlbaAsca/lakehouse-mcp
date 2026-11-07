@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-07T17:48:46+01:00",
+  "updated": "2026-11-07T18:01:14+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -3081,10 +3081,10 @@
       "id": "T-038",
       "title": "Chaos: ciclo completo de duplicados",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "review",
       "priority": "alta",
       "estimate_min": 40.0,
-      "actual_min": null,
+      "actual_min": 12.4,
       "auto": true,
       "manual": null,
       "desc": "Primer ciclo completo sin modelo: se inyectan duplicados, el chequeo los detecta, se propone el arreglo, se aprueba, se aplica y se comprueba. Quitar duplicados sin perder filas buenas es delicado, y lo correcto depende del experimento con DuckDB.\nCómo sabremos si funciona: después del arreglo la tabla es idéntica fila a fila a la de antes del fallo, incluidos los duplicados que ya venían en el origen.\n\n## Técnico\n- FixAction DEDUPLICATE_PARTITION, según docs/spike-duckdb-iceberg.md. Debe distinguir los duplicados inyectados de los del origen (brief: los datos sucios se conservan): por ejemplo, operando sobre lo añadido desde el snapshot previo, no por contenido global.\n- Si el rollback es más seguro y honesto para este caso, se usa y se documenta.\n- IT scripted (sin LLM) por MCP real. ./mk test.",
@@ -3094,9 +3094,9 @@
         "T-026"
       ],
       "created": "2026-11-02T11:38:49+01:00",
-      "updated": "2026-11-02T11:38:49+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-07T18:01:14+01:00",
+      "started_at": "2026-11-07T17:48:50+01:00",
+      "finished_at": "2026-11-07T18:01:14+01:00",
       "log": [
         {
           "t": "2026-11-02T11:38:49+01:00",
@@ -3107,6 +3107,33 @@
           "t": "2026-11-02T18:05:35+01:00",
           "by": "consultor",
           "msg": "T-014: la sentencia para quitar duplicados está en docs/spike-duckdb-iceberg.md (columna filename, no file_path). Sin comprobar y a cubrir aquí: ficheros escritos por el sink real y borrado mientras el sink hace commit."
+        },
+        {
+          "t": "2026-11-07T17:48:50+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-07T18:01:07+01:00",
+          "by": "consultor",
+          "msg": "Hecho: acción DEDUPLICATE_PARTITION (namespace, table, day, sinceSnapshotId) borra solo copias exactas en ficheros añadidos tras el snapshot base, conserva los duplicados del origen; IT DeduplicateCycleIT (chaos -> propose -> approve -> apply -> tabla idéntica fila a fila) y mcp-server en verde. Wiki: servidor-mcp debe listar la acción nueva; rollback sigue siendo lo más seguro si la carga sigue en marcha."
+        },
+        {
+          "t": "2026-11-07T18:01:14+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: DEDUPLICATE_PARTITION implementada (solo copias nuevas, conserva las del origen); IT del ciclo completo y tests de mcp-server en verde."
+        }
+      ],
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-07T18:01:14+01:00",
+          "min": 12.4,
+          "turns": 39,
+          "tokens": 1013550,
+          "cost_usd": 0.5267891,
+          "verdict": "review"
         }
       ]
     },
@@ -10009,14 +10036,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-107",
-      "message": "tester con T-107",
+      "current": "T-038",
+      "message": "desarrollador con T-038",
       "pid": 17208,
-      "heartbeat": "2026-11-07T17:48:09+01:00",
+      "heartbeat": "2026-11-07T17:48:50+01:00",
       "enabled": true,
-      "agent": "tester",
-      "started": "2026-11-07T17:48:09+01:00",
-      "live": "live-T-107-tester-20261107-174809.jsonl"
+      "agent": "desarrollador",
+      "started": "2026-11-07T17:48:50+01:00",
+      "live": "live-T-038-desarrollador-20261107-174850.jsonl"
     }
   }
 }
