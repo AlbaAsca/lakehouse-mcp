@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-07T21:04:12+01:00",
+  "updated": "2026-11-07T21:05:14+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -8470,6 +8470,11 @@
           "t": "2026-11-03T01:43:21+01:00",
           "by": "consultor",
           "msg": "descripción reescrita"
+        },
+        {
+          "t": "2026-11-07T21:05:08+01:00",
+          "by": "consultor",
+          "msg": "De T-142: proponer también sustituir los permisos amplios docker * y gh * por otros estrechos (una lista de palabras nunca será completa; python * sigue permitiendo subprocesos)."
         }
       ],
       "rank": 900
@@ -8597,18 +8602,18 @@
       "id": "T-142",
       "title": "Variantes de comandos destructivos que aún se saltan la prohibición",
       "owner": "desarrollador",
-      "status": "next",
+      "status": "done",
       "priority": "alta",
       "estimate_min": 25.0,
-      "actual_min": null,
+      "actual_min": 0.9,
       "auto": true,
       "manual": null,
       "desc": "La lista de comandos prohibidos caza las formas habituales, pero otras formas de escribir lo mismo siguen pasando porque hay permisos amplios sobre docker y gh. Un agente podría borrar un volumen, un recurso de GitHub o datos dentro de un contenedor sin supervisión. Se propone ampliar la lista con esas variantes y, como una lista de palabras nunca será completa, proponer a la responsable sustituir los permisos amplios por otros estrechos.\nCómo sabremos si funciona: todas las variantes de la lista de abajo quedan denegadas aunque sigan concedidos los permisos amplios, y los comandos inofensivos siguen pasando.\n\n## Técnico\nDónde: board/permissions.py, NEVER y NEVER_WORDS. Encontrado al verificar T-085 aplicando runner.DENIED y pm.rules() como la CLI, sin ejecutar los comandos.\nSíntoma, pasan hoy con docker * o gh * concedidos: docker volume remove data, docker container remove kafka, docker image remove tools, docker network remove n, docker exec kafka sh -c con rm -rf entre comillas simples o dobles, docker compose exec igual, docker compose down con tabulador antes de -v, docker compose con down entre comillas, ./mk con down entre comillas, gh api -XDELETE, gh api --method=DELETE, gh api -X=DELETE, gh release delete-asset, gh secret remove, gh variable remove. Salvo los casos de comillas y tabulador, classify también devuelve revisar y no prohibido.\nA decidir por quien lo implemente: docker compose up -V o --renew-anon-volumes y docker kill, que no están en la lista.\nSin comprobar: que remove sea alias real en docker y gh, porque la ayuda de esos comandos se deniega en modo autónomo. Mirarlo en la documentación oficial.\nLímite conocido: python * permite lanzar subprocesos, así que estas reglas frenan errores, no a un agente que quiera saltárselas.\nCriterio: añadir estas variantes a DESTRUCTIVOS en tests/test_permissions.py, en verde en classify y se_deniega, sin romper NO_DESTRUCTIVOS. Ampliar T-139 para proponer también reducir docker * y gh *.",
       "deps": [],
       "created": "2026-11-03T10:10:37+01:00",
-      "updated": "2026-11-07T18:11:27+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-07T21:05:14+01:00",
+      "started_at": "2026-11-07T21:04:21+01:00",
+      "finished_at": "2026-11-07T21:05:14+01:00",
       "log": [
         {
           "t": "2026-11-03T10:10:37+01:00",
@@ -8624,9 +8629,42 @@
           "t": "2026-11-07T18:06:36+01:00",
           "by": "consultor",
           "msg": "Prioridad alta sin dependencias: pasa a Próximo (CI en rojo primero)."
+        },
+        {
+          "t": "2026-11-07T21:04:21+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-07T21:05:09+01:00",
+          "by": "consultor",
+          "msg": "Añadidas variantes (remove, kill, up -V, comillas, tabulador, exec con rm entre comillas, gh -XDELETE/--method=DELETE/delete-asset/remove) a NEVER y NEVER_WORDS; tests en verde. Sin comprobar en doc oficial que remove sea alias real; se deniega igualmente."
+        },
+        {
+          "t": "2026-11-07T21:05:14+01:00",
+          "by": "runner",
+          "msg": "Sin verificación aparte del tester (no toca seguridad, datos reales ni punta a punta); la CI revisa."
+        },
+        {
+          "t": "2026-11-07T21:05:14+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: variantes añadidas a NEVER y NEVER_WORDS con tests en verde (86 passed); nota añadida en T-139."
         }
       ],
-      "rank": 60
+      "rank": 60,
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-07T21:05:14+01:00",
+          "min": 0.9,
+          "turns": 13,
+          "tokens": 145286,
+          "cost_usd": 0.1819889,
+          "verdict": "review",
+          "summary": "variantes añadidas a NEVER y NEVER_WORDS con tests en verde (86 passed); nota añadida en T-139."
+        }
+      ]
     },
     {
       "id": "T-143",
@@ -15403,14 +15441,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-147",
-      "message": "desarrollador con T-147",
+      "current": "T-142",
+      "message": "desarrollador con T-142",
       "pid": 22896,
-      "heartbeat": "2026-11-07T20:55:45+01:00",
+      "heartbeat": "2026-11-07T21:04:22+01:00",
       "enabled": true,
       "agent": "desarrollador",
-      "started": "2026-11-07T20:55:45+01:00",
-      "live": "live-T-147-desarrollador-20261107-205545.jsonl"
+      "started": "2026-11-07T21:04:22+01:00",
+      "live": "live-T-142-desarrollador-20261107-210422.jsonl"
     }
   }
 }

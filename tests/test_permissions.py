@@ -47,7 +47,14 @@ DESTRUCTIVOS = ["docker compose down -v", "docker compose down", "docker compose
                 "docker system prune -af", "docker volume prune", "docker volume rm data", "docker rm kafka", "docker rmi tools",
                 "docker compose rm -f", "docker exec kafka rm -rf /data", "./mk down", "./mk -n down", "mk down", "./mk.cmd down",
                 "mk.cmd down", ".\\mk.cmd down", "make down", "make down MODULE=producer", "gh repo delete x/y --yes",
-                "gh api -X DELETE repos/x/y"]
+                "gh api -X DELETE repos/x/y",
+                # T-142
+                "docker volume remove data", "docker container remove kafka", "docker image remove tools",
+                "docker network remove n", "docker exec kafka sh -c 'rm -rf /data'", 'docker exec kafka sh -c "rm -rf /data"',
+                "docker compose exec kafka sh -c 'rm -rf /data'", "docker compose down\t-v", 'docker compose "down" -v',
+                "./mk 'down'", "gh api -XDELETE repos/x/y", "gh api --method=DELETE repos/x/y", "gh api -X=DELETE repos/x/y",
+                "gh release delete-asset v1 a.zip", "gh secret remove X", "gh variable remove X", "docker kill kafka",
+                "docker compose up -V", "docker compose up --renew-anon-volumes"]
 NO_DESTRUCTIVOS = ["./mk download-data", "./mk test", "./mk test MODULE=down", "./mk up", "./mk smoke", "mk.cmd up", "make test",
                    "docker ps", "docker compose ps", "docker compose logs kafka", "docker compose up -d", "docker compose config",
                    "docker compose run --rm tools make test", "gh pr view 3"]
