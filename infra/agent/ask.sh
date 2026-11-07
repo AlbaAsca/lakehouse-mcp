@@ -1,6 +1,9 @@
 #!/bin/sh
 # Without this check a missing key ends in a Spring stack trace. Exit code 5: the configuration is incomplete.
 provider="${AGENT_PROVIDER:-google-genai}"
+# compose passes AGENT_MODEL empty when .env lacks it, and Spring takes empty as a value, not as missing:
+# unset, application.yaml falls back to the provider's default model.
+if [ -z "$AGENT_MODEL" ]; then unset AGENT_MODEL; fi
 case "$provider" in
   google-genai) name=GEMINI_API_KEY; key="$GEMINI_API_KEY" ;;
   anthropic)

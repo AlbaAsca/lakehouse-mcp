@@ -70,6 +70,41 @@ def test_the_entrypoint_checks_the_key_of_each_provider():
     assert 'exec java -Xmx512m -jar /app/agent.jar "$@"' in ENTRYPOINT
 
 
+def run_entrypoint(tmp_path, **env):
+    """ask.sh with a fake java that prints whether AGENT_MODEL reaches it, and what."""
+    sh = shutil.which("sh")
+    if sh is None:
+        pytest.skip("needs a POSIX shell")
+    java = tmp_path / "java"
+    java.write_text('#!/bin/sh\necho "model=${AGENT_MODEL-unset}"\n', encoding="utf-8", newline="\n")
+    java.chmod(0o755)
+    base = {k: v for k, v in os.environ.items() if not k.startswith(("AGENT_", "GEMINI_", "ANTHROPIC_"))}
+    full = {**base, "PATH": f"{tmp_path}{os.pathsep}{os.environ['PATH']}", **env}
+    return subprocess.run([sh, str(ROOT / "infra/agent/ask.sh"), "q"], env=full, capture_output=True, text=True,
+                          timeout=60)
+
+
+def test_an_empty_model_is_dropped_so_spring_uses_the_default(tmp_path):
+    # T-172: compose passes AGENT_MODEL="" when .env lacks it; Spring would take "" and Gemini fail with "model is required".
+    out = run_entrypoint(tmp_path, GEMINI_API_KEY="k", AGENT_MODEL="")
+
+    assert out.returncode == 0, out.stderr
+    assert out.stdout.strip() == "model=unset"
+
+
+def test_a_set_model_reaches_java(tmp_path):
+    out = run_entrypoint(tmp_path, GEMINI_API_KEY="k", AGENT_MODEL="gemini-x")
+
+    assert out.stdout.strip() == "model=gemini-x"
+
+
+def test_claude_still_needs_a_model(tmp_path):
+    out = run_entrypoint(tmp_path, AGENT_PROVIDER="anthropic", ANTHROPIC_API_KEY="k", AGENT_MODEL="")
+
+    assert out.returncode == 5
+    assert "AGENT_MODEL is missing in .env" in out.stderr
+
+
 def test_the_image_test_sends_what_the_dockerfile_copies():
     block = re.search(r"CONTEXT = List\.of\((.*?)\);", IT, re.DOTALL)
     assert block, "AgentImageIT no longer lists its build context"

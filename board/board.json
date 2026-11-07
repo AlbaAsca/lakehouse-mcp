@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-07T15:28:37+01:00",
+  "updated": "2026-11-07T15:30:09+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -8726,18 +8726,18 @@
       "id": "T-172",
       "title": "El agente falla si AGENT_MODEL está vacío en vez de usar el modelo por defecto",
       "owner": "desarrollador",
-      "status": "next",
+      "status": "review",
       "priority": "alta",
       "estimate_min": 15.0,
-      "actual_min": null,
+      "actual_min": 1.4,
       "auto": true,
       "manual": null,
       "desc": "Si .env no define AGENT_MODEL, compose le pasa una cadena vacía y el agente falla con model is required, en vez de usar el modelo por defecto. Quien clone el repo se lo encontraría en su primera pregunta. Cómo sabremos si funciona: sin AGENT_MODEL en .env, ./mk ask usa el modelo por defecto del proveedor, y un test lo cubre.\n\n## Técnico\ncompose.yaml: AGENT_MODEL: ${AGENT_MODEL:-} pasa vacío. Lo detectó el ensayo de T-097 (IllegalArgumentException: model is required, google-genai 1.65.0). Que el agente ignore un modelo vacío o fije un valor por defecto documentado en .env.example. Actualizar docs/wiki/componentes/agente.md.",
       "deps": [],
       "created": "2026-11-07T13:59:20+01:00",
-      "updated": "2026-11-07T14:37:13+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-07T15:30:09+01:00",
+      "started_at": "2026-11-07T15:28:42+01:00",
+      "finished_at": "2026-11-07T15:30:09+01:00",
       "log": [
         {
           "t": "2026-11-07T13:59:20+01:00",
@@ -8753,6 +8753,33 @@
           "t": "2026-11-07T14:40:41+01:00",
           "by": "consultor",
           "msg": "Entra en la versión 0.1.0 (T-175)."
+        },
+        {
+          "t": "2026-11-07T15:28:42+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-07T15:30:01+01:00",
+          "by": "consultor",
+          "msg": "Arreglado en infra/agent/ask.sh: si AGENT_MODEL llega vacío se hace unset y Spring aplica gemini-2.5-flash. Tests en tests/test_agent_compose.py con un java falso. El límite de tiempo de la llamada al modelo va aparte en T-178 (hay que verificar la API de cada proveedor). Wiki: ya actualizada la fila AGENT_MODEL de componentes/agente.md."
+        },
+        {
+          "t": "2026-11-07T15:30:09+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: si AGENT_MODEL llega vacío, `ask.sh` lo descarta y se usa el modelo por defecto, con tests; el límite de tiempo va en T-178."
+        }
+      ],
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-07T15:30:09+01:00",
+          "min": 1.4,
+          "turns": 19,
+          "tokens": 368438,
+          "cost_usd": 0.5035575999999999,
+          "verdict": "review"
         }
       ]
     },
@@ -8921,6 +8948,30 @@
           "msg": "creada"
         }
       ]
+    },
+    {
+      "id": "T-178",
+      "title": "Agente: ponerle tiempo máximo a la llamada al modelo",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "alta",
+      "estimate_min": 20.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "En el ensayo el agente se quedó 7 minutos esperando a que el modelo contestara, sin avisar. Antes de grabar la demo conviene que la llamada al modelo tenga un tiempo máximo y que, si se pasa, el comando lo diga en una línea en vez de quedarse colgado. Salió como nota del consultor en T-172 y se separa porque hay que comprobar en la documentación oficial cómo se fija ese límite en cada proveedor.«\n»Cómo sabremos si funciona: con un modelo que no contesta, ./mk ask termina en el tiempo configurado con un mensaje claro, y un test lo cubre.«\n»## Técnico«\n»Se colgó con gemini-3.8-flash (T-097). Verificar en la doc de Spring AI 2.0.x / google-genai 1.65.0 y anthropic-java si hay timeout configurable (p. ej. HttpOptions.timeout en google-genai, timeout del cliente Anthropic); si no, envolver chat.prompt().call() en Agent.ask con un límite. Variable sugerida AGENT_MODEL_TIMEOUT (application.yaml, .env.example, docs/wiki/componentes/agente.md). Código de salida propio y documentado.",
+      "deps": [],
+      "created": "2026-11-07T15:29:57+01:00",
+      "updated": "2026-11-07T15:29:57+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-07T15:29:57+01:00",
+          "by": "desarrollador",
+          "msg": "creada"
+        }
+      ]
     }
   ],
   "runners": {
@@ -8939,14 +8990,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-165",
-      "message": "tester con T-165",
+      "current": "T-172",
+      "message": "desarrollador con T-172",
       "pid": 19764,
-      "heartbeat": "2026-11-07T15:28:03+01:00",
+      "heartbeat": "2026-11-07T15:28:43+01:00",
       "enabled": true,
-      "agent": "tester",
-      "started": "2026-11-07T15:28:03+01:00",
-      "live": "live-T-165-tester-20261107-152803.jsonl"
+      "agent": "desarrollador",
+      "started": "2026-11-07T15:28:43+01:00",
+      "live": "live-T-172-desarrollador-20261107-152843.jsonl"
     }
   }
 }

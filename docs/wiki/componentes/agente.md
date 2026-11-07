@@ -69,7 +69,7 @@ Todo en [`application.yaml`](../../../agent/src/main/resources/application.yaml)
 | Variable | Por defecto | Para qué |
 |---|---|---|
 | `AGENT_PROVIDER` | `google-genai` | `google-genai` o `anthropic`: ambos van en el jar y solo arranca el elegido |
-| `AGENT_MODEL` | `gemini-2.5-flash` con Gemini; obligatoria con Claude | El modelo |
+| `AGENT_MODEL` | `gemini-2.5-flash` con Gemini; obligatoria con Claude | El modelo. Vacía cuenta como no definida: `ask.sh` la quita antes de arrancar Java, porque compose la pasa vacía si falta en `.env` |
 | `GEMINI_API_KEY`, `ANTHROPIC_API_KEY` | vacías | Solo se exige la del proveedor elegido |
 | `AGENT_MAX_TOOL_CALLS` | `10` | Tope de llamadas a herramientas por pregunta |
 | `MCP_SERVER_URL` | `http://localhost:8090` | Dónde está el servidor |
