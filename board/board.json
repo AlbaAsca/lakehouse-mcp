@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-07T17:46:09+01:00",
+  "updated": "2026-11-07T17:46:53+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -6886,23 +6886,45 @@
       "id": "T-107",
       "title": "Que un comentario en Te necesita llegue a quien debe leerlo",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "review",
       "priority": "alta",
       "estimate_min": 30.0,
-      "actual_min": null,
+      "actual_min": 0.7,
       "auto": true,
       "manual": null,
       "desc": "La responsable contestó en T-083 y nadie lo leyó durante horas: el runner no coge tarjetas de Te necesita y el consultor no recibe aviso. Se propone que comentar una de esas tarjetas la haga avanzar, o que se vea claramente como contestada. Cómo sabremos si funciona: al comentar una tarjeta de agente, vuelve a la cola con el comentario en su historial; en una de consultor, el panel y board.py list la marcan como respondida.\n\n## Técnico\nboard/server.py (endpoint de nota) y board/runner.py: el historial de los últimos 8 registros ya llega al prompt al trabajar la tarjeta. Mover de human a next si el dueño es un agente y el autor es tú. Añadir marca para las de consultor. Test en tests/test_board.py. En CLAUDE.md: el consultor revisa las respuestas de Te necesita al empezar cada turno.",
       "deps": [],
       "created": "2026-11-02T18:15:58+01:00",
-      "updated": "2026-11-02T18:15:58+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-07T17:46:53+01:00",
+      "started_at": "2026-11-07T17:46:12+01:00",
+      "finished_at": "2026-11-07T17:46:53+01:00",
       "log": [
         {
           "t": "2026-11-02T18:15:58+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-07T17:46:12+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-07T17:46:53+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: comentar en Te necesita mueve las tarjetas de agente a next y marca como [RESPONDIDA] las del consultor; tests en verde y CLAUDE.md actualizado."
+        }
+      ],
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-07T17:46:53+01:00",
+          "min": 0.7,
+          "turns": 13,
+          "tokens": 129842,
+          "cost_usd": 0.10663840000000001,
+          "verdict": "review"
         }
       ]
     },
@@ -9865,14 +9887,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-100",
-      "message": "tester con T-100",
+      "current": "T-107",
+      "message": "desarrollador con T-107",
       "pid": 17208,
-      "heartbeat": "2026-11-07T17:45:37+01:00",
+      "heartbeat": "2026-11-07T17:46:12+01:00",
       "enabled": true,
-      "agent": "tester",
-      "started": "2026-11-07T17:45:37+01:00",
-      "live": "live-T-100-tester-20261107-174537.jsonl"
+      "agent": "desarrollador",
+      "started": "2026-11-07T17:46:12+01:00",
+      "live": "live-T-107-desarrollador-20261107-174612.jsonl"
     }
   }
 }

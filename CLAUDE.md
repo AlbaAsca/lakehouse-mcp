@@ -23,6 +23,7 @@ con él y delega en los agentes de `.claude/agents/`: `arquitecto`, `desarrollad
 
 Estados: `backlog` → `next` → `doing` → `review` → `done`, más `human` y `blocked`:
 - **Te necesita (`human`)** es solo para lo que únicamente puede hacer el responsable (instalar, credenciales, decidir, publicar).
+- Comentar en el panel una tarjeta de Te necesita: si es de un agente vuelve a `next` con el comentario en el historial; si es del consultor queda marcada `[RESPONDIDA]`. **El consultor revisa esas respuestas al empezar cada turno** (`board.py list`).
 - **Bloqueado (`blocked`)** es para lo que espera otra cosa: una medición, otra tarjeta, un recurso externo. No lo mandes a `human`.
 
 **Cómo se escribe una tarjeta** (la lee una persona, no un robot): título en lenguaje llano; en la descripción, arriba 2-4 frases
