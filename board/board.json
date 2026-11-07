@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-07T15:02:40+01:00",
+  "updated": "2026-11-07T15:03:13+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -7266,7 +7266,7 @@
       "id": "T-133",
       "title": "En Windows, mk.cmd da por buenos los tests que fallan",
       "owner": "desarrollador",
-      "status": "review",
+      "status": "done",
       "priority": "alta",
       "estimate_min": 10.0,
       "actual_min": 1.0,
@@ -7275,7 +7275,7 @@
       "desc": "Cuando los tests fallan, el comando de Windows muestra el error en pantalla pero termina como si todo hubiera ido bien. Un script o una persona que solo mire el resultado daría por buenos unos tests en rojo. Se propone que el comando conserve el resultado de lo que ha ejecutado, porque es el que CLAUDE.md indica para Windows y afecta a todos sus objetivos, no solo a los tests.\nCómo sabremos si funciona: lanzar los tests de un módulo que no existe con el comando de Windows termina con error, igual que con el de Linux, y sigue terminando bien cuando no falla nada.\n\n## Técnico\nDónde: mk.cmd, línea 4. popd pone ERRORLEVEL a 0 y borra el código de docker compose. Es anterior a T-077 (el fichero no cambia desde b09d303).\nSíntoma: ./mk test MODULE=noexiste sale con 2; .\\mk.cmd test MODULE=noexiste desde PowerShell deja LASTEXITCODE en 0, y desde Git Bash también sale con 0, con el mismo make: *** Error 1 en la salida.\nArreglo probado con un sustituto de docker que sale con 2 (sin popd: 2; con popd: 0; con el arreglo: 2): set \"RC=%ERRORLEVEL%\" antes de popd y exit /b %RC% al final.\nCriterio: código de salida distinto de 0 con módulo inexistente y 0 en un objetivo correcto; test de regresión con un sustituto de docker, sin depender de Docker real. Actualizar docs/wiki/componentes/imagen-tools.md, que hoy marca mk.cmd como sin probar y afirma que termina con error.",
       "deps": [],
       "created": "2026-11-03T00:35:47+01:00",
-      "updated": "2026-11-07T15:02:40+01:00",
+      "updated": "2026-11-07T15:03:13+01:00",
       "started_at": "2026-11-07T15:01:40+01:00",
       "finished_at": "2026-11-07T15:02:40+01:00",
       "log": [
@@ -7308,6 +7308,26 @@
           "t": "2026-11-07T15:02:40+01:00",
           "by": "desarrollador",
           "msg": "REVIEW: mk.cmd ya devuelve el código de salida de docker compose, con un test de regresión que usa un sustituto de Docker."
+        },
+        {
+          "t": "2026-11-07T15:02:46+01:00",
+          "by": "tester",
+          "msg": "verificando"
+        },
+        {
+          "t": "2026-11-07T15:03:13+01:00",
+          "by": "tester",
+          "msg": "DONE: mk.cmd conserva el código de salida de docker compose (0 y 2 comprobados con un sustituto de docker) y los tests de regresión pasan."
+        },
+        {
+          "t": "2026-11-07T15:03:13+01:00",
+          "by": "tester",
+          "msg": "⚠ 1 comandos denegados: gh run view --branch develop $(gh run list --branch develop --workflow ci.yml --"
+        },
+        {
+          "t": "2026-11-07T15:03:13+01:00",
+          "by": "runner",
+          "msg": "✗ «gh run view --branch develop $(gh run list --branch develop --workflow ci.yml --limit 15 -»: varios comandos, tuberías, redirecciones o heredoc: lanza cada comando por separado y crea ficheros con Write/Edit"
         }
       ],
       "runs": [
@@ -7320,8 +7340,19 @@
           "tokens": 140044,
           "cost_usd": 0.21645760000000003,
           "verdict": "review"
+        },
+        {
+          "agent": "tester",
+          "mode": "verify",
+          "at": "2026-11-07T15:03:13+01:00",
+          "min": 0.4,
+          "turns": 8,
+          "tokens": 72184,
+          "cost_usd": 0.0948276,
+          "verdict": "done"
         }
-      ]
+      ],
+      "verify_started": "2026-11-07T15:02:46+01:00"
     },
     {
       "id": "T-134",
@@ -8688,13 +8719,13 @@
     "measure": {
       "state": "working",
       "current": "T-133",
-      "message": "desarrollador con T-133",
+      "message": "tester con T-133",
       "pid": 19764,
-      "heartbeat": "2026-11-07T15:01:40+01:00",
+      "heartbeat": "2026-11-07T15:02:46+01:00",
       "enabled": true,
-      "agent": "desarrollador",
-      "started": "2026-11-07T15:01:40+01:00",
-      "live": "live-T-133-desarrollador-20261107-150140.jsonl"
+      "agent": "tester",
+      "started": "2026-11-07T15:02:46+01:00",
+      "live": "live-T-133-tester-20261107-150246.jsonl"
     }
   }
 }
