@@ -51,6 +51,23 @@ class RepairSessionTest {
     }
 
     @Test
+    void theDeduplicateTemplateTakesOnlyDaysAndPlainColumns() {
+        Map<String, Object> ok = Map.of("table", "lh.ns.t", "base", 7L, "columns", java.util.List.of("a", "b"),
+                "day", "2019-10-01", "next_day", "2019-10-02");
+        assertThat(RepairSession.DEDUPLICATE.render(ok)).startsWith("DELETE FROM lh.ns.t WHERE")
+                .contains("PARTITION BY \"a\", \"b\"").contains("AT (VERSION => 7)")
+                .contains("TIMESTAMPTZ '2019-10-01 00:00:00+00'");
+        for (Object bad : new Object[] {java.util.List.of(), java.util.List.of("a\" ; DROP"), "a"}) {
+            assertThatThrownBy(() -> RepairSession.DEDUPLICATE.render(Map.of("table", "lh.ns.t", "base", 7L,
+                    "columns", bad, "day", "2019-10-01", "next_day", "2019-10-02")))
+                    .isInstanceOf(IllegalArgumentException.class);
+        }
+        assertThatThrownBy(() -> RepairSession.DEDUPLICATE.render(Map.of("table", "lh.ns.t", "base", 7L,
+                "columns", java.util.List.of("a"), "day", "2019-10-01' OR 1=1", "next_day", "2019-10-02")))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
     void aTemplateMustDeclareExactlyItsPlaceholders() {
         assertThatThrownBy(() -> new Template("CALL f({table}, {snapshot_id})", Map.of("table", Kind.TABLE)))
                 .isInstanceOf(IllegalArgumentException.class);

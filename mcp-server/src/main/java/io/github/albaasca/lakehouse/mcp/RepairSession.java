@@ -30,7 +30,11 @@ public final class RepairSession {
         /** A whole number, such as a snapshot id. */
         LONG,
         /** Any text, written as a quoted SQL literal. */
-        STRING
+        STRING,
+        /** A calendar day {@code yyyy-MM-dd}, written bare so a template can put it inside its own quotes. */
+        DATE,
+        /** A non-empty list of plain column names, written as quoted identifiers separated by commas. */
+        COLUMNS
     }
 
     /**
@@ -74,6 +78,8 @@ public final class RepairSession {
         private static final Pattern TABLE_NAME = Pattern.compile(
                 Pattern.quote(LakehouseSession.CATALOG_ALIAS) + "\\.[A-Za-z_][A-Za-z0-9_]*\\.[A-Za-z_][A-Za-z0-9_]*");
 
+        private static final Pattern COLUMN_NAME = Pattern.compile("[A-Za-z_][A-Za-z0-9_]*");
+
         private static String literal(String name, Kind kind, Object value) {
             Objects.requireNonNull(value, name);
             return switch (kind) {
@@ -96,6 +102,24 @@ public final class RepairSession {
                     }
                     yield LakehouseSession.quote(text);
                 }
+                case DATE -> {
+                    if (!(value instanceof String text) || !text.matches("\\d{4}-\\d{2}-\\d{2}")) {
+                        throw new IllegalArgumentException(name + " must be a day yyyy-MM-dd: " + value);
+                    }
+                    java.time.LocalDate.parse(text);
+                    yield text;
+                }
+                case COLUMNS -> {
+                    if (!(value instanceof java.util.List<?> list) || list.isEmpty()) {
+                        throw new IllegalArgumentException(name + " must be a non-empty list of column names: " + value);
+                    }
+                    yield list.stream().map(column -> {
+                        if (!(column instanceof String c) || !COLUMN_NAME.matcher(c).matches()) {
+                            throw new IllegalArgumentException(name + " has a column that is not a plain name: " + column);
+                        }
+                        return "\"" + c + "\"";
+                    }).collect(java.util.stream.Collectors.joining(", "));
+                }
             };
         }
     }
@@ -104,6 +128,25 @@ public final class RepairSession {
     public static final Template ROLLBACK = new Template(
             "CALL iceberg_rollback_to_snapshot('{table}', {snapshot_id})",
             Map.of("table", Kind.TABLE, "snapshot_id", Kind.LONG));
+
+    /**
+     * Removes the extra copies that arrived after a snapshot, within one UTC day. Rows of files that already existed at
+     * {@code base} are never deleted (the source's own duplicates stay); among identical rows, the ones in older files
+     * are kept first, so a new row is deleted only when an identical row is already there.
+     */
+    public static final Template DEDUPLICATE = new Template(
+            "DELETE FROM {table} WHERE (filename, file_row_number) IN ("
+                    + "SELECT filename, file_row_number FROM ("
+                    + "SELECT filename, file_row_number, "
+                    + "filename IN (SELECT DISTINCT filename FROM {table} AT (VERSION => {base})) AS old_file, "
+                    + "row_number() OVER (PARTITION BY {columns} ORDER BY "
+                    + "(filename IN (SELECT DISTINCT filename FROM {table} AT (VERSION => {base}))) DESC, "
+                    + "filename, file_row_number) AS copy "
+                    + "FROM {table} WHERE event_time >= TIMESTAMPTZ '{day} 00:00:00+00' "
+                    + "AND event_time < TIMESTAMPTZ '{next_day} 00:00:00+00') "
+                    + "WHERE copy > 1 AND NOT old_file)",
+            Map.of("table", Kind.TABLE, "base", Kind.LONG, "columns", Kind.COLUMNS, "day", Kind.DATE,
+                    "next_day", Kind.DATE));
 
     private final LakehouseSession.Settings settings;
 

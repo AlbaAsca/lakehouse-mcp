@@ -11,7 +11,8 @@ interface FixAction {
 
     /** The closed list of repairs. This enum is what the MCP tool offers to the model. */
     enum Type {
-        ROLLBACK_SNAPSHOT
+        ROLLBACK_SNAPSHOT,
+        DEDUPLICATE_PARTITION
     }
 
     Type type();

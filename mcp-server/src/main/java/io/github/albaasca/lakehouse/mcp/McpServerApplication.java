@@ -121,7 +121,8 @@ public class McpServerApplication {
         @Bean
         FixProposals fixProposals(FixProposalStore store, CatalogReader reader, LakehouseProperties lakehouse) {
             RepairSession repair = RepairSession.alongside(lakehouse.settings());
-            return new FixProposals(store, List.of(new RollbackSnapshot(reader, repair)), Clock.systemUTC());
+            return new FixProposals(store, List.of(new RollbackSnapshot(reader, repair),
+                    new DeduplicatePartition(reader, repair)), Clock.systemUTC());
         }
 
         @Bean
