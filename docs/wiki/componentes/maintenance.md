@@ -14,4 +14,4 @@ Códigos de salida: **0** todo bien, **1** fallo o ficheros que no se pudieron b
 
 ## Técnico
 
-Código en [`maintenance/`](../../maintenance/src/main/java/io/github/albaasca/lakehouse/maintenance/): `ExpireSnapshotsCommand` (argumentos y conexión al catálogo REST de Polaris) y `SnapshotExpirer` (usa la API Java de Iceberg). Por qué no Trino: [decisiones](../05-decisiones.md#por-qué-no-hay-trino-ni-benchmark).
+Código en [`maintenance/`](../../../maintenance/src/main/java/io/github/albaasca/lakehouse/maintenance/): `ExpireSnapshotsCommand` (argumentos y conexión al catálogo REST de Polaris) y `SnapshotExpirer` (usa la API Java de Iceberg). Por qué no Trino: [decisiones](../05-decisiones.md#por-qué-no-hay-trino-ni-benchmark).

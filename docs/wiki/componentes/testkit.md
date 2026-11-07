@@ -16,4 +16,4 @@ Muchos fallos solo aparecen con Kafka, Connect, Polaris y SeaweedFS de verdad. E
 
 El desarrollador y el tester solo pasan los tests de su módulo (`./mk test MODULE=<módulo>`). Si se toca `testkit`, `compose.yaml`, `connect/` o `infra/`, hay que pasar también los tests de contenedores antes de cerrar la tarjeta.
 
-Código: [`testkit/`](../../testkit/src/main/java/io/github/albaasca/lakehouse/testkit/).
+Código: [`testkit/`](../../../testkit/src/main/java/io/github/albaasca/lakehouse/testkit/).

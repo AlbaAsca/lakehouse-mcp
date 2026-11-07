@@ -8,7 +8,7 @@ Para saber si el agente acierta hay que comparar con una respuesta correcta calc
 
 ## Qué hay hoy
 
-- [`evals/truth/compute_quality_truth.py`](../../evals/truth/compute_quality_truth.py): calcula nulos, duplicados, precios fuera de rango y volumen por día y tipo, solo con la biblioteca estándar, desde la muestra. Salida: `quality.json`. Se usa para comparar `data_quality_check` elemento a elemento.
-- [`evals/demo/`](../../evals/demo/): resultado esperado (`expected.json`) y su cálculo (`reference.py`) para la demo.
+- [`evals/truth/compute_quality_truth.py`](../../../evals/truth/compute_quality_truth.py): calcula nulos, duplicados, precios fuera de rango y volumen por día y tipo, solo con la biblioteca estándar, desde la muestra. Salida: `quality.json`. Se usa para comparar `data_quality_check` elemento a elemento.
+- [`evals/demo/`](../../../evals/demo/): resultado esperado (`expected.json`) y su cálculo (`reference.py`) para la demo.
 
 No hay todavía cifras de precisión del agente: no se ha medido.

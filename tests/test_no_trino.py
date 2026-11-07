@@ -22,6 +22,7 @@ IMAGE_TESTS = [
 ALLOWED = {
     "docs/architecture.md",
     "docs/wiki/05-decisiones.md",
+    "docs/wiki/componentes/maintenance.md",  # one sentence that links to the decision
     "docs/spike-duckdb-iceberg.md",
     "docs/wiki/componentes/duckdb.md",  # only the link to «por qué no hay Trino»
     "docs/wiki/componentes/trino.md",  # pending deletion, see test_removed_files_are_gone
@@ -91,7 +92,6 @@ def test_nothing_links_to_the_trino_page():
     assert links == []
 
 
-@pytest.mark.xfail(strict=True, reason="T-169: bench/ and trino.md wait for someone allowed to delete files")
 def test_removed_files_are_gone():
     left = [rel for rel in tracked() if rel.startswith("bench/") or rel == "docs/wiki/componentes/trino.md"]
     assert left == []

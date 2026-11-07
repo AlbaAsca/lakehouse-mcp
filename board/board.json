@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-07T18:26:09+01:00",
+  "updated": "2026-11-07T18:32:00+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -10254,18 +10254,18 @@
       "id": "T-184",
       "title": "CI en rojo: fallan los tests de integración de mcp-server",
       "owner": "desarrollador",
-      "status": "next",
+      "status": "review",
       "priority": "alta",
       "estimate_min": 30.0,
-      "actual_min": null,
+      "actual_min": 5.8,
       "auto": true,
       "manual": null,
       "desc": "La CI de develop falla en mcp-server (maven-failsafe, tests de integración) desde las tarjetas de seguridad (T-050) y chaos (T-037). Mientras esté en rojo no hay señal fiable. Cómo sabremos si funciona: mvn verify de mcp-server en verde en la CI. ## Técnico: ver gh run view --log-failed del último fallo en develop.",
       "deps": [],
       "created": "2026-11-07T18:05:40+01:00",
-      "updated": "2026-11-07T18:16:01+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-07T18:32:00+01:00",
+      "started_at": "2026-11-07T18:26:12+01:00",
+      "finished_at": "2026-11-07T18:32:00+01:00",
       "log": [
         {
           "t": "2026-11-07T18:05:40+01:00",
@@ -10276,9 +10276,36 @@
           "t": "2026-11-07T18:06:35+01:00",
           "by": "consultor",
           "msg": "Prioridad alta sin dependencias: pasa a Próximo (CI en rojo primero)."
+        },
+        {
+          "t": "2026-11-07T18:26:12+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-07T18:31:51+01:00",
+          "by": "consultor",
+          "msg": "Revisado el log del último fallo (run 42393170001): los IT de mcp-server pasan (McpServerIT, PipelineHealthIT, ChaosIT...). Lo que estaba en rojo: (1) pytest: 2 tests de compose sin las variables OPS_DB_*/claves y enlaces rotos de la wiki (../../ en vez de ../../../ en evals, maintenance, testkit), y test_no_trino con maintenance.md y un xfail ya cumplido; arreglado y pytest en verde (equivale a T-177 y T-179). (2) AgentIT falla porque el agente no envía la clave de analista (MCP client failed to initialize): es T-180/T-176, no se toca aquí."
+        },
+        {
+          "t": "2026-11-07T18:32:00+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: pytest y wiki arreglados; los IT de mcp-server ya pasaban; AgentIT sigue rojo por T-180/T-176."
         }
       ],
-      "rank": 2
+      "rank": 2,
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-07T18:32:00+01:00",
+          "min": 5.8,
+          "turns": 78,
+          "tokens": 2230504,
+          "cost_usd": 0.7054416000000002,
+          "verdict": "review"
+        }
+      ]
     },
     {
       "id": "T-185",
@@ -10476,14 +10503,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-176",
-      "message": "tester con T-176",
+      "current": "T-184",
+      "message": "desarrollador con T-184",
       "pid": 20872,
-      "heartbeat": "2026-11-07T18:21:49+01:00",
+      "heartbeat": "2026-11-07T18:26:12+01:00",
       "enabled": true,
-      "agent": "tester",
-      "started": "2026-11-07T18:21:49+01:00",
-      "live": "live-T-176-tester-20261107-182149.jsonl"
+      "agent": "desarrollador",
+      "started": "2026-11-07T18:26:12+01:00",
+      "live": "live-T-184-desarrollador-20261107-182612.jsonl"
     }
   }
 }
