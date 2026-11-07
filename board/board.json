@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-07T17:06:22+01:00",
+  "updated": "2026-11-07T17:11:18+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -2915,10 +2915,10 @@
       "id": "T-036",
       "title": "Agente: investigar por qué cayeron las compras",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "review",
       "priority": "alta",
       "estimate_min": 35.0,
-      "actual_min": null,
+      "actual_min": 4.8,
       "auto": true,
       "manual": null,
       "desc": "La pregunta estrella del brief es «¿por qué cayeron las compras ayer?». El agente no debe limitarse a dar la cifra: tiene que descartar fallos de la tubería y buscar qué segmento explica la caída. Aquí se escribe la guía de investigación que sigue; la calidad real con el modelo verdadero la medirán las evals.\nCómo sabremos si funciona: con un modelo simulado que sigue la guía, las llamadas llegan en orden y los datos devuelven el día y el segmento plantados en la muestra.\n\n## Técnico\nPrompt en recursos: 1) pipeline_health 2) data_quality_check 3) get_metric en el día y referencia 4) run_query por marca o categoría 5) respuesta separando hecho y conjetura. Test con guion sobre la muestra sintética. La prueba con modelo real va en la tarjeta manual de demo y en evals. ./mk test.",
@@ -2928,14 +2928,36 @@
         "T-022"
       ],
       "created": "2026-11-02T11:38:28+01:00",
-      "updated": "2026-11-02T11:38:28+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-07T17:11:18+01:00",
+      "started_at": "2026-11-07T17:06:28+01:00",
+      "finished_at": "2026-11-07T17:11:18+01:00",
       "log": [
         {
           "t": "2026-11-02T11:38:28+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-07T17:06:28+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-07T17:11:18+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: guía de investigación añadida al prompt del sistema y 2 tests nuevos en verde (orden de pasos y caída plantada: día y marca)."
+        }
+      ],
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-07T17:11:18+01:00",
+          "min": 4.8,
+          "turns": 21,
+          "tokens": 424430,
+          "cost_usd": 0.26249079999999997,
+          "verdict": "review"
         }
       ]
     },
@@ -9511,14 +9533,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-035",
-      "message": "tester con T-035",
+      "current": "T-036",
+      "message": "desarrollador con T-036",
       "pid": 19764,
-      "heartbeat": "2026-11-07T17:03:01+01:00",
+      "heartbeat": "2026-11-07T17:06:30+01:00",
       "enabled": true,
-      "agent": "tester",
-      "started": "2026-11-07T17:03:01+01:00",
-      "live": "live-T-035-tester-20261107-170301.jsonl"
+      "agent": "desarrollador",
+      "started": "2026-11-07T17:06:29+01:00",
+      "live": "live-T-036-desarrollador-20261107-170629.jsonl"
     }
   }
 }
