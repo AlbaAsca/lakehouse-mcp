@@ -106,7 +106,7 @@ class AgentIT {
     }
 
     private ScriptedChatModel model() {
-        return (ScriptedChatModel) chatModel;
+        return (ScriptedChatModel) (chatModel instanceof MeteredChatModel metered ? metered.delegate() : chatModel);
     }
 
     /** The MCP callback hands the model the content of the result, whose text is the tool's JSON. */

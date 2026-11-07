@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-07T17:02:27+01:00",
+  "updated": "2026-11-07T17:02:54+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -2801,10 +2801,10 @@
       "id": "T-035",
       "title": "Agente: topes de iteraciones, tokens y gasto",
       "owner": "desarrollador",
-      "status": "next",
+      "status": "review",
       "priority": "alta",
       "estimate_min": 30.0,
-      "actual_min": 6.8,
+      "actual_min": 7.1,
       "auto": true,
       "manual": null,
       "desc": "Un agente que entra en bucle puede gastar mucho sin que nadie lo vea. Se fijan límites por pregunta y por ejecución, y al alcanzarlos el agente para y lo dice, en lugar de seguir o fallar sin explicación.\nCómo sabremos si funciona: un modelo simulado que nunca termina se corta en el tope exacto, con un mensaje claro y el uso registrado.\n\n## Técnico\nmax-tool-iterations, max-tokens y presupuesto en USD por ejecución (a partir del usage y un precio configurable). Log con tokens y coste por pregunta; errores de tool se devuelven al modelo. Test con ChatModel simulado. ./mk test.",
@@ -2812,9 +2812,9 @@
         "T-034"
       ],
       "created": "2026-11-02T11:38:28+01:00",
-      "updated": "2026-11-07T17:02:27+01:00",
-      "started_at": "2026-11-07T16:49:48+01:00",
-      "finished_at": "2026-11-07T16:56:33+01:00",
+      "updated": "2026-11-07T17:02:54+01:00",
+      "started_at": "2026-11-07T17:02:34+01:00",
+      "finished_at": "2026-11-07T17:02:54+01:00",
       "log": [
         {
           "t": "2026-11-02T11:38:28+01:00",
@@ -2845,6 +2845,16 @@
           "t": "2026-11-07T17:02:27+01:00",
           "by": "tester",
           "msg": "FAIL: `./mk test MODULE=agent` falla en los 6 tests de `AgentIT` con `ClassCastException`: `MeteredChatModel` no se puede convertir a `ScriptedChatModel` en `AgentIT.model()`."
+        },
+        {
+          "t": "2026-11-07T17:02:34+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-07T17:02:54+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: AgentIT desenvuelve MeteredChatModel antes del cast; tests sin ejecutar (requieren contenedores)"
         }
       ],
       "runs": [
@@ -2867,6 +2877,16 @@
           "tokens": 120662,
           "cost_usd": 0.153483,
           "verdict": "fail"
+        },
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-07T17:02:54+01:00",
+          "min": 0.3,
+          "turns": 4,
+          "tokens": 47241,
+          "cost_usd": 0.055889100000000004,
+          "verdict": "review"
         }
       ],
       "verify_started": "2026-11-07T16:56:40+01:00"
@@ -9472,13 +9492,13 @@
     "measure": {
       "state": "working",
       "current": "T-035",
-      "message": "tester con T-035",
+      "message": "desarrollador con T-035",
       "pid": 19764,
-      "heartbeat": "2026-11-07T16:56:41+01:00",
+      "heartbeat": "2026-11-07T17:02:35+01:00",
       "enabled": true,
-      "agent": "tester",
-      "started": "2026-11-07T16:56:41+01:00",
-      "live": "live-T-035-tester-20261107-165641.jsonl"
+      "agent": "desarrollador",
+      "started": "2026-11-07T17:02:34+01:00",
+      "live": "live-T-035-desarrollador-20261107-170235.jsonl"
     }
   }
 }
