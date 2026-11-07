@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-07T15:27:57+01:00",
+  "updated": "2026-11-07T15:28:37+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -8424,18 +8424,18 @@
       "id": "T-165",
       "title": "La guía dice que preguntar sin clave termina con código 5, pero el comando devuelve 2",
       "owner": "desarrollador",
-      "status": "review",
+      "status": "next",
       "priority": "baja",
       "estimate_min": 10.0,
-      "actual_min": null,
+      "actual_min": 0.0,
       "auto": true,
       "manual": null,
       "desc": "Al lanzar la pregunta al agente sin clave, el mensaje es claro, pero el comando que usa la gente devuelve el código 2 (el de make al fallar), no el 5 que promete la guía de operación. Quien automatice algo mirando ese código se llevará una sorpresa. Se propone o bien propagar el código del agente, o bien corregir la guía para que diga lo que pasa de verdad.«\n»Cómo sabremos si funciona: lo que la guía dice sobre el código de salida coincide con lo que devuelve el comando al probarlo sin clave.«\n»## Técnico«\n»Reproducir (T-096): ./mk ask \"Q=hola\" GEMINI_API_KEY=  → stderr 'GEMINI_API_KEY is missing in .env', 'make: *** [Makefile:47: ask] Error 5', exit 2. docs/wiki/04-operacion.md (Preguntar al agente, 'Sin clave: termina con código 5') y la tabla de docs/wiki/componentes/agente.md#cómo-termina. Opción: corregir docs (el 5 es del contenedor; ./mk devuelve 2). Propagar exige que make salga con ese código, que GNU make no hace.",
       "deps": [],
       "created": "2026-11-06T23:40:11+01:00",
-      "updated": "2026-11-07T15:21:18+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-07T15:28:37+01:00",
+      "started_at": "2026-11-07T15:28:23+01:00",
+      "finished_at": "2026-11-07T15:28:25+01:00",
       "log": [
         {
           "t": "2026-11-06T23:40:11+01:00",
@@ -8451,6 +8451,44 @@
           "t": "2026-11-07T15:21:18+01:00",
           "by": "consultor",
           "msg": "código de salida corregido a 2"
+        },
+        {
+          "t": "2026-11-07T15:28:03+01:00",
+          "by": "tester",
+          "msg": "verificando"
+        },
+        {
+          "t": "2026-11-07T15:28:23+01:00",
+          "by": "tester",
+          "msg": "verificando"
+        },
+        {
+          "t": "2026-11-07T15:28:25+01:00",
+          "by": "tester",
+          "msg": "FAIL: la guía sigue incoherente. 04-operacion.md:64 y agente.md:94 dicen que la imagen sin clave sale con 2, pero AgentImageIT (l.132,140) exige 5. agente.md:113 sigue diciendo 5 para ./mk ask. Correcto: imagen=5, ./mk ask=2 (make). Unificar los tres textos; añadir test de docs si es posible."
+        },
+        {
+          "t": "2026-11-07T15:28:31+01:00",
+          "by": "tester",
+          "msg": "Devuelta al desarrollador: corregir docs (imagen=5, ./mk ask=2) en 04-operacion.md:61,64, agente.md:94 y :113"
+        },
+        {
+          "t": "2026-11-07T15:28:37+01:00",
+          "by": "tester",
+          "msg": "FAIL: la guía sigue incoherente: dice 2 para la imagen (el IT exige 5) y la tabla de agente.md:113 sigue diciendo 5 para `./mk ask`, que devuelve 2."
+        }
+      ],
+      "verify_started": "2026-11-07T15:28:03+01:00",
+      "runs": [
+        {
+          "agent": "tester",
+          "mode": "verify",
+          "at": "2026-11-07T15:28:37+01:00",
+          "min": 0.6,
+          "turns": 11,
+          "tokens": 121349,
+          "cost_usd": 0.08548570000000001,
+          "verdict": "fail"
         }
       ]
     },
@@ -8901,14 +8939,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-144",
-      "message": "tester con T-144",
+      "current": "T-165",
+      "message": "tester con T-165",
       "pid": 19764,
-      "heartbeat": "2026-11-07T15:27:24+01:00",
+      "heartbeat": "2026-11-07T15:28:03+01:00",
       "enabled": true,
       "agent": "tester",
-      "started": "2026-11-07T15:27:24+01:00",
-      "live": "live-T-144-tester-20261107-152724.jsonl"
+      "started": "2026-11-07T15:28:03+01:00",
+      "live": "live-T-165-tester-20261107-152803.jsonl"
     }
   }
 }
