@@ -254,6 +254,37 @@ class LakehouseSessionIT {
     }
 
     @Test
+    void everyConnectionOfThePoolUsesUtc() throws Exception {
+        int poolSize = 3;
+        try (LakehouseSession session = new LakehouseSession(settings().withPoolSize(poolSize))) {
+            // Each query holds its connection until all have one, so every pool connection is checked once.
+            CountDownLatch allRunning = new CountDownLatch(poolSize);
+            List<CompletableFuture<String>> zones = new ArrayList<>();
+            for (int i = 0; i < poolSize; i++) {
+                zones.add(CompletableFuture.supplyAsync(() -> {
+                    try {
+                        return session.query("SELECT current_setting('TimeZone')", rows -> {
+                            allRunning.countDown();
+                            try {
+                                assertThat(allRunning.await(20, TimeUnit.SECONDS)).isTrue();
+                            } catch (InterruptedException e) {
+                                throw new SQLException(e);
+                            }
+                            rows.next();
+                            return rows.getString(1);
+                        });
+                    } catch (SQLException e) {
+                        throw new IllegalStateException(e);
+                    }
+                }));
+            }
+            for (CompletableFuture<String> zone : zones) {
+                assertThat(zone.get(30, TimeUnit.SECONDS)).isEqualTo("UTC");
+            }
+        }
+    }
+
+    @Test
     void connectionsOfThePoolWorkAtTheSameTime() throws Exception {
         try (LakehouseSession session = new LakehouseSession(settings().withPoolSize(2))) {
             // Each query holds its connection until the other has one too: with a single connection this would time out.

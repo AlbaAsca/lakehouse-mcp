@@ -32,6 +32,7 @@ public final class LakehouseSession implements AutoCloseable {
     public static final String CATALOG_ALIAS = "lh";
 
     /** Iceberg loads avro by itself, so it has to be installed as well for the session to start without internet. */
+    private static final String UTC = "SET TimeZone = 'UTC'";
     private static final List<String> EXTENSIONS = List.of("httpfs", "avro", "iceberg");
 
     /** Polaris catalog. {@code uri} is the base URL, without a trailing slash. */
@@ -100,7 +101,12 @@ public final class LakehouseSession implements AutoCloseable {
                 }
             }
             for (int i = 0; i < settings.poolSize(); i++) {
-                idle.add(root.duplicate());
+                DuckDBConnection copy = root.duplicate();
+                idle.add(copy);
+                // A session SET may not carry over to duplicates: set it on each one.
+                try (Statement statement = copy.createStatement()) {
+                    statement.execute(UTC);
+                }
             }
         } catch (SQLException | RuntimeException e) {
             close();
@@ -113,6 +119,8 @@ public final class LakehouseSession implements AutoCloseable {
         Catalog catalog = settings.catalog();
         Storage storage = settings.storage();
         List<String> sql = new ArrayList<>();
+        // The sample is stored in UTC: per-day figures must not depend on the machine's zone.
+        sql.add(UTC);
         if (settings.extensionDirectory() != null) {
             sql.add("SET extension_directory = " + quote(settings.extensionDirectory().toString()));
         }

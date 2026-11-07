@@ -54,6 +54,7 @@ Las reparaciones aprobadas usan otra instancia, [`RepairSession`](../../../mcp-s
 | Conexiones | 4 | Quien espera más que el tiempo máximo recibe `SQLTimeoutException` |
 | Tiempo máximo por consulta | 30 s | La consulta se corta con `SQLTimeoutException` y la conexión sigue sirviendo |
 | `memory_limit` | `400MB` | La consulta falla con `Out of Memory` y la sesión sigue viva |
+| `TimeZone` | `UTC` | Se fija al abrir y en cada conexión del reparto: así las cifras por día no cambian con la zona de la máquina (T-111) |
 | `temp_directory` | vacío | No se desborda a disco: sin esto, el límite de memoria solo movería el problema al disco |
 | `READ_ONLY` en el `ATTACH` | siempre | Rechaza cualquier escritura en todas las conexiones: `SELECT` y `CALL` de rollback, `INSERT`, `DELETE` y `DROP` fallan con «attached in read-only mode» y la tabla no cambia |
 | `installExtensions` | `true` | Con `false` no descarga nada: `httpfs`, `avro` e `iceberg` deben estar ya en `extensionDirectory`, o no arranca. Así corre [la imagen del servidor](servidor-mcp.md#la-imagen) (T-093) |
