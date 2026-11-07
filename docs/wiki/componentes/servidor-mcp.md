@@ -32,7 +32,7 @@ Las herramientas previstas, del [brief](../../brief.md#servidor-mcp-tools):
 | `run_query` | Hecho: solo `SELECT`, validado y con límite de filas | T-019, T-021 |
 | `time_travel` | Hecho: consulta sobre un snapshot anterior. Aún sin enmascarado para analyst | T-021, T-054 |
 | `pipeline_health` | Hecho: retraso del conector, su estado en Connect y frescura por el último snapshot | T-022 |
-| `data_quality_check` | Nulos, duplicados, rangos y volumen | T-025 |
+| `data_quality_check` | Hecho: nulos, duplicados, precios fuera de rango y atípicos, caídas de volumen, particiones vacías y deriva de esquema | T-025 |
 | `propose_fix`, `apply_fix` | Propone y aplica un arreglo solo con aprobación humana | T-026 |
 | `get_metric` | Métricas de la [capa semántica](capa-semantica.md) | T-033 |
 
@@ -69,7 +69,20 @@ No lleva argumentos. Contesta `status` (`OK`, `WARN` o `FAIL`, el peor de tres c
 
 **Si Kafka, Connect o el catálogo no contestan, es un dato, no un error**: esa comprobación sale `FAIL` con el motivo («Kafka did not answer: ...») y la llamada termina en el plazo configurado (5 s por fuente). Del catálogo solo se dice que no contestó; el detalle va al log. Lo comprueban `PipelineHealthTest` (reglas, con fuentes simuladas) y `PipelineHealthIT` (retraso contra un Kafka en contenedor con el grupo creado a mano, partición por partición, y Connect simulado).
 
-Por ahora, sin claves de API, ambas leen las tablas base con `user_id` sin enmascarar. Eso cambia con los roles (T-050, T-054).
+### Revisar los datos: `data_quality_check`
+
+Argumentos: `namespace` y `table`, y opcionales `day` (un día UTC como `2024-03-10`; sin él, todos) y `minVolumeRatio`. Cuenta lo mismo que la verdad de referencia `evals/truth/quality.json`, con sus reglas: el día es la fecha UTC de `event_time`, nulo es valor ausente, duplicado es cada copia sobrante de una fila idéntica en todas las columnas y precio fuera de rango es `price <= 0` (un precio vacío cuenta como nulo).
+
+Contesta `status` (`OK` o `ISSUES`) e `issues` en frases, más:
+
+- **`totals` y `days`**: filas, `rowsByEventType`, nulos por columna, `duplicateCopies`, `priceZero`, `priceNegative`, `priceOutOfRange` y `priceHighOutliers` (por encima de Q3 + 3 × IQR de los precios positivos de toda la tabla, en `priceOutliers`). Un día sin ninguna fila entre el primero y el último, o el día pedido si no tiene filas, sale con `empty: true`: es una partición vacía.
+- **`volume.drops`**: tipos de evento de un día con menos filas que `minRatio` × la mediana de los 7 días anteriores; con menos de 3 días de historia no se juzga. Con `day`, se juzga ese día pero con la historia de antes. El umbral por defecto, 0,7, marca la caída plantada en la muestra (compras del 2024-03-10, al 0,62 de su mediana) y ningún otro día (el siguiente más bajo está en 0,89).
+- **`informationalNulls`**: columnas que el origen deja vacías a menudo (`brand`, `category_code`); se cuentan, pero no son un problema.
+- **`schemaDrift`**: compara las columnas de la tabla con los campos del último esquema del subject en Schema Registry (`ecommerce.events-value`). Solo para la tabla de la tubería; si el registro no contesta sale `UNAVAILABLE`, no un error.
+
+Configuración en `lakehouse.quality` (`QUALITY_MIN_VOLUME_RATIO`, `QUALITY_HISTORY_DAYS`, `QUALITY_MIN_HISTORY_DAYS`, `QUALITY_KNOWN_NULLS`, `SCHEMA_REGISTRY_URL`, vacío lo apaga, y `PIPELINE_SUBJECT`). Lo comprueban `DataQualityTest` (reglas con números a mano) y `QualityToolsIT` (la muestra cargada en Iceberg, cifra a cifra y día a día contra `quality.json`, y una tabla pequeña calculada a mano). La comparación con un Schema Registry real está **sin probar**: el test usa un registro simulado.
+
+Por ahora, sin claves de API, `run_query`, `time_travel` y `data_quality_check` leen las tablas base con `user_id` sin enmascarar. Eso cambia con los roles (T-050, T-054).
 
 ### El validador de SQL
 

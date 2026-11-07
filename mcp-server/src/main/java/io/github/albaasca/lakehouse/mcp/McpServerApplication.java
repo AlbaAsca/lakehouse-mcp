@@ -8,6 +8,8 @@ import java.sql.SQLException;
 import java.time.Clock;
 import java.time.Duration;
 import java.util.Comparator;
+import java.util.List;
+import java.util.Set;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -19,7 +21,7 @@ import org.springframework.security.web.SecurityFilterChain;
 /** The MCP server. It does not start without the catalog: every tool would fail anyway. */
 @SpringBootApplication
 @EnableConfigurationProperties({McpServerApplication.LakehouseProperties.class,
-        McpServerApplication.PipelineProperties.class})
+        McpServerApplication.PipelineProperties.class, McpServerApplication.QualityProperties.class})
 public class McpServerApplication {
 
     @ConfigurationProperties("lakehouse")
@@ -41,6 +43,15 @@ public class McpServerApplication {
     record PipelineProperties(String bootstrapServers, String connectUrl, String connector, String topic,
             String namespace, String table, long lagWarn, long lagFail, Duration freshnessWarn, Duration freshnessFail,
             Duration timeout) {}
+
+    /**
+     * What data_quality_check calls a problem. An empty schemaRegistryUrl turns the schema drift check off.
+     *
+     * @param subject the subject whose schema feeds the pipeline table of {@link PipelineProperties}
+     */
+    @ConfigurationProperties("lakehouse.quality")
+    record QualityProperties(double minVolumeRatio, int historyDays, int minHistoryDays, List<String> knownNulls,
+            String schemaRegistryUrl, String subject) {}
 
     public static void main(String[] args) {
         SpringApplication.run(McpServerApplication.class, args);
@@ -68,6 +79,18 @@ public class McpServerApplication {
                 () -> reader.snapshots(pipeline.namespace(), pipeline.table()).stream()
                         .map(CatalogReader.Snapshot::committedAt).max(Comparator.naturalOrder()),
                 Clock.systemUTC());
+    }
+
+    @Bean
+    QualityTools qualityTools(LakehouseSession session, CatalogReader reader, QualityProperties quality,
+            PipelineProperties pipeline) {
+        DataQuality.Settings settings = new DataQuality.Settings(quality.minVolumeRatio(), quality.historyDays(),
+                quality.minHistoryDays(), Set.copyOf(quality.knownNulls() == null ? List.of() : quality.knownNulls()));
+        String url = quality.schemaRegistryUrl();
+        SchemaRegistryFields.Source registry = url == null || url.isBlank() ? null
+                : SchemaRegistryFields.of(url, quality.subject(), pipeline.timeout());
+        return new QualityTools(session, reader, settings,
+                new QualityTools.Drift(pipeline.namespace(), pipeline.table(), quality.subject(), registry));
     }
 
     /**

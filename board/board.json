@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-07T13:10:48+01:00",
+  "updated": "2026-11-07T14:41:59+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -45,8 +45,8 @@
       "name": "Consultor",
       "role": "Habla contigo, prioriza y reparte",
       "color": "#ff9e64",
-      "status": "working",
-      "current": "T-097"
+      "status": "idle",
+      "current": null
     },
     {
       "id": "arquitecto",
@@ -1988,7 +1988,7 @@
       "id": "T-022",
       "title": "MCP: pipeline_health (retraso, frescura, último snapshot)",
       "owner": "desarrollador",
-      "status": "blocked",
+      "status": "next",
       "priority": "alta",
       "estimate_min": 35.0,
       "actual_min": 66.5,
@@ -2000,7 +2000,7 @@
         "T-013"
       ],
       "created": "2026-11-02T11:37:14+01:00",
-      "updated": "2026-11-07T01:54:02+01:00",
+      "updated": "2026-11-07T14:39:45+01:00",
       "started_at": "2026-11-07T00:47:34+01:00",
       "finished_at": "2026-11-07T01:54:02+01:00",
       "log": [
@@ -2043,6 +2043,11 @@
           "t": "2026-11-07T01:54:02+01:00",
           "by": "runner",
           "msg": "✗ «python board/board.py add \"La prueba que lee toda la muestra se pasa de tiempo cuando la m»: varios comandos, tuberías, redirecciones o heredoc: lanza cada comando por separado y crea ficheros con Write/Edit"
+        },
+        {
+          "t": "2026-11-07T14:39:45+01:00",
+          "by": "consultor",
+          "msg": "Bloqueo en falso: board.py add denegado por saltos de línea en la descripción (ver tarjeta nueva)"
         }
       ],
       "runs": [
@@ -2136,10 +2141,10 @@
       "id": "T-025",
       "title": "MCP: data_quality_check",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "review",
       "priority": "alta",
       "estimate_min": 40.0,
-      "actual_min": null,
+      "actual_min": 91.1,
       "auto": true,
       "manual": null,
       "desc": "El agente necesita detectar datos malos sin improvisar: nulos, duplicados, valores fuera de rango y días con muy poco volumen respecto a lo habitual. Se compara el resultado con la referencia del tester, no con los números que salgan.\nCómo sabremos si funciona: cada cifra del chequeo coincide con evals/truth/quality.json, y el día de la caída plantada queda marcado.\n\n## Técnico\n- data_quality_check(table, day opcional): nulos por columna, duplicados exactos, price <= 0 y atípicos, volumen vs. mediana de los días anteriores del mismo tipo de evento (umbral configurable), partición vacía. También compara columnas de Schema Registry con el esquema Iceberg (para schema drift).\n- Las nulidades conocidas del origen (brand, category_code) van como informativo, no como fallo: mirar docs/data-profile.md si existe.\n- Test elemento a elemento contra quality.json. ./mk test.",
@@ -2148,14 +2153,46 @@
         "T-023"
       ],
       "created": "2026-11-02T11:37:33+01:00",
-      "updated": "2026-11-02T11:37:33+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-07T14:41:59+01:00",
+      "started_at": "2026-11-07T14:35:41+01:00",
+      "finished_at": "2026-11-07T14:41:59+01:00",
       "log": [
         {
           "t": "2026-11-02T11:37:33+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-07T13:10:56+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-07T14:35:41+01:00",
+          "by": "runner",
+          "msg": "interrumpida (runner reiniciado); se reintentará"
+        },
+        {
+          "t": "2026-11-07T14:35:41+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-07T14:41:59+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: data_quality_check implementado y probado cifra a cifra contra quality.json, con la caída del 2024-03-10 marcada como único día de poco volumen."
+        }
+      ],
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-07T14:41:59+01:00",
+          "min": 6.3,
+          "turns": 18,
+          "tokens": 432577,
+          "cost_usd": 0.453749,
+          "verdict": "review"
         }
       ]
     },
@@ -3292,6 +3329,11 @@
           "t": "2026-11-02T18:22:56+01:00",
           "by": "consultor",
           "msg": "El agente usa Gemini por defecto, configurable (T-094): secret GEMINI_API_KEY. Un límite de cuota no cuenta como pregunta fallada: repórtalo aparte, y anota qué modelo da la nota. Revisar si 25-30 preguntas caben en el cupo diario; si no, repartirlas o usar una cuenta de pago."
+        },
+        {
+          "t": "2026-11-07T14:35:39+01:00",
+          "by": "consultor",
+          "msg": "Dato medido el 7-nov: la capa gratuita de Gemini da 20 peticiones al día por modelo, y cada pregunta del agente gasta varias. Un examen de 25-30 preguntas no cabe en un día gratuito: hace falta cuenta de pago o repartirlo."
         }
       ]
     },
@@ -3324,6 +3366,11 @@
           "t": "2026-11-02T18:22:56+01:00",
           "by": "consultor",
           "msg": "El agente usa Gemini por defecto, configurable (T-094): secret GEMINI_API_KEY. Un límite de cuota no cuenta como pregunta fallada: repórtalo aparte, y anota qué modelo da la nota. Revisar si 25-30 preguntas caben en el cupo diario; si no, repartirlas o usar una cuenta de pago."
+        },
+        {
+          "t": "2026-11-07T14:35:38+01:00",
+          "by": "consultor",
+          "msg": "Dato medido el 7-nov: la capa gratuita de Gemini da 20 peticiones al día por modelo, y cada pregunta del agente gasta varias. Un examen de 25-30 preguntas no cabe en un día gratuito: hace falta cuenta de pago o repartirlo."
         }
       ]
     },
@@ -3381,6 +3428,11 @@
           "t": "2026-11-02T18:22:56+01:00",
           "by": "consultor",
           "msg": "El agente usa Gemini por defecto, configurable (T-094): secret GEMINI_API_KEY. Un límite de cuota no cuenta como pregunta fallada: repórtalo aparte, y anota qué modelo da la nota. Revisar si 25-30 preguntas caben en el cupo diario; si no, repartirlas o usar una cuenta de pago."
+        },
+        {
+          "t": "2026-11-07T14:35:39+01:00",
+          "by": "consultor",
+          "msg": "Dato medido el 7-nov: la capa gratuita de Gemini da 20 peticiones al día por modelo, y cada pregunta del agente gasta varias. Un examen de 25-30 preguntas no cabe en un día gratuito: hace falta cuenta de pago o repartirlo."
         }
       ]
     },
@@ -3952,8 +4004,8 @@
       "id": "T-075",
       "title": "El README presenta «./mk seed» como si ya se hubiera probado",
       "owner": "desarrollador",
-      "status": "backlog",
-      "priority": "baja",
+      "status": "next",
+      "priority": "alta",
       "estimate_min": 3.0,
       "actual_min": null,
       "auto": true,
@@ -3961,7 +4013,7 @@
       "desc": "El README da dos órdenes para lanzar el productor sin avisar de que nunca se han ejecutado con el CSV real. La norma del proyecto pide marcar como «sin probar» todo comando que no se haya ejecutado, y la página del productor en la wiki sí lo hace. Se propone añadir el mismo aviso al README y quitarlo cuando el responsable lance el comando.\nCómo sabremos si funciona: quien lea el README ve que el comando está sin probar, igual que en la wiki.\n## Técnico\nREADME.md líneas 101-102, filas de la tabla con ./mk seed. Añadir «sin probar». Detectado al verificar T-013.",
       "deps": [],
       "created": "2026-11-02T17:00:03+01:00",
-      "updated": "2026-11-02T17:00:03+01:00",
+      "updated": "2026-11-07T14:40:45+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -3969,6 +4021,21 @@
           "t": "2026-11-02T17:00:03+01:00",
           "by": "tester",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-07T14:40:45+01:00",
+          "by": "tú",
+          "msg": "editada: priority"
+        },
+        {
+          "t": "2026-11-07T14:40:45+01:00",
+          "by": "consultor",
+          "msg": "Entra en la versión 0.1.0 (T-175)."
+        },
+        {
+          "t": "2026-11-07T14:40:45+01:00",
+          "by": "consultor",
+          "msg": "Versión 0.1.0"
         }
       ]
     },
@@ -4424,7 +4491,7 @@
       "id": "T-083",
       "title": "Decidir si el runner se reanuda solo tras un corte",
       "owner": "consultor",
-      "status": "human",
+      "status": "done",
       "priority": "media",
       "estimate_min": 10.0,
       "actual_min": null,
@@ -4433,7 +4500,7 @@
       "desc": "Cuando se agota el cupo o se cierra la sesión, el runner se queda parado hasta que alguien lo arranca; esta tarde perdimos 3,5 horas. La tarea programada lo evitaría. Es una decisión de gasto, así que la toma la responsable. Cómo sabremos si funciona: tras un corte, el runner vuelve a trabajar solo en la siguiente ejecución programada.",
       "deps": [],
       "created": "2026-11-02T17:30:57+01:00",
-      "updated": "2026-11-02T17:30:59+01:00",
+      "updated": "2026-11-07T14:39:44+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -4461,6 +4528,11 @@
           "t": "2026-11-02T18:15:57+01:00",
           "by": "consultor",
           "msg": "La responsable dijo sí en el panel. run-agents-scheduled.bat ya retoma tarjetas sin rondas de aportación. El permiso de Claude Code no me deja crear la tarea programada: la instala ella con scripts/install-schedule.ps1."
+        },
+        {
+          "t": "2026-11-07T14:39:44+01:00",
+          "by": "consultor",
+          "msg": "La responsable instaló la tarea programada «lakehouse-mcp runner» (estado: Listo)"
         }
       ]
     },
@@ -5478,10 +5550,10 @@
       "id": "T-097",
       "title": "Probar el recorrido completo con el modelo real y grabar el primer GIF",
       "owner": "consultor",
-      "status": "doing",
+      "status": "blocked",
       "priority": "alta",
       "estimate_min": 20.0,
-      "actual_min": null,
+      "actual_min": 828.4,
       "auto": false,
       "manual": "Seguir docs/demo-grabacion.md: levantar el stack, cargar la muestra, hacer las dos preguntas con el modelo real, comparar con evals/demo/expected.json y, si cuadra, grabar y dejar el GIF en docs/media/ (menos de 10 MB).",
       "desc": "Es la primera vez que todo se juntará con el modelo de verdad, y solo se puede hacer en el PC de la responsable, con su clave. Si la respuesta cuadra, esa misma ejecución se graba para enseñarla en el repo.\nCómo sabremos si funciona: el agente da las mismas cinco marcas y cifras que el cálculo independiente, y en el GIF no aparece ninguna clave.\n\n## Técnico\nGuion, tolerancias y qué hacer si falla en docs/demo-grabacion.md. Anotar en la tarjeta tokens, coste y duración. Si no cuadra, no grabar: abrir tarjeta para el desarrollador con la salida.",
@@ -5494,9 +5566,9 @@
         "T-096"
       ],
       "created": "2026-11-02T17:37:29+01:00",
-      "updated": "2026-11-07T00:48:51+01:00",
+      "updated": "2026-11-07T14:37:13+01:00",
       "started_at": "2026-11-07T00:48:51+01:00",
-      "finished_at": null,
+      "finished_at": "2026-11-07T14:37:13+01:00",
       "log": [
         {
           "t": "2026-11-02T17:37:29+01:00",
@@ -5517,6 +5589,26 @@
           "t": "2026-11-07T00:48:51+01:00",
           "by": "consultor",
           "msg": "Ensayo sin grabar a cargo del consultor, tras T-108"
+        },
+        {
+          "t": "2026-11-07T13:58:57+01:00",
+          "by": "consultor",
+          "msg": "Runner en pausa durante el ensayo y la grabación (consultor)."
+        },
+        {
+          "t": "2026-11-07T14:35:38+01:00",
+          "by": "consultor",
+          "msg": "Ensayo 7-nov con gemini-3.5-flash: 50 000 filas y las cinco marcas coinciden exactas con evals/demo/expected.json. El rechazo de /etc/passwd funciona, pero el agente se cae al recibirlo (tarjeta nueva). El cupo gratuito es de 20 peticiones al día por modelo y se agotó: la grabación queda para cuando se renueve. Prohibido a los agentes ./mk seed*, porque una carga repetida triplicó la tabla."
+        },
+        {
+          "t": "2026-11-07T14:37:13+01:00",
+          "by": "consultor",
+          "msg": "Grabar mañana con Gemini cuando se renueve el cupo diario (sobre las 08:00); antes, T-172 y T-173"
+        },
+        {
+          "t": "2026-11-07T14:40:39+01:00",
+          "by": "consultor",
+          "msg": "Entra en la versión 0.1.0 (T-175)."
         }
       ]
     },
@@ -5525,7 +5617,7 @@
       "title": "README: enseñar el recorrido que ya funciona, con su GIF",
       "owner": "arquitecto",
       "status": "next",
-      "priority": "media",
+      "priority": "alta",
       "estimate_min": 15.0,
       "actual_min": null,
       "auto": true,
@@ -5548,6 +5640,16 @@
           "t": "2026-11-02T22:01:57+01:00",
           "by": "tú",
           "msg": "editada: priority"
+        },
+        {
+          "t": "2026-11-07T14:40:41+01:00",
+          "by": "tú",
+          "msg": "editada: priority"
+        },
+        {
+          "t": "2026-11-07T14:40:41+01:00",
+          "by": "consultor",
+          "msg": "Entra en la versión 0.1.0 (T-175)."
         }
       ]
     },
@@ -6236,8 +6338,8 @@
       "id": "T-113",
       "title": "La guía de operación aún dice que la integración continua está sin probar",
       "owner": "desarrollador",
-      "status": "backlog",
-      "priority": "baja",
+      "status": "next",
+      "priority": "alta",
       "estimate_min": 5.0,
       "actual_min": null,
       "auto": true,
@@ -6245,7 +6347,7 @@
       "desc": "La guía afirma que la ejecución en GitHub está sin probar, pero ya ha terminado en verde varias veces. Tampoco explica que en develop y main no se cancela una ejecución en curso, solo en pull requests. Se propone actualizar ese párrafo con lo medido para que quien la lea no dude de algo ya comprobado.\nCómo sabremos si funciona: la guía da como probada la ejecución en GitHub, con su duración real, y explica cuándo se cancelan las ejecuciones.\n\n## Técnico\n- docs/wiki/04-operacion.md, línea 153 («Sin probar: la ejecución en GitHub, y mvn -B -ntp verify fuera de la imagen tools»), sección Integración continua.\n- Medido: run 41492653907 (49dfc13), java 10 min; run 41494026662 (3c213dc), java 8,5 min, 197 tests Java y 115 de pytest, sin omitidos.\n- Criterio: quitar «sin probar» de ambas cosas, sustituir la previsión por los tiempos medidos y documentar cancel-in-progress solo en pull_request.",
       "deps": [],
       "created": "2026-11-02T18:59:05+01:00",
-      "updated": "2026-11-02T18:59:05+01:00",
+      "updated": "2026-11-07T14:40:47+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -6253,6 +6355,21 @@
           "t": "2026-11-02T18:59:05+01:00",
           "by": "tester",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-07T14:40:47+01:00",
+          "by": "tú",
+          "msg": "editada: priority"
+        },
+        {
+          "t": "2026-11-07T14:40:47+01:00",
+          "by": "consultor",
+          "msg": "Entra en la versión 0.1.0 (T-175)."
+        },
+        {
+          "t": "2026-11-07T14:40:47+01:00",
+          "by": "consultor",
+          "msg": "Versión 0.1.0"
         }
       ]
     },
@@ -6385,7 +6502,7 @@
       "id": "T-118",
       "title": "Borrar un test vacío y una carpeta temporal que dejó el validador de SQL",
       "owner": "consultor",
-      "status": "backlog",
+      "status": "done",
       "priority": "baja",
       "estimate_min": 2.0,
       "actual_min": null,
@@ -6394,7 +6511,7 @@
       "desc": "Al medir el validador quedaron dos restos que los agentes no pueden borrar porque tienen prohibido eliminar ficheros: un fichero de test vacío, ya subido al repositorio, y una carpeta temporal de unos 800 MB, ya ignorada por git. No afectan a los tests, pero ensucian el código y ocupan disco. Se propone borrarlos a mano.\nCómo sabremos si funciona: ninguno de los dos existe y los tests del módulo siguen en verde.\n## Técnico\nBorrar mcp-server/src/test/java/io/github/albaasca/lakehouse/mcp/TmpGuardMeasureTest.java y mcp-server/.tmp. El tester lo usó de nuevo para medir en T-019 y lo dejó igual que estaba. ./mk test MAVEN_ARGS=\"-pl mcp-server -am -DskipITs\".",
       "deps": [],
       "created": "2026-11-02T23:08:51+01:00",
-      "updated": "2026-11-02T23:08:51+01:00",
+      "updated": "2026-11-07T14:40:16+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -6407,6 +6524,11 @@
           "t": "2026-11-03T12:04:28+01:00",
           "by": "consultor",
           "msg": "Añadir a la limpieza: mcp-server/src/test/java/io/github/albaasca/lakehouse/mcp/StackDiagTest.java, que T-127 dejó vacío porque los agentes no pueden borrar ficheros. Sus tests están ahora en SqlGuardStackTest."
+        },
+        {
+          "t": "2026-11-07T14:40:16+01:00",
+          "by": "consultor",
+          "msg": "Borrado el test vacío (sin @Test) y mcp-server/.tmp (4 KB de temporales de DuckDB, ignorados por git)"
         }
       ]
     },
@@ -6525,7 +6647,7 @@
       "id": "T-122",
       "title": "Actualizar las instrucciones de desarrollador y tester con el comando de un solo módulo",
       "owner": "consultor",
-      "status": "backlog",
+      "status": "done",
       "priority": "media",
       "estimate_min": 5.0,
       "actual_min": null,
@@ -6536,7 +6658,7 @@
         "T-077"
       ],
       "created": "2026-11-02T23:35:30+01:00",
-      "updated": "2026-11-02T23:35:41+01:00",
+      "updated": "2026-11-07T14:39:43+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -6554,6 +6676,11 @@
           "t": "2026-11-03T00:35:49+01:00",
           "by": "consultor",
           "msg": "Tester (T-077): los permisos de escritura en desarrollador.md y tester.md ya se concedieron (T-124, T-125), así que esta tarjeta ya se puede hacer. Sigue pendiente: desarrollador.md, línea 11, aún cita MAVEN_ARGS."
+        },
+        {
+          "t": "2026-11-07T14:39:43+01:00",
+          "by": "consultor",
+          "msg": "tester.md ya tiene ./mk test MODULE=<módulo>; desarrollador.md lo tenía de T-077"
         }
       ]
     },
@@ -6942,7 +7069,7 @@
       "id": "T-132",
       "title": "La integración continua está en rojo: un test del panel sigue buscando la forma antigua de arrancar el conector",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "done",
       "priority": "alta",
       "estimate_min": 5.0,
       "actual_min": null,
@@ -6951,7 +7078,7 @@
       "desc": "Al compartir el conector entre pruebas (T-080), una comprobación de los tests del panel se quedó buscando el texto de la forma antigua de arrancarlo. El código funciona, pero la comprobación falla y deja en rojo la integración continua. Se propone que compruebe la forma nueva, sin perder lo que vigila: que la prueba del flujo use el mismo conector cuya frecuencia de guardado se comprueba. Si el arreglo llega con el reintento de T-080, esta tarjeta se cierra sin más trabajo.\nCómo sabremos si funciona: los tests del panel vuelven a pasar, también en la integración continua.\n## Técnico\nDónde: tests/test_connect_config.py:22, test_the_stack_flushes_as_often_as_the_flow_test, busca 'ConnectWorker.start(' en IcebergSinkFlowIT.java; desde T-080 ese método es privado y el test llama a ConnectWorker.shared().\nSíntoma: AssertionError 'IcebergSinkFlowIT no longer uses ConnectWorker'. CI 41542155817, trabajo board-and-scripts: 1 failed, 141 passed; en 41539233829, anterior a T-080, ese trabajo estaba en verde.\nReproducir: python -m pytest tests -q -k test_the_stack_flushes_as_often_as_the_flow_test\nCriterio: ./mk test-board en verde y board-and-scripts en verde en CI. El trabajo java sigue en rojo por otro motivo, cubierto por T-127.",
       "deps": [],
       "created": "2026-11-03T00:13:59+01:00",
-      "updated": "2026-11-03T00:13:59+01:00",
+      "updated": "2026-11-07T14:39:44+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -6964,6 +7091,11 @@
           "t": "2026-11-03T00:24:44+01:00",
           "by": "consultor",
           "msg": "Tester (T-080): el único fallo de board-and-scripts en la CI 41542155817 era este test, corregido en 8577fe0. En local, tests/ queda con 141 pasados y 1 omitido. La CI de ese commit (41544116515) sigue pendiente: si sale verde, esta tarjeta se puede cerrar sin más trabajo."
+        },
+        {
+          "t": "2026-11-07T14:39:44+01:00",
+          "by": "consultor",
+          "msg": "Ya resuelto: el job de panel y scripts de la CI de develop sale en verde"
         }
       ]
     },
@@ -6971,7 +7103,7 @@
       "id": "T-133",
       "title": "En Windows, mk.cmd da por buenos los tests que fallan",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "next",
       "priority": "alta",
       "estimate_min": 10.0,
       "actual_min": null,
@@ -6980,7 +7112,7 @@
       "desc": "Cuando los tests fallan, el comando de Windows muestra el error en pantalla pero termina como si todo hubiera ido bien. Un script o una persona que solo mire el resultado daría por buenos unos tests en rojo. Se propone que el comando conserve el resultado de lo que ha ejecutado, porque es el que CLAUDE.md indica para Windows y afecta a todos sus objetivos, no solo a los tests.\nCómo sabremos si funciona: lanzar los tests de un módulo que no existe con el comando de Windows termina con error, igual que con el de Linux, y sigue terminando bien cuando no falla nada.\n\n## Técnico\nDónde: mk.cmd, línea 4. popd pone ERRORLEVEL a 0 y borra el código de docker compose. Es anterior a T-077 (el fichero no cambia desde b09d303).\nSíntoma: ./mk test MODULE=noexiste sale con 2; .\\mk.cmd test MODULE=noexiste desde PowerShell deja LASTEXITCODE en 0, y desde Git Bash también sale con 0, con el mismo make: *** Error 1 en la salida.\nArreglo probado con un sustituto de docker que sale con 2 (sin popd: 2; con popd: 0; con el arreglo: 2): set \"RC=%ERRORLEVEL%\" antes de popd y exit /b %RC% al final.\nCriterio: código de salida distinto de 0 con módulo inexistente y 0 en un objetivo correcto; test de regresión con un sustituto de docker, sin depender de Docker real. Actualizar docs/wiki/componentes/imagen-tools.md, que hoy marca mk.cmd como sin probar y afirma que termina con error.",
       "deps": [],
       "created": "2026-11-03T00:35:47+01:00",
-      "updated": "2026-11-03T00:35:47+01:00",
+      "updated": "2026-11-07T14:40:42+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -6988,6 +7120,16 @@
           "t": "2026-11-03T00:35:47+01:00",
           "by": "tester",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-07T14:40:42+01:00",
+          "by": "consultor",
+          "msg": "Entra en la versión 0.1.0 (T-175)."
+        },
+        {
+          "t": "2026-11-07T14:40:42+01:00",
+          "by": "consultor",
+          "msg": "Versión 0.1.0"
         }
       ]
     },
@@ -7219,7 +7361,7 @@
       "id": "T-141",
       "title": "El conector hacia la tabla se muere tras una pausa del equipo y no vuelve solo",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "next",
       "priority": "alta",
       "estimate_min": 30.0,
       "actual_min": null,
@@ -7228,7 +7370,7 @@
       "desc": "Con el stack levantado, la parte del conector que escribe en la tabla lleva parada desde antes de cargar la muestra, así que las filas enviadas se quedan en la cola y no llegan a la tabla. Nada lo avisa: el servicio sigue marcado como sano y solo un reinicio manual lo levantaría. Se propone que el conector se recupere solo o que el arranque y la comprobación del stack lo detecten, porque la demo depende de este tramo y T-092 y T-097 lo necesitan.\nCómo sabremos si funciona: tras una pausa o reinicio de Kafka, una carga de la muestra termina con todas sus filas en la tabla, o el fallo se avisa claramente.\n\n## Técnico\nVisto al verificar T-091. Tarea iceberg-sink-0 en FAILED desde 2026-11-02 21:33:03 (conector RUNNING, contenedor healthy): ConnectException 'Cannot retrieve members for consumer group: connect-iceberg-sink', causa GroupIdNotFoundException, en CommitterImpl.hasLeaderPartition <- close <- onPartitionsLost (iceberg-kafka-connect 1.12.0). Hipótesis sin confirmar: sesión perdida con el PC suspendido, y el grupo no existe porque el sink nunca confirmó offsets con el topic vacío. Datos: ecommerce.events con end offset 50000 y sin grupo connect-iceberg-sink en kafka-consumer-groups --all-groups. Relacionada con T-078 (la comprobación rápida no detecta un conector roto). Criterio: reproducir la pérdida de sesión con el topic vacío (por ejemplo docker pause de connect más allá del timeout), y después de ella 50.000 filas en la tabla sin reinicio manual, o estado de error visible en ./mk smoke o ./mk up. Para hacerlo limpio: docker compose down -v antes de medir.",
       "deps": [],
       "created": "2026-11-03T10:04:50+01:00",
-      "updated": "2026-11-03T10:04:50+01:00",
+      "updated": "2026-11-07T14:40:42+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -7236,6 +7378,16 @@
           "t": "2026-11-03T10:04:50+01:00",
           "by": "tester",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-07T14:40:42+01:00",
+          "by": "consultor",
+          "msg": "Entra en la versión 0.1.0 (T-175)."
+        },
+        {
+          "t": "2026-11-07T14:40:42+01:00",
+          "by": "consultor",
+          "msg": "Versión 0.1.0"
         }
       ]
     },
@@ -8117,6 +8269,177 @@
           "msg": "creada"
         }
       ]
+    },
+    {
+      "id": "T-171",
+      "title": "La integración continua está en rojo: el servidor MCP no arranca sin Kafka",
+      "owner": "desarrollador",
+      "status": "next",
+      "priority": "alta",
+      "estimate_min": 25.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Desde el último commit, la CI falla en Java: el servidor MCP intenta hablar con Kafka al arrancar para la salud del pipeline, no lo encuentra y no llega a levantarse, y detrás falla el agente. Mientras siga en rojo no se puede subir nada a main. Cómo sabremos si funciona: la CI de develop vuelve a verde, y el servidor arranca aunque Kafka no esté, informando del problema en pipeline_health.\n\n## Técnico\nRun de CI sobre 5e5ee36: TimeoutException Timed out waiting for a node assignment (AdminClient mcp-server-pipeline-health, fetchMetadata), luego Exception encountered during context initialization en mcp-server y en agent. Revisar si los tests de contexto necesitan Kafka o si el cliente debe crearse de forma perezosa. ./mk test MODULE=mcp-server y MODULE=agent.",
+      "deps": [],
+      "created": "2026-11-07T13:57:53+01:00",
+      "updated": "2026-11-07T13:57:54+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-07T13:57:53+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        },
+        {
+          "t": "2026-11-07T13:57:54+01:00",
+          "by": "consultor",
+          "msg": "CI en rojo: va primero"
+        },
+        {
+          "t": "2026-11-07T14:40:41+01:00",
+          "by": "consultor",
+          "msg": "Entra en la versión 0.1.0 (T-175)."
+        }
+      ]
+    },
+    {
+      "id": "T-172",
+      "title": "El agente falla si AGENT_MODEL está vacío en vez de usar el modelo por defecto",
+      "owner": "desarrollador",
+      "status": "next",
+      "priority": "alta",
+      "estimate_min": 15.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Si .env no define AGENT_MODEL, compose le pasa una cadena vacía y el agente falla con model is required, en vez de usar el modelo por defecto. Quien clone el repo se lo encontraría en su primera pregunta. Cómo sabremos si funciona: sin AGENT_MODEL en .env, ./mk ask usa el modelo por defecto del proveedor, y un test lo cubre.\n\n## Técnico\ncompose.yaml: AGENT_MODEL: ${AGENT_MODEL:-} pasa vacío. Lo detectó el ensayo de T-097 (IllegalArgumentException: model is required, google-genai 1.65.0). Que el agente ignore un modelo vacío o fije un valor por defecto documentado en .env.example. Actualizar docs/wiki/componentes/agente.md.",
+      "deps": [],
+      "created": "2026-11-07T13:59:20+01:00",
+      "updated": "2026-11-07T14:37:13+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-07T13:59:20+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        },
+        {
+          "t": "2026-11-07T14:37:13+01:00",
+          "by": "consultor",
+          "msg": "Antes de la grabación de mañana; incluir un límite de tiempo en la llamada al modelo (se quedó 7 min esperando a gemini-3.8-flash)"
+        },
+        {
+          "t": "2026-11-07T14:40:41+01:00",
+          "by": "consultor",
+          "msg": "Entra en la versión 0.1.0 (T-175)."
+        }
+      ]
+    },
+    {
+      "id": "T-173",
+      "title": "El agente se cae cuando una herramienta devuelve un error, en vez de explicarlo",
+      "owner": "desarrollador",
+      "status": "next",
+      "priority": "alta",
+      "estimate_min": 25.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Si el validador rechaza una consulta, el servidor MCP devuelve el error como texto y el agente con Gemini se cae al intentar leerlo como JSON. Lo correcto es que el modelo reciba el rechazo y se lo explique al usuario: es justo lo que la demo quiere enseñar. Cómo sabremos si funciona: pedirle al agente que lea /etc/passwd con SQL termina con una explicación del rechazo, no con una traza.\n\n## Técnico\nEnsayo de T-097 con gemini-3.5-flash: RuntimeException Failed to parse JSON: Error calling tool: [TextContent[... text=Table function read_text not allowed ...]] en GoogleGenAiChatModel.parseJsonToMap (spring-ai-google-genai 2.0.2). Revisar cómo devuelve los errores ToolResults/el cliente MCP (envolver en JSON) y añadir test del agente con un error de herramienta.",
+      "deps": [],
+      "created": "2026-11-07T14:35:37+01:00",
+      "updated": "2026-11-07T14:37:12+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-07T14:35:37+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        },
+        {
+          "t": "2026-11-07T14:37:12+01:00",
+          "by": "consultor",
+          "msg": "Antes de la grabación de mañana"
+        },
+        {
+          "t": "2026-11-07T14:40:42+01:00",
+          "by": "consultor",
+          "msg": "Entra en la versión 0.1.0 (T-175)."
+        }
+      ]
+    },
+    {
+      "id": "T-174",
+      "title": "Crear una tarjeta con varias líneas de descripción se deniega como si fueran varios comandos",
+      "owner": "desarrollador",
+      "status": "next",
+      "priority": "alta",
+      "estimate_min": 20.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Los agentes escriben descripciones con saltos de línea, como piden las normas (lenguaje llano arriba y ## Técnico debajo), pero el protocolo de permisos ve el salto de línea y lo toma por varios comandos encadenados. La tarjeta del agente se bloquea en falso: ya les ha pasado a T-017, T-022 y T-027. Cómo sabremos si funciona: un board.py add con saltos de línea dentro de las comillas de --desc se permite, y dos comandos de verdad en líneas distintas se siguen rechazando.\n\n## Técnico\nboard/permissions.py, CHAIN: \n cuenta aunque esté dentro de comillas. Ignorar lo que va entre comillas antes de buscar encadenados, igual que T-164 hizo para del/rm. Alternativa: board.py add --desc-file. Tests en tests/test_permissions.py.",
+      "deps": [],
+      "created": "2026-11-07T14:39:45+01:00",
+      "updated": "2026-11-07T14:39:45+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-07T14:39:45+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        },
+        {
+          "t": "2026-11-07T14:39:45+01:00",
+          "by": "consultor",
+          "msg": "Desbloquea a los agentes"
+        },
+        {
+          "t": "2026-11-07T14:40:42+01:00",
+          "by": "consultor",
+          "msg": "Entra en la versión 0.1.0 (T-175)."
+        }
+      ]
+    },
+    {
+      "id": "T-175",
+      "title": "Publicar la versión 0.1.0: primera demo de principio a fin",
+      "owner": "consultor",
+      "status": "backlog",
+      "priority": "alta",
+      "estimate_min": 20.0,
+      "actual_min": null,
+      "auto": false,
+      "manual": "Aprobar la publicación: etiqueta v0.1.0 en main y release en GitHub con el GIF.",
+      "desc": "La primera versión enseña el recorrido mínimo: datos sintéticos en Iceberg, consulta por MCP y el agente contestando una pregunta de negocio, con su GIF. Recoge además los arreglos que hacen falta para que funcione bien al clonarlo. Cómo sabremos si funciona: main tiene la etiqueta v0.1.0 con la CI en verde, el README enseña el GIF y la release de GitHub resume los cambios.\n\n## Técnico\nAlcance: T-097,T-098,T-171,T-172,T-173,T-174,T-141,T-133,T-075,T-113. Pasos: CI de develop en verde; rama release/0.1.0 desde develop; versión 0.1.0 en los pom.xml y fecha en CHANGELOG.md; merge a main y a develop; etiqueta v0.1.0 (el panel agrupa por etiquetas v*); release con gh y el GIF. Después, develop pasa a 0.2.0-SNAPSHOT.",
+      "deps": [
+        "T-097",
+        "T-098",
+        "T-171",
+        "T-172",
+        "T-173",
+        "T-174",
+        "T-141",
+        "T-133",
+        "T-075",
+        "T-113"
+      ],
+      "created": "2026-11-07T14:40:38+01:00",
+      "updated": "2026-11-07T14:40:38+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-07T14:40:38+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ]
     }
   ],
   "runners": {
@@ -8124,8 +8447,8 @@
       "state": "stopped",
       "current": null,
       "message": "Runner parado",
-      "pid": 12516,
-      "heartbeat": "2026-11-06T23:14:26+01:00",
+      "pid": 11744,
+      "heartbeat": "2026-11-07T13:57:04+01:00",
       "enabled": true,
       "agent": "arquitecto",
       "started": "2026-11-06T23:14:00+01:00",
@@ -8135,14 +8458,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-023",
-      "message": "tester con T-023",
-      "pid": 12228,
-      "heartbeat": "2026-11-07T13:08:39+01:00",
+      "current": "T-025",
+      "message": "desarrollador con T-025",
+      "pid": 15580,
+      "heartbeat": "2026-11-07T14:35:42+01:00",
       "enabled": true,
-      "agent": "tester",
-      "started": "2026-11-07T13:08:39+01:00",
-      "live": "live-T-023-tester-20261107-130839.jsonl"
+      "agent": "desarrollador",
+      "started": "2026-11-07T14:35:42+01:00",
+      "live": "live-T-025-desarrollador-20261107-143542.jsonl"
     }
   }
 }

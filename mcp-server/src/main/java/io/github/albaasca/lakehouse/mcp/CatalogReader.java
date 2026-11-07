@@ -125,7 +125,7 @@ public final class CatalogReader {
         return CATALOG + "." + identifier(namespace) + "." + identifier(table);
     }
 
-    private static String identifier(String name) {
+    static String identifier(String name) {
         return '"' + name.replace("\"", "\"\"") + '"';
     }
 }
