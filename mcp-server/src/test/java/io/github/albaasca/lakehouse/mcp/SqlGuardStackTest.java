@@ -32,7 +32,8 @@ import org.junit.jupiter.params.provider.ValueSource;
 class SqlGuardStackTest {
 
     private static final int STACK_KB = 512;
-    private static final List<TableName> ALLOWED = List.of(TableName.of("memory.main.a"));
+    private static final List<TableName> ALLOWED = List.of("a", "b", "c", "d", "e", "f").stream()
+            .map(name -> TableName.of("memory.main." + name)).toList();
 
     private static Connection connection;
 
@@ -57,6 +58,7 @@ class SqlGuardStackTest {
         shapes.put("SELECT 1" + " INTERSECT SELECT 1".repeat(35), "[[1]]");
         shapes.put(cteChain(13, ""), "[[1]]");
         shapes.put(cteChain(9, " EXCEPT SELECT 2"), "[[1]]");
+        shapes.put(upperCaseCteChain(1), "[[1]]");
         return shapes;
     }
 
@@ -78,6 +80,16 @@ class SqlGuardStackTest {
         return sql.append(" SELECT x FROM c7").toString();
     }
 
+    /** T-147: CTEs a..f declared in upper case and read in lower case, as DuckDB matches them ignoring case. */
+    private static String upperCaseCteChain(int repeats) {
+        String suffix = " EXCEPT SELECT 2".repeat(repeats);
+        StringBuilder sql = new StringBuilder("WITH A AS (SELECT 1 x" + suffix + ")");
+        for (char name = 'B'; name <= 'F'; name++) {
+            sql.append(", ").append(name).append(" AS (SELECT x FROM ").append((char) (name - 'A' + 'a' - 1)).append(suffix).append(')');
+        }
+        return sql.append(" SELECT x FROM f").toString();
+    }
+
     private static <T> T query(String sql, LakehouseSession.RowReader<T> reader) throws SQLException {
         try (Statement statement = connection.createStatement(); ResultSet rows = statement.executeQuery(sql)) {
             return reader.read(rows);
@@ -87,7 +99,9 @@ class SqlGuardStackTest {
     private static void createTable() throws SQLException {
         connection = DriverManager.getConnection("jdbc:duckdb:");
         try (Statement statement = connection.createStatement()) {
-            statement.execute("CREATE TABLE a AS SELECT 1 AS id");
+            for (String name : List.of("a", "b", "c", "d", "e", "f")) {
+                statement.execute("CREATE TABLE " + name + " AS SELECT 1 AS id");
+            }
         }
     }
 
@@ -144,7 +158,7 @@ class SqlGuardStackTest {
 
     /** Parsed only, so these are safe here: the validator stops them before they run. */
     @ParameterizedTest
-    @ValueSource(ints = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9})
+    @ValueSource(ints = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10})
     void oneLevelMoreIsRejected(int shape) throws SQLException {
         String sql = List.of(
                         "SELECT * FROM (".repeat(24) + "SELECT 1" + ")".repeat(24),
@@ -156,7 +170,8 @@ class SqlGuardStackTest {
                         "SELECT 1" + " EXCEPT SELECT 2".repeat(36),
                         cteChain(14, ""),
                         cteChain(10, " EXCEPT SELECT 2"),
-                        tablesSpreadOverCtes())
+                        tablesSpreadOverCtes(),
+                        upperCaseCteChain(32))
                 .get(shape);
         createTable();
         SqlGuard guard = new SqlGuard(SqlGuardStackTest::query);

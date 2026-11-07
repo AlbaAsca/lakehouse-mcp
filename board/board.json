@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-07T20:55:35+01:00",
+  "updated": "2026-11-07T21:04:12+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -8808,18 +8808,18 @@
       "id": "T-147",
       "title": "Consulta: una consulta aceptada por el validador aún puede tumbar el servidor si cambia mayúsculas y minúsculas",
       "owner": "desarrollador",
-      "status": "next",
+      "status": "done",
       "priority": "alta",
       "estimate_min": 25.0,
-      "actual_min": null,
+      "actual_min": 8.5,
       "auto": true,
       "manual": null,
       "desc": "El validador limita lo enrevesada que puede ser una consulta para que no agote la memoria de pila y mate el proceso. Ese límite se puede saltar: si una subconsulta con nombre se declara en mayúsculas y se lee en minúsculas, el motor entiende que es la misma, pero el validador cree que es una tabla normal y no suma su complejidad. Encadenando seis así, la consulta se acepta y el proceso muere siempre. Hoy ninguna herramienta usa todavía el validador, así que conviene cerrarlo antes de abrir la herramienta de consultas.\nCómo sabremos si funciona: esa misma consulta se rechaza por demasiado compleja, y el proceso sigue vivo.\n## Técnico\nDónde: SqlGuard.walk (mcp-server), suma de profundidad con isCte, que compara exacto. DuckDB resuelve CTE sin distinguir mayúsculas: 'WITH A AS (SELECT 42 x) SELECT x FROM a' pasa el validador con la tabla a permitida (x=1) y devuelve [[42]], no [[1]].\nReproducir: tablas a..f permitidas y SQL 'WITH A AS (SELECT 1 x + E), B AS (SELECT x FROM a + E), C AS (SELECT x FROM b + E), D AS (SELECT x FROM c + E), E AS (SELECT x FROM d + E), F AS (SELECT x FROM e + E) SELECT x FROM f', con E = ' EXCEPT SELECT 2' repetido 32 veces (3225 caracteres). guard.run en un hilo de 1 MB: exit 139 en 5 de 5 JVM (y 5 de 5 con 512 KB). Con 7 cadenas (n=32) y 8 (n=29), también 5 de 5 en 1 MB. Con 4 y 5 cadenas, 0 caídas en 1 MB (3 y 5 JVM), pero con 512 KB es intermitente: 4 cadenas cayeron 3 de 3 y 5 cadenas 0 de 5. Control: los mismos nombres en minúsculas se rechazan ya con n=2 (8 cadenas).\nCon una sola tabla permitida, anidando WITH A dentro de la consulta principal (3, 5 y 8 niveles), no cayó en 5 JVM de cada pila; el riesgo aparece desde 6 tablas permitidas distintas.\nCriterio: contar la profundidad comparando el nombre de CTE sin distinguir mayúsculas, sin relajar la comprobación de tablas permitidas, que sigue exacta (una casi coincidencia no debe pasar como CTE). Añadir a SqlGuardTest/SqlGuardStackTest el caso de arriba (rechazado) y una variante por debajo del límite que sí se ejecute, en JVM propia. Corregir en docs/wiki/componentes/servidor-mcp.md la frase 'varias CTE pequeñas no pueden sumar lo que no cabría en una sola'. Hacer antes que T-021.",
       "deps": [],
       "created": "2026-11-03T13:20:12+01:00",
-      "updated": "2026-11-07T18:11:27+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-07T21:04:12+01:00",
+      "started_at": "2026-11-07T20:55:44+01:00",
+      "finished_at": "2026-11-07T21:04:12+01:00",
       "log": [
         {
           "t": "2026-11-03T13:20:12+01:00",
@@ -8830,9 +8830,37 @@
           "t": "2026-11-07T18:06:36+01:00",
           "by": "consultor",
           "msg": "Prioridad alta sin dependencias: pasa a Próximo (CI en rojo primero)."
+        },
+        {
+          "t": "2026-11-07T20:55:44+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-07T21:04:12+01:00",
+          "by": "runner",
+          "msg": "Sin verificación aparte del tester (no toca seguridad, datos reales ni punta a punta); la CI revisa."
+        },
+        {
+          "t": "2026-11-07T21:04:12+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: SqlGuard cuenta la profundidad de CTE sin distinguir mayúsculas, con tests de rechazo y de variante válida, y la wiki corregida; tests de mcp-server en verde."
         }
       ],
-      "rank": 50
+      "rank": 50,
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-07T21:04:12+01:00",
+          "min": 8.5,
+          "turns": 20,
+          "tokens": 238342,
+          "cost_usd": 0.17246669999999997,
+          "verdict": "review",
+          "summary": "SqlGuard cuenta la profundidad de CTE sin distinguir mayúsculas, con tests de rechazo y de variante válida, y la wiki corregida; tests de mcp-server en verde."
+        }
+      ]
     },
     {
       "id": "T-148",
@@ -15375,14 +15403,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-178",
-      "message": "desarrollador con T-178",
+      "current": "T-147",
+      "message": "desarrollador con T-147",
       "pid": 22896,
-      "heartbeat": "2026-11-07T20:47:27+01:00",
+      "heartbeat": "2026-11-07T20:55:45+01:00",
       "enabled": true,
       "agent": "desarrollador",
-      "started": "2026-11-07T20:47:27+01:00",
-      "live": "live-T-178-desarrollador-20261107-204727.jsonl"
+      "started": "2026-11-07T20:55:45+01:00",
+      "live": "live-T-147-desarrollador-20261107-205545.jsonl"
     }
   }
 }

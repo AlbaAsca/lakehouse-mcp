@@ -305,10 +305,28 @@ public final class SqlGuard {
                 deepest = Math.max(deepest, walk(property.getValue(), scope, tables));
             }
         }
-        if (text(node, "type").equals("BASE_TABLE") && isCte(node, ctes.keySet())) {
-            deepest += ctes.get(text(node, "table_name"));
+        if (text(node, "type").equals("BASE_TABLE")) {
+            deepest += cteDepth(node, ctes);
         }
         return deepest + 1;
+    }
+
+    /**
+     * T-147: DuckDB resolves CTEs ignoring case ({@code WITH A ... SELECT FROM a}), so the depth is counted that way,
+     * conservatively. The allowed-tables check stays exact ({@link #isCte}).
+     */
+    private static int cteDepth(JsonNode table, Map<String, Integer> ctes) {
+        if (!text(table, "catalog_name").isEmpty() || !text(table, "schema_name").isEmpty()) {
+            return 0;
+        }
+        String name = text(table, "table_name");
+        int depth = 0;
+        for (Map.Entry<String, Integer> cte : ctes.entrySet()) {
+            if (cte.getKey().equalsIgnoreCase(name)) {
+                depth = Math.max(depth, cte.getValue());
+            }
+        }
+        return depth;
     }
 
     /** Exact case on purpose: if DuckDB matched CTEs differently, a near miss must not pass as a CTE and read a file. */
