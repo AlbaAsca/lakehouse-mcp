@@ -22,7 +22,7 @@ public class Agent {
 
     /** @param exitCode what the process returns; 1 stays for failures and 2 for a wrong command line */
     public enum Outcome {
-        ANSWERED(0), TOOL_LIMIT(3), QUOTA(4);
+        ANSWERED(0), TOOL_LIMIT(3), QUOTA(4), BUDGET(5);
 
         final int exitCode;
 
@@ -34,17 +34,39 @@ public class Agent {
     public record Answer(Outcome outcome, String text) {}
 
     private final ChatClient chat;
+    private final UsageMeter meter;
 
     public Agent(ChatClient chat) {
+        this(chat, new UsageMeter(UsageMeter.Limits.none()));
+    }
+
+    /** @param meter the one the chat's model reports to, see {@link MeteredChatModel} */
+    public Agent(ChatClient chat, UsageMeter meter) {
         this.chat = chat;
+        this.meter = meter;
     }
 
     /** @throws RuntimeException if the provider fails for any reason but quota, or the model ends without saying anything */
     public Answer ask(String question) {
+        meter.startQuestion();
+        try {
+            return answer(question);
+        } finally {
+            meter.logQuestion();
+        }
+    }
+
+    private Answer answer(String question) {
         ChatResponse response;
         try {
             response = chat.prompt().user(question).call().chatResponse();
         } catch (RuntimeException e) {
+            for (Throwable t = e; t != null; t = t.getCause() == t ? null : t.getCause()) {
+                if (t instanceof MeteredChatModel.BudgetExceededException budget) {
+                    return new Answer(Outcome.BUDGET, "Stopped before reaching an answer: " + budget.getMessage()
+                            + ". Ask something narrower or raise the limit.");
+                }
+            }
             return quotaMessage(e)
                     .map(message -> new Answer(Outcome.QUOTA, "The model provider's quota has run out, so this is not an "
                             + "answer about the data. Try again later or change AGENT_MODEL. The provider says: " + message))

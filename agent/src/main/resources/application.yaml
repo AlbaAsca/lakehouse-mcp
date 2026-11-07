@@ -38,6 +38,15 @@ spring:
             lakehouse:
               url: ${MCP_SERVER_URL:http://localhost:8090}
 
+agent:
+  limits:
+    # 0 is no limit. Tokens (input + output) and USD per question, USD per run; the USD ones need the prices of the model.
+    max-tokens: ${AGENT_MAX_TOKENS:200000}
+    max-usd-per-question: ${AGENT_MAX_USD_PER_QUESTION:0}
+    max-usd-per-run: ${AGENT_MAX_USD_PER_RUN:0}
+    usd-per-million-input: ${AGENT_USD_PER_MILLION_INPUT:0}
+    usd-per-million-output: ${AGENT_USD_PER_MILLION_OUTPUT:0}
+
 logging:
   level:
     root: WARN
