@@ -18,7 +18,8 @@ from pathlib import Path
 F = Path(__file__).with_name("permissions.json")
 
 CHAIN = re.compile(r"(&&|\|\||;|\||\n|<<|>>?|`|\$\()")
-ENV_PREFIX = re.compile(r"^\s*[A-Za-z_][A-Za-z0-9_]*=\S*\s")
+SUBST = re.compile(r"`|\$\(")
+ENV_PREFIX =re.compile(r"^\s*[A-Za-z_][A-Za-z0-9_]*=\S*\s")
 NEVER = [
     (re.compile(r"\bgit\s+(push|commit|add|reset|checkout|clean|rebase|merge|tag\s+(-a|-d|-f)|branch\s+-[dD])\b"),
      "git que escribe: los commits y tags los hace el runner"),
@@ -97,7 +98,9 @@ def classify(cmd):
             return "prohibido", pattern(c), why
     if ENV_PREFIX.match(c):
         return "encadenado", None, "variables delante del comando: pásalas como argumento del script"
-    if CHAIN.search(c):
+    # Entre comillas un salto de línea o un «;» es texto (p. ej. un --desc de varias líneas), pero dentro de comillas dobles
+    # «$(…)» y la comilla invertida siguen ejecutando en bash y PowerShell.
+    if CHAIN.search(bare) or any(SUBST.search(q) for q in re.findall(r'"[^"]*"', c)):
         return "encadenado", None, ("varios comandos, tuberías, redirecciones o heredoc: lanza cada comando por separado y "
                                     "crea ficheros con Write/Edit")
     if any(rx.search(c) for rx in SAFE):

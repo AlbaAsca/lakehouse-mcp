@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-07T15:41:00+01:00",
+  "updated": "2026-11-07T15:42:07+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -8890,18 +8890,18 @@
       "id": "T-174",
       "title": "Crear una tarjeta con varias líneas de descripción se deniega como si fueran varios comandos",
       "owner": "desarrollador",
-      "status": "next",
+      "status": "review",
       "priority": "alta",
       "estimate_min": 20.0,
-      "actual_min": null,
+      "actual_min": 1.0,
       "auto": true,
       "manual": null,
       "desc": "Los agentes escriben descripciones con saltos de línea, como piden las normas (lenguaje llano arriba y ## Técnico debajo), pero el protocolo de permisos ve el salto de línea y lo toma por varios comandos encadenados. La tarjeta del agente se bloquea en falso: ya les ha pasado a T-017, T-022 y T-027. Cómo sabremos si funciona: un board.py add con saltos de línea dentro de las comillas de --desc se permite, y dos comandos de verdad en líneas distintas se siguen rechazando.\n\n## Técnico\nboard/permissions.py, CHAIN: \n cuenta aunque esté dentro de comillas. Ignorar lo que va entre comillas antes de buscar encadenados, igual que T-164 hizo para del/rm. Alternativa: board.py add --desc-file. Tests en tests/test_permissions.py.",
       "deps": [],
       "created": "2026-11-07T14:39:45+01:00",
-      "updated": "2026-11-07T14:39:45+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-07T15:42:07+01:00",
+      "started_at": "2026-11-07T15:41:07+01:00",
+      "finished_at": "2026-11-07T15:42:07+01:00",
       "log": [
         {
           "t": "2026-11-07T14:39:45+01:00",
@@ -8917,6 +8917,28 @@
           "t": "2026-11-07T14:40:42+01:00",
           "by": "consultor",
           "msg": "Entra en la versión 0.1.0 (T-175)."
+        },
+        {
+          "t": "2026-11-07T15:41:07+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-07T15:42:07+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: los saltos de línea y separadores dentro de comillas ya no cuentan como comandos encadenados; los comandos de verdad en líneas distintas se siguen rechazando, con tests."
+        }
+      ],
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-07T15:42:07+01:00",
+          "min": 1.0,
+          "turns": 11,
+          "tokens": 123702,
+          "cost_usd": 0.2066386,
+          "verdict": "review"
         }
       ]
     },
@@ -9059,14 +9081,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-173",
-      "message": "tester con T-173",
+      "current": "T-174",
+      "message": "desarrollador con T-174",
       "pid": 19764,
-      "heartbeat": "2026-11-07T15:35:43+01:00",
+      "heartbeat": "2026-11-07T15:41:08+01:00",
       "enabled": true,
-      "agent": "tester",
-      "started": "2026-11-07T15:35:43+01:00",
-      "live": "live-T-173-tester-20261107-153543.jsonl"
+      "agent": "desarrollador",
+      "started": "2026-11-07T15:41:08+01:00",
+      "live": "live-T-174-desarrollador-20261107-154108.jsonl"
     }
   }
 }
