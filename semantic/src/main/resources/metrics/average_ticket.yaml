@@ -1,0 +1,27 @@
+# Rules: docs/metrics.md. Valid purchase = purchase with a session and price > 0, on its own UTC day.
+# An order is a session with a valid purchase.
+name: average_ticket
+description: >-
+  Revenue divided by orders (sessions with a valid purchase). Null ticket when there are no orders.
+unit: money in the unit of price (2 decimals)
+parameters:
+  - name: from
+    type: date
+  - name: to
+    type: date
+sql: |
+  WITH p AS (
+    SELECT user_session, price,
+           CAST(timezone('UTC', event_time) AS DATE) AS day
+    FROM (SELECT DISTINCT * FROM ${table}) ev
+    WHERE event_type = 'purchase' AND user_session IS NOT NULL AND user_session <> '' AND price > 0
+  ),
+  w AS (
+    SELECT * FROM p
+    WHERE (CAST(:from AS DATE) IS NULL OR day >= CAST(:from AS DATE))
+      AND (CAST(:to AS DATE) IS NULL OR day <= CAST(:to AS DATE))
+  )
+  SELECT round(coalesce(sum(price), 0), 2) AS revenue,
+         count(DISTINCT user_session) AS orders,
+         round(sum(price) / NULLIF(count(DISTINCT user_session), 0), 2) AS average_ticket
+  FROM w

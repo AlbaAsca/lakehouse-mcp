@@ -1,0 +1,32 @@
+# Rules: docs/metrics.md. Abandoned = reached cart and never purchased. Same session and day rules as the funnel.
+name: cart_abandonment
+description: >-
+  Of the sessions that reach the cart, how many leave without buying. Null rate when no session reaches the cart.
+unit: sessions and ratio (0 to 1, 6 decimals)
+parameters:
+  - name: from
+    type: date
+  - name: to
+    type: date
+sql: |
+  WITH ev AS (
+    SELECT DISTINCT * FROM ${table}
+    WHERE event_type IN ('view', 'cart', 'purchase') AND user_session IS NOT NULL AND user_session <> ''
+  ),
+  s AS (
+    SELECT user_session,
+           CAST(timezone('UTC', min(event_time)) AS DATE) AS day,
+           bool_or(event_type IN ('cart', 'purchase')) AS reached_cart,
+           bool_or(event_type = 'purchase') AS reached_purchase
+    FROM ev GROUP BY user_session
+  ),
+  w AS (
+    SELECT * FROM s
+    WHERE (CAST(:from AS DATE) IS NULL OR day >= CAST(:from AS DATE))
+      AND (CAST(:to AS DATE) IS NULL OR day <= CAST(:to AS DATE))
+  )
+  SELECT count(*) FILTER (WHERE reached_cart) AS cart_sessions,
+         count(*) FILTER (WHERE reached_cart AND NOT reached_purchase) AS abandoned_sessions,
+         round(CAST(count(*) FILTER (WHERE reached_cart AND NOT reached_purchase) AS DOUBLE)
+               / NULLIF(count(*) FILTER (WHERE reached_cart), 0), 6) AS abandonment_rate
+  FROM w
