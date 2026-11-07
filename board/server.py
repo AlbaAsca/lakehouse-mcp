@@ -142,6 +142,8 @@ async def runner_toggle(request: Request):
 
     def f(b):
         b.setdefault("runner", {})["enabled"] = enabled
+        for k in LANES:  # un carril pausado solo (runner.py) tiene su propio enabled: reanudar/pausar los cubre también
+            _state(b, k)["enabled"] = enabled
     bd.update(f)
     return {"enabled": enabled}
 

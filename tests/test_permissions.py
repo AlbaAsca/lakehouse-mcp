@@ -125,8 +125,9 @@ def test_un_permiso_amplio_no_abre_lo_destructivo(monkeypatch, tmp_path):
     with pytest.raises(Parar):
         runner.run_claude("claude", "x", "desarrollador", 1)
     cmd = captured["cmd"]
-    allowed = cmd[cmd.index("--allowedTools"):cmd.index("--disallowedTools")]
-    denied = cmd[cmd.index("--disallowedTools"):]
+    allowed = cmd[cmd.index("--allowedTools"):cmd.index("--settings")]
+    # las denegaciones (más de mil) van en un fichero de ajustes para no pasar el límite de la línea de comandos en Windows
+    denied = json.loads((tmp_path / "deny-settings.json").read_text(encoding="utf-8"))["permissions"]["deny"]
     assert "Bash(./mk *)" in allowed and "Bash(docker *)" in allowed
     assert {"Bash(./mk down)", "Bash(docker * prune *)", "Bash(docker * down *)"} <= set(denied)
 

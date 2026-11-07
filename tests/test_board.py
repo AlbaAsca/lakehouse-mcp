@@ -63,6 +63,10 @@ def test_api(board, monkeypatch):
     assert c.patch(f"/api/board/task/{tid}", json={"status": "next"}).json()["ok"]
     assert any(t["id"] == tid and t["status"] == "next" for t in c.get("/api/board").json()["tasks"])
     assert c.post("/api/board/runner", json={"enabled": True}).json()["enabled"] is True
+    # un carril pausado solo (enabled=False en su estado) se despierta con Reanudar
+    server._bd().update(lambda b: b.setdefault("runners", {}).setdefault("measure", {}).update(enabled=False))
+    c.post("/api/board/runner", json={"enabled": True})
+    assert server._bd().load()["runners"]["measure"]["enabled"] is True
     assert c.delete(f"/api/board/task/{tid}").json()["ok"]
 
 

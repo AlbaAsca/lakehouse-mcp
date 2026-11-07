@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-07T21:39:17+01:00",
+  "updated": "2026-11-07T21:42:39+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -6263,6 +6263,11 @@
           "t": "2026-11-07T20:36:53+01:00",
           "by": "consultor",
           "msg": "Absorbida en T-194 (fusión de tarjetas pequeñas, T-189); no se pierde el criterio."
+        },
+        {
+          "t": "2026-11-07T21:42:30+01:00",
+          "by": "consultor",
+          "msg": "Absorbida en T-194 (hecha: permissions.unquoted ignora el texto entrecomillado; tests en test_permissions)."
         }
       ],
       "rank": 900
@@ -7830,6 +7835,11 @@
           "t": "2026-11-07T20:36:53+01:00",
           "by": "consultor",
           "msg": "Absorbida en T-194 (fusión de tarjetas pequeñas, T-189); no se pierde el criterio."
+        },
+        {
+          "t": "2026-11-07T21:42:31+01:00",
+          "by": "consultor",
+          "msg": "Absorbida en T-194 (ALLOWED solo admite ./mk test, MODULE=, MAVEN_ARGS= y test-board; test en test_runner)."
         }
       ],
       "rank": 900
@@ -8103,6 +8113,11 @@
           "t": "2026-11-07T20:36:54+01:00",
           "by": "consultor",
           "msg": "Absorbida en T-194 (fusión de tarjetas pequeñas, T-189); no se pierde el criterio."
+        },
+        {
+          "t": "2026-11-07T21:42:31+01:00",
+          "by": "consultor",
+          "msg": "Absorbida en T-194 (solo se apuntan las escrituras que salen bien; test en test_runner)."
         }
       ],
       "rank": 900
@@ -8345,6 +8360,11 @@
           "t": "2026-11-07T20:36:54+01:00",
           "by": "consultor",
           "msg": "Absorbida en T-194 (fusión de tarjetas pequeñas, T-189); no se pierde el criterio."
+        },
+        {
+          "t": "2026-11-07T21:42:32+01:00",
+          "by": "consultor",
+          "msg": "Absorbida en T-194 (Reanudar/Pausar también cubre los carriles pausados solos; server.py, panel.html y test_board)."
         }
       ],
       "rank": 900
@@ -8972,6 +8992,11 @@
           "t": "2026-11-07T20:36:54+01:00",
           "by": "consultor",
           "msg": "Absorbida en T-194 (fusión de tarjetas pequeñas, T-189); no se pierde el criterio."
+        },
+        {
+          "t": "2026-11-07T21:42:32+01:00",
+          "by": "consultor",
+          "msg": "Absorbida en T-194 (un mensaje con RESULT no cuenta como límite; test en test_runner)."
         }
       ],
       "rank": 900
@@ -9007,6 +9032,11 @@
           "t": "2026-11-07T20:36:54+01:00",
           "by": "consultor",
           "msg": "Absorbida en T-194 (fusión de tarjetas pequeñas, T-189); no se pierde el criterio."
+        },
+        {
+          "t": "2026-11-07T21:42:33+01:00",
+          "by": "consultor",
+          "msg": "Absorbida en T-194 (error de API = corte, sin JSON en el log; test en test_runner). El formato is_error sigue sin confirmarse con un caso real."
         }
       ],
       "rank": 900
@@ -9072,6 +9102,11 @@
           "t": "2026-11-07T20:36:55+01:00",
           "by": "consultor",
           "msg": "Absorbida en T-194 (fusión de tarjetas pequeñas, T-189); no se pierde el criterio."
+        },
+        {
+          "t": "2026-11-07T21:42:33+01:00",
+          "by": "consultor",
+          "msg": "Absorbida en T-194 (la rama de corte anota los denegados y abre la solicitud; test en test_runner)."
         }
       ],
       "rank": 900
@@ -15276,22 +15311,24 @@
       "id": "T-194",
       "title": "Runner y panel: arreglar siete fallos pequeños del ejecutor automático",
       "owner": "desarrollador",
-      "status": "next",
+      "status": "done",
       "priority": "media",
       "estimate_min": 85.0,
-      "actual_min": 3.3,
+      "actual_min": 6.5,
       "auto": true,
       "manual": null,
       "desc": "El ejecutor automático tiene varios fallos pequeños (permisos que confunden «del», un permiso demasiado amplio, ficheros guardados que el agente no cambió, el botón Reanudar, avisos de límite mal interpretados, errores de API con JSON como motivo y avisos de comandos denegados perdidos). Se arreglan juntos en una sola entrega. Cómo sabremos si funciona: cada punto de la lista tiene su test o comprobación en verde y las tarjetas absorbidas quedan cerradas con nota.\n\n## Técnico\nAbsorbe (criterios en el historial de cada una):\n- T-095: Que los permisos no confundan la palabra «del» con el comando de borrar\n- T-123: Cerrar el permiso demasiado amplio de los tests en el ejecutor automático\n- T-128: El runner guarda en una tarjeta un fichero que su agente no llegó a cambiar\n- T-134: El botón Reanudar no despierta a un carril que se pausó solo\n- T-148: Un agente que termina bien pero cita el aviso de límite se toma por cortado\n- T-149: Un error de la API deja la tarjeta bloqueada con JSON como motivo\n- T-151: Un agente cortado pierde el aviso de sus comandos denegados",
       "deps": [
         "T-204",
         "T-205",
-        "T-206"
+        "T-206",
+        "T-207",
+        "T-208"
       ],
       "created": "2026-11-07T20:36:53+01:00",
-      "updated": "2026-11-07T21:14:32+01:00",
-      "started_at": "2026-11-07T21:11:12+01:00",
-      "finished_at": "2026-11-07T21:14:32+01:00",
+      "updated": "2026-11-07T21:42:39+01:00",
+      "started_at": "2026-11-07T21:39:26+01:00",
+      "finished_at": "2026-11-07T21:42:39+01:00",
       "log": [
         {
           "t": "2026-11-07T20:36:53+01:00",
@@ -15362,6 +15399,41 @@
           "t": "2026-11-07T21:15:54+01:00",
           "by": "tú",
           "msg": "✓ permiso concedido: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\board\\runner.py *"
+        },
+        {
+          "t": "2026-11-07T21:39:26+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-07T21:42:39+01:00",
+          "by": "runner",
+          "msg": "Sin verificación aparte del tester (no toca seguridad, datos reales ni punta a punta); la CI revisa."
+        },
+        {
+          "t": "2026-11-07T21:42:39+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: siete fallos del runner y el panel arreglados con tests en verde (143 pasan), tarjetas absorbidas anotadas."
+        },
+        {
+          "t": "2026-11-07T21:42:39+01:00",
+          "by": "desarrollador",
+          "msg": "⚠ 3 comandos denegados: Grep | C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\board\\runner.py | git diff tests/test_runner.py"
+        },
+        {
+          "t": "2026-11-07T21:42:39+01:00",
+          "by": "runner",
+          "msg": "? permiso solicitado: Grep * (T-207); la tarjeta espera la decisión"
+        },
+        {
+          "t": "2026-11-07T21:42:39+01:00",
+          "by": "runner",
+          "msg": "? permiso solicitado: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\board\\runner.py * (T-208); la tarjeta espera la decisión"
+        },
+        {
+          "t": "2026-11-07T21:42:39+01:00",
+          "by": "runner",
+          "msg": "✓ permiso concedido automáticamente: git diff* (solo lectura dentro del proyecto); se reintenta"
         }
       ],
       "rank": 300,
@@ -15376,6 +15448,17 @@
           "cost_usd": 0.5470929000000001,
           "verdict": "blocked",
           "summary": "seis fallos del runner y el panel arreglados con tests en verde; T-095 ya estaba resuelto y queda un test en rojo por el límite de línea de comandos de Windows (T-203)."
+        },
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-07T21:42:39+01:00",
+          "min": 3.2,
+          "turns": 42,
+          "tokens": 507105,
+          "cost_usd": 0.2836686,
+          "verdict": "review",
+          "summary": "siete fallos del runner y el panel arreglados con tests en verde (143 pasan), tarjetas absorbidas anotadas."
         }
       ]
     },
@@ -15801,6 +15884,70 @@
         "task": "T-194",
         "why": ""
       }
+    },
+    {
+      "id": "T-207",
+      "title": "Solicitud de permiso: Grep *",
+      "owner": "consultor",
+      "status": "human",
+      "priority": "media",
+      "estimate_min": 2,
+      "actual_min": null,
+      "auto": false,
+      "manual": "Abre la tarjeta y pulsa «Conceder» o «Denegar».",
+      "desc": "El agente «desarrollador» necesitaba un comando que no está en su lista de permitidos y se lo bloquearon mientras hacía T-194. No es de solo lectura ni está prohibido, así que lo tiene que validar una persona.\n\nPara qué lo quería: (no lo explicó)\n\nCómo decidir: concede si es seguro repetirlo sin supervisión dentro del proyecto; deniega si escribe fuera, publica, borra o usa la red.\n\n## Técnico\n- Comando: Grep\n- Patrón que se concedería: Grep *\n- Tarjeta: T-194",
+      "deps": [],
+      "created": "2026-11-07T21:42:39+01:00",
+      "updated": "2026-11-07T21:42:39+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-07T21:42:39+01:00",
+          "by": "runner",
+          "msg": "creada"
+        }
+      ],
+      "kind": "permiso",
+      "perm": {
+        "pattern": "Grep *",
+        "command": "Grep",
+        "agent": "desarrollador",
+        "task": "T-194",
+        "why": ""
+      }
+    },
+    {
+      "id": "T-208",
+      "title": "Solicitud de permiso: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\board\\runner.py *",
+      "owner": "consultor",
+      "status": "human",
+      "priority": "media",
+      "estimate_min": 2,
+      "actual_min": null,
+      "auto": false,
+      "manual": "Abre la tarjeta y pulsa «Conceder» o «Denegar».",
+      "desc": "El agente «desarrollador» necesitaba un comando que no está en su lista de permitidos y se lo bloquearon mientras hacía T-194. No es de solo lectura ni está prohibido, así que lo tiene que validar una persona.\n\nPara qué lo quería: (no lo explicó)\n\nCómo decidir: concede si es seguro repetirlo sin supervisión dentro del proyecto; deniega si escribe fuera, publica, borra o usa la red.\n\n## Técnico\n- Comando: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\board\\runner.py\n- Patrón que se concedería: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\board\\runner.py *\n- Tarjeta: T-194",
+      "deps": [],
+      "created": "2026-11-07T21:42:39+01:00",
+      "updated": "2026-11-07T21:42:39+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-07T21:42:39+01:00",
+          "by": "runner",
+          "msg": "creada"
+        }
+      ],
+      "kind": "permiso",
+      "perm": {
+        "pattern": "C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\board\\runner.py *",
+        "command": "C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\board\\runner.py",
+        "agent": "desarrollador",
+        "task": "T-194",
+        "why": ""
+      }
     }
   ],
   "runners": {
@@ -15819,14 +15966,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-176",
-      "message": "desarrollador con T-176",
+      "current": "T-194",
+      "message": "desarrollador con T-194",
       "pid": 20936,
-      "heartbeat": "2026-11-07T21:35:05+01:00",
+      "heartbeat": "2026-11-07T21:39:27+01:00",
       "enabled": true,
       "agent": "desarrollador",
-      "started": "2026-11-07T21:35:04+01:00",
-      "live": "live-T-176-desarrollador-20261107-213505.jsonl",
+      "started": "2026-11-07T21:39:27+01:00",
+      "live": "live-T-194-desarrollador-20261107-213927.jsonl",
       "pause_reason": null
     }
   }

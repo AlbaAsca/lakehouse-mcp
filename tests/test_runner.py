@@ -555,6 +555,70 @@ def test_sin_denegados_sin_nota(monkeypatch):
     assert (new, verdict) == ("done", "done") and t["log"] == []
 
 
+def _result(tool_id, **kw):
+    return json.dumps({"type": "user", "message": {"content": [{"type": "tool_result", "tool_use_id": tool_id, **kw}]}})
+
+
+def _claims_of(root, lines):
+    got = []
+    orig = runner.claim
+    runner.claim = lambda tag, paths: got.extend(paths)
+    try:
+        pending = {}
+        for line in lines:
+            runner.claim_stream("T-1", line, pending)
+        runner.claim_pending("T-1", pending)
+    finally:
+        runner.claim = orig
+    return got
+
+
+def test_edicion_denegada_o_fallida_no_se_apunta_pero_la_cortada_si(repo):
+    root, _ = repo
+    use = _use("Edit", file_path=str(root / "dirty.txt"))
+    assert _claims_of(root, [use, _result("a", content="ok")]) == ["dirty.txt"]
+    assert _claims_of(root, [use, _result("a", content="Permission for this tool use was denied")]) == []
+    assert _claims_of(root, [use, _result("a", content="boom", is_error=True)]) == []
+    assert _claims_of(root, [use]) == ["dirty.txt"]  # cortado antes del resultado: no se pierde
+
+
+def test_citar_el_aviso_de_limite_con_veredicto_no_es_limite():
+    cita = "El mensaje «usage limit reached» aparece en el log.\nRESULT: done — ok"
+    assert runner.interruption(dict(text=cita, err="", cut=False)) is None
+    assert runner.interruption(dict(text="usage limit reached", err="", cut=False)) == ("limit", runner.LIMIT_MSG)
+
+
+def test_error_de_api_es_un_corte_sin_json(monkeypatch, tmp_path):
+    tid = _new_card("doing")
+    ev = {"type": "result", "subtype": "success", "is_error": True,
+          "result": 'API Error: 529 {"type":"error","error":{"type":"overloaded_error"}}'}
+    r = _stream(monkeypatch, tmp_path, [ev], code=1)
+    assert r["cut"]
+    new, verdict, summary = runner.finish(tid, "work", "desarrollador", r)
+    assert (new, verdict) == ("next", "cut") and "{" not in summary and "API Error: 529" in summary
+    t = runner.bd.task(runner.bd.load(), tid)
+    assert not t.get("runs") and all("{" not in e["msg"] for e in t["log"])
+
+
+def test_cortado_con_denegados_deja_el_aviso(monkeypatch):
+    fake = {"tasks": [{"id": "T-1", "owner": "investigador", "status": "doing", "log": []}], "agents": []}
+    monkeypatch.setattr(runner.bd, "update", lambda f: f(fake))
+    monkeypatch.setattr(runner.bd, "task", lambda b, tid: b["tasks"][0])
+    monkeypatch.setattr(runner.bd, "set_status", lambda b, t, s, by, msg: t.update(status=s))
+    monkeypatch.setattr(runner.bd, "log", lambda t, by, msg: t["log"].append(msg))
+    monkeypatch.setattr(runner, "permission_protocol", lambda *a: ([], [], []))
+    r = dict(text="", err="", cut=True, denied=["python board/board.py add X"])
+    assert runner.finish("T-1", "work", "investigador", r)[1] == "cut"
+    assert any(m.startswith("⚠ 1 comandos denegados: python board/board.py add X") for m in fake["tasks"][0]["log"])
+
+
+def test_permiso_de_tests_solo_las_formas_previstas():
+    allowed = set(runner.ALLOWED)
+    assert "Bash(./mk test*)" not in allowed and "Bash(make test*)" not in allowed
+    assert "PowerShell(.\\mk.cmd test*)" not in allowed
+    assert {"Bash(./mk test)", "Bash(./mk test MODULE=*)", "Bash(./mk test-board)"} <= allowed
+
+
 def test_runner_no_carga_mcp_del_proyecto():
     import inspect
     assert "--strict-mcp-config" in inspect.getsource(runner.run_claude)
