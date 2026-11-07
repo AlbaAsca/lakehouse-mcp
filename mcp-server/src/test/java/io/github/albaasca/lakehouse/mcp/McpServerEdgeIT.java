@@ -287,7 +287,6 @@ class McpServerEdgeIT {
         };
     }
 
-    @Disabled("T-154: it tries the catalog with the literal ${POLARIS_CLIENT_ID} and never names the variable")
     @Test
     void withoutCredentialsTheServerDoesNotStartAndSaysWhichOneIsMissing() {
         assertThatThrownBy(() -> new SpringApplicationBuilder(McpServerApplication.class).environment(noVariables())
@@ -295,7 +294,6 @@ class McpServerEdgeIT {
                 .hasStackTraceContaining("POLARIS_CLIENT_ID");
     }
 
-    @Disabled("T-154: today it starts, and the literal ${S3_ACCESS_KEY} only fails when a tool reads data")
     @Test
     void withoutStorageCredentialsTheServerDoesNotStartAndSaysWhichOneIsMissing() throws Exception {
         exec("CREATE TABLE lh." + NS + ".no_keys (id BIGINT, kind VARCHAR) PARTITIONED BY (kind)");

@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-07T21:42:39+01:00",
+  "updated": "2026-11-07T22:09:53+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -15434,6 +15434,16 @@
           "t": "2026-11-07T21:42:39+01:00",
           "by": "runner",
           "msg": "✓ permiso concedido automáticamente: git diff* (solo lectura dentro del proyecto); se reintenta"
+        },
+        {
+          "t": "2026-11-07T21:43:39+01:00",
+          "by": "tú",
+          "msg": "✓ permiso concedido: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\board\\runner.py *"
+        },
+        {
+          "t": "2026-11-07T21:43:43+01:00",
+          "by": "tú",
+          "msg": "✓ permiso concedido: Grep *"
         }
       ],
       "rank": 300,
@@ -15466,18 +15476,18 @@
       "id": "T-195",
       "title": "Servidor MCP: robustez al arrancar y al avisar de fallos",
       "owner": "desarrollador",
-      "status": "next",
+      "status": "done",
       "priority": "media",
       "estimate_min": 55.0,
-      "actual_min": 0.0,
+      "actual_min": 27.1,
       "auto": true,
       "manual": null,
       "desc": "Cuando faltan claves o se pierde el catálogo, el servidor MCP arranca igual o no avisa bien. Se arreglan juntos arranque, salud, memoria de DuckDB y el mensaje del agente cuando el servidor no responde. Cómo sabremos si funciona: cada punto de la lista tiene su test o comprobación en verde y las tarjetas absorbidas quedan cerradas con nota.\n\n## Técnico\nAbsorbe (criterios en el historial de cada una):\n- T-154: El servidor MCP arranca aunque falten las claves del almacén\n- T-158: Que la salud del servidor MCP avise si se pierde el catálogo\n- T-159: Servidor MCP: alinear la memoria de DuckDB con el reparto previsto\n- T-160: Agente: explicar en una línea que el servidor de datos no responde",
       "deps": [],
       "created": "2026-11-07T20:36:55+01:00",
-      "updated": "2026-11-07T21:32:54+01:00",
-      "started_at": "2026-11-07T21:14:36+01:00",
-      "finished_at": "2026-11-07T21:14:36+01:00",
+      "updated": "2026-11-07T22:09:53+01:00",
+      "started_at": "2026-11-07T21:42:49+01:00",
+      "finished_at": "2026-11-07T22:09:53+01:00",
       "log": [
         {
           "t": "2026-11-07T20:36:55+01:00",
@@ -15498,6 +15508,26 @@
           "t": "2026-11-07T21:32:54+01:00",
           "by": "consultor",
           "msg": "Desbloqueada: el error era la línea de comandos demasiado larga (más de 1 200 reglas de denegación); ahora van en un fichero de ajustes."
+        },
+        {
+          "t": "2026-11-07T21:42:49+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-07T22:09:44+01:00",
+          "by": "consultor",
+          "msg": "Hecho: T-154 requireCredentials() nombra la variable que falta (tests unitarios + 2 IT reactivados); T-158 CatalogHealth (componente 'catalog' en /actuator/health, DOWN si falla listTables); T-159 la memoria ya estaba alineada (400/256 MB, T-106), añadido IT aHeavyQueryFailsCleanlyAndTheContainerSurvives; T-160 McpUnreachableAnalyzer (FailureAnalyzer) con test. Tests mcp-server y agent en verde. Wiki: servidor-mcp.md (arranque sin variables para y nombra cuál; salud incluye catálogo; memoria probada con consulta pesada) y agente (mensaje de una línea si el MCP no responde)."
+        },
+        {
+          "t": "2026-11-07T22:09:53+01:00",
+          "by": "runner",
+          "msg": "Sin verificación aparte del tester (no toca seguridad, datos reales ni punta a punta); la CI revisa."
+        },
+        {
+          "t": "2026-11-07T22:09:53+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: T-154, T-158, T-159 y T-160 implementadas con sus tests; los tests de mcp-server y agent pasan."
         }
       ],
       "rank": 300,
@@ -15512,6 +15542,17 @@
           "cost_usd": null,
           "verdict": "blocked",
           "summary": "[WinError 206] El nombre del archivo o la extensión es demasiado largo"
+        },
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-07T22:09:53+01:00",
+          "min": 27.0,
+          "turns": 54,
+          "tokens": 1191328,
+          "cost_usd": 0.5047261999999999,
+          "verdict": "review",
+          "summary": "T-154, T-158, T-159 y T-160 implementadas con sus tests; los tests de mcp-server y agent pasan."
         }
       ]
     },
@@ -15889,7 +15930,7 @@
       "id": "T-207",
       "title": "Solicitud de permiso: Grep *",
       "owner": "consultor",
-      "status": "human",
+      "status": "done",
       "priority": "media",
       "estimate_min": 2,
       "actual_min": null,
@@ -15898,7 +15939,7 @@
       "desc": "El agente «desarrollador» necesitaba un comando que no está en su lista de permitidos y se lo bloquearon mientras hacía T-194. No es de solo lectura ni está prohibido, así que lo tiene que validar una persona.\n\nPara qué lo quería: (no lo explicó)\n\nCómo decidir: concede si es seguro repetirlo sin supervisión dentro del proyecto; deniega si escribe fuera, publica, borra o usa la red.\n\n## Técnico\n- Comando: Grep\n- Patrón que se concedería: Grep *\n- Tarjeta: T-194",
       "deps": [],
       "created": "2026-11-07T21:42:39+01:00",
-      "updated": "2026-11-07T21:42:39+01:00",
+      "updated": "2026-11-07T21:43:43+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -15906,6 +15947,11 @@
           "t": "2026-11-07T21:42:39+01:00",
           "by": "runner",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-07T21:43:43+01:00",
+          "by": "tú",
+          "msg": "✓ Concedido: Grep *"
         }
       ],
       "kind": "permiso",
@@ -15921,7 +15967,7 @@
       "id": "T-208",
       "title": "Solicitud de permiso: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\board\\runner.py *",
       "owner": "consultor",
-      "status": "human",
+      "status": "done",
       "priority": "media",
       "estimate_min": 2,
       "actual_min": null,
@@ -15930,7 +15976,7 @@
       "desc": "El agente «desarrollador» necesitaba un comando que no está en su lista de permitidos y se lo bloquearon mientras hacía T-194. No es de solo lectura ni está prohibido, así que lo tiene que validar una persona.\n\nPara qué lo quería: (no lo explicó)\n\nCómo decidir: concede si es seguro repetirlo sin supervisión dentro del proyecto; deniega si escribe fuera, publica, borra o usa la red.\n\n## Técnico\n- Comando: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\board\\runner.py\n- Patrón que se concedería: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\board\\runner.py *\n- Tarjeta: T-194",
       "deps": [],
       "created": "2026-11-07T21:42:39+01:00",
-      "updated": "2026-11-07T21:42:39+01:00",
+      "updated": "2026-11-07T21:43:39+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -15938,6 +15984,11 @@
           "t": "2026-11-07T21:42:39+01:00",
           "by": "runner",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-07T21:43:39+01:00",
+          "by": "tú",
+          "msg": "✓ Concedido: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\board\\runner.py *"
         }
       ],
       "kind": "permiso",
@@ -15966,14 +16017,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-194",
-      "message": "desarrollador con T-194",
+      "current": "T-195",
+      "message": "desarrollador con T-195",
       "pid": 20936,
-      "heartbeat": "2026-11-07T21:39:27+01:00",
+      "heartbeat": "2026-11-07T21:42:50+01:00",
       "enabled": true,
       "agent": "desarrollador",
-      "started": "2026-11-07T21:39:27+01:00",
-      "live": "live-T-194-desarrollador-20261107-213927.jsonl",
+      "started": "2026-11-07T21:42:49+01:00",
+      "live": "live-T-195-desarrollador-20261107-214250.jsonl",
       "pause_reason": null
     }
   }

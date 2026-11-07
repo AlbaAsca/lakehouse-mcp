@@ -133,6 +133,23 @@ class McpServerImageIT {
         assertThat(rows.get(0).get(0).asLong()).isEqualTo(loadedRows);
     }
 
+    /** T-159: past DuckDB's memory_limit the query fails cleanly; the container (1 GB) does not die and answers again. */
+    @Test
+    void aHeavyQueryFailsCleanlyAndTheContainerSurvives() throws Exception {
+        String table = "lh." + NS + "." + TABLE;
+        CallToolResult heavy = client.callTool(new CallToolRequest("run_query", Map.of("sql",
+                "SELECT count(*) FROM (SELECT a.*, b.*, c.*, d.* FROM " + table + " a, " + table + " b, " + table
+                        + " c, " + table + " d ORDER BY 1, 2, 3)")));
+
+        assertThat(heavy.isError()).as(((TextContent) heavy.content().getFirst()).text()).isTrue();
+        assertThat(server.isRunning()).isTrue();
+        assertThat(run("cat", "/proc/1/cmdline")).contains("-Xmx256m");
+
+        CallToolResult next = client.callTool(new CallToolRequest("run_query",
+                Map.of("sql", "SELECT count(*) AS n FROM " + table)));
+        assertThat(next.isError()).as(((TextContent) next.content().getFirst()).text()).isNotEqualTo(Boolean.TRUE);
+    }
+
     /** The server refuses to start if they are missing (LakehouseSessionIT), so here only where they live is left to see. */
     @Test
     void theExtensionsComeFromTheImageAndTheServerAddsNone() throws Exception {

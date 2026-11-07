@@ -18,7 +18,8 @@ server:
   address: ${MCP_SERVER_ADDRESS:127.0.0.1}
   port: ${MCP_SERVER_PORT:8090}
 
-# The same variables as compose.yaml. Without a default on purpose: no credentials, no start.
+# The same variables as compose.yaml. Without a default on purpose: Spring leaves the literal ${VAR} when it is unset, so
+# LakehouseProperties.requireCredentials() stops the start naming the missing variable.
 lakehouse:
   # Set in the image: extensions already there, nothing is downloaded. Empty: DuckDB's default directory, installing them.
   extension-directory: ${DUCKDB_EXTENSION_DIRECTORY:}

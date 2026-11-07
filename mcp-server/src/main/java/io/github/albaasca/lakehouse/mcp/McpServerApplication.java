@@ -7,6 +7,7 @@ import java.nio.file.Path;
 import java.sql.SQLException;
 import java.time.Clock;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
@@ -37,6 +38,29 @@ public class McpServerApplication {
                     ? settings
                     : settings.withExtensions(Path.of(extensionDirectory), false);
         }
+
+        /**
+         * Stops the start naming each required variable that has no value. Spring leaves a placeholder without a
+         * default as its literal text ({@code ${S3_ACCESS_KEY}}) instead of failing, so it is detected here.
+         */
+        void requireCredentials() {
+            List<String> missing = new ArrayList<>();
+            check(missing, "POLARIS_CLIENT_ID", catalog == null ? null : catalog.clientId());
+            check(missing, "POLARIS_CLIENT_SECRET", catalog == null ? null : catalog.clientSecret());
+            check(missing, "S3_ACCESS_KEY", storage == null ? null : storage.accessKey());
+            check(missing, "S3_SECRET_KEY", storage == null ? null : storage.secretKey());
+            check(missing, "S3_REGION", storage == null ? null : storage.region());
+            if (!missing.isEmpty()) {
+                throw new IllegalStateException("Missing required environment variable(s): "
+                        + String.join(", ", missing) + ". The server does not start without them.");
+            }
+        }
+
+        private static void check(List<String> missing, String variable, String value) {
+            if (value == null || value.isBlank() || value.startsWith("${")) {
+                missing.add(variable);
+            }
+        }
     }
 
     /**
@@ -63,12 +87,19 @@ public class McpServerApplication {
 
     @Bean
     LakehouseSession lakehouseSession(LakehouseProperties properties) throws SQLException {
+        properties.requireCredentials();
         return new LakehouseSession(properties.settings());
     }
 
     @Bean
     CatalogReader catalogReader(LakehouseSession session) {
         return new CatalogReader(session);
+    }
+
+    /** Bean name "catalog" gives the component {@code catalog} in /actuator/health. */
+    @Bean
+    CatalogHealth catalog(CatalogReader reader) {
+        return new CatalogHealth(reader::listTables);
     }
 
     @Bean
