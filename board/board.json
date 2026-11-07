@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-07T15:59:10+01:00",
+  "updated": "2026-11-07T16:05:21+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -2262,7 +2262,7 @@
       "id": "T-026",
       "title": "MCP: propose_fix y apply_fix con aprobación humana",
       "owner": "desarrollador",
-      "status": "review",
+      "status": "done",
       "priority": "alta",
       "estimate_min": 45.0,
       "actual_min": 13.3,
@@ -2273,7 +2273,7 @@
         "T-021"
       ],
       "created": "2026-11-02T11:37:33+01:00",
-      "updated": "2026-11-07T15:59:10+01:00",
+      "updated": "2026-11-07T16:05:21+01:00",
       "started_at": "2026-11-07T15:45:53+01:00",
       "finished_at": "2026-11-07T15:59:10+01:00",
       "log": [
@@ -2301,6 +2301,16 @@
           "t": "2026-11-07T15:59:10+01:00",
           "by": "desarrollador",
           "msg": "REVIEW: propose_fix/apply_fix con aprobación por REST y ROLLBACK_SNAPSHOT hechos; tests de mcp-server en verde, incluido el flujo completo sobre LakehouseStack."
+        },
+        {
+          "t": "2026-11-07T15:59:17+01:00",
+          "by": "tester",
+          "msg": "verificando"
+        },
+        {
+          "t": "2026-11-07T16:05:21+01:00",
+          "by": "tester",
+          "msg": "DONE: Diff leído; propose/approve/apply verificado por 6 tests unitarios y 3 IT sobre LakehouseStack (sin aprobar falla, aprobado se aplica una vez, repetir no reaplica), sin fallos; CI de develop sin terminar, ninguna en rojo."
         }
       ],
       "runs": [
@@ -2313,8 +2323,19 @@
           "tokens": 1299664,
           "cost_usd": 0.7791062000000001,
           "verdict": "review"
+        },
+        {
+          "agent": "tester",
+          "mode": "verify",
+          "at": "2026-11-07T16:05:21+01:00",
+          "min": 6.1,
+          "turns": 9,
+          "tokens": 112957,
+          "cost_usd": 0.0863875,
+          "verdict": "done"
         }
-      ]
+      ],
+      "verify_started": "2026-11-07T15:59:17+01:00"
     },
     {
       "id": "T-027",
@@ -9223,13 +9244,13 @@
     "measure": {
       "state": "working",
       "current": "T-026",
-      "message": "desarrollador con T-026",
+      "message": "tester con T-026",
       "pid": 19764,
-      "heartbeat": "2026-11-07T15:45:54+01:00",
+      "heartbeat": "2026-11-07T15:59:18+01:00",
       "enabled": true,
-      "agent": "desarrollador",
-      "started": "2026-11-07T15:45:53+01:00",
-      "live": "live-T-026-desarrollador-20261107-154553.jsonl"
+      "agent": "tester",
+      "started": "2026-11-07T15:59:18+01:00",
+      "live": "live-T-026-tester-20261107-155918.jsonl"
     }
   }
 }
