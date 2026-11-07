@@ -3,6 +3,9 @@ name: CI
 on:
   push:
     branches: [develop, main]
+    # Runner commits that only move cards (board/, docs/handoff.md) change no code: skip them. A push is skipped
+    # only when every changed file matches, so commits that also touch code still run.
+    paths-ignore: ['board/**', 'docs/handoff.md']
   pull_request:
 
 permissions:
