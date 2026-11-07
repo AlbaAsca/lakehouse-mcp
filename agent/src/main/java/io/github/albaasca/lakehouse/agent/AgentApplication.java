@@ -21,7 +21,7 @@ public class AgentApplication {
     Agent agent(ChatClient.Builder builder, List<ToolCallbackProvider> tools,
             @Value("classpath:prompts/system.md") Resource systemPrompt) {
         return new Agent(builder.defaultSystem(systemPrompt)
-                .defaultToolCallbacks(tools.toArray(ToolCallbackProvider[]::new))
+                .defaultToolCallbacks(tools.stream().map(ToolErrors::explained).toArray(ToolCallbackProvider[]::new))
                 .build());
     }
 }
