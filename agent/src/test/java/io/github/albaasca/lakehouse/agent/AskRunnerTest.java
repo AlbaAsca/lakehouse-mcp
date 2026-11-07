@@ -45,6 +45,28 @@ class AskRunnerTest {
     }
 
     @Test
+    void aModelThatDoesNotAnswerStopsAtTheTimeoutWithItsOwnExitCode(CapturedOutput output) {
+        model.script(prompt -> {
+            try {
+                Thread.sleep(30_000);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            return ScriptedChatModel.says("too late");
+        });
+        AskRunner slow = new AskRunner(new Agent(ChatClient.create(model), new UsageMeter(UsageMeter.Limits.none()),
+                java.time.Duration.ofMillis(300)));
+
+        long start = System.nanoTime();
+        slow.run(new DefaultApplicationArguments("ask", "Anyone there?"));
+
+        assertThat((System.nanoTime() - start) / 1_000_000).isLessThan(5_000);
+        assertThat(output.getErr()).contains("did not finish within").contains("AGENT_MODEL_TIMEOUT");
+        assertThat(output.getOut()).doesNotContain("too late");
+        assertThat(slow.getExitCode()).isEqualTo(6);
+    }
+
+    @Test
     void anythingButAskAndAQuestionIsWrongUsageAndCallsNoModel(CapturedOutput output) {
         for (String[] args : new String[][] {{}, {"ask"}, {"ask", " "}, {"hello", "world"}}) {
             run(args);

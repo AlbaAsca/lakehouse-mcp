@@ -39,6 +39,8 @@ spring:
               url: ${MCP_SERVER_URL:http://localhost:8090}
 
 agent:
+  # Longest a whole question may take (model and tools). 0s is no limit. Exit code 6 when it passes.
+  model-timeout: ${AGENT_MODEL_TIMEOUT:300s}
   mcp:
     analyst-key: ${MCP_ANALYST_KEY:}
   limits:

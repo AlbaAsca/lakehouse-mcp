@@ -55,9 +55,10 @@ public class AgentApplication {
 
     @Bean
     Agent agent(ChatClient.Builder builder, UsageMeter meter, List<ToolCallbackProvider> tools,
-            @Value("classpath:prompts/system.md") Resource systemPrompt) {
+            @Value("classpath:prompts/system.md") Resource systemPrompt,
+            @Value("${agent.model-timeout:300s}") java.time.Duration timeout) {
         return new Agent(builder.defaultSystem(systemPrompt)
                 .defaultToolCallbacks(tools.stream().map(ToolErrors::explained).toArray(ToolCallbackProvider[]::new))
-                .build(), meter);
+                .build(), meter, timeout);
     }
 }

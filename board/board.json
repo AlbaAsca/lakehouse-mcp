@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-07T20:47:14+01:00",
+  "updated": "2026-11-07T20:55:35+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -10198,18 +10198,18 @@
       "id": "T-178",
       "title": "Agente: ponerle tiempo máximo a la llamada al modelo",
       "owner": "desarrollador",
-      "status": "next",
+      "status": "done",
       "priority": "alta",
       "estimate_min": 20.0,
-      "actual_min": null,
+      "actual_min": 8.2,
       "auto": true,
       "manual": null,
       "desc": "En el ensayo el agente se quedó 7 minutos esperando a que el modelo contestara, sin avisar. Antes de grabar la demo conviene que la llamada al modelo tenga un tiempo máximo y que, si se pasa, el comando lo diga en una línea en vez de quedarse colgado. Salió como nota del consultor en T-172 y se separa porque hay que comprobar en la documentación oficial cómo se fija ese límite en cada proveedor.«\n»Cómo sabremos si funciona: con un modelo que no contesta, ./mk ask termina en el tiempo configurado con un mensaje claro, y un test lo cubre.«\n»## Técnico«\n»Se colgó con gemini-3.8-flash (T-097). Verificar en la doc de Spring AI 2.0.x / google-genai 1.65.0 y anthropic-java si hay timeout configurable (p. ej. HttpOptions.timeout en google-genai, timeout del cliente Anthropic); si no, envolver chat.prompt().call() en Agent.ask con un límite. Variable sugerida AGENT_MODEL_TIMEOUT (application.yaml, .env.example, docs/wiki/componentes/agente.md). Código de salida propio y documentado.",
       "deps": [],
       "created": "2026-11-07T15:29:57+01:00",
-      "updated": "2026-11-07T18:11:26+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-07T20:55:35+01:00",
+      "started_at": "2026-11-07T20:47:26+01:00",
+      "finished_at": "2026-11-07T20:55:35+01:00",
       "log": [
         {
           "t": "2026-11-07T15:29:57+01:00",
@@ -10220,9 +10220,37 @@
           "t": "2026-11-07T18:06:35+01:00",
           "by": "consultor",
           "msg": "Prioridad alta sin dependencias: pasa a Próximo (CI en rojo primero)."
+        },
+        {
+          "t": "2026-11-07T20:47:26+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-07T20:55:35+01:00",
+          "by": "runner",
+          "msg": "Sin verificación aparte del tester (no toca seguridad, datos reales ni punta a punta); la CI revisa."
+        },
+        {
+          "t": "2026-11-07T20:55:35+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: Límite de tiempo por pregunta en Agent (AGENT_MODEL_TIMEOUT, 300s por defecto, código 6), con test, wiki y .env.example actualizados; tests del módulo agent en verde."
         }
       ],
-      "rank": 40
+      "rank": 40,
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-07T20:55:35+01:00",
+          "min": 8.1,
+          "turns": 30,
+          "tokens": 332906,
+          "cost_usd": 0.21866949999999996,
+          "verdict": "review",
+          "summary": "Límite de tiempo por pregunta en Agent (AGENT_MODEL_TIMEOUT, 300s por defecto, código 6), con test, wiki y .env.example actualizados; tests del módulo agent en verde."
+        }
+      ]
     },
     {
       "id": "T-179",
@@ -15347,14 +15375,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-180",
-      "message": "tester con T-180",
+      "current": "T-178",
+      "message": "desarrollador con T-178",
       "pid": 22896,
-      "heartbeat": "2026-11-07T20:43:20+01:00",
+      "heartbeat": "2026-11-07T20:47:27+01:00",
       "enabled": true,
-      "agent": "tester",
-      "started": "2026-11-07T20:43:18+01:00",
-      "live": "live-T-180-tester-20261107-204320.jsonl"
+      "agent": "desarrollador",
+      "started": "2026-11-07T20:47:27+01:00",
+      "live": "live-T-178-desarrollador-20261107-204727.jsonl"
     }
   }
 }
