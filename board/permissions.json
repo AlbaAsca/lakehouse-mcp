@@ -125,6 +125,12 @@
       "why": "concedido por el responsable desde el panel",
       "by": "responsable",
       "at": "2026-11-07T20:20:08+01:00"
+    },
+    {
+      "pattern": "git diff*",
+      "why": "concedido automáticamente a desarrollador (T-194): solo lectura dentro del proyecto",
+      "by": "runner",
+      "at": "2026-11-07T21:42:39+01:00"
     }
   ],
   "denied": [

@@ -227,8 +227,10 @@ function renderRunner() {
     return `<div class="lane ${st}"><span class="state"><span class="pulse"></span>${LANE_NAMES[k]}: ${txt}</span><span class="info">${laneInfo(r, st, dead)}</span></div>`;
   }).join("");
   const alive = lanes.some(([, r]) => r.alive);
-  $("#rToggle").textContent = g.enabled === false ? "Reanudar" : "Pausar";
-  $("#rToggle").onclick = () => api("POST", "/api/board/runner", { enabled: g.enabled === false });
+  // En pausa si lo está el general o algún carril vivo (un carril se pausa solo tras tres fallos): Reanudar los despierta a todos
+  const paused = g.enabled === false || lanes.some(([, r]) => r.alive && r.enabled === false);
+  $("#rToggle").textContent = paused ? "Reanudar" : "Pausar";
+  $("#rToggle").onclick = () => api("POST", "/api/board/runner", { enabled: paused });
   $("#rStart").disabled = lanes.every(([, r]) => r.alive);
   $("#rStop").disabled = !alive;
   $("#rStart").onclick = () => api("POST", "/api/runner/start?contribute=" + $("#rContrib").checked);
