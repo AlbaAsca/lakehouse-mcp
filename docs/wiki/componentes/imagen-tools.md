@@ -79,7 +79,7 @@ Tests Java de un solo módulo. Primero compila e instala sus dependencias en la 
 ./mk test MODULE=producer
 ```
 
-Si un test falla o el módulo no existe, termina con error, igual que la suite completa. `mk.cmd test MODULE=<módulo>` pasa los mismos argumentos, pero está sin probar.
+Si un test falla o el módulo no existe, termina con error, igual que la suite completa. `mk.cmd test MODULE=<módulo>` pasa los mismos argumentos y devuelve el mismo código de salida que `docker compose` (probado en `tests/test_mk_cmd.py` con un sustituto de docker; sin probar con Docker real).
 
 Un objetivo pendiente:
 
