@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-07T21:14:36+01:00",
+  "updated": "2026-11-07T21:14:41+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -15385,26 +15385,49 @@
       "id": "T-196",
       "title": "Consulta y catálogo: cuatro pequeños fallos de lectura de datos",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "blocked",
       "priority": "media",
       "estimate_min": 50.0,
-      "actual_min": null,
+      "actual_min": 0.0,
       "auto": true,
       "manual": null,
       "desc": "Funciones habituales que el validador rechaza, tablas de espacios de nombres anidados que no salen, subconsultas repetidas y fechas sin zona. Se atienden juntas en una sola entrega. Cómo sabremos si funciona: cada punto de la lista tiene su test o comprobación en verde y las tarjetas absorbidas quedan cerradas con nota.\n\n## Técnico\nAbsorbe (criterios en el historial de cada una):\n- T-116: Consulta: permitir funciones habituales que el validador rechaza\n- T-138: Las tablas de un espacio de nombres anidado no aparecen hasta que alguien las lee\n- T-146: Consulta: comprobar si unas pocas subconsultas con nombre que se leen varias veces pueden colgar el servidor\n- T-155: Una fecha sin zona cambia de hora en una máquina con horario de verano",
       "deps": [],
       "created": "2026-11-07T20:36:57+01:00",
-      "updated": "2026-11-07T20:36:57+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-07T21:14:41+01:00",
+      "started_at": "2026-11-07T21:14:41+01:00",
+      "finished_at": "2026-11-07T21:14:41+01:00",
       "log": [
         {
           "t": "2026-11-07T20:36:57+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-07T21:14:41+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-07T21:14:41+01:00",
+          "by": "desarrollador",
+          "msg": "BLOCKED: [WinError 206] El nombre del archivo o la extensión es demasiado largo"
         }
       ],
-      "rank": 300
+      "rank": 300,
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-07T21:14:41+01:00",
+          "min": 0.0,
+          "turns": null,
+          "tokens": null,
+          "cost_usd": null,
+          "verdict": "blocked",
+          "summary": "[WinError 206] El nombre del archivo o la extensión es demasiado largo"
+        }
+      ]
     },
     {
       "id": "T-197",
@@ -15697,14 +15720,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-195",
-      "message": "desarrollador con T-195",
+      "current": "T-196",
+      "message": "desarrollador con T-196",
       "pid": 24920,
-      "heartbeat": "2026-11-07T21:14:36+01:00",
+      "heartbeat": "2026-11-07T21:14:41+01:00",
       "enabled": true,
       "agent": "desarrollador",
-      "started": "2026-11-07T21:14:36+01:00",
-      "live": "live-T-195-desarrollador-20261107-211436.jsonl"
+      "started": "2026-11-07T21:14:41+01:00",
+      "live": "live-T-196-desarrollador-20261107-211441.jsonl"
     }
   }
 }
