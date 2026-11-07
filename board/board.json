@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-07T14:41:59+01:00",
+  "updated": "2026-11-07T14:49:22+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -2141,7 +2141,7 @@
       "id": "T-025",
       "title": "MCP: data_quality_check",
       "owner": "desarrollador",
-      "status": "review",
+      "status": "done",
       "priority": "alta",
       "estimate_min": 40.0,
       "actual_min": 91.1,
@@ -2153,7 +2153,7 @@
         "T-023"
       ],
       "created": "2026-11-02T11:37:33+01:00",
-      "updated": "2026-11-07T14:41:59+01:00",
+      "updated": "2026-11-07T14:49:22+01:00",
       "started_at": "2026-11-07T14:35:41+01:00",
       "finished_at": "2026-11-07T14:41:59+01:00",
       "log": [
@@ -2181,6 +2181,16 @@
           "t": "2026-11-07T14:41:59+01:00",
           "by": "desarrollador",
           "msg": "REVIEW: data_quality_check implementado y probado cifra a cifra contra quality.json, con la caída del 2024-03-10 marcada como único día de poco volumen."
+        },
+        {
+          "t": "2026-11-07T14:42:05+01:00",
+          "by": "tester",
+          "msg": "verificando"
+        },
+        {
+          "t": "2026-11-07T14:49:22+01:00",
+          "by": "tester",
+          "msg": "DONE: data_quality_check coincide cifra a cifra con quality.json y marca la caída del 2024-03-10, con los tests de mcp-server en verde; la CI roja de develop queda en la T-176."
         }
       ],
       "runs": [
@@ -2193,8 +2203,19 @@
           "tokens": 432577,
           "cost_usd": 0.453749,
           "verdict": "review"
+        },
+        {
+          "agent": "tester",
+          "mode": "verify",
+          "at": "2026-11-07T14:49:22+01:00",
+          "min": 7.3,
+          "turns": 25,
+          "tokens": 876304,
+          "cost_usd": 0.8141487999999998,
+          "verdict": "done"
         }
-      ]
+      ],
+      "verify_started": "2026-11-07T14:42:05+01:00"
     },
     {
       "id": "T-026",
@@ -8414,8 +8435,8 @@
       "priority": "alta",
       "estimate_min": 20.0,
       "actual_min": null,
-      "auto": false,
-      "manual": "Aprobar la publicación: etiqueta v0.1.0 en main y release en GitHub con el GIF.",
+      "auto": true,
+      "manual": "",
       "desc": "La primera versión enseña el recorrido mínimo: datos sintéticos en Iceberg, consulta por MCP y el agente contestando una pregunta de negocio, con su GIF. Recoge además los arreglos que hacen falta para que funcione bien al clonarlo. Cómo sabremos si funciona: main tiene la etiqueta v0.1.0 con la CI en verde, el README enseña el GIF y la release de GitHub resume los cambios.\n\n## Técnico\nAlcance: T-097,T-098,T-171,T-172,T-173,T-174,T-141,T-133,T-075,T-113. Pasos: CI de develop en verde; rama release/0.1.0 desde develop; versión 0.1.0 en los pom.xml y fecha en CHANGELOG.md; merge a main y a develop; etiqueta v0.1.0 (el panel agrupa por etiquetas v*); release con gh y el GIF. Después, develop pasa a 0.2.0-SNAPSHOT.",
       "deps": [
         "T-097",
@@ -8438,6 +8459,45 @@
           "t": "2026-11-07T14:40:38+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-07T14:45:59+01:00",
+          "by": "consultor",
+          "msg": "La responsable autoriza al consultor a publicar la versión entera (rama release, etiqueta v0.1.0 y release en GitHub) cuando se cumpla el alcance."
+        },
+        {
+          "t": "2026-11-07T14:46:02+01:00",
+          "by": "tú",
+          "msg": "editada: manual"
+        }
+      ]
+    },
+    {
+      "id": "T-176",
+      "title": "La integración continua está en rojo: el test del agente no conoce las herramientas nuevas del servidor",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "alta",
+      "estimate_min": 5.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "La comprobación automática de develop falla. Un test del agente revisa que el modelo recibe exactamente cierta lista de herramientas del servidor, pero esa lista se quedó antigua: no incluye la salud del pipeline ni, desde ahora, el chequeo de calidad de datos. Se propone actualizar la lista y que siga siendo exacta, para que una herramienta nueva o perdida haga saltar el test.\nCómo sabremos si funciona: la integración continua de develop vuelve a verde y el test del agente lista las seis herramientas actuales.\n## Técnico\n- CI run 42371334878 (commit T-023): agent/AgentIT.theModelIsOfferedTheServerToolsAndTheSystemPrompt:138, containsExactlyInAnyOrder sin pipeline_health.\n- Tras T-025 el servidor expone también data_quality_check (ver McpServerIT): lista esperada = list_tables, describe_table, run_query, time_travel, pipeline_health, data_quality_check.\n- Criterio: ./mk test MODULE=agent en verde y CI de develop verde.",
+      "deps": [],
+      "created": "2026-11-07T14:49:06+01:00",
+      "updated": "2026-11-07T14:49:13+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-07T14:49:06+01:00",
+          "by": "tester",
+          "msg": "creada"
+        },
+        {
+          "t": "2026-11-07T14:49:13+01:00",
+          "by": "consultor",
+          "msg": "descripción reescrita"
         }
       ]
     }
@@ -8459,13 +8519,13 @@
     "measure": {
       "state": "working",
       "current": "T-025",
-      "message": "desarrollador con T-025",
+      "message": "tester con T-025",
       "pid": 15580,
-      "heartbeat": "2026-11-07T14:35:42+01:00",
+      "heartbeat": "2026-11-07T14:42:05+01:00",
       "enabled": true,
-      "agent": "desarrollador",
-      "started": "2026-11-07T14:35:42+01:00",
-      "live": "live-T-025-desarrollador-20261107-143542.jsonl"
+      "agent": "tester",
+      "started": "2026-11-07T14:42:05+01:00",
+      "live": "live-T-025-tester-20261107-144205.jsonl"
     }
   }
 }

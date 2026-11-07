@@ -69,6 +69,14 @@ Panel: `python board/server.py` y abre `http://localhost:8020`. Se comprobó que
 - **Un carril se apaga y no vuelve solo.** El botón arranca con `--until-idle`: un carril sin tarjetas listas sale, y las que lleguen después no lo despiertan. Las del arquitecto y el investigador esperan hasta volver a pulsar **▶ Iniciar** o hasta la ejecución programada (T-082).
 - **Comandos denegados.** Quedan anotados en la tarjeta.
 
+## Operar el runner
+- **Arrancar:** botón **▶ Iniciar** del panel, `run-agents.bat` / `./run-agents.sh`, o la tarea programada de `scripts/install-schedule.ps1`
+  (cada 3 h, sin rondas de aportación). **■ Parar** mata al agente en curso y devuelve su tarjeta a Próximo; pausa con el botón o con `board/STOP`.
+- **Ver qué hace** sin gastar tokens: «Ver en directo» en el panel, que lee `board/runs/live-*.jsonl`.
+- **Carriles:** nunca hay dos del mismo carril a la vez, y cada uno confirma solo los ficheros que cambió.
+- **Límites:** tiempo máximo por tarjeta de 4 × la estimación, entre 15 y 120 min; tope de turnos por rol en `MAX_TURNS` de `board/runner.py`.
+- **Modelo:** el tester usa Sonnet (`model` en `.claude/agents/tester.md`); el resto, el de la sesión.
+
 ## Para saber más
 
 - [agent-board en GitHub](https://github.com/AlbaAsca/agent-board)

@@ -61,6 +61,8 @@ DENIED = ["Bash(python -m pip *)", "Bash(pip *)", "Bash(npm *)", "Bash(npx *)", 
 RULES = """Reglas (modo autónomo, permisos: solo código y tests):
 - Nadie va a responder preguntas: decide tú dentro de tu rol, con el criterio más sensato.
 - Sigue CLAUDE.md. Trabaja SOLO en esta tarea. Si ves otras mejoras o bugs, regístralos con
+  prioridad baja salvo que rompan algo o bloqueen el trabajo (el consultor las ordena antes de cada versión), y antes
+  comprueba con `python board/board.py list` que no existen ya:
   `python board/board.py add "Título" --owner <rol> --est <minutos de agente> --prio <alta|media|baja> --desc "..." --by {owner}`.
   Las estimaciones son en MINUTOS DE AGENTE (lo que tardarías tú), no horas humanas.
 - Cómo escribir la descripción de una tarjeta (la lee una persona, no un robot):
@@ -291,7 +293,7 @@ def save(before, tid, msg):
 
 
 # Tope de turnos por rol (medido en un proyecto real: los agentes que investigan gastaban 3-4 veces más por ejecución)
-MAX_TURNS = {"experto": 40, "investigador": 25, "tester": 40}
+MAX_TURNS = {"experto": 40, "investigador": 25, "tester": 40, "desarrollador": 60, "arquitecto": 40}
 
 
 def run_claude(claude, prompt, agent, timeout_s, tag="run", max_turns=80):

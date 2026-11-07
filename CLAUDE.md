@@ -50,19 +50,12 @@ antes de seguir. Cada agente registra su propio inicio y fin (no se cierra en bl
   (`feat`, `fix`, `docs`, `test`, `refactor`, `perf`, `build`, `chore`), con la tarea al final: `(T-012)`.
 
 ## Ejecución autónoma
-`board/runner.py` ejecuta las tareas solas con `claude -p --agent <rol>`: revisión (tester) → próximo → backlog, por prioridad.
-- **Arrancar:** botón **▶ Iniciar** del panel (trabaja hasta que no quedan tarjetas), `run-agents.bat` / `./run-agents.sh`, o
-  programado con `scripts/install-schedule.ps1` (cada 3 h; permite batería y recupera ejecuciones perdidas, que Windows por
-  defecto no hace). **■ Parar** mata al agente en curso y devuelve su tarjeta a Próximo. Pausa: botón o archivo `board/STOP`.
-- **Ver qué hace** sin gastar tokens: «Ver en directo» en el panel (lee `board/runs/live-*.jsonl`), con indicador de si el
-  proceso sigue vivo y de su última acción.
-- **Dos carriles en paralelo** (`--lane think|measure`): pensar (investigador, experto, arquitecto) y medir (el resto). Nunca
-  hay dos del mismo carril a la vez, y cada carril hace commit solo de los ficheros que cambió.
-- **Permisos:** python, git status/diff/log, lectura, `./mvnw`, `./mk test|evals`, `make test|evals`, `docker compose ps|logs`. Nada de instalar, borrar, `cp`/`mv`, `git add`/`commit`/`push` ni comandos
-  encadenados (`&&`, `;`, `|`, heredoc): el runner hace los commits. Sin MCP del proyecto (`--strict-mcp-config`).
-- **Comandos denegados:** quedan anotados en la tarjeta; si lo denegado era crear una tarjeta, la suya pasa a Bloqueado.
-- Si se agota el cupo de uso de Claude o el agente se corta sin mensaje final no cuenta como fallo: la tarjeta vuelve a su estado. Tiempo máximo por tarjeta: 4 × la
-  estimación, entre 15 y 120 min. Logs en `board/runs/`.
+`board/runner.py` ejecuta las tarjetas con `claude -p --agent <rol>` (revisión → próximo → backlog, por prioridad), en dos carriles:
+pensar (investigador, experto, arquitecto) y medir (el resto). Cómo arrancarlo, pausarlo y verlo: `docs/wiki/componentes/agent-board.md`.
+- **Permisos:** python, git status/diff/log, lectura, `./mvnw`, `./mk test|evals`, `docker compose ps|logs`. Nada de instalar,
+  borrar, `cp`/`mv`, `git add`/`commit`/`push` ni comandos encadenados (`&&`, `;`, `|`, heredoc): el runner hace los commits.
+- Un corte por cupo, o un agente que acaba sin mensaje final, no cuenta como fallo: la tarjeta vuelve a su estado.
+- **Tarjetas nuevas de los agentes:** prioridad baja salvo que algo esté roto o bloqueado; el consultor las ordena antes de cada versión.
 
 ## Tests por niveles
 Casi todo el tiempo de una tarjeta es esperar tests, así que cada nivel se pasa donde aporta:
@@ -71,7 +64,10 @@ Casi todo el tiempo de una tarjeta es esperar tests, así que cada nivel se pasa
 - **Excepción, con tests de contenedores antes de cerrar:** las tarjetas que tocan `testkit`, `compose.yaml`, `connect/`, `infra/` o la integración de punta a punta. En caso de duda, pásalos.
 
 ## Documentación
-`docs/wiki/` explica cada pieza a principiantes y expertos. Quien cambie el comportamiento, la configuración o el estado de una pieza actualiza su página en la misma tarjeta (`componentes/<pieza>.md`, y el estado en `docs/wiki/README.md`). Todo comando publicado se ejecuta antes; lo que no, se marca «sin probar». Nunca se presenta como hecho lo planificado.
+`docs/wiki/` explica cada pieza a principiantes y expertos. Se actualiza **una vez por versión** (en su tarjeta de publicación),
+no en cada tarjeta: quien cambie una pieza anota en su tarjeta qué cambia para la wiki. Todo comando publicado se ejecuta antes;
+lo que no, se marca «sin probar». Nunca se presenta como hecho lo planificado.
+- **Sesiones del consultor:** al empezar, lee `docs/handoff.md` y el panel; al terminar, actualiza `docs/handoff.md` (corto).
 
 ## Código
 `producer/` reproduce eventos · `connect/` config del sink · `mcp-server/` tools MCP · `agent/` cliente Spring AI · `semantic/` métricas YAML · `evals/` preguntas y verdad de referencia · `testkit/` tests con contenedores · `maintenance/` expirar snapshots (proceso de un solo uso) · `infra/` imágenes y scripts · `docs/` diseño y Pages · `board/` panel.
