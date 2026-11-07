@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-07T18:38:29+01:00",
+  "updated": "2026-11-07T18:40:45+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -10468,26 +10468,69 @@
       "id": "T-187",
       "title": "No cerrar tarjetas ni subir a main con la CI en rojo",
       "owner": "desarrollador",
-      "status": "next",
+      "status": "done",
       "priority": "alta",
       "estimate_min": 20.0,
-      "actual_min": null,
+      "actual_min": 1.4,
       "auto": true,
       "manual": null,
       "desc": "Ahora las tarjetas se cierran aunque la CI de develop esté fallando, y el fallo se acumula sin que nadie lo vea. Se propone que el runner consulte la última CI antes de cerrar o de empezar una tarjeta nueva, y se detenga si está en rojo. Cómo sabremos si funciona: con la CI en rojo el runner solo coge tarjetas de arreglo de CI. ## Técnico: gh run list en runner.py; excepción para tarjetas con título «CI».",
       "deps": [],
       "created": "2026-11-07T18:15:54+01:00",
-      "updated": "2026-11-07T18:16:02+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-07T18:40:45+01:00",
+      "started_at": "2026-11-07T18:38:33+01:00",
+      "finished_at": "2026-11-07T18:39:59+01:00",
       "log": [
         {
           "t": "2026-11-07T18:15:54+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-07T18:38:33+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-07T18:39:59+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: el runner consulta la última CI de develop y, si está en rojo, solo coge tarjetas con «CI» en el título; tests del runner en verde."
+        },
+        {
+          "t": "2026-11-07T18:40:00+01:00",
+          "by": "tester",
+          "msg": "verificando"
+        },
+        {
+          "t": "2026-11-07T18:40:45+01:00",
+          "by": "tester",
+          "msg": "DONE: el runner solo coge tarjetas «CI» con la CI en rojo; tests del runner en verde (41), CI de develop sin rojo."
         }
       ],
-      "rank": 5
+      "rank": 5,
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-07T18:39:59+01:00",
+          "min": 1.4,
+          "turns": 13,
+          "tokens": 156694,
+          "cost_usd": 0.1294508,
+          "verdict": "review"
+        },
+        {
+          "agent": "tester",
+          "mode": "verify",
+          "at": "2026-11-07T18:40:45+01:00",
+          "min": 0.7,
+          "turns": 7,
+          "tokens": 83285,
+          "cost_usd": 0.07440959999999999,
+          "verdict": "done"
+        }
+      ],
+      "verify_started": "2026-11-07T18:40:00+01:00"
     },
     {
       "id": "T-188",
@@ -10610,14 +10653,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-186",
-      "message": "tester con T-186",
-      "pid": 20824,
-      "heartbeat": "2026-11-07T18:37:47+01:00",
+      "current": "T-187",
+      "message": "tester con T-187",
+      "pid": 17876,
+      "heartbeat": "2026-11-07T18:40:00+01:00",
       "enabled": true,
       "agent": "tester",
-      "started": "2026-11-07T18:37:47+01:00",
-      "live": "live-T-186-tester-20261107-183747.jsonl"
+      "started": "2026-11-07T18:40:00+01:00",
+      "live": "live-T-187-tester-20261107-184000.jsonl"
     }
   }
 }

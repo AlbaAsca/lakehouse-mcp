@@ -36,6 +36,35 @@ def test_pick_por_carril():
     assert runner.pick(b, "measure") == (None, None)
 
 
+def test_pick_con_ci_en_rojo_solo_tarjetas_ci():
+    b = _tasks()
+    assert runner.pick(b, "all", ci_red=True) == (None, None)
+    b["tasks"][1]["title"] = "Arreglar CI de develop"
+    task, mode = runner.pick(b, "all", ci_red=True)
+    assert (task["id"], mode) == ("T-002", "work")
+
+
+_REAL_CI_IS_RED = runner.ci_is_red
+
+
+@pytest.fixture(autouse=True)
+def _sin_gh_real(monkeypatch):
+    monkeypatch.setattr(runner, "ci_is_red", lambda *a, **k: False)
+
+
+def test_ci_is_red(monkeypatch):
+    monkeypatch.setattr(runner, "ci_is_red", _REAL_CI_IS_RED)
+
+    def fake(out, code=0):
+        return lambda *a, **k: subprocess.CompletedProcess(a, code, out, "")
+    monkeypatch.setattr(runner.subprocess, "run", fake('[{"conclusion":"failure"}]'))
+    assert runner.ci_is_red()
+    monkeypatch.setattr(runner.subprocess, "run", fake('[{"conclusion":"success"}]'))
+    assert not runner.ci_is_red()
+    monkeypatch.setattr(runner.subprocess, "run", fake("", 1))
+    assert not runner.ci_is_red()
+
+
 def test_guarda_de_instancia_por_carril():
     import os
     alive = os.getppid()  # un proceso vivo que no es este (el que lanza pytest)
