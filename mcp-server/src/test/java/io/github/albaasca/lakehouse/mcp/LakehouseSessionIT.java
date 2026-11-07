@@ -196,6 +196,23 @@ class LakehouseSessionIT {
         }
     }
 
+    /** T-156: Polaris answers HTTP 500 to a table named like an Iceberg metadata table; the wiki lists those names. */
+    @Test
+    void tablesNamedLikeIcebergMetadataTablesAreRefusedByTheCatalogButOtherNamesWork() throws Exception {
+        try (Connection writer = DriverManager.getConnection("jdbc:duckdb:");
+                Statement statement = writer.createStatement()) {
+            stack.attachDuckDb(writer);
+            String ns = LakehouseStack.DUCKDB_CATALOG + ".reserved_names_it";
+            statement.execute("CREATE SCHEMA IF NOT EXISTS " + ns);
+
+            statement.execute("CREATE TABLE " + ns + ".events_history (id BIGINT)");
+            for (String name : new String[] {"history", "snapshots"}) {
+                assertThatThrownBy(() -> statement.execute("CREATE TABLE " + ns + "." + name + " (id BIGINT)"))
+                        .as(name).isInstanceOf(SQLException.class);
+            }
+        }
+    }
+
     @Test
     void aQueryOverTheTimeLimitIsCutAndTheConnectionKeepsWorking() throws Exception {
         try (LakehouseSession session = new LakehouseSession(

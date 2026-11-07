@@ -57,7 +57,8 @@ def dockerfile_sources():
 
 
 def test_the_service_passes_every_variable_the_server_requires():
-    required = set(re.findall(r"\$\{(\w+)\}", APPLICATION))
+    code = "\n".join(line for line in APPLICATION.splitlines() if not line.lstrip().startswith("#"))
+    required = set(re.findall(r"\$\{(\w+)\}", code))
 
     assert required == {"POLARIS_CLIENT_ID", "POLARIS_CLIENT_SECRET", "S3_ACCESS_KEY", "S3_SECRET_KEY", "S3_REGION"}
     assert required <= set(compose_environment())

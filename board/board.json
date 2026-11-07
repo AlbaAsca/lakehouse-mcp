@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-07T22:37:43+01:00",
+  "updated": "2026-11-07T22:53:22+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -15644,18 +15644,18 @@
       "id": "T-197",
       "title": "Pruebas y entorno: cinco fallos pequeños que ensucian la CI",
       "owner": "desarrollador",
-      "status": "next",
+      "status": "done",
       "priority": "media",
       "estimate_min": 45.0,
-      "actual_min": 0.0,
+      "actual_min": 15.4,
       "auto": true,
       "manual": null,
       "desc": "Pruebas que fallan por la hora o por variables de compose, el stack sin su base de datos, un error de Polaris con la tabla history y el tiempo máximo de reparación. Se arreglan juntos para dejar la CI limpia. Cómo sabremos si funciona: cada punto de la lista tiene su test o comprobación en verde y las tarjetas absorbidas quedan cerradas con nota.\n\n## Técnico\nAbsorbe (criterios en el historial de cada una):\n- T-068: El stack levantado funciona sin su base de datos\n- T-156: Polaris da un error interno al crear una tabla llamada history\n- T-163: Un test del servidor falla al azar según la hora a la que se lanza\n- T-167: Reparación: ponerle tiempo máximo a cada operación\n- T-179: Dos pruebas del panel fallan por las variables del servidor MCP en compose",
       "deps": [],
       "created": "2026-11-07T20:36:59+01:00",
-      "updated": "2026-11-07T21:32:55+01:00",
-      "started_at": "2026-11-07T21:14:46+01:00",
-      "finished_at": "2026-11-07T21:14:47+01:00",
+      "updated": "2026-11-07T22:53:22+01:00",
+      "started_at": "2026-11-07T22:37:58+01:00",
+      "finished_at": "2026-11-07T22:53:22+01:00",
       "log": [
         {
           "t": "2026-11-07T20:36:59+01:00",
@@ -15676,6 +15676,26 @@
           "t": "2026-11-07T21:32:55+01:00",
           "by": "consultor",
           "msg": "Desbloqueada: el error era la línea de comandos demasiado larga (más de 1 200 reglas de denegación); ahora van en un fichero de ajustes."
+        },
+        {
+          "t": "2026-11-07T22:37:58+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-07T22:53:15+01:00",
+          "by": "consultor",
+          "msg": "Hecho: IT con secreto 7777777777 (T-163); test_mcp_server_compose ignora comentarios de application.yaml y pasa (T-179); RepairSession con tiempo máximo 10 min + 2 tests unitarios en verde (T-167); IT de history/snapshots en LakehouseSessionIT y wiki polaris.md (T-156); T-068: la causa fue contenedores antiguos, y el health de Polaris ya incluye el chequeo de base de datos (sin reproducir caída)."
+        },
+        {
+          "t": "2026-11-07T22:53:22+01:00",
+          "by": "runner",
+          "msg": "Sin verificación aparte del tester (no toca seguridad, datos reales ni punta a punta); la CI revisa."
+        },
+        {
+          "t": "2026-11-07T22:53:22+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: T-163, T-179, T-167 y T-156 hechos con tests; T-068 sin reproducir la caída de la base de datos; tests del módulo en verde."
         }
       ],
       "rank": 300,
@@ -15690,6 +15710,17 @@
           "cost_usd": null,
           "verdict": "blocked",
           "summary": "[WinError 206] El nombre del archivo o la extensión es demasiado largo"
+        },
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-07T22:53:22+01:00",
+          "min": 15.4,
+          "turns": 56,
+          "tokens": 1376690,
+          "cost_usd": 0.4929510000000001,
+          "verdict": "review",
+          "summary": "T-163, T-179, T-167 y T-156 hechos con tests; T-068 sin reproducir la caída de la base de datos; tests del módulo en verde."
         }
       ]
     },
@@ -16048,14 +16079,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-196",
-      "message": "desarrollador con T-196",
+      "current": "T-197",
+      "message": "desarrollador con T-197",
       "pid": 20936,
-      "heartbeat": "2026-11-07T22:10:03+01:00",
+      "heartbeat": "2026-11-07T22:37:58+01:00",
       "enabled": true,
       "agent": "desarrollador",
-      "started": "2026-11-07T22:10:03+01:00",
-      "live": "live-T-196-desarrollador-20261107-221003.jsonl",
+      "started": "2026-11-07T22:37:58+01:00",
+      "live": "live-T-197-desarrollador-20261107-223758.jsonl",
       "pause_reason": null
     }
   }

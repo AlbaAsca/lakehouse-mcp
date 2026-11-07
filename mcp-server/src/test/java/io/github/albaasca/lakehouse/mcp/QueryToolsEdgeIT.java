@@ -45,6 +45,8 @@ import tools.jackson.databind.ObjectMapper;
 class QueryToolsEdgeIT {
 
     private static final String NS = "query_edge_" + System.currentTimeMillis();
+    /** Secret value: its digits must not be able to appear by chance in the namespace (it holds the clock). */
+    private static final long SECRET = 7_777_777_777L;
     private static final ObjectMapper JSON = new ObjectMapper();
 
     private static Connection writer;
@@ -313,13 +315,13 @@ class QueryToolsEdgeIT {
             "-- only a comment"})
     void noBackDoorThroughTheView(String template) throws Exception {
         exec("CREATE TABLE IF NOT EXISTS lh." + NS + ".secret (id BIGINT)");
-        exec("INSERT INTO lh." + NS + ".secret VALUES (42)");
+        exec("INSERT INTO lh." + NS + ".secret VALUES (" + SECRET + ")");
         exec("CREATE TABLE IF NOT EXISTS lh." + NS + ".public_one (id BIGINT)");
         exec("INSERT INTO lh." + NS + ".public_one VALUES (1)");
 
         String message = error("time_travel", past("public_one", current("public_one"), template.formatted(NS)));
 
-        assertThat(message).isNotBlank().doesNotContain("problem in the server").doesNotContain("42");
+        assertThat(message).isNotBlank().doesNotContain("problem in the server").doesNotContain(String.valueOf(SECRET));
     }
 
     /** A value of the wrong type must come back as something the model can read, not a broken call. */

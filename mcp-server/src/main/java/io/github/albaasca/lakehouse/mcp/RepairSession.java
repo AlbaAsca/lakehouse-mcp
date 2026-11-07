@@ -3,11 +3,18 @@ package io.github.albaasca.lakehouse.mcp;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.sql.SQLTimeoutException;
 import java.sql.Statement;
+import java.time.Duration;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -148,11 +155,20 @@ public final class RepairSession {
             Map.of("table", Kind.TABLE, "base", Kind.LONG, "columns", Kind.COLUMNS, "day", Kind.DATE,
                     "next_day", Kind.DATE));
 
+    /** Longest a repair statement may run: a compaction or rollback that hangs must not hold the server forever. */
+    public static final Duration DEFAULT_TIMEOUT = Duration.ofMinutes(10);
+
     private final LakehouseSession.Settings settings;
+    private final Duration timeout;
 
     /** Pool size and query timeout of {@code settings} are not used: one connection, for as long as the repair takes. */
     public RepairSession(LakehouseSession.Settings settings) {
+        this(settings, DEFAULT_TIMEOUT);
+    }
+
+    public RepairSession(LakehouseSession.Settings settings, Duration timeout) {
         this.settings = Objects.requireNonNull(settings, "settings");
+        this.timeout = Objects.requireNonNull(timeout, "timeout");
     }
 
     /** The same catalog and store as the read instance, with the memory limit of the repair instance. */
@@ -164,20 +180,49 @@ public final class RepairSession {
      * Opens a writable instance, runs the template and closes it.
      *
      * @throws IllegalArgumentException if a value does not fit its parameter; nothing is opened then
+     * @throws SQLTimeoutException if the statement runs longer than the timeout; it is cancelled and the instance closed
      * @throws SQLException if the catalog cannot be attached or DuckDB rejects the statement
      */
     public void apply(Template template, Map<String, ?> values) throws SQLException {
-        String sql = template.render(values);
+        run(LakehouseSession.startup(settings, false), template.render(values));
+    }
+
+    void run(List<String> setups, String sql) throws SQLException {
+        ScheduledExecutorService watchdog = Executors.newSingleThreadScheduledExecutor(runnable -> {
+            Thread thread = new Thread(runnable, "repair-timeout");
+            thread.setDaemon(true);
+            return thread;
+        });
         // jdbc:duckdb: is a new in-memory instance each time: nothing is shared with the read instance.
         try (Connection connection = DriverManager.getConnection("jdbc:duckdb:")) {
             try (Statement statement = connection.createStatement()) {
-                for (String setup : LakehouseSession.startup(settings, false)) {
+                for (String setup : setups) {
                     statement.execute(setup);
                 }
             }
             try (Statement statement = connection.createStatement()) {
-                statement.execute(sql);
+                AtomicBoolean fired = new AtomicBoolean();
+                var task = watchdog.schedule(() -> {
+                    fired.set(true);
+                    try {
+                        statement.cancel();
+                    } catch (SQLException e) {
+                        // Already closed: the statement has just ended by itself.
+                    }
+                }, timeout.toMillis(), TimeUnit.MILLISECONDS);
+                try {
+                    statement.execute(sql);
+                } catch (SQLException e) {
+                    if (fired.get()) {
+                        throw new SQLTimeoutException("Repair exceeded " + timeout, e);
+                    }
+                    throw e;
+                } finally {
+                    task.cancel(false);
+                }
             }
+        } finally {
+            watchdog.shutdownNow();
         }
     }
 }

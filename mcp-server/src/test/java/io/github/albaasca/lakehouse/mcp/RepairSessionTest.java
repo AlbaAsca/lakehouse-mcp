@@ -68,6 +68,27 @@ class RepairSessionTest {
     }
 
     @Test
+    void aRepairThatRunsPastTheTimeoutIsCancelledWithAClearError() {
+        RepairSession session = new RepairSession(settings(), java.time.Duration.ofMillis(300));
+        long start = System.nanoTime();
+
+        assertThatThrownBy(() -> session.run(java.util.List.of(),
+                "SELECT sum(a.range * b.range) FROM range(1000000) a, range(1000000) b"))
+                .isInstanceOf(java.sql.SQLTimeoutException.class).hasMessageContaining("Repair exceeded");
+        assertThat(java.time.Duration.ofNanos(System.nanoTime() - start)).isLessThan(java.time.Duration.ofSeconds(30));
+    }
+
+    @Test
+    void aFastRepairIsNotAffectedByTheTimeout() throws Exception {
+        new RepairSession(settings(), java.time.Duration.ofSeconds(30)).run(java.util.List.of(), "SELECT 1");
+    }
+
+    /** The settings are only read by startup(), which these tests skip by passing their own (empty) setup. */
+    private static LakehouseSession.Settings settings() {
+        return LakehouseSession.Settings.of(null, null);
+    }
+
+    @Test
     void aTemplateMustDeclareExactlyItsPlaceholders() {
         assertThatThrownBy(() -> new Template("CALL f({table}, {snapshot_id})", Map.of("table", Kind.TABLE)))
                 .isInstanceOf(IllegalArgumentException.class);
