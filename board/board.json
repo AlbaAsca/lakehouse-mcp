@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-07T18:21:14+01:00",
+  "updated": "2026-11-07T18:21:46+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -9980,18 +9980,18 @@
       "id": "T-176",
       "title": "La integración continua está en rojo: el test del agente no conoce las herramientas nuevas del servidor",
       "owner": "desarrollador",
-      "status": "next",
+      "status": "review",
       "priority": "alta",
       "estimate_min": 5.0,
-      "actual_min": null,
+      "actual_min": 0.5,
       "auto": true,
       "manual": null,
       "desc": "La comprobación automática de develop falla. Un test del agente revisa que el modelo recibe exactamente cierta lista de herramientas del servidor, pero esa lista se quedó antigua: no incluye la salud del pipeline ni, desde ahora, el chequeo de calidad de datos. Se propone actualizar la lista y que siga siendo exacta, para que una herramienta nueva o perdida haga saltar el test.\nCómo sabremos si funciona: la integración continua de develop vuelve a verde y el test del agente lista las seis herramientas actuales.\n## Técnico\n- CI run 42371334878 (commit T-023): agent/AgentIT.theModelIsOfferedTheServerToolsAndTheSystemPrompt:138, containsExactlyInAnyOrder sin pipeline_health.\n- Tras T-025 el servidor expone también data_quality_check (ver McpServerIT): lista esperada = list_tables, describe_table, run_query, time_travel, pipeline_health, data_quality_check.\n- Criterio: ./mk test MODULE=agent en verde y CI de develop verde.",
       "deps": [],
       "created": "2026-11-07T14:49:06+01:00",
-      "updated": "2026-11-07T18:16:01+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-07T18:21:46+01:00",
+      "started_at": "2026-11-07T18:21:17+01:00",
+      "finished_at": "2026-11-07T18:21:46+01:00",
       "log": [
         {
           "t": "2026-11-07T14:49:06+01:00",
@@ -10007,9 +10007,36 @@
           "t": "2026-11-07T18:06:35+01:00",
           "by": "consultor",
           "msg": "Prioridad alta sin dependencias: pasa a Próximo (CI en rojo primero)."
+        },
+        {
+          "t": "2026-11-07T18:21:17+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-07T18:21:42+01:00",
+          "by": "consultor",
+          "msg": "AgentIT ya lista pipeline_health y data_quality_check (y list_metrics/get_metric de T-033/034): son 8 herramientas, no 6. Sin cambios de código; falta confirmar con CI de develop (los IT necesitan contenedores)."
+        },
+        {
+          "t": "2026-11-07T18:21:46+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: la lista exacta del test ya está actualizada (8 herramientas); queda confirmar el verde en la CI de develop."
         }
       ],
-      "rank": 1
+      "rank": 1,
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-07T18:21:46+01:00",
+          "min": 0.5,
+          "turns": 9,
+          "tokens": 123266,
+          "cost_usd": 0.08845300000000002,
+          "verdict": "review"
+        }
+      ]
     },
     {
       "id": "T-177",
@@ -10423,14 +10450,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-111",
-      "message": "tester con T-111",
+      "current": "T-176",
+      "message": "desarrollador con T-176",
       "pid": 20872,
-      "heartbeat": "2026-11-07T18:18:52+01:00",
+      "heartbeat": "2026-11-07T18:21:17+01:00",
       "enabled": true,
-      "agent": "tester",
-      "started": "2026-11-07T18:18:52+01:00",
-      "live": "live-T-111-tester-20261107-181852.jsonl"
+      "agent": "desarrollador",
+      "started": "2026-11-07T18:21:17+01:00",
+      "live": "live-T-176-desarrollador-20261107-182117.jsonl"
     }
   }
 }
