@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-07T20:31:38+01:00",
+  "updated": "2026-11-07T20:44:55+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -35,8 +35,8 @@
     "enabled": true,
     "state": "stopped",
     "current": null,
-    "heartbeat": "2026-10-14T11:57:27+02:00",
-    "message": "Runner parado (pid muerto)",
+    "heartbeat": "2026-11-07T20:43:08+01:00",
+    "message": "Parado desde el panel",
     "pid": null
   },
   "agents": [
@@ -69,8 +69,8 @@
       "name": "Tester",
       "role": "Verifica, escribe tests y busca fallos",
       "color": "#9ece6a",
-      "status": "idle",
-      "current": null
+      "status": "working",
+      "current": "T-180"
     },
     {
       "id": "investigador",
@@ -4191,7 +4191,7 @@
       "id": "T-068",
       "title": "El stack levantado funciona sin su base de datos",
       "owner": "tester",
-      "status": "backlog",
+      "status": "done",
       "priority": "media",
       "estimate_min": 10.0,
       "actual_min": null,
@@ -4200,7 +4200,7 @@
       "desc": "Al terminar T-006, el stack de compose aparecía con el catálogo marcado como sano, pero el contenedor de su base de datos no estaba, ni siquiera parado. No sé por qué ni si el catálogo sigue funcionando; puede que alguien lo quitara a mano o que el estado de sano no detecte la falta de base de datos. Se propone reproducirlo y, si el estado de sano engaña, proponer una comprobación mejor.\nCómo sabremos si funciona: sabremos por qué desapareció y, si se cae la base de datos, el catálogo dejará de aparecer como sano.\n## Técnico\nVisto el 2026-11-02 con docker compose ps -a: faltan postgres y polaris-bootstrap; polaris Up (healthy) desde hace 36 min, lakehouse-init Exited (0). El healthcheck es curl a :8182/q/health. Causa sin investigar; la ejecución de ./mk test de T-006 solo usa contenedores propios de Testcontainers.",
       "deps": [],
       "created": "2026-11-02T12:06:04+01:00",
-      "updated": "2026-11-07T18:15:45+01:00",
+      "updated": "2026-11-07T20:37:00+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -4218,6 +4218,11 @@
           "t": "2026-11-02T12:55:29+01:00",
           "by": "consultor",
           "msg": "Pista del consultor: el 2-nov a las 12:50 el stack aún corría con contenedores anteriores a T-002 y no tenía Postgres porque nadie lo había recreado; tras ./mk up Postgres aparece sano. Falta comprobar si el healthcheck de Polaris detecta la caída de la base de datos."
+        },
+        {
+          "t": "2026-11-07T20:37:00+01:00",
+          "by": "consultor",
+          "msg": "Absorbida en T-197 (fusión de tarjetas pequeñas, T-189); no se pierde el criterio."
         }
       ],
       "rank": 900
@@ -6235,7 +6240,7 @@
       "id": "T-095",
       "title": "Que los permisos no confundan la palabra «del» con el comando de borrar",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "done",
       "priority": "media",
       "estimate_min": 10.0,
       "actual_min": null,
@@ -6244,7 +6249,7 @@
       "desc": "Al crear una tarjeta, el filtro de permisos rechaza el comando si el texto contiene la palabra española «del», porque la toma por el comando de borrar de Windows. Así se pierden tarjetas y notas sin motivo: es lo que le pasó a la tarjeta que acabó siendo T-075. Se propone mirar solo el comando real y no el texto entrecomillado.\nCómo sabremos si funciona: se puede crear una tarjeta con «del» en la descripción, y un borrado de verdad se sigue rechazando.\n\n## Técnico\nboard/permissions.py, lista NEVER, regla de borrar o mover: la expresión busca rm, del, cp, mv tras cualquier espacio de toda la línea. Afecta también a rm, cp y mv dentro de texto. Ignorar los argumentos entrecomillados, sin debilitar los comandos encadenados (coordinar con T-085). Causa de T-075 deducida de la regla y el log de T-013, sin reproducir aún. Tests en ./mk test-board con ambos casos.",
       "deps": [],
       "created": "2026-11-02T17:36:58+01:00",
-      "updated": "2026-11-07T18:15:45+01:00",
+      "updated": "2026-11-07T20:36:53+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -6252,6 +6257,11 @@
           "t": "2026-11-02T17:36:58+01:00",
           "by": "arquitecto",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-07T20:36:53+01:00",
+          "by": "consultor",
+          "msg": "Absorbida en T-194 (fusión de tarjetas pequeñas, T-189); no se pierde el criterio."
         }
       ],
       "rank": 900
@@ -7491,7 +7501,7 @@
       "id": "T-116",
       "title": "Consulta: permitir funciones habituales que el validador rechaza",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "done",
       "priority": "baja",
       "estimate_min": 10.0,
       "actual_min": null,
@@ -7500,7 +7510,7 @@
       "desc": "El validador rechaza algunas funciones corrientes y seguras porque no están en su lista, así que el agente recibirá un error en preguntas normales y gastará intentos en reescribirlas. Se propone añadirlas tras comprobar que solo calculan sobre sus argumentos. Rechazar lo desconocido es correcto; aquí solo se amplía la lista con lo inofensivo.\nCómo sabremos si funciona: una consulta con condicionales y recuentos condicionales pasa el validador y devuelve lo mismo que sin él.\n## Técnico\nSqlGuard.FUNCTIONS: faltan if, count_if (y su alias countif) y like_escape (LIKE ... ESCAPE). Comprobado con DuckDB 2.0: SELECT if(id > 1, 1, 0) da Function not allowed: if; SELECT 'x' LIKE 'x' ESCAPE '$' da Function not allowed: like_escape. Añadir casos a letsLegitimateReadsThrough en SqlGuardTest. El test everyAllowedFunctionExistsAndIsNotATableFunction debe seguir en verde. ./mk test.",
       "deps": [],
       "created": "2026-11-02T22:35:00+01:00",
-      "updated": "2026-11-07T18:15:47+01:00",
+      "updated": "2026-11-07T20:36:58+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -7513,6 +7523,11 @@
           "t": "2026-11-02T22:35:07+01:00",
           "by": "consultor",
           "msg": "descripción reescrita"
+        },
+        {
+          "t": "2026-11-07T20:36:58+01:00",
+          "by": "consultor",
+          "msg": "Absorbida en T-196 (fusión de tarjetas pequeñas, T-189); no se pierde el criterio."
         }
       ],
       "rank": 900
@@ -7742,7 +7757,7 @@
       "id": "T-123",
       "title": "Cerrar el permiso demasiado amplio de los tests en el ejecutor automático",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "done",
       "priority": "media",
       "estimate_min": 10.0,
       "actual_min": null,
@@ -7751,7 +7766,7 @@
       "desc": "El ejecutor automático permite cualquier comando que empiece por el de los tests, así que un agente podría añadir detrás otro objetivo, como apagar el entorno, sin que nadie lo revise. La comprobación de permisos ya es estricta, pero esta lista va por otro lado. Se propone limitarla a las formas previstas.\nCómo sabremos si funciona: un agente puede lanzar los tests de todo el proyecto o de un módulo, y cualquier otro objetivo añadido detrás queda denegado.\n\n## Técnico\nboard/runner.py, ALLOWED: Bash(./mk test*), Bash(make test*) y PowerShell(.\\mk.cmd test*). Sin comprobar en ejecución: visto leyendo el código. Comprobar la sintaxis de comodines de la CLI y mantener ./mk test-board y MODULE=<módulo>.",
       "deps": [],
       "created": "2026-11-02T23:35:35+01:00",
-      "updated": "2026-11-07T18:15:47+01:00",
+      "updated": "2026-11-07T20:36:53+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -7764,6 +7779,11 @@
           "t": "2026-11-02T23:35:43+01:00",
           "by": "consultor",
           "msg": "descripción reescrita"
+        },
+        {
+          "t": "2026-11-07T20:36:53+01:00",
+          "by": "consultor",
+          "msg": "Absorbida en T-194 (fusión de tarjetas pequeñas, T-189); no se pierde el criterio."
         }
       ],
       "rank": 900
@@ -8015,7 +8035,7 @@
       "id": "T-128",
       "title": "El runner guarda en una tarjeta un fichero que su agente no llegó a cambiar",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "done",
       "priority": "media",
       "estimate_min": 15.0,
       "actual_min": null,
@@ -8024,7 +8044,7 @@
       "desc": "Ahora el runner apunta un fichero en cuanto el agente intenta escribirlo, aunque el permiso se deniegue o la edición falle. Si ese fichero tenía cambios a medias de otra persona, acaban en el commit de una tarjeta que no los hizo. Proponemos apuntar solo las escrituras que hayan salido bien.\nCómo sabremos si funciona: una edición denegada sobre un fichero a medias lo deja sin confirmar.\n## Técnico\nboard/runner.py run_claude llama a claim(tag, tool_paths(line)) al ver el tool_use, antes del tool_result. Reproducido con proceso real: dirty.txt modificado antes de la tarjeta, tool_use Edit sin cambio real; commit_own devuelve ['board/board.json', 'dirty.txt']. Ocurre con denegaciones reales (T-124 y T-125 son Edit denegados). Introducido en T-073. Criterio: test con tool_use seguido de tool_result con is_error o DENIED_MARK: el fichero no se apunta; los cortes entre tool_use y tool_result siguen sin perder ficheros.",
       "deps": [],
       "created": "2026-11-02T23:40:03+01:00",
-      "updated": "2026-11-07T18:15:48+01:00",
+      "updated": "2026-11-07T20:36:54+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -8032,6 +8052,11 @@
           "t": "2026-11-02T23:40:03+01:00",
           "by": "tester",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-07T20:36:54+01:00",
+          "by": "consultor",
+          "msg": "Absorbida en T-194 (fusión de tarjetas pequeñas, T-189); no se pierde el criterio."
         }
       ],
       "rank": 900
@@ -8252,7 +8277,7 @@
       "id": "T-134",
       "title": "El botón Reanudar no despierta a un carril que se pausó solo",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "done",
       "priority": "media",
       "estimate_min": 15.0,
       "actual_min": null,
@@ -8261,7 +8286,7 @@
       "desc": "Cuando un carril se pausa solo tras tres fallos, su proceso sigue vivo esperando, pero el botón del panel sigue diciendo «Pausar» y «Iniciar» responde que ya está en marcha. Hoy la única salida es Parar y luego Iniciar. Se propone que el panel permita reanudar ese carril directamente, para no matar nada sin necesidad.\nCómo sabremos si funciona: con un carril pausado solo, un clic lo pone a trabajar de nuevo sin pararlo antes.\n## Técnico\nboard/server.py: /api/board/runner solo cambia runner.enabled (línea 139) y /api/runner/start solo activa carriles sin pid vivo (líneas 268 y 276); runner.py pone enabled=False en runners.<carril>. panel.html: rToggle mira solo B.runner.enabled. Visto en código, sin reproducir en el panel (T-084).",
       "deps": [],
       "created": "2026-11-03T00:40:24+01:00",
-      "updated": "2026-11-07T18:15:48+01:00",
+      "updated": "2026-11-07T20:36:54+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -8269,6 +8294,11 @@
           "t": "2026-11-03T00:40:24+01:00",
           "by": "desarrollador",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-07T20:36:54+01:00",
+          "by": "consultor",
+          "msg": "Absorbida en T-194 (fusión de tarjetas pequeñas, T-189); no se pierde el criterio."
         }
       ],
       "rank": 900
@@ -8388,7 +8418,7 @@
       "id": "T-138",
       "title": "Las tablas de un espacio de nombres anidado no aparecen hasta que alguien las lee",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "done",
       "priority": "baja",
       "estimate_min": 15.0,
       "actual_min": null,
@@ -8397,7 +8427,7 @@
       "desc": "Si una tabla vive en un espacio de nombres dentro de otro, una sesión recién abierta no la lista y dice que no existe, aunque la tabla esté ahí y se pueda consultar. Basta leerla una vez por su nombre para que aparezca, así que la respuesta cambia según lo que la sesión haya hecho antes. Hoy no afecta a la demo, porque todo vive en un espacio de nombres de un solo nivel. Se propone recorrer los espacios anidados al listar o, si no compensa, dejarlo escrito como límite en la wiki.\nCómo sabremos si funciona: la misma tabla aparece siempre al listar, o la wiki explica el límite y el test sigue fijando ese comportamiento.\n## Técnico\nDónde: CatalogReader.listTables y requireTable, sobre information_schema.tables. Síntoma: con la tabla inside en el namespace nest_parent.child, en sesión nueva listTables no da el namespace y describe/snapshots lanzan NoSuchElementException; tras un SELECT count(*) sobre esa tabla, los tres funcionan. Fijado en CatalogReaderEdgeIT.aNestedNamespaceIsOnlySeenAfterTheSessionHasReadIt (T-017). Criterio: listado estable sin lectura previa, actualizando ese test; o decisión documentada en docs/wiki/componentes/duckdb.md.",
       "deps": [],
       "created": "2026-11-03T01:34:44+01:00",
-      "updated": "2026-11-07T18:15:49+01:00",
+      "updated": "2026-11-07T20:36:58+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -8405,6 +8435,11 @@
           "t": "2026-11-03T01:34:44+01:00",
           "by": "tester",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-07T20:36:58+01:00",
+          "by": "consultor",
+          "msg": "Absorbida en T-196 (fusión de tarjetas pequeñas, T-189); no se pierde el criterio."
         }
       ],
       "rank": 900
@@ -8743,7 +8778,7 @@
       "id": "T-146",
       "title": "Consulta: comprobar si unas pocas subconsultas con nombre que se leen varias veces pueden colgar el servidor",
       "owner": "tester",
-      "status": "backlog",
+      "status": "done",
       "priority": "media",
       "estimate_min": 15.0,
       "actual_min": null,
@@ -8752,7 +8787,7 @@
       "desc": "El nuevo límite de complejidad del validador mide lo profunda que es una consulta, pero no cuántas veces se repite su contenido. Si cada subconsulta con nombre lee dos o tres veces la anterior, el trabajo podría multiplicarse en cada paso aunque el texto sea corto. Es una sospecha al leer el cambio, sin ejecutar todavía: se propone probarlo en un proceso aparte, porque si es cierto una sola consulta aceptada podría agotar la memoria o bloquear el servidor.\nCómo sabremos si funciona: hay una prueba que lanza el peor caso aceptado y el proceso termina a tiempo con una respuesta o un rechazo, sin caerse; si no ocurre así, queda una tarjeta para el desarrollador con la consulta que lo provoca.\n## Técnico\nDónde: SqlGuard.walk (commit 1eb5e5e), MAX_DEPTH=100; suma la profundidad del cuerpo de la CTE en cada referencia, pero se queda con el máximo y no multiplica por referencias. Forma a probar, ajustando los eslabones hasta el mayor número aceptado: WITH c0 AS (SELECT 1 x), c1 AS (SELECT 1 x FROM c0,c0,c0), c2 AS (SELECT 1 x FROM c1,c1,c1)... SELECT x FROM cN. Medir en una JVM hija con tiempo máximo, con guard.guarded y con guard.run, anotando tiempo y memoria. Relacionada con T-117. Criterio: la JVM hija acaba dentro del tiempo máximo y con exit 0 en el mayor N aceptado.",
       "deps": [],
       "created": "2026-11-03T11:38:34+01:00",
-      "updated": "2026-11-07T18:15:49+01:00",
+      "updated": "2026-11-07T20:36:59+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -8760,6 +8795,11 @@
           "t": "2026-11-03T11:38:34+01:00",
           "by": "tester",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-07T20:36:59+01:00",
+          "by": "consultor",
+          "msg": "Absorbida en T-196 (fusión de tarjetas pequeñas, T-189); no se pierde el criterio."
         }
       ],
       "rank": 900
@@ -8798,7 +8838,7 @@
       "id": "T-148",
       "title": "Un agente que termina bien pero cita el aviso de límite se toma por cortado",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "done",
       "priority": "media",
       "estimate_min": 10.0,
       "actual_min": null,
@@ -8807,7 +8847,7 @@
       "desc": "Si el mensaje final de un agente menciona de pasada el aviso de límite de uso, el ejecutor cree que se agotó el cupo aunque el agente haya terminado y dado su veredicto. La tarjeta vuelve atrás, se pierde el trabajo de esa ronda y el ejecutor se para. Puede repetirse siempre en tarjetas que hablan de ese aviso. Se propone que un mensaje con veredicto válido cuente como terminado.\nCómo sabremos si funciona: un agente que cita el aviso y da su veredicto cierra la tarjeta con ese veredicto, y un límite real sigue devolviéndola a su estado.\n## Técnico\nboard/runner.py, is_usage_limit: LIMIT_RE se aplica a todo r['text']. Reproducción: interruption con text que contiene 'usage limit reached' y una línea final 'RESULT: done', cut=False, devuelve ('limit', LIMIT_MSG). Criterio: con RESULT_RE en el mensaje final, interruption devuelve None; sin RESULT sigue devolviendo limit. Viene de antes de T-084 (T-013). Test en tests/test_runner.py.",
       "deps": [],
       "created": "2026-11-03T13:22:42+01:00",
-      "updated": "2026-11-07T18:15:49+01:00",
+      "updated": "2026-11-07T20:36:54+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -8815,6 +8855,11 @@
           "t": "2026-11-03T13:22:42+01:00",
           "by": "tester",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-07T20:36:54+01:00",
+          "by": "consultor",
+          "msg": "Absorbida en T-194 (fusión de tarjetas pequeñas, T-189); no se pierde el criterio."
         }
       ],
       "rank": 900
@@ -8823,7 +8868,7 @@
       "id": "T-149",
       "title": "Un error de la API deja la tarjeta bloqueada con JSON como motivo",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "done",
       "priority": "media",
       "estimate_min": 15.0,
       "actual_min": null,
@@ -8832,7 +8877,7 @@
       "desc": "Si el servicio de Claude falla (por ejemplo, por sobrecarga), el agente acaba con un mensaje de error en lugar de su veredicto. La tarjeta queda bloqueada con ese JSON como motivo y nadie la retoma, aunque la tarea no tenga ningún problema. Es el mismo síntoma que arregló T-084 por otro camino. Se propone tratarlo como un corte: la tarjeta vuelve a su estado con un motivo legible.\nCómo sabremos si funciona: una salida con error de API devuelve la tarjeta a su estado y su registro no contiene JSON.\n## Técnico\nboard/runner.py, run_claude y finish. Reproducido con evento sintético {type:result, subtype:success, is_error:true, result:'API Error: 529 {...overloaded_error...}'}, código 1, modo verify: finish devuelve blocked con el JSON en el log, porque cut=False al haber texto. El formato viene de lo que se recuerda de la CLI: en board/runs no hay ningún caso real de is_error:true, así que hay que confirmarlo. Criterio: resultado con is_error:true y sin línea RESULT => veredicto cut, sin entrada en runs ni llaves en el log. Sanear también el stderr en interruption(), que hoy copia JSON tal cual al motivo. Test en tests/test_runner.py.",
       "deps": [],
       "created": "2026-11-04T20:18:23+01:00",
-      "updated": "2026-11-07T18:15:50+01:00",
+      "updated": "2026-11-07T20:36:54+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -8845,6 +8890,11 @@
           "t": "2026-11-04T20:18:45+01:00",
           "by": "consultor",
           "msg": "descripción reescrita"
+        },
+        {
+          "t": "2026-11-07T20:36:54+01:00",
+          "by": "consultor",
+          "msg": "Absorbida en T-194 (fusión de tarjetas pequeñas, T-189); no se pierde el criterio."
         }
       ],
       "rank": 900
@@ -8883,7 +8933,7 @@
       "id": "T-151",
       "title": "Un agente cortado pierde el aviso de sus comandos denegados",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "done",
       "priority": "baja",
       "estimate_min": 10.0,
       "actual_min": null,
@@ -8892,7 +8942,7 @@
       "desc": "Cuando a un agente le deniegan un comando, debe quedar anotado en la tarjeta. Pero si después se corta, la nota se pierde, y tampoco se abre la solicitud de permiso. Al reintentar, lo normal es que le vuelva a pasar lo mismo sin que nadie lo vea. Se propone anotar los comandos denegados también en este caso.\nCómo sabremos si funciona: una ejecución cortada con un comando denegado deja la nota en el registro de la tarjeta.\n## Técnico\nboard/runner.py, finish: la rama stopped retorna antes de usar r['denied'], así que no se llama a bd.log ni a permission_protocol. Reproducido: run_claude devuelve denied=['python board/board.py add X'] y el log de la tarjeta solo tiene 'agente cortado sin mensaje final, se reintentará'. CLAUDE.md, sección Ejecución autónoma, dice que los denegados quedan anotados. Criterio: el log incluye la línea de aviso ⚠ en la rama stopped, también con límite de uso. Test en tests/test_runner.py.",
       "deps": [],
       "created": "2026-11-04T20:18:34+01:00",
-      "updated": "2026-11-07T18:15:50+01:00",
+      "updated": "2026-11-07T20:36:55+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -8905,6 +8955,11 @@
           "t": "2026-11-04T20:18:52+01:00",
           "by": "consultor",
           "msg": "descripción reescrita"
+        },
+        {
+          "t": "2026-11-07T20:36:55+01:00",
+          "by": "consultor",
+          "msg": "Absorbida en T-194 (fusión de tarjetas pequeñas, T-189); no se pierde el criterio."
         }
       ],
       "rank": 900
@@ -8987,7 +9042,7 @@
       "id": "T-154",
       "title": "El servidor MCP arranca aunque falten las claves del almacén",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "done",
       "priority": "media",
       "estimate_min": 15.0,
       "actual_min": null,
@@ -8996,7 +9051,7 @@
       "desc": "Si falta una variable obligatoria, el servidor no avisa: usa como clave el texto literal de la variable sin sustituir. Sin las claves del almacén arranca y contesta sobre el catálogo con normalidad, así que el fallo no aparecerá hasta que una herramienta lea datos, lejos de la causa. Se propone comprobar las variables obligatorias al arrancar y parar con un mensaje que diga cuál falta.\nCómo sabremos si funciona: al arrancar sin una variable obligatoria, el servidor se para y el error nombra esa variable.\n\n## Técnico\n- Dónde: mcp-server/src/main/resources/application.yaml (comentario «no credentials, no start», que hoy es falso) y McpServerApplication.LakehouseProperties.\n- Causa probable: el Binder de Spring Boot deja sin resolver los placeholders sin valor en lugar de fallar, de modo que el campo vale el texto ${S3_ACCESS_KEY}.\n- Medido en McpServerEdgeIT: sin S3_* y con catálogo válido el contexto arranca, y list_tables y describe_table responden bien. Sin ninguna variable falla por otro motivo: Could not resolve hostname polaris, sin nombrar la variable.\n- Criterio: quitar @Disabled de los dos tests withoutCredentials... y withoutStorageCredentials... de McpServerEdgeIT, ambos en verde, cubriendo POLARIS_CLIENT_ID, POLARIS_CLIENT_SECRET, S3_ACCESS_KEY, S3_SECRET_KEY y S3_REGION. Corregir el comentario del yaml y la frase de docs/wiki/componentes/servidor-mcp.md.\n- Conviene antes de T-093, que pone el servidor en el compose.",
       "deps": [],
       "created": "2026-11-04T20:45:58+01:00",
-      "updated": "2026-11-07T18:15:50+01:00",
+      "updated": "2026-11-07T20:36:55+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -9004,6 +9059,11 @@
           "t": "2026-11-04T20:45:58+01:00",
           "by": "tester",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-07T20:36:55+01:00",
+          "by": "consultor",
+          "msg": "Absorbida en T-195 (fusión de tarjetas pequeñas, T-189); no se pierde el criterio."
         }
       ],
       "rank": 900
@@ -9012,7 +9072,7 @@
       "id": "T-155",
       "title": "Una fecha sin zona cambia de hora en una máquina con horario de verano",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "done",
       "priority": "media",
       "estimate_min": 10.0,
       "actual_min": null,
@@ -9021,7 +9081,7 @@
       "desc": "Si el servidor corre en una máquina con cambio de hora, un momento que cae en la hora que se salta se devuelve una hora más tarde: las 02:30 de la noche del cambio salen como las 03:30. La documentación promete que el valor no depende de la máquina, y hoy no se cumple. Se propone leer esas fechas del conector sin pasar por la zona de la máquina. Dentro de un contenedor en UTC no se nota, por eso no salta en la integración continua.\nCómo sabremos si funciona: la misma consulta devuelve la misma hora en cualquier zona, también la noche del cambio.\n## Técnico\nDónde: QueryTools.cell, rama Timestamp (time.toLocalDateTime()), con el valor de rows.getObject en SqlGuard.row. Reproducir: JVM en Europe/Madrid, SELECT TIMESTAMP '2026-03-29 02:30:00' da 2026-03-29T03:30 en vez de 2026-03-29T02:30. Probado también DATE, TIME, TIMESTAMPTZ y fechas de 1500 en UTC, Madrid, Sao Paulo y Kolkata: correctos. Criterio: quitar @Disabled de QueryToolsCellTest.aTimestampInTheSkippedHourKeepsItsValue y dejarlo en verde; ./mk test MODULE=mcp-server.",
       "deps": [],
       "created": "2026-11-04T21:12:14+01:00",
-      "updated": "2026-11-07T18:15:50+01:00",
+      "updated": "2026-11-07T20:36:59+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -9029,6 +9089,11 @@
           "t": "2026-11-04T21:12:14+01:00",
           "by": "tester",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-07T20:36:59+01:00",
+          "by": "consultor",
+          "msg": "Absorbida en T-196 (fusión de tarjetas pequeñas, T-189); no se pierde el criterio."
         }
       ],
       "rank": 900
@@ -9037,7 +9102,7 @@
       "id": "T-156",
       "title": "Polaris da un error interno al crear una tabla llamada history",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "done",
       "priority": "baja",
       "estimate_min": 5.0,
       "actual_min": null,
@@ -9046,7 +9111,7 @@
       "desc": "Crear una tabla con el nombre history falla con un error interno del catálogo; la misma tabla con otro nombre funciona. Hoy no nos afecta, porque ninguna tabla del proyecto se llama así, pero quien la cree recibe un error que no explica nada. Se propone averiguar qué nombres fallan y dejarlo escrito en la wiki.\nCómo sabremos si funciona: la documentación dice qué nombres no se pueden usar y por qué, comprobado con una prueba real.\n## Técnico\nReproducir: CREATE TABLE lh.<ns>.history (id BIGINT) desde DuckDB contra LakehouseStack da HTTP 500 en POST /api/catalog/v1/lakehouse/namespaces/<ns>/tables (2 de 2 intentos); con change_log, correcto. Hipótesis sin comprobar: choca con los nombres de tablas de metadatos de Iceberg (history, snapshots, files...). Mirar el log de Polaris. Criterio: lista comprobada en docs/wiki/componentes/ del catálogo.",
       "deps": [],
       "created": "2026-11-04T21:12:19+01:00",
-      "updated": "2026-11-07T18:15:51+01:00",
+      "updated": "2026-11-07T20:37:00+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -9054,6 +9119,11 @@
           "t": "2026-11-04T21:12:19+01:00",
           "by": "tester",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-07T20:37:00+01:00",
+          "by": "consultor",
+          "msg": "Absorbida en T-197 (fusión de tarjetas pequeñas, T-189); no se pierde el criterio."
         }
       ],
       "rank": 900
@@ -9089,7 +9159,7 @@
       "id": "T-158",
       "title": "Que la salud del servidor MCP avise si se pierde el catálogo",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "done",
       "priority": "baja",
       "estimate_min": 15.0,
       "actual_min": null,
@@ -9098,7 +9168,7 @@
       "desc": "Hoy el servidor se declara sano si el proceso contesta, aunque el catálogo haya caído después de arrancar: las herramientas fallarían mientras Docker lo ve bien. Se propone que la comprobación de salud pregunte también al catálogo, decidiendo antes si eso debe reiniciar algo o solo avisar.\nCómo sabremos si funciona: con el catálogo parado, la salud deja de decir que todo va bien, y vuelve sola cuando regresa.\n## Técnico\nHealthIndicator de Actuator sobre LakehouseSession. No observado todavía: deducido de que no hay indicador propio; comprobarlo primero parando Polaris (LakehouseStack.restartPolaris cambia el puerto, ojo). Relacionado con T-112.",
       "deps": [],
       "created": "2026-11-04T21:35:20+01:00",
-      "updated": "2026-11-07T18:15:51+01:00",
+      "updated": "2026-11-07T20:36:56+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -9106,6 +9176,11 @@
           "t": "2026-11-04T21:35:20+01:00",
           "by": "desarrollador",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-07T20:36:56+01:00",
+          "by": "consultor",
+          "msg": "Absorbida en T-195 (fusión de tarjetas pequeñas, T-189); no se pierde el criterio."
         }
       ],
       "rank": 900
@@ -9114,7 +9189,7 @@
       "id": "T-159",
       "title": "Servidor MCP: alinear la memoria de DuckDB con el reparto previsto",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "done",
       "priority": "media",
       "estimate_min": 15.0,
       "actual_min": null,
@@ -9123,7 +9198,7 @@
       "desc": "El servidor corre con un límite de 1 GB, pero nadie ha comprobado qué pasa si una consulta pesada llega al tope de memoria: el test actual solo usa una carga mínima. El reparto previsto deja poco margen, así que el contenedor podría morir en vez de devolver un error. Se propone probarlo con una consulta pesada real una vez separadas las conexiones de lectura y reparación, que es la tarjeta que fija ese reparto.\nCómo sabremos si funciona: una consulta pesada dentro del límite de 1 GB falla con un error limpio, el contenedor sigue vivo y la siguiente consulta contesta.\n## Técnico\nDepende de T-106, que baja memory_limit de 512 MB a 400 MB; esta tarjeta no cambia ese valor. Presupuesto de docs/architecture.md: JVM 256 MB + lectura 400 MB + reparación 256 MB = 912 MB, sin contar metaspace ni hilos. Añadir el caso a McpServerImageIT (memoria limitada a 1 GB): tras el Out of Memory de DuckDB, sin reinicio del contenedor y con la consulta siguiente correcta. Si el contenedor muere, ajustar el reparto. Actualizar docs/wiki/componentes/servidor-mcp.md.",
       "deps": [],
       "created": "2026-11-04T21:40:23+01:00",
-      "updated": "2026-11-07T18:15:51+01:00",
+      "updated": "2026-11-07T20:36:56+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -9141,6 +9216,11 @@
           "t": "2026-11-04T21:42:40+01:00",
           "by": "consultor",
           "msg": "Esperar a T-106 antes de empezar: fija la instancia de lectura en 400 MB y la de reparación en 256 MB."
+        },
+        {
+          "t": "2026-11-07T20:36:56+01:00",
+          "by": "consultor",
+          "msg": "Absorbida en T-195 (fusión de tarjetas pequeñas, T-189); no se pierde el criterio."
         }
       ],
       "rank": 900
@@ -9149,7 +9229,7 @@
       "id": "T-160",
       "title": "Agente: explicar en una línea que el servidor de datos no responde",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "done",
       "priority": "media",
       "estimate_min": 10.0,
       "actual_min": null,
@@ -9158,7 +9238,7 @@
       "desc": "Si el servidor de datos está apagado, el agente no arranca y suelta una traza de error enorme donde cuesta encontrar la causa. Quien prueba la demo por primera vez tropezará con esto. Se propone mostrar una sola línea que diga qué falla y a qué dirección intentó conectarse.\nCómo sabremos si funciona: con el servidor apagado, se ve un mensaje de una línea con la dirección y el proceso termina con error.\n## Técnico\nComprobado en T-094: java -jar agent-*.jar ask hola --MCP_SERVER_URL=http://localhost:1 sale con código 1 tras una UnsatisfiedDependencyException que acaba en 'Client failed to initialize by explicit API call'. Falla al crear los beans, antes de AskRunner: probar un FailureAnalyzer de Spring Boot o spring.ai.mcp.client.initialized=false con inicialización explícita. Conviene hacerlo con T-096.",
       "deps": [],
       "created": "2026-11-04T22:00:15+01:00",
-      "updated": "2026-11-07T18:15:51+01:00",
+      "updated": "2026-11-07T20:36:57+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -9171,6 +9251,11 @@
           "t": "2026-11-04T22:02:20+01:00",
           "by": "consultor",
           "msg": "descripción reescrita"
+        },
+        {
+          "t": "2026-11-07T20:36:57+01:00",
+          "by": "consultor",
+          "msg": "Absorbida en T-195 (fusión de tarjetas pequeñas, T-189); no se pierde el criterio."
         }
       ],
       "rank": 900
@@ -9241,7 +9326,7 @@
       "id": "T-163",
       "title": "Un test del servidor falla al azar según la hora a la que se lanza",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "done",
       "priority": "media",
       "estimate_min": 5.0,
       "actual_min": null,
@@ -9250,7 +9335,7 @@
       "desc": "Un test comprueba que un dato secreto, el número 42, no aparece en un mensaje de error. Pero el mensaje incluye el nombre de un espacio de pruebas que lleva la hora en milisegundos, y si esa hora contiene un 42 el test falla sin que haya ningún problema real. Se propone usar como dato secreto un valor que no pueda coincidir por azar.\nCómo sabremos si funciona: el test pasa a cualquier hora, y sigue fallando si el dato secreto se filtra de verdad.\n## Técnico\nQueryToolsEdgeIT.noBackDoorThroughTheView, línea 320: doesNotContain(42) contra el mensaje Table not allowed: lh.query_edge_1793827839142.secret. Visto en T-105: fallan los casos 1 a 5 cuando el NS contiene 42. La CI estaba en verde en el mismo código.",
       "deps": [],
       "created": "2026-11-04T22:31:57+01:00",
-      "updated": "2026-11-07T18:15:52+01:00",
+      "updated": "2026-11-07T20:37:00+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -9263,6 +9348,11 @@
           "t": "2026-11-07T13:10:37+01:00",
           "by": "consultor",
           "msg": "tester (T-023): este fallo tiene la CI de develop en rojo (run 42314179271: QueryToolsEdgeIT.noBackDoorThroughTheView, 5 fallos, el nombre lh.query_edge_1794010274233 contiene 42). Debería ser prioridad alta."
+        },
+        {
+          "t": "2026-11-07T20:37:00+01:00",
+          "by": "consultor",
+          "msg": "Absorbida en T-197 (fusión de tarjetas pequeñas, T-189); no se pierde el criterio."
         }
       ],
       "rank": 900
@@ -9497,7 +9587,7 @@
       "id": "T-167",
       "title": "Reparación: ponerle tiempo máximo a cada operación",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "done",
       "priority": "media",
       "estimate_min": 15.0,
       "actual_min": null,
@@ -9506,7 +9596,7 @@
       "desc": "La nueva vía de reparación ejecuta su operación sin límite de tiempo: si una compactación o una marcha atrás se queda colgada, el servidor espera para siempre. Se propone darle el mismo corte por tiempo que ya tienen las consultas de lectura.«\n»Cómo sabremos si funciona: una operación de reparación que tarda más del límite se corta con un error claro y no deja nada abierto.«\n»## Técnico«\n»RepairSession.apply (T-106) hace statement.execute sin cancelación. Reutilizar el patrón Timeout de LakehouseSession (statement.cancel desde un ScheduledExecutorService) y lanzar SQLTimeoutException. Test con una plantilla lenta en RepairSessionTest o IT.",
       "deps": [],
       "created": "2026-11-06T23:57:27+01:00",
-      "updated": "2026-11-07T18:15:52+01:00",
+      "updated": "2026-11-07T20:37:01+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -9514,6 +9604,11 @@
           "t": "2026-11-06T23:57:27+01:00",
           "by": "desarrollador",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-07T20:37:01+01:00",
+          "by": "consultor",
+          "msg": "Absorbida en T-197 (fusión de tarjetas pequeñas, T-189); no se pierde el criterio."
         }
       ],
       "rank": 900
@@ -9552,7 +9647,7 @@
       "id": "T-169",
       "title": "Borrar la carpeta del benchmark y la página de Trino que quedaron",
       "owner": "consultor",
-      "status": "review",
+      "status": "done",
       "priority": "media",
       "estimate_min": 2.0,
       "actual_min": null,
@@ -9561,7 +9656,7 @@
       "desc": "Al retirar Trino y el benchmark quedaron dos ficheros que el desarrollador no pudo borrar por falta de permiso: la carpeta del benchmark (solo su pom) y la página de Trino en la wiki. Ya nada los enlaza ni los construye, pero quien los vea puede creer que el benchmark existe. Hay que borrarlos.«\n»Cómo sabremos si funciona: no quedan esos ficheros en el repositorio y el test que lo comprueba pasa de «fallo esperado» a pasar, quitándole la marca.«\n»## Técnico«\n»git rm -r bench docs/wiki/componentes/trino.md (bench/target es local, sin seguimiento). Después quitar @pytest.mark.xfail de test_removed_files_are_gone y la entrada trino.md de ALLOWED en tests/test_no_trino.py; ./mk test-board en verde. Opcional: docs/spike-duckdb-iceberg.md:157 y :173 siguen hablando de Trino como pendiente; añadir una nota de que T-087/T-108 lo retiró.",
       "deps": [],
       "created": "2026-11-07T00:42:24+01:00",
-      "updated": "2026-11-07T18:15:52+01:00",
+      "updated": "2026-11-07T20:41:32+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -9579,6 +9674,11 @@
           "t": "2026-11-07T15:21:18+01:00",
           "by": "consultor",
           "msg": "bench y página de Trino borrados"
+        },
+        {
+          "t": "2026-11-07T20:41:32+01:00",
+          "by": "consultor",
+          "msg": "Borrado ya hecho por el consultor."
         }
       ],
       "rank": 900
@@ -10128,7 +10228,7 @@
       "id": "T-179",
       "title": "Dos pruebas del panel fallan por las variables del servidor MCP en compose",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "done",
       "priority": "baja",
       "estimate_min": 10.0,
       "actual_min": null,
@@ -10137,7 +10237,7 @@
       "desc": "Dos pruebas de tests/test_mcp_server_compose.py fallan: compose.yaml da valores fijos a las variables OPS_DB_* y la prueba de imagen no incluye las mismas variables.\nCómo sabremos si funciona: python -m pytest tests/test_mcp_server_compose.py pasa en verde.\n## Técnico\ntest_the_required_variables_come_from_the_env_example y test_the_image_test_runs_the_same_variables_as_the_service. Detectado en T-033, no causado por ella.",
       "deps": [],
       "created": "2026-11-07T16:31:54+01:00",
-      "updated": "2026-11-07T18:15:53+01:00",
+      "updated": "2026-11-07T20:37:01+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -10145,6 +10245,11 @@
           "t": "2026-11-07T16:31:54+01:00",
           "by": "desarrollador",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-07T20:37:01+01:00",
+          "by": "consultor",
+          "msg": "Absorbida en T-197 (fusión de tarjetas pequeñas, T-189); no se pierde el criterio."
         }
       ],
       "rank": 900
@@ -10153,18 +10258,18 @@
       "id": "T-180",
       "title": "Agente: enviar la clave de analista al servidor MCP",
       "owner": "desarrollador",
-      "status": "next",
+      "status": "review",
       "priority": "alta",
       "estimate_min": 20.0,
-      "actual_min": null,
+      "actual_min": 2.9,
       "auto": true,
       "manual": null,
       "desc": "Desde que el servidor exige clave, el agente no puede conectarse: no envía ninguna. Se propone que lea su clave de analista y la mande en cada llamada, y que compose se la pase.\nCómo sabremos si funciona: ./mk ask contesta con el servidor protegido.\n## Técnico\nAñadir MCP_ANALYST_KEY al servicio agent de compose.yaml y un McpSyncHttpClientRequestCustomizer (Spring AI) que ponga Authorization: Bearer; verificar el nombre de la API en la documentación. Ajustar tests/test_agent_compose.py. Seguir con T-042 (consola aprueba con MCP_ADMIN_KEY).",
       "deps": [],
       "created": "2026-11-07T17:42:05+01:00",
-      "updated": "2026-11-07T20:00:53+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-07T20:34:33+01:00",
+      "started_at": "2026-11-07T20:31:42+01:00",
+      "finished_at": "2026-11-07T20:34:33+01:00",
       "log": [
         {
           "t": "2026-11-07T17:42:05+01:00",
@@ -10180,9 +10285,43 @@
           "t": "2026-11-07T18:26:02+01:00",
           "by": "consultor",
           "msg": "Tester (T-176): AgentIT no carga el contexto (6 errores: el cliente MCP no inicia) porque el servidor exige Bearer y el agente no envia clave. Al cerrar esta tarjeta, AgentIT debe pasar MCP_ANALYST_KEY/MCP_ADMIN_KEY al contenedor del servidor y la misma clave al agente; solo asi se podra ver verde la lista de 8 herramientas (T-176)."
+        },
+        {
+          "t": "2026-11-07T20:31:42+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-07T20:34:33+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: el agente envía `Authorization: Bearer` con `MCP_ANALYST_KEY` (compose, `application.yaml`, customizador y `AgentIT`); compila y los tests unitarios pasan, pero `AgentIT` con el servidor protegido sigue sin ejecutarse."
+        },
+        {
+          "t": "2026-11-07T20:34:34+01:00",
+          "by": "tester",
+          "msg": "verificando"
+        },
+        {
+          "t": "2026-11-07T20:43:17+01:00",
+          "by": "tester",
+          "msg": "verificando"
         }
       ],
-      "rank": 3
+      "rank": 3,
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-07T20:34:33+01:00",
+          "min": 2.9,
+          "turns": 30,
+          "tokens": 461563,
+          "cost_usd": 0.2462939,
+          "verdict": "review",
+          "summary": "el agente envía `Authorization: Bearer` con `MCP_ANALYST_KEY` (compose, `application.yaml`, customizador y `AgentIT`); compila y los tests unitarios pasan, pero `AgentIT` con el servidor protegido sig"
+        }
+      ],
+      "verify_started": "2026-11-07T20:43:17+01:00"
     },
     {
       "id": "T-181",
@@ -14691,7 +14830,7 @@
       "id": "T-189",
       "title": "Fusionar tarjetas pequeñas en entregas más grandes y reducir el proceso",
       "owner": "arquitecto",
-      "status": "next",
+      "status": "done",
       "priority": "alta",
       "estimate_min": 30.0,
       "actual_min": null,
@@ -14700,7 +14839,7 @@
       "desc": "Hay más de 80 tarjetas abiertas, muchas de 3 a 10 minutos, y cada una paga el ciclo entero de desarrollo, revisión, tester y commit. Se propone agrupar las relacionadas en entregas de una hora y dejar para después de la 0.1.0 todo lo que no la afecta (ya marcado con orden 900). Cómo sabremos si funciona: menos de 40 tarjetas abiertas y ninguna menor de 15 minutos salvo urgencias. ## Técnico: usar board.py desc/estimate/move; no borrar historial, cerrar las absorbidas con nota.",
       "deps": [],
       "created": "2026-11-07T18:15:54+01:00",
-      "updated": "2026-11-07T18:16:02+01:00",
+      "updated": "2026-11-07T20:37:09+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -14708,6 +14847,11 @@
           "t": "2026-11-07T18:15:54+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-07T20:37:09+01:00",
+          "by": "consultor",
+          "msg": "Hecha por el consultor: 4 entregas (T-194 a T-197) absorben 20 tarjetas pequeñas; regla añadida a CLAUDE.md."
         }
       ],
       "rank": 7
@@ -14716,7 +14860,7 @@
       "id": "T-190",
       "title": "El tester verifica comportamiento real, no cada diff",
       "owner": "tester",
-      "status": "next",
+      "status": "done",
       "priority": "alta",
       "estimate_min": 20.0,
       "actual_min": null,
@@ -14725,7 +14869,7 @@
       "desc": "El tester repite la lectura de cada diff que ya hizo el desarrollador. Se propone que su tiempo vaya al recorrido completo y a los casos de verdad de referencia, y que las tarjetas pequeñas se aprueben con los tests del módulo. Cómo sabremos si funciona: las tarjetas pequeñas pasan de revisión a hecho sin una verificación aparte, y el tester tiene una lista de recorridos de punta a punta. ## Técnico: .claude/agents/tester.md y reglas de CLAUDE.md.",
       "deps": [],
       "created": "2026-11-07T18:15:55+01:00",
-      "updated": "2026-11-07T18:16:03+01:00",
+      "updated": "2026-11-07T20:41:25+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -14733,6 +14877,11 @@
           "t": "2026-11-07T18:15:55+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-07T20:41:25+01:00",
+          "by": "consultor",
+          "msg": "Aplicado: needs_tester en runner.py, tope de 5 min en tester.md y regla en CLAUDE.md."
         }
       ],
       "rank": 8
@@ -14741,10 +14890,10 @@
       "id": "T-191",
       "title": "Trabajar con una rama y un PR corto por entrega, con la CI como revisor",
       "owner": "arquitecto",
-      "status": "backlog",
+      "status": "done",
       "priority": "alta",
       "estimate_min": 40.0,
-      "actual_min": null,
+      "actual_min": 1.5,
       "auto": true,
       "manual": null,
       "desc": "Hoy el runner sube commits sueltos a develop. Se propone que cada entrega (agrupada según T-189) vaya en su rama feature/*, con un PR corto a develop que revise la CI, y que la suite completa solo corra en el PR a main. Hay que resolver que varios agentes en paralelo no choquen en board.json: el estado de las tarjetas no debe viajar en las ramas de código. Cómo sabremos si funciona: una entrega completa se integra mediante un PR con la CI en verde y sin conflictos en el panel. ## Técnico: board/runner.py (worktrees y ramas), .github/workflows/ci.yml, CLAUDE.md (sección Ejecución autónoma), Git Flow.",
@@ -14754,17 +14903,76 @@
         "T-189"
       ],
       "created": "2026-11-07T18:18:42+01:00",
-      "updated": "2026-11-07T18:18:42+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-07T20:44:55+01:00",
+      "started_at": "2026-11-07T20:44:46+01:00",
+      "finished_at": "2026-11-07T20:44:55+01:00",
       "log": [
         {
           "t": "2026-11-07T18:18:42+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-07T20:43:17+01:00",
+          "by": "runner",
+          "msg": "empieza arquitecto"
+        },
+        {
+          "t": "2026-11-07T20:44:44+01:00",
+          "by": "arquitecto",
+          "msg": "BLOCKED: diseño en docs/pr-workflow.md y tarjetas T-198 a T-202 creadas."
+        },
+        {
+          "t": "2026-11-07T20:44:44+01:00",
+          "by": "arquitecto",
+          "msg": "⚠ 1 comandos denegados: python board/board.py add \"Cada tarjeta trabaja en su propia copia de git, con e"
+        },
+        {
+          "t": "2026-11-07T20:44:44+01:00",
+          "by": "runner",
+          "msg": "✓ permiso concedido automáticamente: python * (solo lectura dentro del proyecto); se reintenta"
+        },
+        {
+          "t": "2026-11-07T20:44:44+01:00",
+          "by": "runner",
+          "msg": "se reintentará con los permisos resueltos"
+        },
+        {
+          "t": "2026-11-07T20:44:46+01:00",
+          "by": "runner",
+          "msg": "empieza arquitecto"
+        },
+        {
+          "t": "2026-11-07T20:44:55+01:00",
+          "by": "arquitecto",
+          "msg": "DONE: diseño en docs/pr-workflow.md y tarjetas T-198 a T-202 creadas (copia git por tarjeta, PR por entrega con CI, regla anti-panel, documentación y ajustes de GitHub)."
         }
       ],
-      "rank": 9
+      "rank": 9,
+      "runs": [
+        {
+          "agent": "arquitecto",
+          "mode": "work",
+          "at": "2026-11-07T20:44:44+01:00",
+          "min": 1.4,
+          "turns": 18,
+          "tokens": 307829,
+          "cost_usd": 0.2865875,
+          "verdict": "blocked",
+          "summary": "diseño en docs/pr-workflow.md y tarjetas T-198 a T-202 creadas."
+        },
+        {
+          "agent": "arquitecto",
+          "mode": "work",
+          "at": "2026-11-07T20:44:55+01:00",
+          "min": 0.1,
+          "turns": 3,
+          "tokens": 40796,
+          "cost_usd": 0.0822168,
+          "verdict": "done",
+          "summary": "diseño en docs/pr-workflow.md y tarjetas T-198 a T-202 creadas (copia git por tarjeta, PR por entrega con CI, regla anti-panel, documentación y ajustes de GitHub)."
+        }
+      ]
     },
     {
       "id": "T-192",
@@ -14876,32 +15084,261 @@
         "task": "T-188",
         "why": ""
       }
+    },
+    {
+      "id": "T-194",
+      "title": "Runner y panel: arreglar siete fallos pequeños del ejecutor automático",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "media",
+      "estimate_min": 85.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "El ejecutor automático tiene varios fallos pequeños (permisos que confunden «del», un permiso demasiado amplio, ficheros guardados que el agente no cambió, el botón Reanudar, avisos de límite mal interpretados, errores de API con JSON como motivo y avisos de comandos denegados perdidos). Se arreglan juntos en una sola entrega. Cómo sabremos si funciona: cada punto de la lista tiene su test o comprobación en verde y las tarjetas absorbidas quedan cerradas con nota.\n\n## Técnico\nAbsorbe (criterios en el historial de cada una):\n- T-095: Que los permisos no confundan la palabra «del» con el comando de borrar\n- T-123: Cerrar el permiso demasiado amplio de los tests en el ejecutor automático\n- T-128: El runner guarda en una tarjeta un fichero que su agente no llegó a cambiar\n- T-134: El botón Reanudar no despierta a un carril que se pausó solo\n- T-148: Un agente que termina bien pero cita el aviso de límite se toma por cortado\n- T-149: Un error de la API deja la tarjeta bloqueada con JSON como motivo\n- T-151: Un agente cortado pierde el aviso de sus comandos denegados",
+      "deps": [],
+      "created": "2026-11-07T20:36:53+01:00",
+      "updated": "2026-11-07T20:36:53+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-07T20:36:53+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ],
+      "rank": 300
+    },
+    {
+      "id": "T-195",
+      "title": "Servidor MCP: robustez al arrancar y al avisar de fallos",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "media",
+      "estimate_min": 55.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Cuando faltan claves o se pierde el catálogo, el servidor MCP arranca igual o no avisa bien. Se arreglan juntos arranque, salud, memoria de DuckDB y el mensaje del agente cuando el servidor no responde. Cómo sabremos si funciona: cada punto de la lista tiene su test o comprobación en verde y las tarjetas absorbidas quedan cerradas con nota.\n\n## Técnico\nAbsorbe (criterios en el historial de cada una):\n- T-154: El servidor MCP arranca aunque falten las claves del almacén\n- T-158: Que la salud del servidor MCP avise si se pierde el catálogo\n- T-159: Servidor MCP: alinear la memoria de DuckDB con el reparto previsto\n- T-160: Agente: explicar en una línea que el servidor de datos no responde",
+      "deps": [],
+      "created": "2026-11-07T20:36:55+01:00",
+      "updated": "2026-11-07T20:36:55+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-07T20:36:55+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ],
+      "rank": 300
+    },
+    {
+      "id": "T-196",
+      "title": "Consulta y catálogo: cuatro pequeños fallos de lectura de datos",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "media",
+      "estimate_min": 50.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Funciones habituales que el validador rechaza, tablas de espacios de nombres anidados que no salen, subconsultas repetidas y fechas sin zona. Se atienden juntas en una sola entrega. Cómo sabremos si funciona: cada punto de la lista tiene su test o comprobación en verde y las tarjetas absorbidas quedan cerradas con nota.\n\n## Técnico\nAbsorbe (criterios en el historial de cada una):\n- T-116: Consulta: permitir funciones habituales que el validador rechaza\n- T-138: Las tablas de un espacio de nombres anidado no aparecen hasta que alguien las lee\n- T-146: Consulta: comprobar si unas pocas subconsultas con nombre que se leen varias veces pueden colgar el servidor\n- T-155: Una fecha sin zona cambia de hora en una máquina con horario de verano",
+      "deps": [],
+      "created": "2026-11-07T20:36:57+01:00",
+      "updated": "2026-11-07T20:36:57+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-07T20:36:57+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ],
+      "rank": 300
+    },
+    {
+      "id": "T-197",
+      "title": "Pruebas y entorno: cinco fallos pequeños que ensucian la CI",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "media",
+      "estimate_min": 45.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Pruebas que fallan por la hora o por variables de compose, el stack sin su base de datos, un error de Polaris con la tabla history y el tiempo máximo de reparación. Se arreglan juntos para dejar la CI limpia. Cómo sabremos si funciona: cada punto de la lista tiene su test o comprobación en verde y las tarjetas absorbidas quedan cerradas con nota.\n\n## Técnico\nAbsorbe (criterios en el historial de cada una):\n- T-068: El stack levantado funciona sin su base de datos\n- T-156: Polaris da un error interno al crear una tabla llamada history\n- T-163: Un test del servidor falla al azar según la hora a la que se lanza\n- T-167: Reparación: ponerle tiempo máximo a cada operación\n- T-179: Dos pruebas del panel fallan por las variables del servidor MCP en compose",
+      "deps": [],
+      "created": "2026-11-07T20:36:59+01:00",
+      "updated": "2026-11-07T20:36:59+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-07T20:36:59+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ],
+      "rank": 300
+    },
+    {
+      "id": "T-198",
+      "title": "Cada tarjeta trabaja en su propia copia de git, con el panel compartido",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "media",
+      "estimate_min": 80.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Hoy los dos carriles comparten un solo árbol de trabajo y el runner tiene que adivinar qué fichero es de cada tarjeta. Se propone que cada tarjeta trabaje en su propia copia (worktree) y rama feature/T-xxx-slug, y que el panel real siga siendo uno solo.\nCómo sabremos si funciona: dos tarjetas en paralelo no mezclan ficheros y, desde una copia, board.py modifica el board.json del checkout principal.\n## Técnico\nDiseño: docs/pr-workflow.md (decisiones 1-3 y 6). board.py: ruta de LAKEHOUSE_BOARD_DIR con respaldo a la actual (el lock también). runner.py: crear worktree en ../lakehouse-mcp.wt/T-xxx desde develop, lanzar al agente con ese cwd y la variable, commit con git add -A dentro del worktree (retirar claims/snapshot/commit_own en este modo). Interruptor PR_MODE apagado por defecto. Comprobar que ./mk funciona desde un worktree. Tests en tests/test_runner.py y de board. Anotar qué cambia para la wiki (agent-board).",
+      "deps": [
+        "T-189"
+      ],
+      "created": "2026-11-07T20:44:27+01:00",
+      "updated": "2026-11-07T20:44:27+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-07T20:44:27+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-199",
+      "title": "Abrir un PR por entrega y fusionarlo solo cuando la CI esté en verde",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "media",
+      "estimate_min": 80.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Hoy el runner sube lo terminado directamente a develop y la CI se entera después. Se propone que suba la rama de la entrega, abra un PR corto a develop y lo fusione solo si la CI queda en verde; si queda en rojo, la tarjeta vuelve con el motivo.\nCómo sabremos si funciona: una entrega completa llega a develop mediante un PR con la CI en verde, y una con la CI en rojo vuelve a Próximo con el motivo sin tocar develop.\n## Técnico\nDiseño: docs/pr-workflow.md (decisión 5). runner.py: tras el agente, push de la rama, gh pr create, campo pr en la tarjeta; al inicio de cada vuelta revisar PR abiertos con gh pr checks/view: verde, gh pr merge --squash --delete-branch, quitar worktree, done; rojo, next con el log del job y cuenta en MAX_REJECTS (T-192); pendiente, nada. Commits de panel directos a develop con git pull --rebase antes del push. Solo bajo PR_MODE. Tests con gh y git simulados.",
+      "deps": [
+        "T-198"
+      ],
+      "created": "2026-11-07T20:44:31+01:00",
+      "updated": "2026-11-07T20:44:31+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-07T20:44:31+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-200",
+      "title": "CI: impedir que un PR toque el panel",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "media",
+      "estimate_min": 25.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Para que varios agentes en paralelo no choquen en el panel, el estado de las tarjetas no debe viajar en las ramas de código. Se propone que la CI de un PR falle si su cambio toca el fichero del panel.\nCómo sabremos si funciona: un PR de prueba que modifica board/board.json falla esa comprobación y uno que no lo toca pasa.\n## Técnico\n.github/workflows/ci.yml: job solo en pull_request que haga git diff --name-only contra la base y falle si aparece board/board.json. Revisar concurrency para PR. Test en tests/ que lea el workflow.",
+      "deps": [
+        "T-198"
+      ],
+      "created": "2026-11-07T20:44:33+01:00",
+      "updated": "2026-11-07T20:44:33+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-07T20:44:33+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-201",
+      "title": "Documentar el flujo de rama y PR por entrega",
+      "owner": "arquitecto",
+      "status": "backlog",
+      "priority": "baja",
+      "estimate_min": 20.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Cuando el flujo de PR esté en marcha hay que dejarlo escrito para quien trabaje en el proyecto.\nCómo sabremos si funciona: CLAUDE.md y la wiki del runner describen el flujo tal como funciona, con lo no probado marcado.\n## Técnico\nCLAUDE.md (Ejecución autónoma), docs/wiki/componentes/agent-board.md, quitar de docs/pr-workflow.md el aviso de «diseño».",
+      "deps": [
+        "T-199",
+        "T-200"
+      ],
+      "created": "2026-11-07T20:44:35+01:00",
+      "updated": "2026-11-07T20:44:35+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-07T20:44:35+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-202",
+      "title": "[Tú] Ajustes de GitHub para trabajar con PR",
+      "owner": "consultor",
+      "status": "backlog",
+      "priority": "media",
+      "estimate_min": 5.0,
+      "actual_min": null,
+      "auto": false,
+      "manual": "En GitHub (Settings > General > Pull Requests) activar «Allow squash merging» y «Automatically delete head branches»; en terminal ejecutar gh auth status y comprobar que el token puede crear PR",
+      "desc": "El runner abrirá y fusionará PR con la herramienta gh y necesita que el repositorio lo permita.\nCómo sabremos si funciona: gh pr list responde y la opción de fusionar con squash está disponible.\n## Técnico\nRepo privado sin Pro: no hay protección de rama, quien fusiona es el runner.",
+      "deps": [],
+      "created": "2026-11-07T20:44:37+01:00",
+      "updated": "2026-11-07T20:44:37+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-07T20:44:37+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ]
     }
   ],
   "runners": {
     "think": {
-      "state": "stopped",
-      "current": null,
-      "message": "Runner parado",
-      "pid": 11744,
-      "heartbeat": "2026-11-07T13:57:04+01:00",
+      "state": "working",
+      "current": "T-191",
+      "message": "arquitecto con T-191",
+      "pid": 24696,
+      "heartbeat": "2026-11-07T20:44:47+01:00",
       "enabled": true,
       "agent": "arquitecto",
-      "started": "2026-11-06T23:14:00+01:00",
-      "live": "live-T-101-arquitecto-20261106-231400.jsonl",
+      "started": "2026-11-07T20:44:47+01:00",
+      "live": "live-T-191-arquitecto-20261107-204447.jsonl",
       "contrib_at": "2026-11-02T11:46:22+01:00",
       "contrib_agent": "investigador"
     },
     "measure": {
       "state": "working",
-      "current": "T-192",
-      "message": "tester con T-192",
-      "pid": 22176,
-      "heartbeat": "2026-11-07T20:31:05+01:00",
+      "current": "T-180",
+      "message": "tester con T-180",
+      "pid": 22896,
+      "heartbeat": "2026-11-07T20:43:20+01:00",
       "enabled": true,
       "agent": "tester",
-      "started": "2026-11-07T20:31:04+01:00",
-      "live": "live-T-192-tester-20261107-203105.jsonl"
+      "started": "2026-11-07T20:43:18+01:00",
+      "live": "live-T-180-tester-20261107-204320.jsonl"
     }
   }
 }

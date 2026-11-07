@@ -119,6 +119,12 @@
       "why": "concedido automáticamente a tester (T-107): solo lectura dentro del proyecto",
       "by": "runner",
       "at": "2026-11-07T17:47:29+01:00"
+    },
+    {
+      "pattern": "git stash*",
+      "why": "concedido por el responsable desde el panel",
+      "by": "responsable",
+      "at": "2026-11-07T20:20:08+01:00"
     }
   ],
   "denied": [
