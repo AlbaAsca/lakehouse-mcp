@@ -1,6 +1,6 @@
 # Servidor MCP
 
-**Estado:** 🟡 parcial. Ya es una aplicación con cuatro herramientas, `list_tables`, `describe_table`, `run_query` y `time_travel`, probadas con un cliente MCP real. Usan la [conexión con DuckDB y la lectura del catálogo](duckdb.md#dentro-del-servidor-mcp) y el [validador de SQL](#el-validador-de-sql). Es un servicio de `compose.yaml` (T-093); su imagen está probada en contenedores, pero `./mk up` con ese servicio está sin probar. Aún no tiene claves de API (T-050). Tarjetas T-021 a T-028.
+**Estado:** 🟡 parcial. Ya es una aplicación con cinco herramientas, `list_tables`, `describe_table`, `run_query`, `time_travel` y `pipeline_health`, probadas con un cliente MCP real (`pipeline_health`, contra un Kafka real y un Connect simulado; con el compose entero, sin probar). Usan la [conexión con DuckDB y la lectura del catálogo](duckdb.md#dentro-del-servidor-mcp) y el [validador de SQL](#el-validador-de-sql). Es un servicio de `compose.yaml` (T-093); su imagen está probada en contenedores, pero `./mk up` con ese servicio está sin probar. Aún no tiene claves de API (T-050). Tarjetas T-021 a T-028.
 
 [Portada](../README.md) · [Glosario](../01-conceptos.md)
 
@@ -31,7 +31,7 @@ Las herramientas previstas, del [brief](../../brief.md#servidor-mcp-tools):
 | `list_tables`, `describe_table` | Hecho: tablas, esquema, particiones y snapshots | T-020 |
 | `run_query` | Hecho: solo `SELECT`, validado y con límite de filas | T-019, T-021 |
 | `time_travel` | Hecho: consulta sobre un snapshot anterior. Aún sin enmascarado para analyst | T-021, T-054 |
-| `pipeline_health` | Lag, frescura y último snapshot | T-022 |
+| `pipeline_health` | Hecho: retraso del conector, su estado en Connect y frescura por el último snapshot | T-022 |
 | `data_quality_check` | Nulos, duplicados, rangos y volumen | T-025 |
 | `propose_fix`, `apply_fix` | Propone y aplica un arreglo solo con aprobación humana | T-026 |
 | `get_metric` | Métricas de la [capa semántica](capa-semantica.md) | T-033 |
@@ -58,6 +58,16 @@ Las dos contestan `columns`, `rows` y `truncated`, que avisa de que había más 
 - **Un snapshot con un esquema anterior responde con las columnas de entonces**: pedir una columna añadida después da error. Comprobado con ficheros escritos por DuckDB; con ficheros del sink, sin probar.
 - **Los errores del SQL llegan al modelo solo si puede arreglarlos**: lo que rechaza el validador, y los `Binder Error`, `Conversion Error` y `Out of Range Error` de DuckDB. Cualquier otro fallo puede llevar rutas del almacén, así que va al log.
 - **Las celdas se devuelven para que no cambien según la máquina.** Una fecha sin zona sale como texto tal cual, y los enteros grandes no pierden dígitos. Las listas y estructuras salen como texto.
+
+### Vigilar la tubería: `pipeline_health`
+
+No lleva argumentos. Contesta `status` (`OK`, `WARN` o `FAIL`, el peor de tres comprobaciones), `reasons` (lo que no está bien, lo más grave primero), `checkedAt` y una parte por comprobación, cada una con su `status` y su `reason`:
+
+- **`lag`**: mensajes del tema que el conector aún no ha confirmado, en total (`messages`) y por partición (`committed`, `end`, `lag`). Se lee con el cliente de administración de Kafka sobre el grupo `connect-<conector>`, donde el sink de Iceberg guarda sus offsets. Una partición que el grupo nunca confirmó cuenta desde el principio del log. El sink confirma offsets al hacer commit (cada 30 s), así que hasta 30 s de mensajes salen como retraso aunque todo vaya bien.
+- **`connector`**: lo que dice la API REST de Connect (`/connectors/<nombre>/status`). `FAILED`, o una tarea `FAILED`, es `FAIL` con la primera línea de su traza; en pausa o sin todas las tareas en marcha, `WARN`; si Connect no conoce el conector, `FAIL`.
+- **`freshness`**: segundos desde el último snapshot de la tabla (`lastSnapshotAt`, `ageSeconds`). Sale de la hora del commit y no de `event_time`: los datos de 2019 parecerían siempre viejos, y con `rewrite-timestamp` y aceleración mayor que 1 van por delante del reloj ([decisión 19](../../architecture.md#decisiones)). Nunca es negativa. Si está vencida y no hay mensajes esperando, lo dice: puede que el productor simplemente esté parado.
+
+**Si Kafka, Connect o el catálogo no contestan, es un dato, no un error**: esa comprobación sale `FAIL` con el motivo («Kafka did not answer: ...») y la llamada termina en el plazo configurado (5 s por fuente). Del catálogo solo se dice que no contestó; el detalle va al log. Lo comprueban `PipelineHealthTest` (reglas, con fuentes simuladas) y `PipelineHealthIT` (retraso contra un Kafka en contenedor con el grupo creado a mano, partición por partición, y Connect simulado).
 
 Por ahora, sin claves de API, ambas leen las tablas base con `user_id` sin enmascarar. Eso cambia con los roles (T-050, T-054).
 
@@ -87,7 +97,7 @@ Seis cosas que conviene saber:
 
 ## Cómo está configurado
 
-Dependencias en el `pom.xml`: `spring-ai-starter-mcp-server-webmvc`, `duckdb_jdbc`, Actuator y Spring Security. Spring AI 2.0.2.
+Dependencias en el `pom.xml`: `spring-ai-starter-mcp-server-webmvc`, `duckdb_jdbc`, `kafka-clients` (solo su cliente de administración, para `pipeline_health`), Actuator y Spring Security. Spring AI 2.0.2.
 
 Variables de `mcp-server/src/main/resources/application.yaml`:
 
@@ -96,6 +106,9 @@ Variables de `mcp-server/src/main/resources/application.yaml`:
 | `POLARIS_CLIENT_ID`, `POLARIS_CLIENT_SECRET`, `S3_ACCESS_KEY`, `S3_SECRET_KEY`, `S3_REGION` | Ninguno: son obligatorias |
 | `POLARIS_CATALOG`, `POLARIS_URI`, `S3_ENDPOINT` | `lakehouse`, `http://polaris:8181`, `seaweedfs:8333` |
 | `MCP_SERVER_ADDRESS`, `MCP_SERVER_PORT` | `127.0.0.1`, `8090` |
+| `KAFKA_BOOTSTRAP_SERVERS`, `CONNECT_URL`, `PIPELINE_CONNECTOR`, `PIPELINE_TOPIC`, `PIPELINE_NAMESPACE`, `PIPELINE_TABLE` | `kafka:9092`, `http://connect:8083`, `iceberg-sink`, `ecommerce.events`, `ecommerce`, `events` |
+| `PIPELINE_LAG_WARN`, `PIPELINE_LAG_FAIL` (mensajes) | `10000`, `100000` |
+| `PIPELINE_FRESHNESS_WARN`, `PIPELINE_FRESHNESS_FAIL`, `PIPELINE_TIMEOUT` | `2m`, `10m`, `5s` |
 | `DUCKDB_EXTENSION_DIRECTORY` | Vacío: el directorio de DuckDB, descargando las extensiones. La imagen pone `/opt/duckdb-extensions`: solo carga de ahí y no descarga nada |
 
 **Hoy no pide autenticación.** Spring Security está abierto a propósito hasta las claves de T-050. Por eso, fuera de un contenedor, escucha solo en `127.0.0.1`. El compose pone `MCP_SERVER_ADDRESS=0.0.0.0` para que lleguen otros servicios, así que lo alcanza cualquier contenedor de su red, pero publica el puerto solo en el `127.0.0.1` de tu ordenador: desde otra máquina no se llega.

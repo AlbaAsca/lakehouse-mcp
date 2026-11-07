@@ -33,3 +33,16 @@ lakehouse:
     access-key: ${S3_ACCESS_KEY}
     secret-key: ${S3_SECRET_KEY}
     region: ${S3_REGION}
+  # pipeline_health. The sink of connect/iceberg-sink.json commits about every 30 s: one missed commit is not yet a WARN.
+  pipeline:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:kafka:9092}
+    connect-url: ${CONNECT_URL:http://connect:8083}
+    connector: ${PIPELINE_CONNECTOR:iceberg-sink}
+    topic: ${PIPELINE_TOPIC:ecommerce.events}
+    namespace: ${PIPELINE_NAMESPACE:ecommerce}
+    table: ${PIPELINE_TABLE:events}
+    lag-warn: ${PIPELINE_LAG_WARN:10000}
+    lag-fail: ${PIPELINE_LAG_FAIL:100000}
+    freshness-warn: ${PIPELINE_FRESHNESS_WARN:2m}
+    freshness-fail: ${PIPELINE_FRESHNESS_FAIL:10m}
+    timeout: ${PIPELINE_TIMEOUT:5s}

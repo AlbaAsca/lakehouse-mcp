@@ -122,7 +122,7 @@ class McpServerIT {
         assertThat(client().getServerCapabilities().resources()).isNull();
         assertThat(client().getServerCapabilities().completions()).isNull();
         assertThat(tools).extracting(Tool::name)
-                .containsExactlyInAnyOrder("list_tables", "describe_table", "run_query", "time_travel");
+                .containsExactlyInAnyOrder("list_tables", "describe_table", "run_query", "time_travel", "pipeline_health");
         assertThat(tools).allSatisfy(tool -> {
             assertThat(tool.description()).isNotBlank();
             assertThat(tool.annotations().readOnlyHint()).isTrue();

@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-07T00:47:28+01:00",
+  "updated": "2026-11-07T01:54:02+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -45,8 +45,8 @@
       "name": "Consultor",
       "role": "Habla contigo, prioriza y reparte",
       "color": "#ff9e64",
-      "status": "idle",
-      "current": null
+      "status": "working",
+      "current": "T-097"
     },
     {
       "id": "arquitecto",
@@ -1988,10 +1988,10 @@
       "id": "T-022",
       "title": "MCP: pipeline_health (retraso, frescura, último snapshot)",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "blocked",
       "priority": "alta",
       "estimate_min": 35.0,
-      "actual_min": null,
+      "actual_min": 66.5,
       "auto": true,
       "manual": null,
       "desc": "El agente tiene que poder ver si la tubería está viva: si el conector se retrasa, si los datos están al día y cuándo se escribió por última vez. Sin esto no puede detectar un consumidor caído.\nCómo sabremos si funciona: con mensajes sin consumir, el retraso que se informa coincide con el número enviado; sin escrituras recientes, la frescura sale como vencida.\n\n## Técnico\n- Lag por AdminClient (grupo connect-<nombre>), estado por REST de Connect, frescura por hora del último snapshot (no por event_time: los datos de 2019 sin rewrite-timestamp parecerían siempre viejos).\n- Umbrales configurables y estado OK/WARN/FAIL con motivo.\n- Si Kafka o Connect no responden, se informa como dato, no como excepción.\n- IT con Kafka en contenedor y grupo creado a mano; Connect simulado. ./mk test.",
@@ -2000,9 +2000,9 @@
         "T-013"
       ],
       "created": "2026-11-02T11:37:14+01:00",
-      "updated": "2026-11-02T11:37:14+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-07T01:54:02+01:00",
+      "started_at": "2026-11-07T00:47:34+01:00",
+      "finished_at": "2026-11-07T01:54:02+01:00",
       "log": [
         {
           "t": "2026-11-02T11:37:14+01:00",
@@ -2013,6 +2013,48 @@
           "t": "2026-11-02T12:51:39+01:00",
           "by": "consultor",
           "msg": "Aviso de T-011: con rewrite-timestamp y aceleración mayor que 1, event_time va por delante del reloj (desplazamiento fijo, decisión 19 de docs/architecture.md). La frescura no puede salir de now - max(event_time) sin tenerlo en cuenta; puede salir negativa."
+        },
+        {
+          "t": "2026-11-07T00:47:34+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-07T01:15:30+01:00",
+          "by": "consultor",
+          "msg": "Pasada de 1,5x: casi todo fue esperar tests. La pasada completa del módulo se cortó a los 20 min por LakehouseSessionIT (timeout de 30 s en una consulta, ajeno a esta tarjeta: T-170). Rehecha solo con lo afectado: PipelineHealthTest 12/12, PipelineHealthIT 8/8 (Kafka real, grupo a mano, Connect simulado) y McpServerIT 5/5 (lista de tools con pipeline_health). Sin más previsión: queda terminar."
+        },
+        {
+          "t": "2026-11-07T01:16:30+01:00",
+          "by": "consultor",
+          "msg": "Corrección: el contenedor de la pasada completa siguió solo y terminó: 119 tests de integración del módulo, 1 error (el de LakehouseSessionIT, T-170); PipelineHealthIT, McpServerIT, McpServerImageIT y QueryTools*IT en verde."
+        },
+        {
+          "t": "2026-11-07T01:54:02+01:00",
+          "by": "desarrollador",
+          "msg": "BLOCKED: `pipeline_health` hecha (retraso por partición, estado en Connect, frescura por el último snapshot, fuentes caídas como dato) con sus tests en verde; la pasada completa del módulo dio 1 error ajeno, apuntado en T-170."
+        },
+        {
+          "t": "2026-11-07T01:54:02+01:00",
+          "by": "desarrollador",
+          "msg": "⚠ 1 comandos denegados: python board/board.py add \"La prueba que lee toda la muestra se pasa de tiempo c"
+        },
+        {
+          "t": "2026-11-07T01:54:02+01:00",
+          "by": "runner",
+          "msg": "✗ «python board/board.py add \"La prueba que lee toda la muestra se pasa de tiempo cuando la m»: varios comandos, tuberías, redirecciones o heredoc: lanza cada comando por separado y crea ficheros con Write/Edit"
+        }
+      ],
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-07T01:54:02+01:00",
+          "min": 66.4,
+          "turns": 85,
+          "tokens": 3999713,
+          "cost_usd": 2.442087,
+          "verdict": "blocked"
         }
       ]
     },
@@ -5414,7 +5456,7 @@
       "id": "T-097",
       "title": "Probar el recorrido completo con el modelo real y grabar el primer GIF",
       "owner": "consultor",
-      "status": "backlog",
+      "status": "doing",
       "priority": "alta",
       "estimate_min": 20.0,
       "actual_min": null,
@@ -5430,8 +5472,8 @@
         "T-096"
       ],
       "created": "2026-11-02T17:37:29+01:00",
-      "updated": "2026-11-02T17:37:29+01:00",
-      "started_at": null,
+      "updated": "2026-11-07T00:48:51+01:00",
+      "started_at": "2026-11-07T00:48:51+01:00",
       "finished_at": null,
       "log": [
         {
@@ -5448,6 +5490,11 @@
           "t": "2026-11-04T22:00:17+01:00",
           "by": "consultor",
           "msg": "Desde T-094 el proveedor por defecto es Gemini: hace falta GEMINI_API_KEY en .env (la de T-032 es de Anthropic y solo sirve con AGENT_PROVIDER=anthropic y AGENT_MODEL). El modelo por defecto, gemini-2.5-flash, está sin comprobar en la capa gratuita: si responde 404 o 429 desde la primera pregunta, cambia AGENT_MODEL. Esta será la primera prueba con un modelo de verdad, incluidas las thought signatures si se usa Gemini 3."
+        },
+        {
+          "t": "2026-11-07T00:48:51+01:00",
+          "by": "consultor",
+          "msg": "Ensayo sin grabar a cargo del consultor, tras T-108"
         }
       ]
     },
@@ -8019,6 +8066,30 @@
           "msg": "creada"
         }
       ]
+    },
+    {
+      "id": "T-170",
+      "title": "La prueba que lee toda la muestra se pasa de tiempo cuando la máquina va cargada",
+      "owner": "tester",
+      "status": "backlog",
+      "priority": "media",
+      "estimate_min": 20.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "En una pasada completa de los tests del servidor MCP (7-nov, T-022), la prueba que lee todas las filas de la muestra por la conexión del servidor tardó más de 30 segundos y falló; la clase entera tardó 7 minutos y la pasada del módulo no cupo en 20. No tiene que ver con T-022: parece que el límite de 30 s por consulta es justo con el equipo cargado. Propuesta: repetirla para ver si es intermitente y, si lo es, dar más margen a esa prueba o hacerla más ligera.\nCómo sabremos si funciona: tres pasadas seguidas del módulo sin ese fallo.\n## Técnico\nLakehouseSessionIT.readsEveryRowOfTheSampleThroughTheServerConnection: SQLTimeoutException Query exceeded PT30S (LakehouseSession.java:204) sobre lh.session_it.events. Clase: 421 s. Informe: mcp-server/target/failsafe-reports/io.github.albaasca.lakehouse.mcp.LakehouseSessionIT.txt (01:04 del 7-nov).",
+      "deps": [],
+      "created": "2026-11-07T01:15:22+01:00",
+      "updated": "2026-11-07T01:15:22+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-07T01:15:22+01:00",
+          "by": "desarrollador",
+          "msg": "creada"
+        }
+      ]
     }
   ],
   "runners": {
@@ -8037,14 +8108,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-108",
-      "message": "tester con T-108",
+      "current": "T-022",
+      "message": "desarrollador con T-022",
       "pid": 12228,
-      "heartbeat": "2026-11-07T00:40:48+01:00",
+      "heartbeat": "2026-11-07T00:47:35+01:00",
       "enabled": true,
-      "agent": "tester",
-      "started": "2026-11-07T00:40:48+01:00",
-      "live": "live-T-108-tester-20261107-004048.jsonl"
+      "agent": "desarrollador",
+      "started": "2026-11-07T00:47:35+01:00",
+      "live": "live-T-022-desarrollador-20261107-004735.jsonl"
     }
   }
 }
