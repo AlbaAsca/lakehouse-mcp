@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-07T17:14:40+01:00",
+  "updated": "2026-11-07T17:24:07+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -2986,10 +2986,10 @@
       "id": "T-037",
       "title": "Chaos: comando chaos, duplicados y partición vacía",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "review",
       "priority": "alta",
       "estimate_min": 35.0,
-      "actual_min": null,
+      "actual_min": 9.3,
       "auto": true,
       "manual": null,
       "desc": "Para demostrar la autorreparación hacen falta fallos reproducibles. Se empieza por los dos que tocan solo la tabla, que son los más fáciles de probar, y por el comando común que luego usarán los demás.\nCómo sabremos si funciona: tras inyectar cada fallo, la tabla tiene exactamente las filas duplicadas o eliminadas previstas, y la inyección informa qué ha hecho.\n\n## Técnico\n- Herramienta chaos en Java en mcp-server o módulo propio (decidir y justificar), make chaos SCENARIO=duplicates|empty-partition|consumer-down|schema-drift, con salida JSON (lo inyectado y cuándo).\n- duplicates: reinserta un % de un día. empty-partition: elimina un día con un DELETE/commit Iceberg (recuperable con rollback).\n- IT con LakehouseStack, comparando filas. El target make queda solo para el responsable. ./mk test.",
@@ -2998,14 +2998,46 @@
         "T-017"
       ],
       "created": "2026-11-02T11:38:29+01:00",
-      "updated": "2026-11-02T11:38:29+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-07T17:24:07+01:00",
+      "started_at": "2026-11-07T17:14:47+01:00",
+      "finished_at": "2026-11-07T17:24:07+01:00",
       "log": [
         {
           "t": "2026-11-02T11:38:29+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-07T17:14:47+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-07T17:24:07+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: Chaos (duplicates y empty-partition) y ChaosCommand en mcp-server con ChaosIT (3 tests) en verde."
+        },
+        {
+          "t": "2026-11-07T17:24:07+01:00",
+          "by": "desarrollador",
+          "msg": "⚠ 1 comandos denegados: grep -n \"COLUMNS\" -A3 testdata/../testkit/src/main/java/io/github/albaasca/lakeh"
+        },
+        {
+          "t": "2026-11-07T17:24:07+01:00",
+          "by": "runner",
+          "msg": "✗ «grep -n \"COLUMNS\" -A3 testdata/../testkit/src/main/java/io/github/albaasca/lakehouse/testk»: varios comandos, tuberías, redirecciones o heredoc: lanza cada comando por separado y crea ficheros con Write/Edit"
+        }
+      ],
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-07T17:24:07+01:00",
+          "min": 9.3,
+          "turns": 22,
+          "tokens": 623179,
+          "cost_usd": 0.3313187000000001,
+          "verdict": "review"
         }
       ]
     },
@@ -9554,14 +9586,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-036",
-      "message": "tester con T-036",
+      "current": "T-037",
+      "message": "desarrollador con T-037",
       "pid": 19764,
-      "heartbeat": "2026-11-07T17:11:26+01:00",
+      "heartbeat": "2026-11-07T17:14:48+01:00",
       "enabled": true,
-      "agent": "tester",
-      "started": "2026-11-07T17:11:26+01:00",
-      "live": "live-T-036-tester-20261107-171126.jsonl"
+      "agent": "desarrollador",
+      "started": "2026-11-07T17:14:47+01:00",
+      "live": "live-T-037-desarrollador-20261107-171447.jsonl"
     }
   }
 }
