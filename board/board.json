@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-07T18:01:14+01:00",
+  "updated": "2026-11-07T18:09:28+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -3081,7 +3081,7 @@
       "id": "T-038",
       "title": "Chaos: ciclo completo de duplicados",
       "owner": "desarrollador",
-      "status": "review",
+      "status": "done",
       "priority": "alta",
       "estimate_min": 40.0,
       "actual_min": 12.4,
@@ -3094,7 +3094,7 @@
         "T-026"
       ],
       "created": "2026-11-02T11:38:49+01:00",
-      "updated": "2026-11-07T18:01:14+01:00",
+      "updated": "2026-11-07T18:09:28+01:00",
       "started_at": "2026-11-07T17:48:50+01:00",
       "finished_at": "2026-11-07T18:01:14+01:00",
       "log": [
@@ -3122,6 +3122,16 @@
           "t": "2026-11-07T18:01:14+01:00",
           "by": "desarrollador",
           "msg": "REVIEW: DEDUPLICATE_PARTITION implementada (solo copias nuevas, conserva las del origen); IT del ciclo completo y tests de mcp-server en verde."
+        },
+        {
+          "t": "2026-11-07T18:01:17+01:00",
+          "by": "tester",
+          "msg": "verificando"
+        },
+        {
+          "t": "2026-11-07T18:09:28+01:00",
+          "by": "tester",
+          "msg": "DONE: DEDUPLICATE_PARTITION verificada: `DeduplicateCycleIT` (2 tests) y `RepairSessionTest` (7) pasan en `./mk test MODULE=mcp-server`. La tabla queda idéntica a la de antes del fallo, con los duplicados del origen intactos. Nada depende de `t164_probe.py`."
         }
       ],
       "runs": [
@@ -3134,8 +3144,19 @@
           "tokens": 1013550,
           "cost_usd": 0.5267891,
           "verdict": "review"
+        },
+        {
+          "agent": "tester",
+          "mode": "verify",
+          "at": "2026-11-07T18:09:28+01:00",
+          "min": 8.2,
+          "turns": 10,
+          "tokens": 111003,
+          "cost_usd": 0.0836535,
+          "verdict": "done"
         }
-      ]
+      ],
+      "verify_started": "2026-11-07T18:01:17+01:00"
     },
     {
       "id": "T-039",
@@ -7182,7 +7203,7 @@
       "id": "T-111",
       "title": "Consulta: que las cifras por día no dependan de la zona horaria de la máquina",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "next",
       "priority": "alta",
       "estimate_min": 10.0,
       "actual_min": null,
@@ -7191,7 +7212,7 @@
       "desc": "La conexión del servidor usa la zona horaria de la máquina donde corre, y la muestra se guarda en UTC. Al agrupar o filtrar por día, la misma pregunta da otra respuesta según dónde se ejecute: en una máquina con hora de Tokio, las compras de una marca en un día salen 39 en lugar de 10. Hoy no se nota porque los contenedores van en UTC. Se propone fijar UTC al abrir la sesión, para que el agente siempre dé la misma cifra.\nCómo sabremos si funciona: los tests de la conexión pasan igual con la máquina en hora de Tokio que en UTC.\n\n## Técnico\nDónde: LakehouseSession.startup no fija TimeZone; event_time es TIMESTAMPTZ y event_time::DATE usa la zona de la sesión.\nReproducir: docker compose run --rm -e TZ=Asia/Tokyo tools mvn -B -q -pl mcp-server -am verify -Dit.test=LakehouseSessionIT -Dtest=NoUnitTests -Dsurefire.failIfNoSpecifiedTests=false -Dfailsafe.failIfNoSpecifiedTests=false\nSíntoma: theSampleKeepsItsDirtyCasesAndItsPartitions y startsWithoutDownloadingOnceTheExtensionsAreInItsDirectory reciben 39 y esperan 10 (brand synth-nimbora, purchase, 2024-03-10). Referencia independiente: 10, en scripts/analysis/t016_reference.py.\nCriterio: ese comando en verde, y un test que compruebe current_setting('TimeZone') = 'UTC' en todas las conexiones del pool, no solo en la raíz: root.duplicate() puede no heredar un SET de sesión (sin comprobar). Actualizar docs/wiki/componentes/duckdb.md.",
       "deps": [],
       "created": "2026-11-02T18:56:07+01:00",
-      "updated": "2026-11-02T18:56:07+01:00",
+      "updated": "2026-11-07T18:06:36+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -7199,6 +7220,11 @@
           "t": "2026-11-02T18:56:07+01:00",
           "by": "tester",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-07T18:06:36+01:00",
+          "by": "consultor",
+          "msg": "Prioridad alta sin dependencias: pasa a Próximo (CI en rojo primero)."
         }
       ]
     },
@@ -7312,7 +7338,7 @@
       "id": "T-114",
       "title": "El conector deja el topic de eventos con una sola partición",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "next",
       "priority": "alta",
       "estimate_min": 15.0,
       "actual_min": null,
@@ -7321,7 +7347,7 @@
       "desc": "Al arrancar el stack, el conector se registra antes de que exista el topic de eventos, y el topic se crea solo con una partición en vez de las seis previstas. Cuando llega el productor lo encuentra ya creado y lo deja como está. Los datos llegan completos, pero se pierde el reparto en paralelo que el productor da por hecho. Proponemos que el topic se cree al arrancar el stack, antes de registrar el conector.\nCómo sabremos si funciona: tras arrancar y cargar la muestra en el orden real, el topic tiene seis particiones y la tabla sigue cuadrando con el fichero.\n## Técnico\nVisto en IngestE2EIT (T-015), log: «Topic ecommerce.events already exists with 1 partitions». Falta comprobarlo en el stack de compose.yaml; el orden es el mismo (connect-init en ./mk up, luego ./mk seed). KafkaEventSink.ensureTopic deja el topic existente tal cual. Opciones: crear el topic en connect/register.sh o en un paso de init antes del PUT; desactivar KAFKA_AUTO_CREATE_TOPICS obligaría a crear también control-iceberg y la DLQ. Añadir a IngestE2EIT una comprobación de KafkaEventSink.PARTITIONS.",
       "deps": [],
       "created": "2026-11-02T19:07:50+01:00",
-      "updated": "2026-11-02T19:07:57+01:00",
+      "updated": "2026-11-07T18:06:36+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -7334,6 +7360,11 @@
           "t": "2026-11-02T19:07:57+01:00",
           "by": "consultor",
           "msg": "descripción reescrita"
+        },
+        {
+          "t": "2026-11-07T18:06:36+01:00",
+          "by": "consultor",
+          "msg": "Prioridad alta sin dependencias: pasa a Próximo (CI en rojo primero)."
         }
       ]
     },
@@ -8436,7 +8467,7 @@
       "id": "T-142",
       "title": "Variantes de comandos destructivos que aún se saltan la prohibición",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "next",
       "priority": "alta",
       "estimate_min": 25.0,
       "actual_min": null,
@@ -8445,7 +8476,7 @@
       "desc": "La lista de comandos prohibidos caza las formas habituales, pero otras formas de escribir lo mismo siguen pasando porque hay permisos amplios sobre docker y gh. Un agente podría borrar un volumen, un recurso de GitHub o datos dentro de un contenedor sin supervisión. Se propone ampliar la lista con esas variantes y, como una lista de palabras nunca será completa, proponer a la responsable sustituir los permisos amplios por otros estrechos.\nCómo sabremos si funciona: todas las variantes de la lista de abajo quedan denegadas aunque sigan concedidos los permisos amplios, y los comandos inofensivos siguen pasando.\n\n## Técnico\nDónde: board/permissions.py, NEVER y NEVER_WORDS. Encontrado al verificar T-085 aplicando runner.DENIED y pm.rules() como la CLI, sin ejecutar los comandos.\nSíntoma, pasan hoy con docker * o gh * concedidos: docker volume remove data, docker container remove kafka, docker image remove tools, docker network remove n, docker exec kafka sh -c con rm -rf entre comillas simples o dobles, docker compose exec igual, docker compose down con tabulador antes de -v, docker compose con down entre comillas, ./mk con down entre comillas, gh api -XDELETE, gh api --method=DELETE, gh api -X=DELETE, gh release delete-asset, gh secret remove, gh variable remove. Salvo los casos de comillas y tabulador, classify también devuelve revisar y no prohibido.\nA decidir por quien lo implemente: docker compose up -V o --renew-anon-volumes y docker kill, que no están en la lista.\nSin comprobar: que remove sea alias real en docker y gh, porque la ayuda de esos comandos se deniega en modo autónomo. Mirarlo en la documentación oficial.\nLímite conocido: python * permite lanzar subprocesos, así que estas reglas frenan errores, no a un agente que quiera saltárselas.\nCriterio: añadir estas variantes a DESTRUCTIVOS en tests/test_permissions.py, en verde en classify y se_deniega, sin romper NO_DESTRUCTIVOS. Ampliar T-139 para proponer también reducir docker * y gh *.",
       "deps": [],
       "created": "2026-11-03T10:10:37+01:00",
-      "updated": "2026-11-03T10:10:37+01:00",
+      "updated": "2026-11-07T18:06:36+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -8458,6 +8489,11 @@
           "t": "2026-11-03T10:10:41+01:00",
           "by": "consultor",
           "msg": "Corrección de la descripción: classify devuelve revisar en todas las variantes salvo la del tabulador, que ya da prohibido. Las de comillas también dan revisar."
+        },
+        {
+          "t": "2026-11-07T18:06:36+01:00",
+          "by": "consultor",
+          "msg": "Prioridad alta sin dependencias: pasa a Próximo (CI en rojo primero)."
         }
       ]
     },
@@ -8635,7 +8671,7 @@
       "id": "T-147",
       "title": "Consulta: una consulta aceptada por el validador aún puede tumbar el servidor si cambia mayúsculas y minúsculas",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "next",
       "priority": "alta",
       "estimate_min": 25.0,
       "actual_min": null,
@@ -8644,7 +8680,7 @@
       "desc": "El validador limita lo enrevesada que puede ser una consulta para que no agote la memoria de pila y mate el proceso. Ese límite se puede saltar: si una subconsulta con nombre se declara en mayúsculas y se lee en minúsculas, el motor entiende que es la misma, pero el validador cree que es una tabla normal y no suma su complejidad. Encadenando seis así, la consulta se acepta y el proceso muere siempre. Hoy ninguna herramienta usa todavía el validador, así que conviene cerrarlo antes de abrir la herramienta de consultas.\nCómo sabremos si funciona: esa misma consulta se rechaza por demasiado compleja, y el proceso sigue vivo.\n## Técnico\nDónde: SqlGuard.walk (mcp-server), suma de profundidad con isCte, que compara exacto. DuckDB resuelve CTE sin distinguir mayúsculas: 'WITH A AS (SELECT 42 x) SELECT x FROM a' pasa el validador con la tabla a permitida (x=1) y devuelve [[42]], no [[1]].\nReproducir: tablas a..f permitidas y SQL 'WITH A AS (SELECT 1 x + E), B AS (SELECT x FROM a + E), C AS (SELECT x FROM b + E), D AS (SELECT x FROM c + E), E AS (SELECT x FROM d + E), F AS (SELECT x FROM e + E) SELECT x FROM f', con E = ' EXCEPT SELECT 2' repetido 32 veces (3225 caracteres). guard.run en un hilo de 1 MB: exit 139 en 5 de 5 JVM (y 5 de 5 con 512 KB). Con 7 cadenas (n=32) y 8 (n=29), también 5 de 5 en 1 MB. Con 4 y 5 cadenas, 0 caídas en 1 MB (3 y 5 JVM), pero con 512 KB es intermitente: 4 cadenas cayeron 3 de 3 y 5 cadenas 0 de 5. Control: los mismos nombres en minúsculas se rechazan ya con n=2 (8 cadenas).\nCon una sola tabla permitida, anidando WITH A dentro de la consulta principal (3, 5 y 8 niveles), no cayó en 5 JVM de cada pila; el riesgo aparece desde 6 tablas permitidas distintas.\nCriterio: contar la profundidad comparando el nombre de CTE sin distinguir mayúsculas, sin relajar la comprobación de tablas permitidas, que sigue exacta (una casi coincidencia no debe pasar como CTE). Añadir a SqlGuardTest/SqlGuardStackTest el caso de arriba (rechazado) y una variante por debajo del límite que sí se ejecute, en JVM propia. Corregir en docs/wiki/componentes/servidor-mcp.md la frase 'varias CTE pequeñas no pueden sumar lo que no cabría en una sola'. Hacer antes que T-021.",
       "deps": [],
       "created": "2026-11-03T13:20:12+01:00",
-      "updated": "2026-11-03T13:20:12+01:00",
+      "updated": "2026-11-07T18:06:36+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -8652,6 +8688,11 @@
           "t": "2026-11-03T13:20:12+01:00",
           "by": "tester",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-07T18:06:36+01:00",
+          "by": "consultor",
+          "msg": "Prioridad alta sin dependencias: pasa a Próximo (CI en rojo primero)."
         }
       ]
     },
@@ -9824,7 +9865,7 @@
       "id": "T-176",
       "title": "La integración continua está en rojo: el test del agente no conoce las herramientas nuevas del servidor",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "next",
       "priority": "alta",
       "estimate_min": 5.0,
       "actual_min": null,
@@ -9833,7 +9874,7 @@
       "desc": "La comprobación automática de develop falla. Un test del agente revisa que el modelo recibe exactamente cierta lista de herramientas del servidor, pero esa lista se quedó antigua: no incluye la salud del pipeline ni, desde ahora, el chequeo de calidad de datos. Se propone actualizar la lista y que siga siendo exacta, para que una herramienta nueva o perdida haga saltar el test.\nCómo sabremos si funciona: la integración continua de develop vuelve a verde y el test del agente lista las seis herramientas actuales.\n## Técnico\n- CI run 42371334878 (commit T-023): agent/AgentIT.theModelIsOfferedTheServerToolsAndTheSystemPrompt:138, containsExactlyInAnyOrder sin pipeline_health.\n- Tras T-025 el servidor expone también data_quality_check (ver McpServerIT): lista esperada = list_tables, describe_table, run_query, time_travel, pipeline_health, data_quality_check.\n- Criterio: ./mk test MODULE=agent en verde y CI de develop verde.",
       "deps": [],
       "created": "2026-11-07T14:49:06+01:00",
-      "updated": "2026-11-07T14:49:13+01:00",
+      "updated": "2026-11-07T18:06:35+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -9846,6 +9887,11 @@
           "t": "2026-11-07T14:49:13+01:00",
           "by": "consultor",
           "msg": "descripción reescrita"
+        },
+        {
+          "t": "2026-11-07T18:06:35+01:00",
+          "by": "consultor",
+          "msg": "Prioridad alta sin dependencias: pasa a Próximo (CI en rojo primero)."
         }
       ]
     },
@@ -9877,7 +9923,7 @@
       "id": "T-178",
       "title": "Agente: ponerle tiempo máximo a la llamada al modelo",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "next",
       "priority": "alta",
       "estimate_min": 20.0,
       "actual_min": null,
@@ -9886,7 +9932,7 @@
       "desc": "En el ensayo el agente se quedó 7 minutos esperando a que el modelo contestara, sin avisar. Antes de grabar la demo conviene que la llamada al modelo tenga un tiempo máximo y que, si se pasa, el comando lo diga en una línea en vez de quedarse colgado. Salió como nota del consultor en T-172 y se separa porque hay que comprobar en la documentación oficial cómo se fija ese límite en cada proveedor.«\n»Cómo sabremos si funciona: con un modelo que no contesta, ./mk ask termina en el tiempo configurado con un mensaje claro, y un test lo cubre.«\n»## Técnico«\n»Se colgó con gemini-3.8-flash (T-097). Verificar en la doc de Spring AI 2.0.x / google-genai 1.65.0 y anthropic-java si hay timeout configurable (p. ej. HttpOptions.timeout en google-genai, timeout del cliente Anthropic); si no, envolver chat.prompt().call() en Agent.ask con un límite. Variable sugerida AGENT_MODEL_TIMEOUT (application.yaml, .env.example, docs/wiki/componentes/agente.md). Código de salida propio y documentado.",
       "deps": [],
       "created": "2026-11-07T15:29:57+01:00",
-      "updated": "2026-11-07T15:29:57+01:00",
+      "updated": "2026-11-07T18:06:35+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -9894,6 +9940,11 @@
           "t": "2026-11-07T15:29:57+01:00",
           "by": "desarrollador",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-07T18:06:35+01:00",
+          "by": "consultor",
+          "msg": "Prioridad alta sin dependencias: pasa a Próximo (CI en rojo primero)."
         }
       ]
     },
@@ -9925,7 +9976,7 @@
       "id": "T-180",
       "title": "Agente: enviar la clave de analista al servidor MCP",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "next",
       "priority": "alta",
       "estimate_min": 20.0,
       "actual_min": null,
@@ -9934,7 +9985,7 @@
       "desc": "Desde que el servidor exige clave, el agente no puede conectarse: no envía ninguna. Se propone que lea su clave de analista y la mande en cada llamada, y que compose se la pase.\nCómo sabremos si funciona: ./mk ask contesta con el servidor protegido.\n## Técnico\nAñadir MCP_ANALYST_KEY al servicio agent de compose.yaml y un McpSyncHttpClientRequestCustomizer (Spring AI) que ponga Authorization: Bearer; verificar el nombre de la API en la documentación. Ajustar tests/test_agent_compose.py. Seguir con T-042 (consola aprueba con MCP_ADMIN_KEY).",
       "deps": [],
       "created": "2026-11-07T17:42:05+01:00",
-      "updated": "2026-11-07T17:42:05+01:00",
+      "updated": "2026-11-07T18:06:35+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -9942,6 +9993,11 @@
           "t": "2026-11-07T17:42:05+01:00",
           "by": "desarrollador",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-07T18:06:35+01:00",
+          "by": "consultor",
+          "msg": "Prioridad alta sin dependencias: pasa a Próximo (CI en rojo primero)."
         }
       ]
     },
@@ -10018,6 +10074,35 @@
           "msg": "creada"
         }
       ]
+    },
+    {
+      "id": "T-184",
+      "title": "CI en rojo: fallan los tests de integración de mcp-server",
+      "owner": "desarrollador",
+      "status": "next",
+      "priority": "alta",
+      "estimate_min": 30.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "La CI de develop falla en mcp-server (maven-failsafe, tests de integración) desde las tarjetas de seguridad (T-050) y chaos (T-037). Mientras esté en rojo no hay señal fiable. Cómo sabremos si funciona: mvn verify de mcp-server en verde en la CI. ## Técnico: ver gh run view --log-failed del último fallo en develop.",
+      "deps": [],
+      "created": "2026-11-07T18:05:40+01:00",
+      "updated": "2026-11-07T18:06:35+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-07T18:05:40+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        },
+        {
+          "t": "2026-11-07T18:06:35+01:00",
+          "by": "consultor",
+          "msg": "Prioridad alta sin dependencias: pasa a Próximo (CI en rojo primero)."
+        }
+      ]
     }
   ],
   "runners": {
@@ -10037,13 +10122,13 @@
     "measure": {
       "state": "working",
       "current": "T-038",
-      "message": "desarrollador con T-038",
+      "message": "tester con T-038",
       "pid": 17208,
-      "heartbeat": "2026-11-07T17:48:50+01:00",
+      "heartbeat": "2026-11-07T18:01:17+01:00",
       "enabled": true,
-      "agent": "desarrollador",
-      "started": "2026-11-07T17:48:50+01:00",
-      "live": "live-T-038-desarrollador-20261107-174850.jsonl"
+      "agent": "tester",
+      "started": "2026-11-07T18:01:17+01:00",
+      "live": "live-T-038-tester-20261107-180117.jsonl"
     }
   }
 }
