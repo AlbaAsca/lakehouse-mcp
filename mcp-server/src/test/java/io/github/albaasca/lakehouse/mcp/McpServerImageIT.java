@@ -71,14 +71,17 @@ class McpServerImageIT {
                         "POLARIS_CLIENT_SECRET", LakehouseStack.CLIENT_SECRET,
                         "S3_ACCESS_KEY", LakehouseStack.S3_ACCESS_KEY,
                         "S3_SECRET_KEY", LakehouseStack.S3_SECRET_KEY,
-                        "S3_REGION", LakehouseStack.S3_REGION))
+                        "S3_REGION", LakehouseStack.S3_REGION,
+                        "MCP_ANALYST_KEY", "analyst-it-key",
+                        "MCP_ADMIN_KEY", "admin-it-key"))
                 .withExposedPorts(PORT)
                 .withCreateContainerCmdModifier(command -> command.getHostConfig()
                         .withMemory(MEMORY_BUDGET)
                         .withMemorySwap(MEMORY_BUDGET))
                 .waitingFor(Wait.forHealthcheck().withStartupTimeout(Duration.ofMinutes(3)));
         server.start();
-        client = McpClient.sync(HttpClientStreamableHttpTransport.builder(baseUrl()).build()).build();
+        client = McpClient.sync(HttpClientStreamableHttpTransport.builder(baseUrl())
+                .requestBuilder(java.net.http.HttpRequest.newBuilder().header("Authorization", "Bearer analyst-it-key")).build()).build();
         client.initialize();
     }
 
