@@ -197,7 +197,7 @@ docker compose exec -T seaweedfs curl -s -o /dev/null -w '%{http_code}\n' -X DEL
 
 ## Integración continua
 
-[`.github/workflows/ci.yml`](../../.github/workflows/ci.yml) se lanza en cada push a `develop` y `main` y en cada pull request, sin secretos ni Kaggle. Tiene dos trabajos:
+[`.github/workflows/ci.yml`](../../.github/workflows/ci.yml) se lanza en cada push a `develop` y `main` y en cada pull request, y cada noche a las 03:00, sin secretos ni Kaggle. En `develop` y en pull requests a otras ramas, `java` compila y pasa solo los tests unitarios (`mvn -B -ntp verify -DskipITs`); la suite completa, con los `*IT` de contenedores, corre en `main`, en pull requests a `main` y en la ejecución nocturna (sin medir aún el tiempo de la ruta rápida en GitHub). Tiene dos trabajos:
 
 | Trabajo | Qué hace | Tiempo máximo |
 |---|---|---|
