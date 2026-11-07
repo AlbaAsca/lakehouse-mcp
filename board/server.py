@@ -99,6 +99,11 @@ async def patch_task(tid: str, request: Request):
             bd.set_status(b, t, body["status"], "tú")
         if body.get("note"):
             bd.log(t, "tú", body["note"])
+            if t["status"] == "human":
+                if t["owner"] == "consultor":
+                    t["answered"] = True  # el consultor la verá marcada como respondida
+                else:
+                    bd.set_status(b, t, "next", "tú", "→ Próximo (respondida en Te necesita)")
     try:
         bd.update(f)
     except (StopIteration, AssertionError) as e:

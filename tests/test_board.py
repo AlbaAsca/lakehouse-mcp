@@ -60,6 +60,26 @@ def test_api(board, monkeypatch):
     assert c.delete(f"/api/board/task/{tid}").json()["ok"]
 
 
+def test_comentar_en_te_necesita(board):
+    from fastapi.testclient import TestClient
+    sys.path.insert(0, str(board))
+    import importlib
+    import server
+    importlib.reload(server)
+    c = TestClient(server.app)
+    ag = c.post("/api/board/task", json={"title": "A", "owner": "desarrollador"}).json()["id"]
+    co = c.post("/api/board/task", json={"title": "C", "owner": "consultor"}).json()["id"]
+    for t in (ag, co):
+        c.patch(f"/api/board/task/{t}", json={"status": "human"})
+        c.patch(f"/api/board/task/{t}", json={"note": "respuesta"})
+    ts = {t["id"]: t for t in c.get("/api/board").json()["tasks"]}
+    assert ts[ag]["status"] == "next" and ts[ag]["log"][-2]["msg"] == "respuesta"
+    assert ts[co]["status"] == "human" and ts[co]["answered"]
+    assert "[RESPONDIDA]" in cli(board, "list", "--owner", "consultor")
+    c.patch(f"/api/board/task/{co}", json={"status": "next"})
+    assert "[RESPONDIDA]" not in cli(board, "list", "--owner", "consultor")
+
+
 def test_control_del_runner(board, monkeypatch):
     import os
     from fastapi.testclient import TestClient

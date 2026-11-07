@@ -149,6 +149,7 @@ def set_status(b, t, status, by="consultor", msg=None):
     """Cambia estado y gestiona tiempos y agentes automáticamente."""
     prev = t["status"]
     t["status"], t["updated"] = status, now()
+    t.pop("answered", None)
     if status == "doing" and prev != "doing":
         t["started_at"], t["finished_at"] = now(), None
     if prev == "doing" and status != "doing" and t.get("started_at"):
@@ -205,7 +206,7 @@ def main():
             if not o.owner or t["owner"] == o.owner:
                 real = f"{t['actual_min']:.0f}" if t.get("actual_min") is not None else "–"
                 print(f"{t['id']:6} {t['status']:8} {t['owner']:13} est {t.get('estimate_min') or '?':>4} min · real {real:>4}  "
-                      f"{'' if t.get('auto', True) else '[Tú] '}{t['title']}")
+                      f"{'' if t.get('auto', True) else '[Tú] '}{'[RESPONDIDA] ' if t.get('answered') else ''}{t['title']}")
         return
     if o.cmd == "add":
         def f(b):
