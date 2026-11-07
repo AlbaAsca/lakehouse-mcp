@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-07T17:02:54+01:00",
+  "updated": "2026-11-07T17:06:22+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -2801,7 +2801,7 @@
       "id": "T-035",
       "title": "Agente: topes de iteraciones, tokens y gasto",
       "owner": "desarrollador",
-      "status": "review",
+      "status": "done",
       "priority": "alta",
       "estimate_min": 30.0,
       "actual_min": 7.1,
@@ -2812,7 +2812,7 @@
         "T-034"
       ],
       "created": "2026-11-02T11:38:28+01:00",
-      "updated": "2026-11-07T17:02:54+01:00",
+      "updated": "2026-11-07T17:06:22+01:00",
       "started_at": "2026-11-07T17:02:34+01:00",
       "finished_at": "2026-11-07T17:02:54+01:00",
       "log": [
@@ -2855,6 +2855,16 @@
           "t": "2026-11-07T17:02:54+01:00",
           "by": "desarrollador",
           "msg": "REVIEW: AgentIT desenvuelve MeteredChatModel antes del cast; tests sin ejecutar (requieren contenedores)"
+        },
+        {
+          "t": "2026-11-07T17:03:00+01:00",
+          "by": "tester",
+          "msg": "verificando"
+        },
+        {
+          "t": "2026-11-07T17:06:22+01:00",
+          "by": "tester",
+          "msg": "DONE: tests del módulo agent en verde, incluidos AgentIT y BudgetTest; el uso se registra y los topes de tokens, gasto y ejecución cortan al modelo simulado que no termina."
         }
       ],
       "runs": [
@@ -2887,9 +2897,19 @@
           "tokens": 47241,
           "cost_usd": 0.055889100000000004,
           "verdict": "review"
+        },
+        {
+          "agent": "tester",
+          "mode": "verify",
+          "at": "2026-11-07T17:06:22+01:00",
+          "min": 3.3,
+          "turns": 9,
+          "tokens": 98374,
+          "cost_usd": 0.07565410000000002,
+          "verdict": "done"
         }
       ],
-      "verify_started": "2026-11-07T16:56:40+01:00"
+      "verify_started": "2026-11-07T17:03:00+01:00"
     },
     {
       "id": "T-036",
@@ -9492,13 +9512,13 @@
     "measure": {
       "state": "working",
       "current": "T-035",
-      "message": "desarrollador con T-035",
+      "message": "tester con T-035",
       "pid": 19764,
-      "heartbeat": "2026-11-07T17:02:35+01:00",
+      "heartbeat": "2026-11-07T17:03:01+01:00",
       "enabled": true,
-      "agent": "desarrollador",
-      "started": "2026-11-07T17:02:34+01:00",
-      "live": "live-T-035-desarrollador-20261107-170235.jsonl"
+      "agent": "tester",
+      "started": "2026-11-07T17:03:01+01:00",
+      "live": "live-T-035-tester-20261107-170301.jsonl"
     }
   }
 }
