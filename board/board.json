@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-07T17:45:12+01:00",
+  "updated": "2026-11-07T17:45:34+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -6400,18 +6400,18 @@
       "id": "T-100",
       "title": "El runner mete en el commit de una tarjeta el trabajo a medias del otro carril",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "review",
       "priority": "alta",
       "estimate_min": 25.0,
-      "actual_min": null,
+      "actual_min": 0.3,
       "auto": true,
       "manual": null,
       "desc": "Los dos carriles trabajan en la misma copia del repositorio, y al cerrar una tarjeta se guarda todo lo que haya cambiado desde que empezó, también lo que estaba escribiendo el otro agente. Así llegó a develop una prueba a medias de otra tarjeta, y esa prueba es la que hizo fallar la integración continua. Se propone que cada tarjeta guarde solo sus propios ficheros, o que cada carril trabaje en su propia copia.\nCómo sabremos si funciona: con dos tarjetas en marcha a la vez, el commit de la primera que termina no contiene ningún fichero de la otra.\n\n## Técnico\nDónde: board/runner.py commit_own. Compara snapshot actual con before, así que cualquier fichero del otro carril creado durante la ejecución entra, pese a lo que dice su docstring.\nSíntoma: el commit 6897776 (T-013 done by tester, 17:42) incluye testkit/src/test/java/io/github/albaasca/lakehouse/testkit/DuckDbIcebergSpikeIT.java, de T-014, en doing desde 17:38.\nCriterio: test en tests/test_runner.py que simula un fichero del otro carril creado entre before y commit_own y comprueba que no entra en el commit, y que tampoco se pierde. Distinto de T-073, que trata el caso contrario.",
       "deps": [],
       "created": "2026-11-02T18:02:36+01:00",
-      "updated": "2026-11-02T18:02:36+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-07T17:45:34+01:00",
+      "started_at": "2026-11-07T17:45:15+01:00",
+      "finished_at": "2026-11-07T17:45:34+01:00",
       "log": [
         {
           "t": "2026-11-02T18:02:36+01:00",
@@ -6427,6 +6427,28 @@
           "t": "2026-11-02T23:14:41+01:00",
           "by": "consultor",
           "msg": "Probablemente cubierta por T-073 (cada tarjeta apunta sus ficheros y no confirma los apuntados por otra; hay test en tests/test_runner.py). Consultor: cerrar si el tester valida T-073."
+        },
+        {
+          "t": "2026-11-07T17:45:15+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-07T17:45:34+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: T-073 ya cubre este caso (commit_own excluye lo apuntado por otra tarjeta); el test existente pasa y no ha hecho falta cambiar código."
+        }
+      ],
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-07T17:45:34+01:00",
+          "min": 0.3,
+          "turns": 6,
+          "tokens": 65889,
+          "cost_usd": 0.06727939999999999,
+          "verdict": "review"
         }
       ]
     },
@@ -9822,14 +9844,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-079",
-      "message": "tester con T-079",
+      "current": "T-100",
+      "message": "desarrollador con T-100",
       "pid": 17208,
-      "heartbeat": "2026-11-07T17:44:37+01:00",
+      "heartbeat": "2026-11-07T17:45:15+01:00",
       "enabled": true,
-      "agent": "tester",
-      "started": "2026-11-07T17:44:37+01:00",
-      "live": "live-T-079-tester-20261107-174437.jsonl"
+      "agent": "desarrollador",
+      "started": "2026-11-07T17:45:15+01:00",
+      "live": "live-T-100-desarrollador-20261107-174515.jsonl"
     }
   }
 }
