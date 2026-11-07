@@ -7,6 +7,8 @@ on:
     # only when every changed file matches, so commits that also touch code still run.
     paths-ignore: ['board/**', 'docs/handoff.md']
   pull_request:
+  schedule:
+    - cron: '0 3 * * *'   # nightly full suite (runs on the default branch)
 
 permissions:
   contents: read
@@ -36,7 +38,14 @@ jobs:
       # The connector image is not cached. LakehouseStack builds it with ImageFromDockerfile, which always sends the
       # build to the daemon's classic builder: it would not use a buildx cache or an image loaded from one. Caching it
       # needs a change in testkit (reuse a prebuilt image when told so).
-      - name: Build and test
+      #
+      # Fast path (push to develop, PRs to other branches): compile and unit tests only, -DskipITs skips failsafe.
+      # Full suite (*IT with containers): push to main, PRs to main and the nightly run.
+      - name: Build and unit tests (fast)
+        if: ${{ !(github.event_name == 'schedule' || github.ref == 'refs/heads/main' || github.base_ref == 'main') }}
+        run: mvn -B -ntp verify -DskipITs
+      - name: Build and full test suite
+        if: ${{ github.event_name == 'schedule' || github.ref == 'refs/heads/main' || github.base_ref == 'main' }}
         run: mvn -B -ntp verify
       - name: Show disk use
         if: ${{ !success() }}
