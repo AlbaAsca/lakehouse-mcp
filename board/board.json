@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-07T18:18:48+01:00",
+  "updated": "2026-11-07T18:21:14+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -7242,7 +7242,7 @@
       "id": "T-111",
       "title": "Consulta: que las cifras por día no dependan de la zona horaria de la máquina",
       "owner": "desarrollador",
-      "status": "review",
+      "status": "done",
       "priority": "alta",
       "estimate_min": 10.0,
       "actual_min": 9.3,
@@ -7251,7 +7251,7 @@
       "desc": "La conexión del servidor usa la zona horaria de la máquina donde corre, y la muestra se guarda en UTC. Al agrupar o filtrar por día, la misma pregunta da otra respuesta según dónde se ejecute: en una máquina con hora de Tokio, las compras de una marca en un día salen 39 en lugar de 10. Hoy no se nota porque los contenedores van en UTC. Se propone fijar UTC al abrir la sesión, para que el agente siempre dé la misma cifra.\nCómo sabremos si funciona: los tests de la conexión pasan igual con la máquina en hora de Tokio que en UTC.\n\n## Técnico\nDónde: LakehouseSession.startup no fija TimeZone; event_time es TIMESTAMPTZ y event_time::DATE usa la zona de la sesión.\nReproducir: docker compose run --rm -e TZ=Asia/Tokyo tools mvn -B -q -pl mcp-server -am verify -Dit.test=LakehouseSessionIT -Dtest=NoUnitTests -Dsurefire.failIfNoSpecifiedTests=false -Dfailsafe.failIfNoSpecifiedTests=false\nSíntoma: theSampleKeepsItsDirtyCasesAndItsPartitions y startsWithoutDownloadingOnceTheExtensionsAreInItsDirectory reciben 39 y esperan 10 (brand synth-nimbora, purchase, 2024-03-10). Referencia independiente: 10, en scripts/analysis/t016_reference.py.\nCriterio: ese comando en verde, y un test que compruebe current_setting('TimeZone') = 'UTC' en todas las conexiones del pool, no solo en la raíz: root.duplicate() puede no heredar un SET de sesión (sin comprobar). Actualizar docs/wiki/componentes/duckdb.md.",
       "deps": [],
       "created": "2026-11-02T18:56:07+01:00",
-      "updated": "2026-11-07T18:18:48+01:00",
+      "updated": "2026-11-07T18:21:14+01:00",
       "started_at": "2026-11-07T18:09:31+01:00",
       "finished_at": "2026-11-07T18:18:48+01:00",
       "log": [
@@ -7274,6 +7274,16 @@
           "t": "2026-11-07T18:18:48+01:00",
           "by": "desarrollador",
           "msg": "REVIEW: Fijado UTC al abrir la sesión y en cada conexión del pool, con test nuevo y wiki actualizada; los tests de mcp-server no muestran fallos, pero falta lanzar la reproducción con TZ=Asia/Tokyo."
+        },
+        {
+          "t": "2026-11-07T18:18:52+01:00",
+          "by": "tester",
+          "msg": "verificando"
+        },
+        {
+          "t": "2026-11-07T18:21:14+01:00",
+          "by": "tester",
+          "msg": "DONE: con TZ=Asia/Tokyo, LakehouseSessionIT pasa 15 de 15 (incluido el test nuevo del pool) y el cambio no depende de ficheros sin confirmar."
         }
       ],
       "rank": 80,
@@ -7287,8 +7297,19 @@
           "tokens": 219439,
           "cost_usd": 0.1369541,
           "verdict": "review"
+        },
+        {
+          "agent": "tester",
+          "mode": "verify",
+          "at": "2026-11-07T18:21:14+01:00",
+          "min": 2.4,
+          "turns": 9,
+          "tokens": 113819,
+          "cost_usd": 0.08923400000000001,
+          "verdict": "done"
         }
-      ]
+      ],
+      "verify_started": "2026-11-07T18:18:52+01:00"
     },
     {
       "id": "T-112",
@@ -10403,13 +10424,13 @@
     "measure": {
       "state": "working",
       "current": "T-111",
-      "message": "desarrollador con T-111",
-      "pid": 17208,
-      "heartbeat": "2026-11-07T18:09:31+01:00",
+      "message": "tester con T-111",
+      "pid": 20872,
+      "heartbeat": "2026-11-07T18:18:52+01:00",
       "enabled": true,
-      "agent": "desarrollador",
-      "started": "2026-11-07T18:09:31+01:00",
-      "live": "live-T-111-desarrollador-20261107-180931.jsonl"
+      "agent": "tester",
+      "started": "2026-11-07T18:18:52+01:00",
+      "live": "live-T-111-tester-20261107-181852.jsonl"
     }
   }
 }
