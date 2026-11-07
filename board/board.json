@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-07T21:14:47+01:00",
+  "updated": "2026-11-07T21:39:17+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -10192,18 +10192,18 @@
       "id": "T-176",
       "title": "La integración continua está en rojo: el test del agente no conoce las herramientas nuevas del servidor",
       "owner": "desarrollador",
-      "status": "blocked",
+      "status": "done",
       "priority": "alta",
       "estimate_min": 5.0,
-      "actual_min": 0.5,
+      "actual_min": 4.7,
       "auto": false,
       "manual": "reinteta",
       "desc": "La comprobación automática de develop falla. Un test del agente revisa que el modelo recibe exactamente cierta lista de herramientas del servidor, pero esa lista se quedó antigua: no incluye la salud del pipeline ni, desde ahora, el chequeo de calidad de datos. Se propone actualizar la lista y que siga siendo exacta, para que una herramienta nueva o perdida haga saltar el test.\nCómo sabremos si funciona: la integración continua de develop vuelve a verde y el test del agente lista las seis herramientas actuales.\n## Técnico\n- CI run 42371334878 (commit T-023): agent/AgentIT.theModelIsOfferedTheServerToolsAndTheSystemPrompt:138, containsExactlyInAnyOrder sin pipeline_health.\n- Tras T-025 el servidor expone también data_quality_check (ver McpServerIT): lista esperada = list_tables, describe_table, run_query, time_travel, pipeline_health, data_quality_check.\n- Criterio: ./mk test MODULE=agent en verde y CI de develop verde.",
       "deps": [],
       "created": "2026-11-07T14:49:06+01:00",
-      "updated": "2026-11-07T18:26:09+01:00",
-      "started_at": "2026-11-07T18:21:17+01:00",
-      "finished_at": "2026-11-07T18:21:46+01:00",
+      "updated": "2026-11-07T21:39:17+01:00",
+      "started_at": "2026-11-07T21:35:04+01:00",
+      "finished_at": "2026-11-07T21:39:17+01:00",
       "log": [
         {
           "t": "2026-11-07T14:49:06+01:00",
@@ -10254,6 +10254,26 @@
           "t": "2026-11-07T20:20:44+01:00",
           "by": "tú",
           "msg": "reinteta"
+        },
+        {
+          "t": "2026-11-07T21:32:55+01:00",
+          "by": "consultor",
+          "msg": "Desbloqueada: el error era la línea de comandos demasiado larga (más de 1 200 reglas de denegación); ahora van en un fichero de ajustes."
+        },
+        {
+          "t": "2026-11-07T21:35:04+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-07T21:39:17+01:00",
+          "by": "runner",
+          "msg": "Sin verificación aparte del tester (no toca seguridad, datos reales ni punta a punta); la CI revisa."
+        },
+        {
+          "t": "2026-11-07T21:39:17+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: El test del agente ya lista las 8 herramientas actuales y `./mk test MODULE=agent` pasa; falta confirmar la CI de develop."
         }
       ],
       "rank": 1,
@@ -10277,6 +10297,17 @@
           "tokens": 604503,
           "cost_usd": 0.2960803,
           "verdict": "blocked"
+        },
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-07T21:39:17+01:00",
+          "min": 4.2,
+          "turns": 6,
+          "tokens": 98399,
+          "cost_usd": 0.0750044,
+          "verdict": "review",
+          "summary": "El test del agente ya lista las 8 herramientas actuales y `./mk test MODULE=agent` pasa; falta confirmar la CI de develop."
         }
       ],
       "verify_started": "2026-11-07T18:21:49+01:00"
@@ -15316,6 +15347,21 @@
           "t": "2026-11-07T21:14:32+01:00",
           "by": "runner",
           "msg": "se reintentará con los permisos resueltos"
+        },
+        {
+          "t": "2026-11-07T21:15:41+01:00",
+          "by": "tú",
+          "msg": "✓ permiso concedido: Grep *"
+        },
+        {
+          "t": "2026-11-07T21:15:51+01:00",
+          "by": "tú",
+          "msg": "✓ permiso concedido: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\tests\\test_runner.py *"
+        },
+        {
+          "t": "2026-11-07T21:15:54+01:00",
+          "by": "tú",
+          "msg": "✓ permiso concedido: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\board\\runner.py *"
         }
       ],
       "rank": 300,
@@ -15337,7 +15383,7 @@
       "id": "T-195",
       "title": "Servidor MCP: robustez al arrancar y al avisar de fallos",
       "owner": "desarrollador",
-      "status": "blocked",
+      "status": "next",
       "priority": "media",
       "estimate_min": 55.0,
       "actual_min": 0.0,
@@ -15346,7 +15392,7 @@
       "desc": "Cuando faltan claves o se pierde el catálogo, el servidor MCP arranca igual o no avisa bien. Se arreglan juntos arranque, salud, memoria de DuckDB y el mensaje del agente cuando el servidor no responde. Cómo sabremos si funciona: cada punto de la lista tiene su test o comprobación en verde y las tarjetas absorbidas quedan cerradas con nota.\n\n## Técnico\nAbsorbe (criterios en el historial de cada una):\n- T-154: El servidor MCP arranca aunque falten las claves del almacén\n- T-158: Que la salud del servidor MCP avise si se pierde el catálogo\n- T-159: Servidor MCP: alinear la memoria de DuckDB con el reparto previsto\n- T-160: Agente: explicar en una línea que el servidor de datos no responde",
       "deps": [],
       "created": "2026-11-07T20:36:55+01:00",
-      "updated": "2026-11-07T21:14:36+01:00",
+      "updated": "2026-11-07T21:32:54+01:00",
       "started_at": "2026-11-07T21:14:36+01:00",
       "finished_at": "2026-11-07T21:14:36+01:00",
       "log": [
@@ -15364,6 +15410,11 @@
           "t": "2026-11-07T21:14:36+01:00",
           "by": "desarrollador",
           "msg": "BLOCKED: [WinError 206] El nombre del archivo o la extensión es demasiado largo"
+        },
+        {
+          "t": "2026-11-07T21:32:54+01:00",
+          "by": "consultor",
+          "msg": "Desbloqueada: el error era la línea de comandos demasiado larga (más de 1 200 reglas de denegación); ahora van en un fichero de ajustes."
         }
       ],
       "rank": 300,
@@ -15385,7 +15436,7 @@
       "id": "T-196",
       "title": "Consulta y catálogo: cuatro pequeños fallos de lectura de datos",
       "owner": "desarrollador",
-      "status": "blocked",
+      "status": "next",
       "priority": "media",
       "estimate_min": 50.0,
       "actual_min": 0.0,
@@ -15394,7 +15445,7 @@
       "desc": "Funciones habituales que el validador rechaza, tablas de espacios de nombres anidados que no salen, subconsultas repetidas y fechas sin zona. Se atienden juntas en una sola entrega. Cómo sabremos si funciona: cada punto de la lista tiene su test o comprobación en verde y las tarjetas absorbidas quedan cerradas con nota.\n\n## Técnico\nAbsorbe (criterios en el historial de cada una):\n- T-116: Consulta: permitir funciones habituales que el validador rechaza\n- T-138: Las tablas de un espacio de nombres anidado no aparecen hasta que alguien las lee\n- T-146: Consulta: comprobar si unas pocas subconsultas con nombre que se leen varias veces pueden colgar el servidor\n- T-155: Una fecha sin zona cambia de hora en una máquina con horario de verano",
       "deps": [],
       "created": "2026-11-07T20:36:57+01:00",
-      "updated": "2026-11-07T21:14:41+01:00",
+      "updated": "2026-11-07T21:32:54+01:00",
       "started_at": "2026-11-07T21:14:41+01:00",
       "finished_at": "2026-11-07T21:14:41+01:00",
       "log": [
@@ -15412,6 +15463,11 @@
           "t": "2026-11-07T21:14:41+01:00",
           "by": "desarrollador",
           "msg": "BLOCKED: [WinError 206] El nombre del archivo o la extensión es demasiado largo"
+        },
+        {
+          "t": "2026-11-07T21:32:54+01:00",
+          "by": "consultor",
+          "msg": "Desbloqueada: el error era la línea de comandos demasiado larga (más de 1 200 reglas de denegación); ahora van en un fichero de ajustes."
         }
       ],
       "rank": 300,
@@ -15433,7 +15489,7 @@
       "id": "T-197",
       "title": "Pruebas y entorno: cinco fallos pequeños que ensucian la CI",
       "owner": "desarrollador",
-      "status": "blocked",
+      "status": "next",
       "priority": "media",
       "estimate_min": 45.0,
       "actual_min": 0.0,
@@ -15442,7 +15498,7 @@
       "desc": "Pruebas que fallan por la hora o por variables de compose, el stack sin su base de datos, un error de Polaris con la tabla history y el tiempo máximo de reparación. Se arreglan juntos para dejar la CI limpia. Cómo sabremos si funciona: cada punto de la lista tiene su test o comprobación en verde y las tarjetas absorbidas quedan cerradas con nota.\n\n## Técnico\nAbsorbe (criterios en el historial de cada una):\n- T-068: El stack levantado funciona sin su base de datos\n- T-156: Polaris da un error interno al crear una tabla llamada history\n- T-163: Un test del servidor falla al azar según la hora a la que se lanza\n- T-167: Reparación: ponerle tiempo máximo a cada operación\n- T-179: Dos pruebas del panel fallan por las variables del servidor MCP en compose",
       "deps": [],
       "created": "2026-11-07T20:36:59+01:00",
-      "updated": "2026-11-07T21:14:47+01:00",
+      "updated": "2026-11-07T21:32:55+01:00",
       "started_at": "2026-11-07T21:14:46+01:00",
       "finished_at": "2026-11-07T21:14:47+01:00",
       "log": [
@@ -15460,6 +15516,11 @@
           "t": "2026-11-07T21:14:47+01:00",
           "by": "desarrollador",
           "msg": "BLOCKED: [WinError 206] El nombre del archivo o la extensión es demasiado largo"
+        },
+        {
+          "t": "2026-11-07T21:32:55+01:00",
+          "by": "consultor",
+          "msg": "Desbloqueada: el error era la línea de comandos demasiado larga (más de 1 200 reglas de denegación); ahora van en un fichero de ajustes."
         }
       ],
       "rank": 300,
@@ -15634,7 +15695,7 @@
       "id": "T-204",
       "title": "Solicitud de permiso: Grep *",
       "owner": "consultor",
-      "status": "human",
+      "status": "done",
       "priority": "media",
       "estimate_min": 2,
       "actual_min": null,
@@ -15643,7 +15704,7 @@
       "desc": "El agente «desarrollador» necesitaba un comando que no está en su lista de permitidos y se lo bloquearon mientras hacía T-194. No es de solo lectura ni está prohibido, así que lo tiene que validar una persona.\n\nPara qué lo quería: (no lo explicó)\n\nCómo decidir: concede si es seguro repetirlo sin supervisión dentro del proyecto; deniega si escribe fuera, publica, borra o usa la red.\n\n## Técnico\n- Comando: Grep\n- Patrón que se concedería: Grep *\n- Tarjeta: T-194",
       "deps": [],
       "created": "2026-11-07T21:14:32+01:00",
-      "updated": "2026-11-07T21:14:32+01:00",
+      "updated": "2026-11-07T21:15:41+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -15651,6 +15712,11 @@
           "t": "2026-11-07T21:14:32+01:00",
           "by": "runner",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-07T21:15:41+01:00",
+          "by": "tú",
+          "msg": "✓ Concedido: Grep *"
         }
       ],
       "kind": "permiso",
@@ -15666,7 +15732,7 @@
       "id": "T-205",
       "title": "Solicitud de permiso: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\board\\runner.py *",
       "owner": "consultor",
-      "status": "human",
+      "status": "done",
       "priority": "media",
       "estimate_min": 2,
       "actual_min": null,
@@ -15675,7 +15741,7 @@
       "desc": "El agente «desarrollador» necesitaba un comando que no está en su lista de permitidos y se lo bloquearon mientras hacía T-194. No es de solo lectura ni está prohibido, así que lo tiene que validar una persona.\n\nPara qué lo quería: (no lo explicó)\n\nCómo decidir: concede si es seguro repetirlo sin supervisión dentro del proyecto; deniega si escribe fuera, publica, borra o usa la red.\n\n## Técnico\n- Comando: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\board\\runner.py\n- Patrón que se concedería: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\board\\runner.py *\n- Tarjeta: T-194",
       "deps": [],
       "created": "2026-11-07T21:14:32+01:00",
-      "updated": "2026-11-07T21:14:32+01:00",
+      "updated": "2026-11-07T21:15:54+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -15683,6 +15749,11 @@
           "t": "2026-11-07T21:14:32+01:00",
           "by": "runner",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-07T21:15:54+01:00",
+          "by": "tú",
+          "msg": "✓ Concedido: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\board\\runner.py *"
         }
       ],
       "kind": "permiso",
@@ -15698,7 +15769,7 @@
       "id": "T-206",
       "title": "Solicitud de permiso: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\tests\\test_runner.py *",
       "owner": "consultor",
-      "status": "human",
+      "status": "done",
       "priority": "media",
       "estimate_min": 2,
       "actual_min": null,
@@ -15707,7 +15778,7 @@
       "desc": "El agente «desarrollador» necesitaba un comando que no está en su lista de permitidos y se lo bloquearon mientras hacía T-194. No es de solo lectura ni está prohibido, así que lo tiene que validar una persona.\n\nPara qué lo quería: (no lo explicó)\n\nCómo decidir: concede si es seguro repetirlo sin supervisión dentro del proyecto; deniega si escribe fuera, publica, borra o usa la red.\n\n## Técnico\n- Comando: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\tests\\test_runner.py\n- Patrón que se concedería: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\tests\\test_runner.py *\n- Tarjeta: T-194",
       "deps": [],
       "created": "2026-11-07T21:14:32+01:00",
-      "updated": "2026-11-07T21:14:32+01:00",
+      "updated": "2026-11-07T21:15:51+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -15715,6 +15786,11 @@
           "t": "2026-11-07T21:14:32+01:00",
           "by": "runner",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-07T21:15:51+01:00",
+          "by": "tú",
+          "msg": "✓ Concedido: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\tests\\test_runner.py *"
         }
       ],
       "kind": "permiso",
@@ -15731,9 +15807,9 @@
     "think": {
       "state": "stopped",
       "current": null,
-      "message": "Runner parado (pid muerto)",
-      "pid": null,
-      "heartbeat": "2026-11-07T20:45:04+01:00",
+      "message": "Runner parado",
+      "pid": 24472,
+      "heartbeat": "2026-11-07T21:35:04+01:00",
       "enabled": true,
       "agent": "arquitecto",
       "started": "2026-11-07T20:44:47+01:00",
@@ -15743,14 +15819,15 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-197",
-      "message": "desarrollador con T-197",
-      "pid": 24920,
-      "heartbeat": "2026-11-07T21:14:46+01:00",
+      "current": "T-176",
+      "message": "desarrollador con T-176",
+      "pid": 20936,
+      "heartbeat": "2026-11-07T21:35:05+01:00",
       "enabled": true,
       "agent": "desarrollador",
-      "started": "2026-11-07T21:14:46+01:00",
-      "live": "live-T-197-desarrollador-20261107-211446.jsonl"
+      "started": "2026-11-07T21:35:04+01:00",
+      "live": "live-T-176-desarrollador-20261107-213505.jsonl",
+      "pause_reason": null
     }
   }
 }
