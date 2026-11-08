@@ -12,8 +12,15 @@ case "$provider" in
       echo "AGENT_MODEL is missing in .env: with AGENT_PROVIDER=anthropic there is no default model." >&2
       exit 5
     fi ;;
+  openai)
+    name=AGENT_API_KEY; key="$AGENT_API_KEY"
+    if [ -z "$AGENT_MODEL" ]; then
+      echo "AGENT_MODEL is missing in .env: with AGENT_PROVIDER=openai there is no default model." >&2
+      exit 5
+    fi
+    if [ -z "$AGENT_BASE_URL" ]; then unset AGENT_BASE_URL; fi ;;
   *)
-    echo "AGENT_PROVIDER in .env must be google-genai or anthropic, not '$provider'." >&2
+    echo "AGENT_PROVIDER in .env must be google-genai, anthropic or openai, not '$provider'." >&2
     exit 5 ;;
 esac
 if [ -z "$key" ]; then

@@ -166,6 +166,9 @@ public class Agent {
             if (t instanceof RateLimitException anthropic) {
                 return Optional.of(anthropic.getMessage());
             }
+            if (t instanceof com.openai.errors.RateLimitException openai) {
+                return Optional.of(openai.getMessage());
+            }
         }
         return Optional.empty();
     }

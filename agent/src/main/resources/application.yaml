@@ -6,7 +6,7 @@ spring:
     banner-mode: "off"
   ai:
     model:
-      # google-genai or anthropic: both are in the jar, only this one starts.
+      # google-genai, anthropic or openai: all are in the jar, only this one starts.
       chat: ${AGENT_PROVIDER:google-genai}
       # Only chat is used, and these would ask for a key of their own.
       embedding:
@@ -24,6 +24,14 @@ spring:
       chat:
         # Without a default on purpose: the Gemini one means nothing here.
         model: ${AGENT_MODEL}
+    # Any OpenAI-compatible service (AGENT_PROVIDER=openai): base URL, key and model. The URL goes up to the version
+    # path, without /chat/completions (the client adds that): https://models.github.ai/inference, https://api.groq.com/openai/v1.
+    openai:
+      base-url: ${AGENT_BASE_URL:https://api.openai.com/v1}
+      api-key: ${AGENT_API_KEY:}
+      chat:
+        options:
+          model: ${AGENT_MODEL}
     tools:
       limits:
         # Counts every call to a tool in one question, however many arrive at once.

@@ -68,7 +68,7 @@ Todo en [`application.yaml`](../../../agent/src/main/resources/application.yaml)
 
 | Variable | Por defecto | Para qué |
 |---|---|---|
-| `AGENT_PROVIDER` | `google-genai` | `google-genai` o `anthropic`: ambos van en el jar y solo arranca el elegido |
+| `AGENT_PROVIDER` | `google-genai` | `google-genai`, `anthropic` u `openai` (cualquier servicio compatible): todos van en el jar y solo arranca el elegido |
 | `AGENT_MODEL` | `gemini-2.5-flash` con Gemini; obligatoria con Claude | El modelo. Vacía cuenta como no definida: `ask.sh` la quita antes de arrancar Java, porque compose la pasa vacía si falta en `.env` |
 | `GEMINI_API_KEY`, `ANTHROPIC_API_KEY` | vacías | Solo se exige la del proveedor elegido |
 | `AGENT_MAX_TOOL_CALLS` | `10` | Tope de llamadas a herramientas por pregunta |
@@ -79,6 +79,17 @@ Todo en [`application.yaml`](../../../agent/src/main/resources/application.yaml)
 **Sin comprobar:** que `gemini-2.5-flash` siga en la capa gratuita de Gemini. La documentación actual de Google no se ha podido consultar; el nombre solo consta en la lista de modelos de Spring AI 2.0.2, que no dice nada de precios. Se cambia con `AGENT_MODEL`, sin tocar código.
 
 **Para usar Claude:** `AGENT_PROVIDER=anthropic`, `ANTHROPIC_API_KEY` y `AGENT_MODEL`.
+
+**Para usar cualquier servicio compatible con OpenAI:** `AGENT_PROVIDER=openai` y tres valores: `AGENT_BASE_URL`, `AGENT_API_KEY` y `AGENT_MODEL` (obligatoria). La URL base llega hasta la ruta de versión y **sin** `/chat/completions`, que el cliente añade solo (un test con un servidor falso comprueba que `https://…/inference` acaba pidiendo `/inference/chat/completions`). El cupo agotado (429) sigue dando el código 4, y el medidor de tokens, el tope y el tiempo máximo funcionan igual. Recetas para `.env` (**sin probar con el servicio real**; solo se probó contra un servidor falso):
+
+| Servicio | `AGENT_BASE_URL` | `AGENT_API_KEY` | `AGENT_MODEL` (ejemplo) |
+|---|---|---|---|
+| GitHub Models | `https://models.github.ai/inference` | token de GitHub con permiso `models:read` | `openai/gpt-4.1-mini` |
+| Groq | `https://api.groq.com/openai/v1` | clave de Groq | `llama-3.3-70b-versatile` |
+| OpenRouter | `https://openrouter.ai/api/v1` | clave de OpenRouter | `<proveedor>/<modelo>` |
+| Ollama en tu máquina | `http://host.docker.internal:11434/v1` | cualquier texto (`ollama`) | un modelo con soporte de herramientas |
+
+Mistral y LiteLLM siguen la misma forma (URL base de su API compatible con OpenAI). El agente necesita un modelo que sepa llamar a herramientas.
 
 **El tope** usa el de Spring AI (`spring.ai.tools.limits.max-total-tool-calls`) y cuenta llamadas, no vueltas: cinco llamadas en una misma respuesta gastan cinco. Tokens y gasto siguen pendientes (T-035).
 

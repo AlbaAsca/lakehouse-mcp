@@ -216,6 +216,8 @@ services:
       MCP_ANALYST_KEY: ${MCP_ANALYST_KEY:-}
       AGENT_PROVIDER: ${AGENT_PROVIDER:-google-genai}
       AGENT_MODEL: ${AGENT_MODEL:-}
+      AGENT_BASE_URL: ${AGENT_BASE_URL:-https://api.openai.com/v1}
+      AGENT_API_KEY: ${AGENT_API_KEY:-}
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
     mem_limit: 1g

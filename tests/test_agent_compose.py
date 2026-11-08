@@ -55,7 +55,8 @@ def test_the_keys_and_model_come_from_the_env_and_may_be_empty():
     env = compose_environment()
 
     assert env.pop("MCP_SERVER_URL") == "http://mcp-server:8090"
-    assert set(env) == {"MCP_ANALYST_KEY", "AGENT_PROVIDER", "AGENT_MODEL", "GEMINI_API_KEY", "ANTHROPIC_API_KEY"}
+    assert set(env) == {"MCP_ANALYST_KEY", "AGENT_PROVIDER", "AGENT_MODEL", "GEMINI_API_KEY", "ANTHROPIC_API_KEY",
+                        "AGENT_BASE_URL", "AGENT_API_KEY"}
     for name, value in env.items():
         # With :- compose passes an empty value instead of warning, and the entrypoint says what is missing.
         assert value.startswith(f"${{{name}:-"), name
@@ -103,6 +104,20 @@ def test_claude_still_needs_a_model(tmp_path):
 
     assert out.returncode == 5
     assert "AGENT_MODEL is missing in .env" in out.stderr
+
+
+def test_openai_compatible_needs_a_model_and_a_key(tmp_path):
+    out = run_entrypoint(tmp_path, AGENT_PROVIDER="openai", AGENT_API_KEY="k", AGENT_MODEL="")
+    assert out.returncode == 5
+    assert "AGENT_MODEL is missing in .env" in out.stderr
+
+    out = run_entrypoint(tmp_path, AGENT_PROVIDER="openai", AGENT_MODEL="m")
+    assert out.returncode == 5
+    assert "AGENT_API_KEY is missing in .env" in out.stderr
+
+    out = run_entrypoint(tmp_path, AGENT_PROVIDER="openai", AGENT_API_KEY="k", AGENT_MODEL="m")
+    assert out.returncode == 0, out.stderr
+    assert out.stdout.strip() == "model=m"
 
 
 def test_the_guide_matches_the_exit_codes_of_the_image_and_of_mk_ask():
