@@ -1,0 +1,17 @@
+{
+  "type": "record",
+  "name": "Event",
+  "namespace": "io.github.albaasca.lakehouse.events",
+  "fields": [
+    {"name": "event_time", "type": {"type": "long", "logicalType": "timestamp-micros"}},
+    {"name": "event_type", "type": "string"},
+    {"name": "product_id", "type": "long"},
+    {"name": "category_id", "type": "long"},
+    {"name": "category_code", "type": ["null", "string"], "default": null},
+    {"name": "brand", "type": ["null", "string"], "default": null},
+    {"name": "price", "type": "double"},
+    {"name": "user_id", "type": "long"},
+    {"name": "user_session", "type": ["null", "string"], "default": null},
+    {"name": "coupon_code", "type": ["null", "string"], "default": null}
+  ]
+}

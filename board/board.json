@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-08T16:42:35+01:00",
+  "updated": "2026-11-08T16:49:45+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -34,13 +34,13 @@
   "runner": {
     "enabled": true,
     "state": "working",
-    "current": "T-042",
-    "heartbeat": "2026-11-08T16:38:21+01:00",
-    "message": "tester con T-042",
+    "current": "T-043",
+    "heartbeat": "2026-11-08T16:42:41+01:00",
+    "message": "desarrollador con T-043",
     "pid": 7056,
-    "live": "live-T-042-tester-20261108-163821.jsonl",
-    "agent": "tester",
-    "started": "2026-11-08T16:38:21+01:00"
+    "live": "live-T-043-desarrollador-20261108-164241.jsonl",
+    "agent": "desarrollador",
+    "started": "2026-11-08T16:42:40+01:00"
   },
   "agents": [
     {
@@ -3593,10 +3593,10 @@
       "id": "T-043",
       "title": "Contracts: romper el build si se rompe el contrato de datos",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "done",
       "priority": "media",
       "estimate_min": 30.0,
-      "actual_min": null,
+      "actual_min": 7.1,
       "auto": true,
       "manual": null,
       "desc": "Si alguien cambia el esquema de los eventos de forma incompatible, debería fallar la compilación antes de llegar a ningún sitio. Se guardan los contratos versionados y se comprueban en dos niveles: sin contenedores en cada build, y contra Schema Registry real.\nCómo sabremos si funciona: quitar un campo sin valor por defecto (caso de prueba) hace fallar el test, y añadir uno nullable con default pasa; Registry rechaza el incompatible con 409.\n\n## Técnico\n- contracts/ecommerce.events-value/v1.avsc... El .avsc de producer debe coincidir con la última versión: test que lo exija.\n- Test unitario con org.apache.avro.SchemaCompatibility contra todas las versiones.\n- IT: compatibilidad BACKWARD en el subject, registro de versiones, 409 con el esquema roto (fixtures en src/test).\n- ./mk test.",
@@ -3604,17 +3604,45 @@
         "T-013"
       ],
       "created": "2026-11-02T11:39:12+01:00",
-      "updated": "2026-11-07T18:15:38+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-08T16:49:45+01:00",
+      "started_at": "2026-11-08T16:42:40+01:00",
+      "finished_at": "2026-11-08T16:49:45+01:00",
       "log": [
         {
           "t": "2026-11-02T11:39:12+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-08T16:42:40+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-08T16:49:45+01:00",
+          "by": "runner",
+          "msg": "Sin verificación aparte del tester (no toca seguridad, datos reales ni punta a punta); la CI revisa."
+        },
+        {
+          "t": "2026-11-08T16:49:45+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: contratos v1 y tests de compatibilidad (unitario y contra Schema Registry) añadidos; `./mk test MODULE=producer` termina sin errores."
         }
       ],
-      "rank": 900
+      "rank": 900,
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-08T16:49:45+01:00",
+          "min": 7.1,
+          "turns": 18,
+          "tokens": 113049,
+          "cost_usd": 0.2184949,
+          "verdict": "review",
+          "summary": "contratos v1 y tests de compatibilidad (unitario y contra Schema Registry) añadidos; `./mk test MODULE=producer` termina sin errores."
+        }
+      ]
     },
     {
       "id": "T-044",
