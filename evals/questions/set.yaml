@@ -1,0 +1,40 @@
+[
+  {
+    "id": "E12",
+    "question": "¿En qué días (fechas AAAA-MM-DD) el ticket medio superó 800?",
+    "type": "set",
+    "expected": [
+      "2024-03-08"
+    ],
+    "grading": "Mismos elementos, en cualquier orden.",
+    "in_subset": true
+  },
+  {
+    "id": "E13",
+    "question": "¿Qué marcas ingresaron más de 20000 en todo el periodo?",
+    "type": "set",
+    "expected": [
+      "synth-brondel",
+      "synth-lumbrel",
+      "synth-nimbora",
+      "synth-ostrina",
+      "synth-quorvo",
+      "synth-tessavi",
+      "synth-velkaro"
+    ],
+    "grading": "Mismos elementos, en cualquier orden.",
+    "in_subset": true
+  },
+  {
+    "id": "E14",
+    "question": "¿En qué días (fechas AAAA-MM-DD) se ingresó menos de 40000?",
+    "type": "set",
+    "expected": [
+      "2024-03-01",
+      "2024-03-10",
+      "2024-03-12"
+    ],
+    "grading": "Mismos elementos, en cualquier orden.",
+    "in_subset": false
+  }
+]

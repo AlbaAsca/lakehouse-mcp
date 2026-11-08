@@ -1,0 +1,90 @@
+[
+  {
+    "id": "E15",
+    "question": "¿Cuáles son las 3 marcas que más ingresaron en todo el periodo? Indica marca e ingresos.",
+    "type": "ranking",
+    "expected": [
+      [
+        "synth-nimbora",
+        224812.18
+      ],
+      [
+        "synth-ostrina",
+        72110.68
+      ],
+      [
+        "synth-velkaro",
+        71261.55
+      ]
+    ],
+    "grading": "Mismos elementos en el mismo orden; los valores, dentro de la tolerancia.",
+    "in_subset": true,
+    "tolerance": 0.01
+  },
+  {
+    "id": "E16",
+    "question": "¿Cuáles son las 3 marcas que más ingresaron del 8 al 14 de marzo? Indica marca e ingresos.",
+    "type": "ranking",
+    "expected": [
+      [
+        "synth-nimbora",
+        106884.54
+      ],
+      [
+        "synth-velkaro",
+        36255.94
+      ],
+      [
+        "synth-ostrina",
+        33342.34
+      ]
+    ],
+    "grading": "Mismos elementos en el mismo orden; los valores, dentro de la tolerancia.",
+    "in_subset": false,
+    "tolerance": 0.01
+  },
+  {
+    "id": "E17",
+    "question": "¿Cuáles son los 3 días con más ingresos? Indica fecha e ingresos.",
+    "type": "ranking",
+    "expected": [
+      [
+        "2024-03-04",
+        59887.27
+      ],
+      [
+        "2024-03-03",
+        53978.83
+      ],
+      [
+        "2024-03-06",
+        53801.15
+      ]
+    ],
+    "grading": "Mismos elementos en el mismo orden; los valores, dentro de la tolerancia.",
+    "in_subset": true,
+    "tolerance": 0.01
+  },
+  {
+    "id": "E18",
+    "question": "¿Cuáles son los 3 días con más sesiones que llegaron al carrito (por día de inicio de la sesión)? Indica fecha y sesiones.",
+    "type": "ranking",
+    "expected": [
+      [
+        "2024-03-04",
+        104
+      ],
+      [
+        "2024-03-10",
+        95
+      ],
+      [
+        "2024-03-06",
+        94
+      ]
+    ],
+    "grading": "Mismos elementos en el mismo orden; los valores, dentro de la tolerancia.",
+    "in_subset": false,
+    "tolerance": 0
+  }
+]

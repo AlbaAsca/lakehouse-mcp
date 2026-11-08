@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-08T22:16:25+01:00",
+  "updated": "2026-11-08T22:17:44+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -3989,10 +3989,10 @@
       "id": "T-048",
       "title": "Evals: preguntas de negocio y respuestas de referencia",
       "owner": "tester",
-      "status": "backlog",
+      "status": "done",
       "priority": "alta",
       "estimate_min": 40.0,
-      "actual_min": null,
+      "actual_min": 1.2,
       "auto": true,
       "manual": null,
       "desc": "Para medir al agente hace falta un examen con respuestas conocidas. El tester escribe las preguntas y calcula las respuestas directamente del fichero sintético, sin mirar el agente ni el servidor, para que la nota signifique algo.\nCómo sabremos si funciona: hay 15-18 preguntas con respuesta exacta y una forma de corregir cada una, y el cálculo se puede repetir con un comando.\n\n## Técnico\n- evals/questions/*.yaml: id, pregunta, tipo (number, set, ranking), expected, tolerance, in_subset (bool para el subconjunto de CI). evals/truth/compute_eval_truth.py en Python estándar.\n- No leer mcp-server/, agent/ ni semantic/ (sí docs/metrics.md). Preguntas variadas: una métrica, filtros, comparaciones entre días, trampas por datos sucios.\n- Test de que expected está al día (./mk test-board).",
@@ -4001,9 +4001,9 @@
         "T-027"
       ],
       "created": "2026-11-02T11:39:41+01:00",
-      "updated": "2026-11-07T18:15:39+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-08T22:17:44+01:00",
+      "started_at": "2026-11-08T22:16:34+01:00",
+      "finished_at": "2026-11-08T22:17:44+01:00",
       "log": [
         {
           "t": "2026-11-02T11:39:41+01:00",
@@ -4014,9 +4014,32 @@
           "t": "2026-11-08T16:35:18+01:00",
           "by": "consultor",
           "msg": "8-nov: batería de 10 preguntas del servidor sin modelo (evals/battery/run.py, 10/10 contra referencia independiente). Aprovechable como base; falta medir al agente con modelo."
+        },
+        {
+          "t": "2026-11-08T22:16:34+01:00",
+          "by": "runner",
+          "msg": "empieza tester"
+        },
+        {
+          "t": "2026-11-08T22:17:44+01:00",
+          "by": "tester",
+          "msg": "DONE: 18 preguntas con respuesta de referencia y su cálculo repetible en `evals/`; tests de actualidad y de cruce con `metrics.json` en verde."
         }
       ],
-      "rank": 900
+      "rank": 900,
+      "runs": [
+        {
+          "agent": "tester",
+          "mode": "work",
+          "at": "2026-11-08T22:17:44+01:00",
+          "min": 1.1,
+          "turns": 15,
+          "tokens": 323157,
+          "cost_usd": 0.2505449,
+          "verdict": "done",
+          "summary": "18 preguntas con respuesta de referencia y su cálculo repetible en `evals/`; tests de actualidad y de cruce con `metrics.json` en verde."
+        }
+      ]
     },
     {
       "id": "T-049",
@@ -17760,14 +17783,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-047",
-      "message": "desarrollador con T-047",
+      "current": "T-048",
+      "message": "tester con T-048",
       "pid": 23508,
-      "heartbeat": "2026-11-08T22:16:12+01:00",
+      "heartbeat": "2026-11-08T22:16:35+01:00",
       "enabled": true,
-      "agent": "desarrollador",
-      "started": "2026-11-08T22:16:12+01:00",
-      "live": "live-T-047-desarrollador-20261108-221612.jsonl",
+      "agent": "tester",
+      "started": "2026-11-08T22:16:35+01:00",
+      "live": "live-T-048-tester-20261108-221635.jsonl",
       "pause_reason": null
     }
   }

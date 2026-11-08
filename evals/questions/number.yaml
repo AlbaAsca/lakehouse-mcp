@@ -1,0 +1,101 @@
+[
+  {
+    "id": "E01",
+    "question": "¿Qué proporción de las sesiones de todo el periodo acaba en compra (de vista a compra)? Dato entre 0 y 1.",
+    "type": "number",
+    "expected": 0.038289,
+    "grading": "Número dentro de la tolerancia.",
+    "in_subset": true,
+    "tolerance": 1e-06
+  },
+  {
+    "id": "E02",
+    "question": "¿Cuál fue el ticket medio del 1 al 7 de marzo de 2024, ambos incluidos?",
+    "type": "number",
+    "expected": 717.09,
+    "grading": "Número dentro de la tolerancia.",
+    "in_subset": true,
+    "tolerance": 0.01
+  },
+  {
+    "id": "E03",
+    "question": "¿Cuántos ingresos hubo el 5 de marzo de 2024 (UTC)?",
+    "type": "number",
+    "expected": 46491.86,
+    "grading": "Número dentro de la tolerancia.",
+    "in_subset": true,
+    "tolerance": 0.01
+  },
+  {
+    "id": "E04",
+    "question": "¿Cuántas sesiones que empezaron el 10 de marzo de 2024 llegaron al carrito (incluidas las que compraron)?",
+    "type": "number",
+    "expected": 95,
+    "grading": "Número dentro de la tolerancia.",
+    "in_subset": true,
+    "tolerance": 0
+  },
+  {
+    "id": "E05",
+    "question": "¿Qué proporción de las sesiones con carrito del 1 al 14 de marzo se abandonó sin comprar? Dato entre 0 y 1.",
+    "type": "number",
+    "expected": 0.228692,
+    "grading": "Número dentro de la tolerancia.",
+    "in_subset": true,
+    "tolerance": 1e-06
+  },
+  {
+    "id": "E06",
+    "question": "¿Cuántas compras válidas (con precio mayor que 0) tiene la marca synth-nimbora en todo el periodo?",
+    "type": "number",
+    "expected": 354,
+    "grading": "Número dentro de la tolerancia.",
+    "in_subset": false,
+    "tolerance": 0
+  },
+  {
+    "id": "E07",
+    "question": "¿Cuántos ingresos hubo en compras sin marca en todo el periodo?",
+    "type": "number",
+    "expected": 98456.43,
+    "grading": "Número dentro de la tolerancia.",
+    "in_subset": true,
+    "tolerance": 0.01
+  },
+  {
+    "id": "E08",
+    "question": "¿Cuánto más (o menos, en negativo) se ingresó el 8 de marzo de 2024 que el 7?",
+    "type": "number",
+    "expected": -3958.09,
+    "grading": "Número dentro de la tolerancia.",
+    "in_subset": false,
+    "tolerance": 0.01
+  },
+  {
+    "id": "E09",
+    "question": "¿Cuántas sesiones tienen algún evento de compra pero no cuentan como pedido (porque ninguna de sus compras tiene precio válido), en todo el periodo?",
+    "type": "number",
+    "expected": 1,
+    "grading": "Número dentro de la tolerancia.",
+    "in_subset": false,
+    "tolerance": 0
+  },
+  {
+    "id": "E10",
+    "question": "¿Cuántos pedidos (sesiones con compra válida) hubo en el periodo, contando cada sesión una sola vez?",
+    "type": "number",
+    "expected": 913,
+    "grading": "Número dentro de la tolerancia.",
+    "in_subset": true,
+    "tolerance": 0
+  },
+  {
+    "id": "E11",
+    "question": "¿Cuántas sesiones empezaron la primera semana (1 al 7 de marzo) y llegaron a compra, aunque comprasen después del 7?",
+    "type": "number",
+    "expected": 479,
+    "grading": "Número dentro de la tolerancia.",
+    "in_subset": false,
+    "tolerance": 0
+  }
+]
