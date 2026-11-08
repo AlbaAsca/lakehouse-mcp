@@ -30,7 +30,8 @@ public final class ChaosCommand {
         if (!scenario.equals("duplicates") && !scenario.equals("empty-partition")) {
             if (scenario.equals("schema-drift")) {
                 throw new IllegalArgumentException(
-                        "schema-drift is injected by the producer: java -cp producer.jar ...producer.SchemaDriftCommand");
+                        "schema-drift is injected by the producer, so it runs from the host: ./mk chaos SCENARIO=schema-drift"
+                                + " [DRIFT_FIELD=coupon_code] [DRIFT_COUNT=20]");
             }
             if (scenario.equals("consumer-down")) {
                 throw new IllegalArgumentException(

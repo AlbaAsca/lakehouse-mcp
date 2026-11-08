@@ -8,7 +8,7 @@ SPEEDUP ?= 3600
 TABLE ?= ecommerce.events
 RETENTION ?= P7D
 
-.PHONY: chaos-consumer-down chaos-undo chaos-table up down download-data seed seed-sample test test-board evals chaos demo heal smoke expire ask profile-data
+.PHONY: chaos-schema-drift chaos-consumer-downchaos-undo chaos-table up down download-data seed seed-sample test test-board evals chaos demo heal smoke expire ask profile-data
 up:
 	docker compose up -d --build --wait
 down:
@@ -69,8 +69,16 @@ PERCENT ?= 10
 LAG_SAMPLE ?= 0.1
 chaos:
 	@test -n "$(SCENARIO)" || { echo 'Usage: ./mk chaos SCENARIO=duplicates|empty-partition|consumer-down [TABLE=ns.table] [DAY=YYYY-MM-DD] [PERCENT=10]' >&2; exit 2; }
-	@case "$(SCENARIO)" in duplicates|empty-partition|consumer-down) ;; *) echo "Unknown SCENARIO '$(SCENARIO)': use duplicates, empty-partition or consumer-down" >&2; exit 2;; esac
-	@if [ "$(SCENARIO)" = consumer-down ]; then $(MAKE) --no-print-directory chaos-consumer-down; else $(MAKE) --no-print-directory chaos-table; fi
+	@case "$(SCENARIO)" in duplicates|empty-partition|consumer-down|schema-drift) ;; *) echo "Unknown SCENARIO '$(SCENARIO)': use duplicates, empty-partition, consumer-down or schema-drift" >&2; exit 2;; esac
+	@if [ "$(SCENARIO)" = consumer-down ]; then $(MAKE) --no-print-directory chaos-consumer-down; elif [ "$(SCENARIO)" = schema-drift ]; then $(MAKE) --no-print-directory chaos-schema-drift; else $(MAKE) --no-print-directory chaos-table; fi
+#   schema-drift: produces DRIFT_COUNT events with one extra optional field DRIFT_FIELD (SchemaDriftCommand); the sink drops it.
+DRIFT_FIELD ?= coupon_code
+DRIFT_COUNT ?= 20
+chaos-schema-drift:
+	rm -f producer/target/producer-*.jar
+	mvn -B -q -pl producer -am -DskipTests package
+	java -Dloader.main=io.github.albaasca.lakehouse.producer.SchemaDriftCommand -cp "$$(ls producer/target/producer-*.jar)" org.springframework.boot.loader.launch.PropertiesLauncher --field $(DRIFT_FIELD) --count $(DRIFT_COUNT)
+	@echo '{"scenario":"schema-drift","field":"$(DRIFT_FIELD)","count":$(DRIFT_COUNT),"at":"'$$(date -u +%Y-%m-%dT%H:%M:%SZ)'","detect":"the sink drops the field until the column is added to the table"}'
 chaos-consumer-down:
 	docker compose stop connect
 	rm -f producer/target/producer-*.jar

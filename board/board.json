@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-08T20:22:22+01:00",
+  "updated": "2026-11-08T20:31:51+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -17376,10 +17376,10 @@
       "id": "T-218",
       "title": "make chaos: schema drift",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "done",
       "priority": "media",
       "estimate_min": 60.0,
-      "actual_min": null,
+      "actual_min": 9.3,
       "auto": true,
       "manual": null,
       "desc": "Emitir eventos con un campo nuevo o cambiado contra el stack real. Cómo sabremos si funciona: el agente detecta el drift tras make chaos. ## Técnico: envolver SchemaDriftCommand (producer, T-041) como escenario schema-drift en el target chaos; mismos parámetros y salida JSON.",
@@ -17387,9 +17387,9 @@
         "T-216"
       ],
       "created": "2026-11-08T19:36:58+01:00",
-      "updated": "2026-11-08T19:36:58+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-08T20:31:51+01:00",
+      "started_at": "2026-11-08T20:22:33+01:00",
+      "finished_at": "2026-11-08T20:31:51+01:00",
       "log": [
         {
           "t": "2026-11-08T19:36:58+01:00",
@@ -17400,6 +17400,34 @@
           "t": "2026-11-08T19:37:40+01:00",
           "by": "tú",
           "msg": "editada: deps"
+        },
+        {
+          "t": "2026-11-08T20:22:33+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-08T20:31:51+01:00",
+          "by": "runner",
+          "msg": "Sin verificación aparte del tester (no toca seguridad, datos reales ni punta a punta); la CI revisa."
+        },
+        {
+          "t": "2026-11-08T20:31:51+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: `./mk chaos SCENARIO=schema-drift` envuelve `SchemaDriftCommand` con `DRIFT_FIELD` y `DRIFT_COUNT`; tests de mcp-server en verde; sin probar contra el stack real."
+        }
+      ],
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-08T20:31:51+01:00",
+          "min": 9.3,
+          "turns": 20,
+          "tokens": 289983,
+          "cost_usd": 0.17178240000000003,
+          "verdict": "review",
+          "summary": "`./mk chaos SCENARIO=schema-drift` envuelve `SchemaDriftCommand` con `DRIFT_FIELD` y `DRIFT_COUNT`; tests de mcp-server en verde; sin probar contra el stack real."
         }
       ]
     },
@@ -17475,14 +17503,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-217",
-      "message": "desarrollador con T-217",
+      "current": "T-218",
+      "message": "desarrollador con T-218",
       "pid": 20400,
-      "heartbeat": "2026-11-08T20:12:16+01:00",
+      "heartbeat": "2026-11-08T20:22:33+01:00",
       "enabled": true,
       "agent": "desarrollador",
-      "started": "2026-11-08T20:12:16+01:00",
-      "live": "live-T-217-desarrollador-20261108-201216.jsonl",
+      "started": "2026-11-08T20:22:33+01:00",
+      "live": "live-T-218-desarrollador-20261108-202233.jsonl",
       "pause_reason": null
     }
   }

@@ -40,6 +40,12 @@ class ChaosCommandTest {
     }
 
     @Test
+    void schemaDriftPointsToTheHostCommand() {
+        assertThatThrownBy(() -> ChaosCommand.parse(new String[] {"schema-drift"}))
+                .hasMessageContaining("./mk chaos SCENARIO=schema-drift");
+    }
+
+    @Test
     void rejectsBadTable() {
         assertThatThrownBy(() -> ChaosCommand.parse(new String[] {"duplicates", "--table", "events", "--day", "2019-10-01"}))
                 .hasMessageContaining("namespace.table");
