@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-08T10:22:01+01:00",
+  "updated": "2026-11-08T10:24:24+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -10579,7 +10579,7 @@
       "id": "T-181",
       "title": "Seguridad: prueba de punta a punta de 401 y aprobaciones solo de admin",
       "owner": "tester",
-      "status": "blocked",
+      "status": "next",
       "priority": "media",
       "estimate_min": 20.0,
       "actual_min": 11.9,
@@ -10588,7 +10588,7 @@
       "desc": "Las pruebas actuales comprueban el filtro de claves y las herramientas por rol, pero no recorren la aplicación entera con peticiones HTTP.\nCómo sabremos si funciona: con la aplicación levantada, sin clave da 401 (salvo la salud), el analista recibe 403 al aprobar y el administrador 201.\n## Técnico\nIT con SpringBootTest + Postgres ops: GET /actuator/health 200 sin clave; /mcp y /fix-proposals 401 sin clave; POST /fix-proposals/{id}/approvals 403 con analyst y 201 con admin; apply_fix 403 con analyst; Origin ajeno 403.",
       "deps": [],
       "created": "2026-11-07T17:42:06+01:00",
-      "updated": "2026-11-07T23:07:45+01:00",
+      "updated": "2026-11-08T10:23:39+01:00",
       "started_at": "2026-11-07T23:07:32+01:00",
       "finished_at": "2026-11-07T23:07:45+01:00",
       "log": [
@@ -10636,6 +10636,11 @@
           "t": "2026-11-07T23:07:45+01:00",
           "by": "tester",
           "msg": "FAIL: McpSecurityIT confirma salud 200 y 401 sin clave o con clave mala, pero los 403 del filtro llegan como 401 y el analista recibe 401 en `GET /fix-proposals`. Está registrado en T-209 y los 3 tests rojos están `@Disabled` hasta entonces."
+        },
+        {
+          "t": "2026-11-08T10:23:39+01:00",
+          "by": "consultor",
+          "msg": "T-209 (403 llegaba como 401) ya resuelto en 45f0a91: repetir la prueba de punta a punta"
         }
       ],
       "runs": [
@@ -10661,7 +10666,8 @@
           "verdict": "fail",
           "summary": "McpSecurityIT confirma salud 200 y 401 sin clave o con clave mala, pero los 403 del filtro llegan como 401 y el analista recibe 401 en `GET /fix-proposals`. Está registrado en T-209 y los 3 tests rojo"
         }
-      ]
+      ],
+      "rank": 20
     },
     {
       "id": "T-182",
@@ -16169,7 +16175,7 @@
       "desc": "Con la aplicación entera levantada, un Origin ajeno con clave de admin, o el analista llamando a apply_fix, devuelven 401 en vez de 403. Además un analista con clave válida que pide GET /fix-proposals recibe 401 en vez de 200. Parece que sendError(403) reenvía a /error, que también exige clave, y el cliente ve 401. El test unitario no lo detecta porque usa una respuesta simulada.\nCómo sabremos si funciona: McpSecurityIT (hoy con tres tests @Disabled) pasa sin desactivar nada: Origin ajeno 403, analista con apply_fix 403, analista GET /fix-proposals 200, analista POST aprobaciones 403 y admin 201.\n## Técnico\nMcpSecurity.ApiKeyFilter usa response.sendError(403) y la cadena exige autenticación en el despacho ERROR (log: AuthorizationDeniedException en /error). Arreglo probable: setStatus(403) y escribir cuerpo sin sendError, o permitir DispatcherType.ERROR. Revisar aparte por qué GET /fix-proposals con clave analyst da 401 (probable 500 enmascarado; ver log de McpSecurityIT). Quitar los @Disabled de McpSecurityIT (creado en T-181).",
       "deps": [],
       "created": "2026-11-07T23:07:14+01:00",
-      "updated": "2026-11-08T10:22:01+01:00",
+      "updated": "2026-11-08T10:24:24+01:00",
       "started_at": "2026-11-07T23:07:55+01:00",
       "finished_at": "2026-11-07T23:40:59+01:00",
       "log": [
@@ -16202,6 +16208,11 @@
           "t": "2026-11-08T10:22:01+01:00",
           "by": "consultor",
           "msg": "Tests del módulo mcp-server en verde (exit 0)"
+        },
+        {
+          "t": "2026-11-08T10:24:24+01:00",
+          "by": "tester",
+          "msg": "DONE: el 403 del filtro llega como 403, el analista recibe 200 en GET /fix-proposals, y McpSecurityIT pasa sin @Disabled (144 tests de mcp-server en verde)."
         }
       ],
       "runs": [
@@ -16215,6 +16226,17 @@
           "cost_usd": 0.35754040000000004,
           "verdict": "review",
           "summary": "403 del filtro de claves llega como 403 (setStatus + ERROR permitido), /fix-proposals ya se registra como controlador, McpSecurityIT sin @Disabled y tests de mcp-server en verde"
+        },
+        {
+          "agent": "tester",
+          "mode": "verify",
+          "at": "2026-11-08T10:24:24+01:00",
+          "min": 7.9,
+          "turns": 9,
+          "tokens": 100020,
+          "cost_usd": 0.1111609,
+          "verdict": "done",
+          "summary": "el 403 del filtro llega como 403, el analista recibe 200 en GET /fix-proposals, y McpSecurityIT pasa sin @Disabled (144 tests de mcp-server en verde)."
         }
       ],
       "verify_started": "2026-11-08T10:16:31+01:00"
