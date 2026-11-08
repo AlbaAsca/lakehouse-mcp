@@ -6,8 +6,11 @@
 .print Aggregates of the real CSV; no row or identifier value is included.
 .print
 
+SET temp_directory = '/data/duckdb_tmp';
+SET memory_limit = '3GB';
+
 CREATE TEMP TABLE t AS
-SELECT * FROM read_csv('@CSV@', header = true, all_varchar = true, file_row_number = true);
+SELECT *, row_number() OVER () AS file_row_number FROM read_csv('@CSV@', header = true, all_varchar = true);
 
 .print ## Volume
 SELECT count(*) AS rows,
