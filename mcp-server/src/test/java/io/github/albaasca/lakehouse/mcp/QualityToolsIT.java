@@ -140,7 +140,7 @@ class QualityToolsIT {
         assertThat(report.status()).isEqualTo(Status.ISSUES);
         assertThat(report.informationalNulls()).containsExactly("category_code", "brand");
         assertThat(report.issues()).contains("50 nulls in user_session", "250 exact duplicate rows (extra copies)",
-                "202 rows with price <= 0 (100 zero, 102 negative)");
+                "201 rows with price <= 0 (100 zero, 101 negative)");
         assertThat(report.issues()).noneMatch(issue -> issue.contains("brand") || issue.contains("category_code"));
         assertThat(report.schemaDrift().status()).isEqualTo("NOT_APPLICABLE");
     }

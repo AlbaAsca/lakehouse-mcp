@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-08T20:46:00+01:00",
+  "updated": "2026-11-08T21:50:38+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -35,7 +35,7 @@
     "enabled": true,
     "state": "stopped",
     "current": null,
-    "heartbeat": "2026-11-08T19:16:33+01:00",
+    "heartbeat": "2026-11-08T21:00:03+01:00",
     "message": "Runner parado (pid muerto)",
     "pid": null,
     "live": "live-T-043-desarrollador-20261108-164241.jsonl",
@@ -17610,6 +17610,64 @@
           "msg": "creada"
         }
       ]
+    },
+    {
+      "id": "T-222",
+      "title": "CI: tests del productor rotos por la nueva muestra sintética (T-010)",
+      "owner": "desarrollador",
+      "status": "done",
+      "priority": "alta",
+      "estimate_min": 30.0,
+      "actual_min": 17.4,
+      "auto": true,
+      "manual": null,
+      "desc": "La CI de develop está en rojo desde que T-010 regeneró la muestra sintética (testdata/synthetic-events.csv.gz). Dos tests del productor siguen con los números de la muestra antigua. Mientras esté en rojo, el runner solo coge tarjetas de CI.\nCómo sabremos si funciona: ./mk test MODULE=producer en verde y la CI de develop en verde.\n\n## Técnico\nSeedCommandTest.maxRowsReadsTheFileTwiceAndStaysWithinTheLimit y theSampleRateSelectsTheSameRowsAsTheSampler (2 fallos); EventReplayReferenceTest.everyDeliveredRowMatchesTheReference (20 de 21; p. ej. esperado 552, obtenido 527). Recalcular las cifras esperadas con la verdad de referencia, no copiar lo que salga. Comprobar también que el resto de tests que usan la muestra (mcp-server, semantic, evals/demo) siguen en verde con ella.",
+      "deps": [],
+      "created": "2026-11-08T21:28:59+01:00",
+      "updated": "2026-11-08T21:50:38+01:00",
+      "started_at": "2026-11-08T21:33:15+01:00",
+      "finished_at": "2026-11-08T21:50:38+01:00",
+      "log": [
+        {
+          "t": "2026-11-08T21:28:59+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        },
+        {
+          "t": "2026-11-08T21:29:03+01:00",
+          "by": "consultor",
+          "msg": "CI en rojo"
+        },
+        {
+          "t": "2026-11-08T21:33:15+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-08T21:50:38+01:00",
+          "by": "runner",
+          "msg": "Sin verificación aparte del tester (no toca seguridad, datos reales ni punta a punta); la CI revisa."
+        },
+        {
+          "t": "2026-11-08T21:50:38+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: tests del productor recalculados con la verdad de referencia, `./mk test MODULE=producer` en verde; corregido también QualityToolsIT (201/101)."
+        }
+      ],
+      "rank": 1,
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-08T21:50:38+01:00",
+          "min": 17.4,
+          "turns": 29,
+          "tokens": 778656,
+          "cost_usd": 0.4501676,
+          "verdict": "review",
+          "summary": "tests del productor recalculados con la verdad de referencia, `./mk test MODULE=producer` en verde; corregido también QualityToolsIT (201/101)."
+        }
+      ]
     }
   ],
   "runners": {
@@ -17617,8 +17675,8 @@
       "state": "stopped",
       "current": null,
       "message": "Runner parado",
-      "pid": 12660,
-      "heartbeat": "2026-11-08T19:49:33+01:00",
+      "pid": 13452,
+      "heartbeat": "2026-11-08T21:33:15+01:00",
       "enabled": true,
       "agent": "arquitecto",
       "started": "2026-11-08T19:49:00+01:00",
@@ -17628,14 +17686,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-045",
-      "message": "desarrollador con T-045",
-      "pid": 20400,
-      "heartbeat": "2026-11-08T20:37:45+01:00",
+      "current": "T-222",
+      "message": "desarrollador con T-222",
+      "pid": 21640,
+      "heartbeat": "2026-11-08T21:33:16+01:00",
       "enabled": true,
       "agent": "desarrollador",
-      "started": "2026-11-08T20:37:44+01:00",
-      "live": "live-T-045-desarrollador-20261108-203745.jsonl",
+      "started": "2026-11-08T21:33:15+01:00",
+      "live": "live-T-222-desarrollador-20261108-213316.jsonl",
       "pause_reason": null
     }
   }

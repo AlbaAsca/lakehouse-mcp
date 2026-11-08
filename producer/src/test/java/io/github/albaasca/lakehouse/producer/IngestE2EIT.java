@@ -112,7 +112,7 @@ class IngestE2EIT {
         assertThat(single("SELECT count(*) FILTER (WHERE brand IS NULL) FROM " + TABLE)).isEqualTo(7_261);
         assertThat(single("SELECT count(*) FILTER (WHERE user_session IS NULL) FROM " + TABLE)).isEqualTo(50);
         assertThat(single("SELECT count(*) FILTER (WHERE price = 0) FROM " + TABLE)).isEqualTo(100);
-        assertThat(single("SELECT count(*) FILTER (WHERE price < 0) FROM " + TABLE)).isEqualTo(102);
+        assertThat(single("SELECT count(*) FILTER (WHERE price < 0) FROM " + TABLE)).isEqualTo(101);
         assertThat(single("SELECT count(*) FROM (SELECT DISTINCT " + COLUMNS + " FROM " + TABLE + ")")).isEqualTo(49_750);
     }
 

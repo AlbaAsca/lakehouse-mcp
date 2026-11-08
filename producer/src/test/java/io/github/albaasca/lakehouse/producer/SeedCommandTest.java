@@ -73,7 +73,7 @@ class SeedCommandTest {
 
         assertThat(exit).isEqualTo(SeedCommand.OK);
         // Row count from scripts/analysis/t011_reference.py, scenario rate10.
-        assertThat(sent).hasSize(4857);
+        assertThat(sent).hasSize(4968);
     }
 
     @Test
@@ -82,7 +82,7 @@ class SeedCommandTest {
 
         assertThat(exit).isEqualTo(SeedCommand.OK);
         // Row count from scripts/analysis/t011_reference.py, scenario max500.
-        assertThat(sent).hasSize(497);
+        assertThat(sent).hasSize(499);
     }
 
     @Test

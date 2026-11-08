@@ -30,15 +30,15 @@ class CsvEventReaderReferenceTest {
 
     /** Output of scripts/analysis/t008_reference.py: Python standard library only, one digest per column. */
     private static final Map<String, String> REFERENCE = Map.of(
-            "event_time", "734e3d100c0b93b717007a0c9693ad3937c3c0b99c1a04d30399b67be6022873",
-            "event_type", "23bfc2d0a496296e29209f1fd7d35247a1053e4d1712581f98d866356d6b29ba",
-            "product_id", "e1a3b55b215688b07c7bef03120212d82111782cb097df655e256b64623eff53",
-            "category_id", "a32ae2a9fa6bb9f424ef6592771414512ad0a0e437c863a222ea4be28d83d6ad",
-            "category_code", "f0fdce645c0e318d8af92107fe9d698b6f4179bbafc87b93a0df7e7b49856c8d",
-            "brand", "8959462f1f4d0d87f8fd7026ec2c8fa6f108721644a844e2f12b03d33ab13924",
-            "price", "d4357082a7c83c56efa109b0c948febadd1d83f2e589e523745d67b127c4f9bf",
-            "user_id", "03106a0619302ebd0e405fc1545d8500d697fa11750ed8e6efad2040641ea877",
-            "user_session", "6031b108f2892a38aa44e409d8d69d085a12cfa58e778d53216c3279ee621583");
+            "event_time", "67f34ed6518d4582d3d731560e7942818b4a6ad18e592c806685233620a1b1bc",
+            "event_type", "ec92c8c8f0491c6e3ad64e823a0388709ddfef9ceb8a93b909834e64a9a1764d",
+            "product_id", "dd49d3397c78d54543f53db48120a5f11b2e4f4db2598cc17fc0dde143d4a0f0",
+            "category_id", "02fdd7b299ac4c49d1ffec1d28d086750655bfac96d7bbbabe94713e0c392d3f",
+            "category_code", "4be14dce0c1ad803c4d108d377572cf275622012f9fc7247d2536e571a396a5b",
+            "brand", "86e05bf71c4d5438238dd87b70d06aef001e732b0b37e91a6586b78a2848f6a5",
+            "price", "36b5fa281fea0f9371950123383bbe7d820753399329c70e407da6abe771a10e",
+            "user_id", "02667595e3f6d582d337dea5e082fb1ac238ff9aea7e59a29ff2ccac70e6af51",
+            "user_session", "d4f2dacde38891e2db5c511aab6a64bb0c5d9cb7b159d91639fd9097d1cf26ba");
 
     @Test
     void everyColumnOfTheSampleMatchesTheReferenceComputedOutsideJava() throws Exception {

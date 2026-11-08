@@ -103,7 +103,7 @@ class CsvEventReaderTest {
         assertThat(events.stream().filter(e -> e.get("brand") == null)).hasSize(7_261);
         assertThat(events.stream().filter(e -> e.get("user_session") == null)).hasSize(50);
         assertThat(events.stream().filter(e -> (Double) e.get("price") == 0.0)).hasSize(100);
-        assertThat(events.stream().filter(e -> (Double) e.get("price") < 0.0)).hasSize(102);
+        assertThat(events.stream().filter(e -> (Double) e.get("price") < 0.0)).hasSize(101);
         Set<String> distinct = new HashSet<>();
         events.forEach(e -> distinct.add(e.toString()));
         assertThat(distinct).hasSize(49_750);
