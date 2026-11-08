@@ -101,11 +101,6 @@ una página por cada pieza (qué es, cómo se conecta, cómo está configurada y
 </p>
 
 Una pregunta de negocio va por la capa semántica; una consulta suelta, por `run_query`. Los datos son **sintéticos** (mismo esquema que el dataset real).
-Para que el ensayo cuadrara hubo que alinear la referencia con la métrica:
-
-<p align="center">
-  <img src="docs/img/reference-vs-metric.svg" alt="La referencia contaba duplicados y precios no positivos; ahora usa las mismas reglas que la métrica" width="100%">
-</p>
 
 Guion completo: [docs/demo-grabacion.md](docs/demo-grabacion.md) · Explicación paso a paso: [wiki, la demo](docs/wiki/06-demo.md).
 

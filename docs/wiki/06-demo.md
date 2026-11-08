@@ -22,14 +22,6 @@ Escribes una pregunta en lenguaje normal, un agente de IA la convierte en una co
 - `top_brands` limpia los datos: `DISTINCT *`, `price > 0` y `user_session` no vacía. Sus cifras no son sumas en crudo.
 - `run_query` pasa por un validador de solo lectura y un tope de filas.
 
-## Por qué la referencia no cuadraba
-
-La verdad de referencia (`evals/demo/expected.json`) y la métrica usaban reglas distintas. El agente no se equivocaba: contestaba con la métrica.
-
-<p align="center"><img src="../img/reference-vs-metric.svg" alt="Antes y ahora: reglas de la referencia frente a las de la métrica" width="100%"></p>
-
-Se decidió que **manda la métrica**, por ser la definición de negocio (`docs/metrics.md`). La referencia se recalcula con un script aparte (`evals/demo/reference.py`), sin usar el YAML, para conservar una comprobación independiente. Resultado: las cinco marcas coinciden, con `synth-nimbora` en 702 942,00.
-
 ## Lo simulado y lo real
 
 | Elemento | Real | Simulado |
