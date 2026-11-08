@@ -8,7 +8,7 @@ SPEEDUP ?= 3600
 TABLE ?= ecommerce.events
 RETENTION ?= P7D
 
-.PHONY: chaos-schema-drift chaos-consumer-downchaos-undo chaos-table up down download-data seed seed-sample test test-board evals chaos demo heal smoke expire ask profile-data
+.PHONY: chaos-schema-drift chaos-consumer-down chaos-undo chaos-table up down download-data seed seed-sample test test-board evals chaos demo heal smoke expire ask profile-data
 up:
 	docker compose up -d --build --wait
 down:
@@ -56,10 +56,14 @@ heal:
 	docker compose run --rm --build agent heal
 # For the person who runs the demo: a question, a failure, and the agent repairing it with your approval.
 DEMO_Q ?= Which five brands have the highest purchase revenue?
+# ./mk demo SCENARIO=duplicates|empty-partition|schema-drift|consumer-down (default duplicates).
+# Asks, injects the failure, repairs it with your y/N, and asks again to show the repaired table.
+DEMO_SCENARIO ?= duplicates
 demo:
 	$(MAKE) ask Q="$(DEMO_Q)"
-	$(MAKE) chaos
+	$(MAKE) chaos SCENARIO="$(or $(SCENARIO),$(DEMO_SCENARIO))"
 	$(MAKE) heal
+	$(MAKE) ask Q="$(DEMO_Q)"
 # Injects a failure into the real table: ./mk chaos SCENARIO=duplicates|empty-partition [TABLE=ns.table] [DAY=YYYY-MM-DD]
 # [PERCENT=10]. Prints the JSON report (with the snapshot before the damage). Runs in the mcp-server image.
 DAY ?= 2019-10-01

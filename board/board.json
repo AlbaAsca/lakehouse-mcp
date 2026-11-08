@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-08T20:31:51+01:00",
+  "updated": "2026-11-08T20:32:16+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -17435,10 +17435,10 @@
       "id": "T-219",
       "title": "make demo: encadenar ask, chaos y heal",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "done",
       "priority": "media",
       "estimate_min": 45.0,
-      "actual_min": null,
+      "actual_min": 0.3,
       "auto": true,
       "manual": null,
       "desc": "make demo ya llama a ask, chaos y heal; falta que funcione con chaos real y escenario elegible. Cómo sabremos si funciona: ./mk demo SCENARIO=duplicates acaba con la tabla reparada tras aprobar y. ## Técnico: DEMO_SCENARIO por defecto duplicates; separar evals de chaos en el Makefile; comprobar mk.cmd; revisar pregunta ask tras la reparación (T-042); verify:true.",
@@ -17446,9 +17446,9 @@
         "T-216"
       ],
       "created": "2026-11-08T19:36:58+01:00",
-      "updated": "2026-11-08T19:36:58+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-08T20:32:16+01:00",
+      "started_at": "2026-11-08T20:32:00+01:00",
+      "finished_at": "2026-11-08T20:32:16+01:00",
       "log": [
         {
           "t": "2026-11-08T19:36:58+01:00",
@@ -17459,6 +17459,34 @@
           "t": "2026-11-08T19:37:40+01:00",
           "by": "tú",
           "msg": "editada: deps"
+        },
+        {
+          "t": "2026-11-08T20:32:00+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-08T20:32:16+01:00",
+          "by": "runner",
+          "msg": "Sin verificación aparte del tester (no toca seguridad, datos reales ni punta a punta); la CI revisa."
+        },
+        {
+          "t": "2026-11-08T20:32:16+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: `make demo` encadena ask, chaos (escenario elegible, por defecto duplicates), heal y un segundo ask; corregida la errata de `.PHONY`; sin ejecutar (requiere Docker)."
+        }
+      ],
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-08T20:32:16+01:00",
+          "min": 0.3,
+          "turns": 7,
+          "tokens": 69760,
+          "cost_usd": 0.07893719999999999,
+          "verdict": "review",
+          "summary": "`make demo` encadena ask, chaos (escenario elegible, por defecto duplicates), heal y un segundo ask; corregida la errata de `.PHONY`; sin ejecutar (requiere Docker)."
         }
       ]
     },
@@ -17503,14 +17531,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-218",
-      "message": "desarrollador con T-218",
+      "current": "T-219",
+      "message": "desarrollador con T-219",
       "pid": 20400,
-      "heartbeat": "2026-11-08T20:22:33+01:00",
+      "heartbeat": "2026-11-08T20:32:00+01:00",
       "enabled": true,
       "agent": "desarrollador",
-      "started": "2026-11-08T20:22:33+01:00",
-      "live": "live-T-218-desarrollador-20261108-202233.jsonl",
+      "started": "2026-11-08T20:32:00+01:00",
+      "live": "live-T-219-desarrollador-20261108-203200.jsonl",
       "pause_reason": null
     }
   }
