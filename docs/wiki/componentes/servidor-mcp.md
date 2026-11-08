@@ -86,6 +86,8 @@ Por ahora, sin claves de API, `run_query`, `time_travel` y `data_quality_check` 
 
 ### El validador de SQL
 
+`run_query` exige el nombre completo con catálogo (`lh.ecommerce.events`); las tablas que lista `CatalogReader` traen ese nombre en `queryName`, y si se escribe sin catálogo el error propone la forma correcta.
+
 `SqlGuard` es el portero de `run_query` y `time_travel`: le pide a DuckDB que analice la consulta, sin ejecutarla, y recorre el resultado entero. Solo deja pasar lo que está en sus listas, así que lo que no conoce se rechaza.
 
 | Regla | Qué rechaza | Ejemplo |

@@ -387,7 +387,15 @@ public final class SqlGuard {
         }
         if (tables.stream().noneMatch(allowed -> allowed.isReachedBy(catalog, schema, table))) {
             String written = (catalog.isEmpty() ? "" : catalog + ".") + (schema.isEmpty() ? "" : schema + ".") + table;
-            throw new Rejected(Rule.TABLE, "Table not allowed: " + written);
+            String hint = catalog.isEmpty()
+                    ? tables.stream()
+                            .filter(a -> !a.catalog().isEmpty() && a.table().equalsIgnoreCase(table)
+                                    && (schema.isEmpty() || a.schema().equalsIgnoreCase(schema)))
+                            .findFirst()
+                            .map(a -> " (use " + a.catalog() + "." + a.schema() + "." + a.table() + ")")
+                            .orElse("")
+                    : "";
+            throw new Rejected(Rule.TABLE, "Table not allowed: " + written + hint);
         }
     }
 

@@ -328,6 +328,16 @@ class SqlGuardTest {
     }
 
     @Test
+    void aTableWithoutCatalogSuggestsTheFullName() {
+        assertThatThrownBy(() -> guard.guarded("SELECT id FROM ns.events", ALLOWED, 1))
+                .isInstanceOf(Rejected.class)
+                .hasMessage("Table not allowed: ns.events (use lh.ns.events)");
+        assertThatThrownBy(() -> guard.guarded("SELECT id FROM events", ALLOWED, 1))
+                .isInstanceOf(Rejected.class)
+                .hasMessage("Table not allowed: events (use lh.ns.events)");
+    }
+
+    @Test
     void aTableFunctionIsNamedInTheError() {
         assertThatThrownBy(() -> guard.guarded("SELECT * FROM read_csv('x')", ALLOWED, 1))
                 .isInstanceOf(Rejected.class)

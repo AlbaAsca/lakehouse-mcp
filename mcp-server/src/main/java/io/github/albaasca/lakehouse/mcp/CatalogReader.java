@@ -19,7 +19,13 @@ public final class CatalogReader {
 
     private static final String CATALOG = LakehouseSession.CATALOG_ALIAS;
 
-    public record TableRef(String namespace, String table) {}
+    /** @param queryName the full name that run_query accepts, e.g. {@code lh.ecommerce.events} */
+    public record TableRef(String namespace, String table, String queryName) {
+
+        public TableRef(String namespace, String table) {
+            this(namespace, table, CATALOG + "." + namespace + "." + table);
+        }
+    }
 
     /** Without nullability on purpose: DuckDB reports every column as nullable, also the ones Iceberg requires. */
     public record Column(String name, String type) {}
