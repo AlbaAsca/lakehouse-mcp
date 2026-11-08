@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-08T16:17:53+01:00",
+  "updated": "2026-11-08T16:26:57+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -34,13 +34,13 @@
   "runner": {
     "enabled": true,
     "state": "working",
-    "current": "T-041",
-    "heartbeat": "2026-11-08T15:43:54+01:00",
-    "message": "desarrollador con T-041",
+    "current": "T-213",
+    "heartbeat": "2026-11-08T16:18:02+01:00",
+    "message": "desarrollador con T-213",
     "pid": 7056,
-    "live": "live-T-041-desarrollador-20261108-154354.jsonl",
+    "live": "live-T-213-desarrollador-20261108-161802.jsonl",
     "agent": "desarrollador",
-    "started": "2026-11-08T15:43:53+01:00"
+    "started": "2026-11-08T16:18:02+01:00"
   },
   "agents": [
     {
@@ -16857,23 +16857,61 @@
       "id": "T-213",
       "title": "run_query rechaza ecommerce.events y no dice cómo escribir la tabla",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "done",
       "priority": "media",
       "estimate_min": 20.0,
-      "actual_min": null,
+      "actual_min": 1.0,
       "auto": true,
       "manual": null,
       "desc": "Al probar el servidor MCP como cliente, run_query rechaza 'ecommerce.events' (el nombre que da list_tables) con 'Table not allowed'. Solo acepta el nombre completo 'lh.ecommerce.events', y el mensaje de error no lo dice. Un agente que no lo sepa puede fallar la pregunta de las filas. Se propone que list_tables y describe_table devuelvan también el nombre listo para usar, y que el error de tabla no permitida sugiera la forma correcta. Cómo sabremos si funciona: SELECT count(*) FROM ecommerce.events falla con un mensaje que dice 'use lh.ecommerce.events', y list_tables incluye ese nombre.\n## Técnico\nObservado el 8-nov con SELECT count(*) FROM ecommerce.events. SqlGuard.checkTable (SqlGuard.java ~380) y QueryTools.runQueryChecked (CATALOG_ALIAS = lh). Alternativa: aceptar también el nombre sin catálogo cuando es único. Tests en mcp-server.",
       "deps": [],
       "created": "2026-11-08T15:48:56+01:00",
-      "updated": "2026-11-08T15:48:56+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-08T16:26:57+01:00",
+      "started_at": "2026-11-08T16:18:02+01:00",
+      "finished_at": "2026-11-08T16:19:03+01:00",
       "log": [
         {
           "t": "2026-11-08T15:48:56+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-08T16:18:02+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-08T16:19:03+01:00",
+          "by": "consultor",
+          "msg": "Integrado en develop (447cc6d; el test de contrato quedó en d47ec2f). Tests del módulo mcp-server en verde (exit 0). Si el runner la tenía en curso, está hecha: no repetir."
+        },
+        {
+          "t": "2026-11-08T16:19:03+01:00",
+          "by": "consultor",
+          "msg": "Error sugiere lh.<tabla> y list_tables/describe_table devuelven queryName"
+        },
+        {
+          "t": "2026-11-08T16:26:57+01:00",
+          "by": "runner",
+          "msg": "Sin verificación aparte del tester (no toca seguridad, datos reales ni punta a punta); la CI revisa."
+        },
+        {
+          "t": "2026-11-08T16:26:57+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: la sugerencia \"use lh.ns.tabla\" y el campo queryName ya estaban en 447cc6d; los tests de mcp-server pasan."
+        }
+      ],
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-08T16:26:57+01:00",
+          "min": 8.9,
+          "turns": 10,
+          "tokens": 143827,
+          "cost_usd": 0.1064079,
+          "verdict": "review",
+          "summary": "la sugerencia \"use lh.ns.tabla\" y el campo queryName ya estaban en 447cc6d; los tests de mcp-server pasan."
         }
       ]
     }
