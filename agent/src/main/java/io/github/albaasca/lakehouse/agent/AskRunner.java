@@ -22,6 +22,9 @@ class AskRunner implements ApplicationRunner, ExitCodeGenerator {
     @Override
     public void run(ApplicationArguments args) {
         List<String> words = args.getNonOptionArgs();
+        if (!words.isEmpty() && words.getFirst().equals("heal")) {
+            return; // HealRunner's command
+        }
         String question = words.isEmpty() ? "" : String.join(" ", words.subList(1, words.size())).strip();
         if (words.isEmpty() || !words.getFirst().equals("ask") || question.isEmpty()) {
             System.err.println("Usage: ask <question>");

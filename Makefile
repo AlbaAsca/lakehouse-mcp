@@ -8,7 +8,7 @@ SPEEDUP ?= 3600
 TABLE ?= ecommerce.events
 RETENTION ?= P7D
 
-.PHONY: up down download-data seed seed-sample test test-board evals chaos demo smoke expire ask profile-data
+.PHONY: up down download-data seed seed-sample test test-board evals chaos demo heal smoke expire ask profile-data
 up:
 	docker compose up -d --build --wait
 down:
@@ -48,5 +48,15 @@ ask:
 # Aggregates of the real CSV (no rows, no identifiers) into docs/data-profile.md.
 profile-data:
 	sed -e 's|@CSV@|/data/raw/$(MONTH).csv|' -e 's|@OUT@|docs/data-profile.md|' infra/profile-data.sql | duckdb
-evals chaos demo:
+# The repair cycle: the agent proposes, you answer y/N on this console, and only then is it approved and applied.
+# Needs an interactive terminal (stdin) for the question.
+heal:
+	docker compose run --rm --build agent heal
+# For the person who runs the demo: a question, a failure, and the agent repairing it with your approval.
+DEMO_Q ?= Which five brands have the highest purchase revenue?
+demo:
+	$(MAKE) ask Q="$(DEMO_Q)"
+	$(MAKE) chaos
+	$(MAKE) heal
+evals chaos:
 	@echo "$@: not implemented yet, see the board" && exit 1

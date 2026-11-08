@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-08T16:26:57+01:00",
+  "updated": "2026-11-08T16:42:35+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -34,13 +34,13 @@
   "runner": {
     "enabled": true,
     "state": "working",
-    "current": "T-213",
-    "heartbeat": "2026-11-08T16:18:02+01:00",
-    "message": "desarrollador con T-213",
+    "current": "T-042",
+    "heartbeat": "2026-11-08T16:38:21+01:00",
+    "message": "tester con T-042",
     "pid": 7056,
-    "live": "live-T-213-desarrollador-20261108-161802.jsonl",
-    "agent": "desarrollador",
-    "started": "2026-11-08T16:18:02+01:00"
+    "live": "live-T-042-tester-20261108-163821.jsonl",
+    "agent": "tester",
+    "started": "2026-11-08T16:38:21+01:00"
   },
   "agents": [
     {
@@ -3504,10 +3504,10 @@
       "id": "T-042",
       "title": "Chaos: modo reparación del agente con aprobación en consola y comando demo",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "done",
       "priority": "alta",
       "estimate_min": 40.0,
-      "actual_min": null,
+      "actual_min": 11.3,
       "auto": true,
       "manual": null,
       "desc": "Aquí el agente sigue el ciclo solo: detecta, diagnostica y propone, y luego se para a preguntar a la persona. La aprobación la da el programa tras pedirla por consola, sin que el modelo tenga nunca la credencial ni una forma de aprobar.\nCómo sabremos si funciona: con modelo simulado, si la persona dice no, nada cambia; si dice sí, se aplica y se verifica; y la credencial de aprobación no aparece nunca en lo enviado al modelo.\n\n## Técnico\n- agent: comando heal. Prompt de ciclo. Aprobación en consola, llamada a POST /fix-proposals/{id}/approvals con la clave admin, solo desde código Java. La sesión del modelo usa la clave de agente.\n- Test: ChatModel simulado que intenta apply_fix sin aprobar (rechazado); inspección de todos los mensajes enviados, sin clave.\n- Makefile: demo (pregunta, chaos, heal) para el responsable. ./mk test.",
@@ -3517,17 +3517,77 @@
         "T-038"
       ],
       "created": "2026-11-02T11:39:11+01:00",
-      "updated": "2026-11-07T18:15:38+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-08T16:42:35+01:00",
+      "started_at": "2026-11-08T16:27:03+01:00",
+      "finished_at": "2026-11-08T16:38:20+01:00",
       "log": [
         {
           "t": "2026-11-02T11:39:11+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-08T16:27:03+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-08T16:38:11+01:00",
+          "by": "consultor",
+          "msg": "Hecho: comando heal (HealRunner, FixDesk/HttpFixDesk), make heal y demo, MCP_ADMIN_KEY en compose (servicio agent). Como apply_fix exige clave admin, lo aplica el programa (cliente MCP con clave admin), no el modelo; el modelo solo propone. Tests agent en verde (HealRunnerTest, HttpFixDeskTest). Sin probar: heal contra stack real (compose.yaml tocado: pasar tests de contenedores; docker compose run necesita terminal interactiva) y demo depende de chaos (T-037..041, aun stub). Wiki: agente.md (comando heal, MCP_ADMIN_KEY, exit codes) y 04-operacion."
+        },
+        {
+          "t": "2026-11-08T16:38:20+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: comando heal con aprobación por consola, make heal/demo y MCP_ADMIN_KEY en compose; tests del módulo agent en verde; falta probarlo con el stack real y que chaos exista."
+        },
+        {
+          "t": "2026-11-08T16:38:20+01:00",
+          "by": "desarrollador",
+          "msg": "⚠ 1 comandos denegados: find / -name \"mcp-core*.jar\" -o -name \"mcp-1*.jar\" -o -name \"mcp-*.jar\" -path \"*"
+        },
+        {
+          "t": "2026-11-08T16:38:20+01:00",
+          "by": "runner",
+          "msg": "✓ permiso concedido automáticamente: find * (solo lectura dentro del proyecto); se reintenta"
+        },
+        {
+          "t": "2026-11-08T16:38:21+01:00",
+          "by": "tester",
+          "msg": "verificando"
+        },
+        {
+          "t": "2026-11-08T16:42:35+01:00",
+          "by": "tester",
+          "msg": "DONE: heal verificado con modelo simulado: sin aprobación no cambia nada, con \"sí\" se aplica y verifica, la clave admin no llega al modelo; tests del módulo agent en verde y CI de develop en verde."
         }
       ],
-      "rank": 900
+      "rank": 900,
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-08T16:38:20+01:00",
+          "min": 11.3,
+          "turns": 51,
+          "tokens": 1263113,
+          "cost_usd": 0.6683569,
+          "verdict": "review",
+          "summary": "comando heal con aprobación por consola, make heal/demo y MCP_ADMIN_KEY en compose; tests del módulo agent en verde; falta probarlo con el stack real y que chaos exista."
+        },
+        {
+          "agent": "tester",
+          "mode": "verify",
+          "at": "2026-11-08T16:42:35+01:00",
+          "min": 4.2,
+          "turns": 12,
+          "tokens": 146250,
+          "cost_usd": 0.1269687,
+          "verdict": "done",
+          "summary": "heal verificado con modelo simulado: sin aprobación no cambia nada, con \"sí\" se aplica y verifica, la clave admin no llega al modelo; tests del módulo agent en verde y CI de develop en verde."
+        }
+      ],
+      "verify_started": "2026-11-08T16:38:21+01:00"
     },
     {
       "id": "T-043",
@@ -3724,6 +3784,11 @@
           "t": "2026-11-02T11:39:41+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-08T16:35:18+01:00",
+          "by": "consultor",
+          "msg": "8-nov: batería de 10 preguntas del servidor sin modelo (evals/battery/run.py, 10/10 contra referencia independiente). Aprovechable como base; falta medir al agente con modelo."
         }
       ],
       "rank": 900

@@ -53,6 +53,13 @@ public class AgentApplication {
         };
     }
 
+    /** The admin key is for this program only (approve, apply); the model's session uses the analyst key. */
+    @Bean
+    FixDesk fixDesk(@Value("${spring.ai.mcp.client.streamable-http.connections.lakehouse.url}") String url,
+            @Value("${agent.mcp.analyst-key:}") String analystKey, @Value("${agent.mcp.admin-key:}") String adminKey) {
+        return new HttpFixDesk(url, analystKey, adminKey);
+    }
+
     @Bean
     Agent agent(ChatClient.Builder builder, UsageMeter meter, List<ToolCallbackProvider> tools,
             @Value("classpath:prompts/system.md") Resource systemPrompt,

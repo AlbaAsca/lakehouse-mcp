@@ -51,6 +51,8 @@ agent:
   model-timeout: ${AGENT_MODEL_TIMEOUT:300s}
   mcp:
     analyst-key: ${MCP_ANALYST_KEY:}
+    # Only HealRunner uses it (approve and apply); never given to the model.
+    admin-key: ${MCP_ADMIN_KEY:}
   limits:
     # 0 is no limit. Tokens (input + output) and USD per question, USD per run; the USD ones need the prices of the model.
     max-tokens: ${AGENT_MAX_TOKENS:200000}

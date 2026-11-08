@@ -214,6 +214,8 @@ services:
     environment:
       MCP_SERVER_URL: http://mcp-server:8090
       MCP_ANALYST_KEY: ${MCP_ANALYST_KEY:-}
+      # Only the heal command uses it, to approve after a yes on the console; the model never sees it.
+      MCP_ADMIN_KEY: ${MCP_ADMIN_KEY:-}
       AGENT_PROVIDER: ${AGENT_PROVIDER:-google-genai}
       AGENT_MODEL: ${AGENT_MODEL:-}
       AGENT_BASE_URL: ${AGENT_BASE_URL:-https://api.openai.com/v1}
