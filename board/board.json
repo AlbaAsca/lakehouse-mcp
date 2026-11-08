@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-08T13:12:29+01:00",
+  "updated": "2026-11-08T13:13:59+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -34,13 +34,13 @@
   "runner": {
     "enabled": true,
     "state": "working",
-    "current": "T-200",
-    "heartbeat": "2026-11-08T13:12:09+01:00",
-    "message": "desarrollador con T-200",
+    "current": "T-003",
+    "heartbeat": "2026-11-08T13:13:26+01:00",
+    "message": "tester con T-003",
     "pid": 6724,
-    "live": "live-T-200-desarrollador-20261108-131209.jsonl",
-    "agent": "desarrollador",
-    "started": "2026-11-08T13:12:09+01:00"
+    "live": "live-T-003-tester-20261108-131326.jsonl",
+    "agent": "tester",
+    "started": "2026-11-08T13:13:25+01:00"
   },
   "agents": [
     {
@@ -215,26 +215,71 @@
       "id": "T-003",
       "title": "Infra: comando para perfilar el CSV real sin copiar datos",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "blocked",
       "priority": "media",
       "estimate_min": 15.0,
-      "actual_min": null,
+      "actual_min": 0.8,
       "auto": true,
       "manual": null,
       "desc": "Para que la muestra sintética y las reglas de calidad se parezcan a los datos reales hay que saber cómo son, pero no podemos subir ni una fila por la licencia. Se propone un comando que solo saque agregados: nulos, rangos, duplicados, volumen por día y si el fichero viene ordenado.\nCómo sabremos si funciona: sobre un CSV pequeño de prueba, el informe da los recuentos correctos y no contiene ningún valor individual de user_id ni user_session.\n\n## Técnico\n- Target make profile-data: DuckDB CLI con infra/profile-data.sql sobre /data/raw/$(MONTH).csv; escribe docs/data-profile.md.\n- Sin filas ni valores de identificadores; solo agregados por columna y top de event_type.\n- Test en tests/ con CSV inventado en tmp_path; se verifica con ./mk test-board.",
       "deps": [],
       "created": "2026-11-02T11:35:11+01:00",
-      "updated": "2026-11-07T18:15:36+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-08T13:13:59+01:00",
+      "started_at": "2026-11-08T13:12:33+01:00",
+      "finished_at": "2026-11-08T13:13:24+01:00",
       "log": [
         {
           "t": "2026-11-02T11:35:11+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-08T13:12:33+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-08T13:13:24+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: `make profile-data` y su SQL de agregados creados; el test estático pasa y el que ejecuta DuckDB se salta aquí, falta pasarlo en `tools`."
+        },
+        {
+          "t": "2026-11-08T13:13:25+01:00",
+          "by": "tester",
+          "msg": "verificando"
+        },
+        {
+          "t": "2026-11-08T13:13:59+01:00",
+          "by": "tester",
+          "msg": "BLOCKED: falta ejecutar en la imagen `tools` el test que corre DuckDB (`./mk test-board`); el diff y el test estático están bien."
         }
       ],
-      "rank": 900
+      "rank": 900,
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-08T13:13:24+01:00",
+          "min": 0.9,
+          "turns": 17,
+          "tokens": 181233,
+          "cost_usd": 0.14840699999999998,
+          "verdict": "review",
+          "summary": "`make profile-data` y su SQL de agregados creados; el test estático pasa y el que ejecuta DuckDB se salta aquí, falta pasarlo en `tools`."
+        },
+        {
+          "agent": "tester",
+          "mode": "verify",
+          "at": "2026-11-08T13:13:59+01:00",
+          "min": 0.6,
+          "turns": 5,
+          "tokens": 52019,
+          "cost_usd": 0.06985640000000001,
+          "verdict": "blocked",
+          "summary": "falta ejecutar en la imagen `tools` el test que corre DuckDB (`./mk test-board`); el diff y el test estático están bien."
+        }
+      ],
+      "verify_started": "2026-11-08T13:13:25+01:00"
     },
     {
       "id": "T-004",
@@ -6433,6 +6478,11 @@
           "t": "2026-11-07T17:48:37+01:00",
           "by": "consultor",
           "msg": "Sigue bloqueada a propósito: espera al cupo diario de Gemini (08:00)."
+        },
+        {
+          "t": "2026-11-08T13:13:21+01:00",
+          "by": "consultor",
+          "msg": "8-nov: ensayo NO cuadra (importes distintos, sin run_query). No grabar. Ver nueva tarjeta."
         }
       ]
     },
@@ -16393,6 +16443,30 @@
         "task": "T-198",
         "why": ""
       }
+    },
+    {
+      "id": "T-211",
+      "title": "Demo: el agente da importes distintos a la referencia",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "alta",
+      "estimate_min": 45.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Al ensayar la pregunta de las cinco marcas, el agente responde con la métrica semántica (get_metric) y no con run_query, y los importes no coinciden con la referencia. Cómo sabremos si funciona: ./mk ask con la pregunta de las marcas da las mismas cinco marcas e importes que evals/demo/expected.json, y la salida muestra run_query.\n## Técnico\n8-nov, AGENT_MODEL por defecto, 50 000 filas. Obtenido: nimbora 702942.00, velkaro 371961.23, ostrina 285923.12, quorvo 280932.97, lumbrel 212114.06. Esperado: 704515.14, 373157.08, 286978.02, 284523.31, 216201.67. Herramientas usadas: list_metrics, get_metric (sin run_query). Revisar definición de la métrica en semantic/ (¿excluye reembolsos/negativos/duplicados?) frente a las reglas de expected.json, o el prompt del agente. Además: .env no tenía MCP_ANALYST_KEY/MCP_ADMIN_KEY (daba 401 al agente); añadidas con valores locales aleatorios.",
+      "deps": [],
+      "created": "2026-11-08T13:13:21+01:00",
+      "updated": "2026-11-08T13:13:21+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-08T13:13:21+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ]
     }
   ],
   "runners": {

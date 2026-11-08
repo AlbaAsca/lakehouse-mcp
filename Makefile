@@ -8,7 +8,7 @@ SPEEDUP ?= 3600
 TABLE ?= ecommerce.events
 RETENTION ?= P7D
 
-.PHONY: up down download-data seed seed-sample test test-board evals chaos demo smoke expire ask
+.PHONY: up down download-data seed seed-sample test test-board evals chaos demo smoke expire ask profile-data
 up:
 	docker compose up -d --build --wait
 down:
@@ -45,5 +45,8 @@ expire:
 ask:
 	@test -n "$$Q" || { echo 'Usage: ./mk ask Q="your question"' >&2; exit 2; }
 	docker compose run --rm --build agent ask "$$Q"
+# Aggregates of the real CSV (no rows, no identifiers) into docs/data-profile.md.
+profile-data:
+	sed -e 's|@CSV@|/data/raw/$(MONTH).csv|' -e 's|@OUT@|docs/data-profile.md|' infra/profile-data.sql | duckdb
 evals chaos demo:
 	@echo "$@: not implemented yet, see the board" && exit 1
