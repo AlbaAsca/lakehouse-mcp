@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-08T13:12:04+01:00",
+  "updated": "2026-11-08T13:12:29+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -34,13 +34,13 @@
   "runner": {
     "enabled": true,
     "state": "working",
-    "current": "T-199",
-    "heartbeat": "2026-11-08T13:10:06+01:00",
-    "message": "desarrollador con T-199",
-    "pid": 3576,
-    "live": "live-T-199-desarrollador-20261108-131006.jsonl",
+    "current": "T-200",
+    "heartbeat": "2026-11-08T13:12:09+01:00",
+    "message": "desarrollador con T-200",
+    "pid": 6724,
+    "live": "live-T-200-desarrollador-20261108-131209.jsonl",
     "agent": "desarrollador",
-    "started": "2026-11-08T13:10:06+01:00"
+    "started": "2026-11-08T13:12:09+01:00"
   },
   "agents": [
     {
@@ -15973,10 +15973,10 @@
       "id": "T-200",
       "title": "CI: impedir que un PR toque el panel",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "done",
       "priority": "media",
       "estimate_min": 25.0,
-      "actual_min": null,
+      "actual_min": 0.3,
       "auto": true,
       "manual": null,
       "desc": "Para que varios agentes en paralelo no choquen en el panel, el estado de las tarjetas no debe viajar en las ramas de código. Se propone que la CI de un PR falle si su cambio toca el fichero del panel.\nCómo sabremos si funciona: un PR de prueba que modifica board/board.json falla esa comprobación y uno que no lo toca pasa.\n## Técnico\n.github/workflows/ci.yml: job solo en pull_request que haga git diff --name-only contra la base y falle si aparece board/board.json. Revisar concurrency para PR. Test en tests/ que lea el workflow.",
@@ -15984,14 +15984,42 @@
         "T-198"
       ],
       "created": "2026-11-07T20:44:33+01:00",
-      "updated": "2026-11-07T20:44:33+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-08T13:12:29+01:00",
+      "started_at": "2026-11-08T13:12:09+01:00",
+      "finished_at": "2026-11-08T13:12:29+01:00",
       "log": [
         {
           "t": "2026-11-07T20:44:33+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-08T13:12:09+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-08T13:12:29+01:00",
+          "by": "runner",
+          "msg": "Sin verificación aparte del tester (no toca seguridad, datos reales ni punta a punta); la CI revisa."
+        },
+        {
+          "t": "2026-11-08T13:12:29+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: job `no-board-in-pr` en ci.yml (falla si un PR toca board/board.json) y test del workflow en verde."
+        }
+      ],
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-08T13:12:29+01:00",
+          "min": 0.3,
+          "turns": 7,
+          "tokens": 87906,
+          "cost_usd": 0.07980219999999999,
+          "verdict": "review",
+          "summary": "job `no-board-in-pr` en ci.yml (falla si un PR toca board/board.json) y test del workflow en verde."
         }
       ]
     },

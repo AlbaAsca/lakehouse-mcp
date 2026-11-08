@@ -140,6 +140,15 @@ def test_wiki_gives_github_run_as_proven_and_explains_cancellation():
     assert re.search(r"\*\*Cancelación:\*\*.*pull requests.*`develop` y `main` no se cancela", section, re.S)
 
 
+def test_pull_requests_cannot_touch_the_board():
+    guard = job(CI, "no-board-in-pr")
+    assert "if: ${{ github.event_name == 'pull_request' }}" in guard
+    assert "fetch-depth: 0" in guard
+    assert "git diff --name-only" in guard and "board/board.json" in guard
+    assert "exit 1" in guard
+    assert timeout(guard) is not None
+
+
 # The helpers above must really detect a workflow that lost what the card asks for.
 @pytest.mark.parametrize(
     "broken",

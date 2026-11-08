@@ -63,6 +63,24 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
 
+  no-board-in-pr:
+    # Card state must not travel in code branches: parallel agents would collide on board/board.json.
+    if: ${{ github.event_name == 'pull_request' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Fail if the PR touches board/board.json
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          if git diff --name-only "origin/${BASE_REF}...HEAD" | grep -qx 'board/board.json'; then
+            echo "::error::This PR changes board/board.json; card state is saved by the runner, not by PRs."
+            exit 1
+          fi
+
   board-and-scripts:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
