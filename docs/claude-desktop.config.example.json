@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "lakehouse": {
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "http://127.0.0.1:8090/mcp",
+               "--header", "Authorization:${LAKEHOUSE_AUTH}", "--allow-http"],
+      "env": {"LAKEHOUSE_AUTH": "Bearer <MCP_ANALYST_KEY>"}
+    }
+  }
+}

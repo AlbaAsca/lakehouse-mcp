@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-08T14:01:37+01:00",
+  "updated": "2026-11-08T14:17:49+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -64,8 +64,8 @@
       "name": "Desarrollador",
       "role": "Implementa las tareas",
       "color": "#7aa2f7",
-      "status": "working",
-      "current": "T-028"
+      "status": "idle",
+      "current": null
     },
     {
       "id": "tester",
@@ -2515,10 +2515,10 @@
       "id": "T-028",
       "title": "MCP: servidor en el compose y configuración para Claude Desktop",
       "owner": "desarrollador",
-      "status": "doing",
+      "status": "done",
       "priority": "media",
       "estimate_min": 15.0,
-      "actual_min": null,
+      "actual_min": 25.8,
       "auto": true,
       "manual": null,
       "desc": "El servidor ya estará en el stack por una tarjeta anterior. Queda que Claude Desktop pueda conectarse a él con una configuración de ejemplo y que, con todas las herramientas ya hechas, la imagen siga funcionando.\nCómo sabremos si funciona: hay una guía con la configuración, y un test comprueba que el servidor del stack ofrece todas las herramientas previstas hasta aquí.\n\n## Técnico\nLa imagen y el servicio en compose salen en T-093. Aquí: docs/claude-desktop.md y ejemplo de configuración. Comprobar en la documentación actual cómo Claude Desktop conecta a un servidor HTTP local (conector remoto o puente stdio); si exige instalar algo en el host, decirlo. Ampliar el test de T-093 con la lista completa de herramientas. Verificación: ./mk test. Título pendiente de ajustar en el panel.",
@@ -2529,9 +2529,9 @@
         "T-026"
       ],
       "created": "2026-11-02T11:37:44+01:00",
-      "updated": "2026-11-08T13:51:59+01:00",
+      "updated": "2026-11-08T14:17:49+01:00",
       "started_at": "2026-11-08T13:51:59+01:00",
-      "finished_at": null,
+      "finished_at": "2026-11-08T14:17:49+01:00",
       "log": [
         {
           "t": "2026-11-02T11:37:44+01:00",
@@ -2552,9 +2552,32 @@
           "t": "2026-11-08T13:51:59+01:00",
           "by": "runner",
           "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-08T14:17:49+01:00",
+          "by": "runner",
+          "msg": "Sin verificación aparte del tester (no toca seguridad, datos reales ni punta a punta); la CI revisa."
+        },
+        {
+          "t": "2026-11-08T14:17:49+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: Guía y configuración de ejemplo para Claude Desktop (requiere Node/npx y `mcp-remote`) y test de la lista exacta de herramientas del stack; tests de `mcp-server` en verde."
         }
       ],
-      "rank": 900
+      "rank": 900,
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-08T14:17:49+01:00",
+          "min": 25.8,
+          "turns": 1,
+          "tokens": 44111,
+          "cost_usd": 0.273233,
+          "verdict": "review",
+          "summary": "Guía y configuración de ejemplo para Claude Desktop (requiere Node/npx y `mcp-remote`) y test de la lista exacta de herramientas del stack; tests de `mcp-server` en verde."
+        }
+      ]
     },
     {
       "id": "T-029",

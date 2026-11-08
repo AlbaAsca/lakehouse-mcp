@@ -117,9 +117,11 @@ class McpServerImageIT {
     }
 
     @Test
-    void aClientListsTheToolsThatQuery() {
+    void anAnalystListsEveryReadingTool() {
+        // propose_fix and apply_fix are the admin's: the analyst's list does not show them.
         assertThat(client.listTools().tools()).extracting(Tool::name)
-                .contains("list_tables", "describe_table", "run_query", "time_travel");
+                .containsExactlyInAnyOrder("list_tables", "describe_table", "run_query", "time_travel",
+                        "pipeline_health", "data_quality_check", "list_metrics", "get_metric");
     }
 
     @Test
