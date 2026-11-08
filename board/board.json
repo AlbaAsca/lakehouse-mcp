@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-08T22:19:31+01:00",
+  "updated": "2026-11-08T23:15:02+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -4237,10 +4237,10 @@
       "id": "T-053",
       "title": "Seguridad: registro de auditoría de cada llamada",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "done",
       "priority": "media",
       "estimate_min": 25.0,
-      "actual_min": null,
+      "actual_min": 35.6,
       "auto": true,
       "manual": null,
       "desc": "Si un agente toca datos, debe quedar constancia de quién hizo qué y cuándo, incluidas las llamadas rechazadas y las aprobaciones. Se guarda en Postgres junto a las propuestas, para poder consultarlo.\nCómo sabremos si funciona: tras una secuencia de llamadas, el registro tiene exactamente esas entradas, en orden, y ninguna incluye claves ni user_id en claro.\n\n## Técnico\nTabla audit_log en ops (ts, role, tool, parámetros saneados, outcome, duración, proposal_id). Solo inserción. Mismo interceptor que T-024. GET /audit-events solo admin, con paginación y HATEOAS. IT que compara entrada a entrada. ./mk test.",
@@ -4248,17 +4248,62 @@
         "T-050"
       ],
       "created": "2026-11-02T11:40:09+01:00",
-      "updated": "2026-11-07T18:15:40+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-08T23:15:02+01:00",
+      "started_at": "2026-11-08T22:19:38+01:00",
+      "finished_at": "2026-11-08T22:55:14+01:00",
       "log": [
         {
           "t": "2026-11-02T11:40:09+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-08T22:19:38+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-08T22:55:14+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: registro de auditoría en Postgres (`audit_log`), enganchado al filtro de claves, con `GET /audit-events` solo para admin; tests unitario e IT en verde."
+        },
+        {
+          "t": "2026-11-08T22:55:16+01:00",
+          "by": "tester",
+          "msg": "verificando"
+        },
+        {
+          "t": "2026-11-08T23:15:02+01:00",
+          "by": "tester",
+          "msg": "DONE: el registro de auditoría es correcto y los tests de la tarea pasan; los 5 fallos del módulo son tests de DuckDB sin relación con la auditoría."
         }
       ],
-      "rank": 900
+      "rank": 900,
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-08T22:55:14+01:00",
+          "min": 35.6,
+          "turns": 52,
+          "tokens": 1976565,
+          "cost_usd": 0.6593742,
+          "verdict": "review",
+          "summary": "registro de auditoría en Postgres (`audit_log`), enganchado al filtro de claves, con `GET /audit-events` solo para admin; tests unitario e IT en verde."
+        },
+        {
+          "agent": "tester",
+          "mode": "verify",
+          "at": "2026-11-08T23:15:02+01:00",
+          "min": 19.7,
+          "turns": 10,
+          "tokens": 120938,
+          "cost_usd": 0.1541718,
+          "verdict": "done",
+          "summary": "el registro de auditoría es correcto y los tests de la tarea pasan; los 5 fallos del módulo son tests de DuckDB sin relación con la auditoría."
+        }
+      ],
+      "verify_started": "2026-11-08T22:55:16+01:00"
     },
     {
       "id": "T-054",
@@ -17830,14 +17875,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-051",
-      "message": "tester con T-051",
+      "current": "T-053",
+      "message": "tester con T-053",
       "pid": 23508,
-      "heartbeat": "2026-11-08T22:17:52+01:00",
+      "heartbeat": "2026-11-08T22:55:18+01:00",
       "enabled": true,
       "agent": "tester",
-      "started": "2026-11-08T22:17:52+01:00",
-      "live": "live-T-051-tester-20261108-221752.jsonl",
+      "started": "2026-11-08T22:55:17+01:00",
+      "live": "live-T-053-tester-20261108-225518.jsonl",
       "pause_reason": null
     }
   }

@@ -46,6 +46,11 @@ final class McpSecurity {
 
     static SecurityFilterChain chain(HttpSecurity http, String analystKey, String adminKey, List<String> allowedOrigins)
             throws Exception {
+        return chain(http, analystKey, adminKey, allowedOrigins, AuditLog.NONE);
+    }
+
+    static SecurityFilterChain chain(HttpSecurity http, String analystKey, String adminKey, List<String> allowedOrigins,
+            AuditLog audit) throws Exception {
         return http.csrf(csrf -> csrf.disable())
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .httpBasic(basic -> basic.disable())
@@ -57,8 +62,10 @@ final class McpSecurity {
                         .dispatcherTypeMatchers(jakarta.servlet.DispatcherType.ERROR).permitAll()
                         .requestMatchers("/actuator/health", "/actuator/health/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/fix-proposals/*/approvals").hasRole(ADMIN)
+                        .requestMatchers("/audit-events", "/audit-events/**").hasRole(ADMIN)
                         .anyRequest().hasAnyRole(ANALYST, ADMIN))
-                .addFilterBefore(new ApiKeyFilter(analystKey, adminKey, allowedOrigins), AuthorizationFilter.class)
+                .addFilterBefore(new ApiKeyFilter(analystKey, adminKey, allowedOrigins, audit,
+                        java.time.Clock.systemUTC()), AuthorizationFilter.class)
                 .build();
     }
 
@@ -110,6 +117,35 @@ final class McpSecurity {
         }
     }
 
+    /** A tool call to audit; {@code arguments} may be null. */
+    record Call(String tool, JsonNode arguments, Long proposalId) {}
+
+    /** Every {@code tools/call} of a JSON-RPC body (single or batch), with its arguments and proposal id if any. */
+    static List<Call> callsOf(JsonMapper json, byte[] body) {
+        try {
+            JsonNode root = json.readTree(body);
+            List<JsonNode> messages = new java.util.ArrayList<>();
+            if (root.isArray()) {
+                root.forEach(messages::add);
+            } else {
+                messages.add(root);
+            }
+            List<Call> out = new java.util.ArrayList<>();
+            for (JsonNode m : messages) {
+                if (!"tools/call".equals(m.path("method").asString(""))) {
+                    continue;
+                }
+                JsonNode arguments = m.path("params").path("arguments");
+                JsonNode id = arguments.path("proposalId");
+                out.add(new Call(m.path("params").path("name").asString(""), arguments,
+                        id.isIntegralNumber() ? id.asLong() : null));
+            }
+            return out;
+        } catch (RuntimeException e) {
+            return List.of();
+        }
+    }
+
     static final class ApiKeyFilter extends OncePerRequestFilter {
 
         private final String analystKey;
@@ -118,10 +154,34 @@ final class McpSecurity {
         private final JsonMapper json = JsonMapper.builder().build();
         private final ToolArguments arguments = ToolArguments.ofServer();
 
+        private final AuditLog audit;
+        private final java.time.Clock clock;
+
         ApiKeyFilter(String analystKey, String adminKey, List<String> allowedOrigins) {
+            this(analystKey, adminKey, allowedOrigins, AuditLog.NONE, java.time.Clock.systemUTC());
+        }
+
+        ApiKeyFilter(String analystKey, String adminKey, List<String> allowedOrigins, AuditLog audit,
+                java.time.Clock clock) {
             this.analystKey = analystKey;
             this.adminKey = adminKey;
             this.allowedOrigins = allowedOrigins == null ? List.of() : allowedOrigins;
+            this.audit = audit == null ? AuditLog.NONE : audit;
+            this.clock = clock;
+        }
+
+        /** One audit entry per tool call in the body, or one for an approval. */
+        private void record(String role, List<Call> calls, String outcome, long startedNanos) {
+            long millis = (System.nanoTime() - startedNanos) / 1_000_000;
+            for (Call call : calls) {
+                audit.record(AuditLog.Event.of(clock.instant(), role.toLowerCase(), call.tool(),
+                        AuditLog.sanitize(json, call.arguments(), List.of(analystKey == null ? "" : analystKey,
+                                adminKey == null ? "" : adminKey)), outcome, millis, call.proposalId()));
+            }
+        }
+
+        private static String outcomeOf(int status) {
+            return status == 403 ? "FORBIDDEN" : status < 400 ? "OK" : "ERROR";
         }
 
         @Override
@@ -135,15 +195,19 @@ final class McpSecurity {
             String given = header != null && header.regionMatches(true, 0, "Bearer ", 0, 7) ? header.substring(7).trim() : null;
             String role = sameKey(given, adminKey) ? ADMIN : sameKey(given, analystKey) ? ANALYST : null;
             HttpServletRequest next = request;
+            List<Call> calls = List.of();
+            long started = System.nanoTime();
             if (role != null) {
                 SecurityContextHolder.getContext().setAuthentication(UsernamePasswordAuthenticationToken.authenticated(
                         role.toLowerCase(), null, AuthorityUtils.createAuthorityList("ROLE_" + role)));
                 if ("POST".equals(request.getMethod()) && request.getRequestURI().equals("/mcp")) {
                     byte[] body = request.getInputStream().readAllBytes();
                     next = new CachedBody(request, body);
+                    calls = callsOf(json, body);
                     // admin also holds the analyst role: hasAnyRole(ANALYST, ADMIN) covers it
                     if (!ADMIN.equals(role) && calledTools(json, body).stream().anyMatch(ADMIN_TOOLS::contains)) {
                         forbid(response, "This tool needs the admin role");
+                        record(role, calls, "FORBIDDEN", started);
                         return;
                     }
                     String rejection = arguments.rejection(json, body);
@@ -151,11 +215,26 @@ final class McpSecurity {
                         response.setStatus(HttpServletResponse.SC_OK);
                         response.setContentType("application/json;charset=UTF-8");
                         response.getWriter().write(rejection);
+                        record(role, calls, "REJECTED", started);
                         return;
                     }
+                } else if ("POST".equals(request.getMethod())
+                        && request.getRequestURI().matches("/fix-proposals/\\d+/approvals")) {
+                    String[] parts = request.getRequestURI().split("/");
+                    calls = List.of(new Call("approve_proposal", null, Long.parseLong(parts[2])));
                 }
             }
-            chain.doFilter(next, response);
+            try {
+                chain.doFilter(next, response);
+            } catch (IOException | ServletException | RuntimeException e) {
+                if (!calls.isEmpty()) {
+                    record(role, calls, "ERROR", started);
+                }
+                throw e;
+            }
+            if (!calls.isEmpty()) {
+                record(role, calls, outcomeOf(response.getStatus()), started);
+            }
         }
 
         /** 403 written directly: sendError would forward to /error, which needs a key and turns it into 401. */

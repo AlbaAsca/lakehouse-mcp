@@ -133,6 +133,25 @@ class McpSecurityIT {
         assertThat(send("POST", "/mcp", ANALYST, null, "[" + INIT + "," + APPLY + "]")).isEqualTo(403);
     }
 
+    @Autowired
+    private AuditLog audit;
+
+    @Test
+    void theAuditLogKeepsEachCallInOrderAndOnlyTheAdminReadsIt() throws Exception {
+        long before = audit.count();
+        send("POST", "/mcp", ANALYST, null, APPLY);
+        send("POST", "/mcp", ADMIN, null, APPLY);
+
+        var added = audit.page(0, (int) (audit.count() - before));
+        assertThat(added).extracting(AuditLog.Event::role, AuditLog.Event::tool, AuditLog.Event::outcome,
+                AuditLog.Event::proposalId).startsWith(
+                        org.assertj.core.api.Assertions.tuple("admin", "apply_fix", "ERROR", 1L),
+                        org.assertj.core.api.Assertions.tuple("analyst", "apply_fix", "FORBIDDEN", 1L));
+        assertThat(added).allSatisfy(e -> assertThat(e.params()).doesNotContain("sec-key"));
+        assertThat(send("GET", "/audit-events", ANALYST, null, null)).isEqualTo(403);
+        assertThat(send("GET", "/audit-events?size=1", ADMIN, null, null)).isEqualTo(200);
+    }
+
     @Test
     void aForeignOriginIsRefusedEvenWithTheAdminKey() throws Exception {
         assertThat(send("POST", "/mcp", ADMIN, "http://evil.example", INIT)).isEqualTo(403);

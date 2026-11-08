@@ -156,6 +156,11 @@ public class McpServerApplication {
         }
 
         @Bean
+        AuditLog auditLog(OpsProperties ops) throws SQLException {
+            return new PostgresAuditLog(ops.url(), ops.user(), ops.password()).initialize();
+        }
+
+        @Bean
         FixProposals fixProposals(FixProposalStore store, CatalogReader reader, LakehouseProperties lakehouse,
                 PipelineProperties pipeline, QualityProperties quality) {
             RepairSession repair = RepairSession.alongside(lakehouse.settings());
@@ -188,8 +193,10 @@ public class McpServerApplication {
     record SecurityProperties(String analystKey, String adminKey, List<String> allowedOrigins) {}
 
     @Bean
-    SecurityFilterChain apiKeys(HttpSecurity http, SecurityProperties security) throws Exception {
-        return McpSecurity.chain(http, security.analystKey(), security.adminKey(), security.allowedOrigins());
+    SecurityFilterChain apiKeys(HttpSecurity http, SecurityProperties security,
+            org.springframework.beans.factory.ObjectProvider<AuditLog> audit) throws Exception {
+        return McpSecurity.chain(http, security.analystKey(), security.adminKey(), security.allowedOrigins(),
+                audit.getIfAvailable(() -> AuditLog.NONE));
     }
 
     /** Declaring a provider stops Spring Boot from generating a user and logging its password: there are no users. */
