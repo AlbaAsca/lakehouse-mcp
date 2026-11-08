@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 420" width="1200" height="420" font-family="'Segoe UI','Helvetica Neue',Arial,sans-serif">
+  <!-- Paleta Tokyo Night -->
+  <defs><style>
+    .n{fill:#24283B;stroke-width:2}.t{fill:#C0CAF5;font-size:17px;font-weight:600;text-anchor:middle}
+    .s{fill:#9AA5CE;font-size:13px;text-anchor:middle}.f{fill:none;stroke-width:2.5;stroke-dasharray:6 8;animation:d 1.2s linear infinite}
+    @keyframes d{to{stroke-dashoffset:-28}}
+  </style></defs>
+  <rect width="1200" height="420" rx="18" fill="#16161E"/>
+  <text x="40" y="48" font-size="26" font-weight="800" fill="#7AA2F7">El recorrido de una pregunta</text>
+  <text x="40" y="74" font-size="14" fill="#9AA5CE">Qué ocurre cuando escribes ./mk ask Q="¿Qué cinco marcas ingresan más?"</text>
+
+  <rect class="n" x="40" y="150" width="170" height="90" rx="12" stroke="#E0AF68"/><text class="t" x="125" y="190">1 · Tú</text><text class="s" x="125" y="214">./mk ask Q="..."</text>
+  <rect class="n" x="270" y="150" width="190" height="90" rx="12" stroke="#BB9AF7"/><text class="t" x="365" y="190">2 · Agente</text><text class="s" x="365" y="214">Spring AI + Gemini</text>
+  <rect class="n" x="520" y="150" width="190" height="90" rx="12" stroke="#7DCFFF"/><text class="t" x="615" y="190">3 · Servidor MCP</text><text class="s" x="615" y="214">roles, validador, topes</text>
+
+  <rect class="n" x="790" y="96" width="190" height="80" rx="12" stroke="#9ECE6A"/><text class="t" x="885" y="130">get_metric</text><text class="s" x="885" y="152">negocio: 1 definición</text>
+  <rect class="n" x="790" y="214" width="190" height="80" rx="12" stroke="#7AA2F7"/><text class="t" x="885" y="248">run_query</text><text class="s" x="885" y="270">solo SELECT validado</text>
+  <rect class="n" x="1040" y="150" width="130" height="90" rx="12" stroke="#BB9AF7"/><text class="t" x="1105" y="190">DuckDB</text><text class="s" x="1105" y="214">sobre Iceberg</text>
+
+  <path class="f" stroke="#E0AF68" d="M210 195H270"/><path class="f" stroke="#BB9AF7" d="M460 195H520"/>
+  <path class="f" stroke="#9ECE6A" d="M710 180C750 180 750 136 790 136"/><path class="f" stroke="#7AA2F7" d="M710 210C750 210 750 254 790 254"/>
+  <path class="f" stroke="#7DCFFF" d="M980 136C1010 136 1010 175 1040 175"/><path class="f" stroke="#7DCFFF" d="M980 254C1010 254 1010 215 1040 215"/>
+
+  <rect x="40" y="330" width="1130" height="64" rx="12" fill="#1F2335" stroke="#3B4261"/>
+  <text x="64" y="358" font-size="15" fill="#C0CAF5"><tspan fill="#9ECE6A" font-weight="700">Regla del agente:</tspan> pregunta de negocio → get_metric (cifra definida una sola vez). Solo usa run_query si ninguna métrica encaja</text>
+  <text x="64" y="380" font-size="15" fill="#C0CAF5">o si la pregunta fija sus propias reglas. Después contesta con las cifras y dice qué herramientas usó.</text>
+</svg>

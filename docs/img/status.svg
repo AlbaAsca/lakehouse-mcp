@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 360" width="1200" height="360" font-family="'Segoe UI','Helvetica Neue',Arial,sans-serif">
+  <rect width="1200" height="360" rx="18" fill="#16161E"/>
+  <text x="40" y="48" font-size="26" font-weight="800" fill="#7AA2F7">Estado a 8 de noviembre de 2026</text>
+  <g font-size="14" fill="#C0CAF5">
+    <circle cx="44" cy="76" r="6" fill="#9ECE6A"/><text x="58" y="81">Funciona</text>
+    <circle cx="150" cy="76" r="6" fill="#E0AF68"/><text x="164" y="81">Parcial</text>
+    <circle cx="240" cy="76" r="6" fill="#565F89"/><text x="254" y="81">Pendiente</text>
+  </g>
+  <g font-size="16" font-weight="600" fill="#C0CAF5">
+    <rect x="40" y="100" width="270" height="100" rx="12" fill="#24283B" stroke="#9ECE6A" stroke-width="2"/><text x="60" y="134">Stack en Docker</text><text x="60" y="160" font-size="13" font-weight="400" fill="#9AA5CE">Kafka · Iceberg · Polaris · DuckDB</text>
+    <rect x="330" y="100" width="270" height="100" rx="12" fill="#24283B" stroke="#E0AF68" stroke-width="2"/><text x="350" y="134">Productor e ingesta</text><text x="350" y="160" font-size="13" font-weight="400" fill="#9AA5CE">Muestra sintética cargada</text>
+    <rect x="620" y="100" width="270" height="100" rx="12" fill="#24283B" stroke="#9ECE6A" stroke-width="2"/><text x="640" y="134">Servidor MCP</text><text x="640" y="160" font-size="13" font-weight="400" fill="#9AA5CE">9 herramientas y validador</text>
+    <rect x="910" y="100" width="250" height="100" rx="12" fill="#24283B" stroke="#9ECE6A" stroke-width="2"/><text x="930" y="134">Capa semántica</text><text x="930" y="160" font-size="13" font-weight="400" fill="#9AA5CE">Métricas YAML y get_metric</text>
+    <rect x="40" y="220" width="270" height="100" rx="12" fill="#24283B" stroke="#E0AF68" stroke-width="2"/><text x="60" y="254">Agente</text><text x="60" y="280" font-size="13" font-weight="400" fill="#9AA5CE">Contesta por MCP; falta el GIF real</text>
+    <rect x="330" y="220" width="270" height="100" rx="12" fill="#24283B" stroke="#E0AF68" stroke-width="2"/><text x="350" y="254">Chaos y reparación</text><text x="350" y="280" font-size="13" font-weight="400" fill="#9AA5CE">Duplicados hecho; faltan 3 fallos</text>
+    <rect x="620" y="220" width="270" height="100" rx="12" fill="#24283B" stroke="#E0AF68" stroke-width="2"/><text x="640" y="254">Seguridad</text><text x="640" y="280" font-size="13" font-weight="400" fill="#9AA5CE">Roles y claves; falta auditoría</text>
+    <rect x="910" y="220" width="250" height="100" rx="12" fill="#24283B" stroke="#565F89" stroke-width="2"/><text x="930" y="254">Evals y contratos</text><text x="930" y="280" font-size="13" font-weight="400" fill="#9AA5CE">Pendiente</text>
+  </g>
+</svg>

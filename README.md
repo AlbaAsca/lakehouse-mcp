@@ -24,7 +24,7 @@
 > and evals are being built. Everything runs in Docker.
 
 > [!NOTE]
-> **Estado: infraestructura levantada, aplicación en construcción.** Hoy funciona lo marcado como ✅ en [Qué hay y qué falta](#qué-hay-y-qué-falta).
+> **Estado: infraestructura, servidor MCP, capa semántica y agente funcionan; falta la grabación real de la demo.** Hoy funciona lo marcado como ✅ en [Qué hay y qué falta](#qué-hay-y-qué-falta).
 > Aquí no se publica ninguna cifra de precisión ni de rendimiento hasta que exista la medición que la respalde.
 
 ## El problema
@@ -68,20 +68,46 @@ una página por cada pieza (qué es, cómo se conecta, cómo está configurada y
 
 ## Qué hay y qué falta
 
+<p align="center">
+  <img src="docs/img/status.svg" alt="Estado: funcionan el stack, el servidor MCP y la capa semántica; parciales la ingesta, el agente, el chaos y la seguridad; pendientes evals y contratos" width="100%">
+</p>
+
 | | Pieza | Estado |
 |---|---|---|
-| ✅ | Stack en Docker Compose, con healthchecks | Arranca con un comando |
+| ✅ | Stack en Docker Compose, con healthchecks | Arranca con `./mk up` |
 | ✅ | Ida y vuelta DuckDB → Polaris → SeaweedFS | Lo comprueba `./mk smoke` |
-| ✅ | Conector de Iceberg | Un evento llega de Kafka a la tabla, comprobado en contenedores; falta el stack completo con el mes real |
-| ✅ | Herramientas en una imagen (`tools`) | JDK, Maven, make, DuckDB y Kaggle, sin instalar nada |
-| ✅ | Persistencia del catálogo de Polaris | En Postgres: sobrevive a un reinicio |
-| 🚧 | Productor e ingesta del mes real | Lectura, muestreo y orden hechos; falta el envío y la ingesta |
-| ⬜ | Servidor MCP: `list_tables`, `describe_table`, `run_query`, `get_metric`, `pipeline_health`, `data_quality_check`, `time_travel`, `propose_fix`, `apply_fix` | Planificado |
-| 🚧 | Agente (Spring AI, Gemini por defecto o Claude por configuración) | Primera versión: contesta consultando por MCP y se corta en un tope, comprobado con un modelo simulado; falta probarlo con un modelo de verdad |
-| ⬜ | Capa semántica | Planificado |
-| ⬜ | Self-healing con `make chaos` | Planificado |
-| ⬜ | Data contracts y mantenimiento de Iceberg | Planificado |
-| ⬜ | Evals, RBAC y auditoría | Planificado |
+| ✅ | Conector de Iceberg y muestra sintética | Cargada de verdad: 50 000 filas en `ecommerce.events` (8-nov) |
+| ✅ | Servidor MCP | Nueve herramientas (`list_tables`, `describe_table`, `run_query`, `get_metric`, `pipeline_health`, `data_quality_check`, `time_travel`, `propose_fix`, `apply_fix`), validador de SQL de solo lectura y roles analyst/admin por clave |
+| ✅ | Capa semántica | Métricas en YAML con `get_metric`; la referencia de la demo coincide con la métrica |
+| 🟡 | Agente (Spring AI, Gemini por defecto, Claude por configuración) | Contesta por MCP y respeta topes. Ensayado con Gemini el 8-nov: las cinco marcas y sus importes cuadran con la referencia. **Falta el GIF con salida real** |
+| 🟡 | Self-healing con `./mk chaos` | Hecho el ciclo de duplicados; faltan partición vacía, consumidor caído y schema drift |
+| 🟡 | Seguridad | Hechos roles y claves, con prueba de 401/403; falta la auditoría y el enmascarado de `user_id` |
+| 🟡 | Productor y mes real | Muestra sintética funciona; el mes real de Kaggle sigue sin probarse |
+| ⬜ | Data contracts, compactación, evals en CI | Planificado |
+
+## La demo
+
+<p align="center">
+  <img src="docs/img/demo-flow.svg" alt="Recorrido de una pregunta: tú, agente, servidor MCP, get_metric o run_query, DuckDB" width="100%">
+</p>
+
+> [!WARNING]
+> **El GIF de abajo es una maqueta simulada, no una grabación real.** Lleva un aviso rojo en cada fotograma. Las cifras de las marcas salen de un ensayo real
+> del 8-nov; la respuesta «50 000 filas» y la línea `run_query` de la primera pregunta son la salida esperada, sin ver aún. Se sustituirá por la grabación real
+> con `python scripts/demo/record_demo.py` en cuanto se renueve el cupo diario gratuito de Gemini.
+
+<p align="center">
+  <img src="docs/media/demo-minima-maqueta.gif" alt="Maqueta simulada de la demo: dos preguntas al agente y sus respuestas" width="80%">
+</p>
+
+Una pregunta de negocio va por la capa semántica; una consulta suelta, por `run_query`. Los datos son **sintéticos** (mismo esquema que el dataset real).
+Para que el ensayo cuadrara hubo que alinear la referencia con la métrica:
+
+<p align="center">
+  <img src="docs/img/reference-vs-metric.svg" alt="La referencia contaba duplicados y precios no positivos; ahora usa las mismas reglas que la métrica" width="100%">
+</p>
+
+Guion completo: [docs/demo-grabacion.md](docs/demo-grabacion.md) · Explicación paso a paso: [wiki, la demo](docs/wiki/06-demo.md).
 
 ## Cómo ejecutarlo
 

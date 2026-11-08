@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 400" width="1200" height="400" font-family="'Segoe UI','Helvetica Neue',Arial,sans-serif">
+  <rect width="1200" height="400" rx="18" fill="#16161E"/>
+  <text x="40" y="48" font-size="26" font-weight="800" fill="#7AA2F7">Por qué la referencia y el agente no coincidían</text>
+  <text x="40" y="74" font-size="14" fill="#9AA5CE">8-nov-2026 · dos reglas distintas sobre las mismas 50 000 filas sintéticas</text>
+
+  <rect x="40" y="100" width="520" height="250" rx="14" fill="#24283B" stroke="#F7768E" stroke-width="2"/>
+  <text x="64" y="134" font-size="19" font-weight="700" fill="#F7768E">Antes · referencia (expected.json)</text>
+  <text x="64" y="172" font-size="15" fill="#C0CAF5">• Cuenta las filas repetidas</text>
+  <text x="64" y="198" font-size="15" fill="#C0CAF5">• Suma precios negativos y cero</text>
+  <text x="64" y="224" font-size="15" fill="#C0CAF5">• Acepta compras sin sesión</text>
+  <text x="64" y="290" font-size="15" fill="#9AA5CE">synth-nimbora</text><text x="64" y="326" font-size="34" font-weight="800" fill="#F7768E">704 515,14</text>
+
+  <rect x="640" y="100" width="520" height="250" rx="14" fill="#24283B" stroke="#9ECE6A" stroke-width="2"/>
+  <text x="664" y="134" font-size="19" font-weight="700" fill="#9ECE6A">Ahora · referencia = métrica top_brands</text>
+  <text x="664" y="172" font-size="15" fill="#C0CAF5">• Quita duplicados exactos</text>
+  <text x="664" y="198" font-size="15" fill="#C0CAF5">• Solo precio mayor que 0</text>
+  <text x="664" y="224" font-size="15" fill="#C0CAF5">• Exige sesión no vacía</text>
+  <text x="664" y="290" font-size="15" fill="#9AA5CE">synth-nimbora</text><text x="664" y="326" font-size="34" font-weight="800" fill="#9ECE6A">702 942,00</text>
+
+  <path d="M580 225h40m-12-12 12 12-12 12" fill="none" stroke="#E0AF68" stroke-width="3"/>
+  <text x="600" y="380" font-size="13" text-anchor="middle" fill="#9AA5CE">La referencia se recalcula con un script aparte, sin usar el YAML de la métrica</text>
+</svg>

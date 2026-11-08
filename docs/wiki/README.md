@@ -15,6 +15,7 @@ Cada página empieza en lenguaje llano y avanza hasta el detalle técnico. Puede
 1. [Conceptos desde cero](01-conceptos.md): qué es un evento, un topic, un lakehouse, un snapshot.
 2. [Arquitectura](02-arquitectura.md), hasta «El viaje de un evento».
 3. [Pruébalo tú](03-probarlo.md): levantas el stack y creas una tabla.
+   Después, [la demo](06-demo.md): una pregunta al agente, de principio a fin, con dibujos.
 4. La página de la pieza que te llame la atención. Lee hasta «Para qué está aquí».
 
 **Ya sé de esto**
@@ -32,12 +33,12 @@ Cada página empieza en lenguaje llano y avanza hasta el detalle técnico. Puede
 | ✅ | Catálogo persistente, imagen `tools`, muestra sintética | [Polaris](componentes/polaris.md), [Postgres](componentes/postgres.md), [Imagen tools](componentes/imagen-tools.md) |
 | ✅ | Conector hacia Iceberg | [Kafka Connect](componentes/kafka-connect.md) |
 | 🚧 | Productor y ingesta de principio a fin | [Productor](componentes/productor.md) |
-| 🟡 | Servidor MCP: seis herramientas, validador de SQL y lectura del catálogo con DuckDB | [Servidor MCP](componentes/servidor-mcp.md), [DuckDB](componentes/duckdb.md#dentro-del-servidor-mcp) |
-| 🟡 | Agente: contesta por MCP con tope de llamadas; Gemini por defecto, Claude por configuración | [Agente](componentes/agente.md) |
-| ⬜ | Capa semántica | [Capa semántica](componentes/capa-semantica.md) |
-| ⬜ | Chaos y self-healing, RBAC y auditoría | Planificado: `./mk chaos` y `./mk demo` responden «not implemented yet» |
+| ✅ | Servidor MCP: nueve herramientas, validador de SQL y roles por clave | [Servidor MCP](componentes/servidor-mcp.md), [DuckDB](componentes/duckdb.md#dentro-del-servidor-mcp) |
+| ✅ | Capa semántica: métricas en YAML y `get_metric` | [Capa semántica](componentes/capa-semantica.md) |
+| 🟡 | Agente: contesta por MCP; ensayado con Gemini, falta el GIF real | [Agente](componentes/agente.md), [la demo](06-demo.md) |
+| 🟡 | Chaos y self-healing (hecho el ciclo de duplicados), seguridad (falta auditoría) | Planificado el resto: `./mk chaos` completo y `./mk demo` |
 
-No hay ninguna cifra de precisión ni de rendimiento porque todavía no se ha medido nada de eso.
+Solo hay una comprobación puntual: las cinco marcas de la demo coinciden con su referencia (8-nov). No hay cifras de precisión ni de rendimiento medidas.
 
 Leyenda: ✅ funciona · 🟡 funciona en parte (mira «Sin probar») · 🚧 en curso · ⬜ planificado.
 
