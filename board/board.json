@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-08T20:37:35+01:00",
+  "updated": "2026-11-08T20:46:00+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -3764,10 +3764,10 @@
       "id": "T-045",
       "title": "Mantenimiento: añadir una columna sin reprocesar",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "done",
       "priority": "media",
       "estimate_min": 25.0,
-      "actual_min": null,
+      "actual_min": 8.3,
       "auto": true,
       "manual": null,
       "desc": "El brief pide demostrar que Iceberg permite cambiar el esquema sin reescribir datos. La prueba tiene que enseñarlo de forma comprobable: los ficheros existentes son exactamente los mismos antes y después.\nCómo sabremos si funciona: tras añadir la columna, la lista de ficheros de datos no cambia, las filas viejas la leen en nulo y las nuevas con valor.\n\n## Técnico\nALTER TABLE t ADD COLUMN por la instancia de reparación de T-106 (decisiones 5 y 20; compartir con ADD_COLUMN de T-041 si ya existe). IT que compara iceberg_metadata antes y después, y time travel al snapshot previo con el esquema antiguo. Texto de demostración en docs/. ./mk test.",
@@ -3776,9 +3776,9 @@
         "T-016"
       ],
       "created": "2026-11-02T11:39:13+01:00",
-      "updated": "2026-11-07T18:15:39+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-08T20:46:00+01:00",
+      "started_at": "2026-11-08T20:37:44+01:00",
+      "finished_at": "2026-11-08T20:46:00+01:00",
       "log": [
         {
           "t": "2026-11-02T11:39:13+01:00",
@@ -3789,9 +3789,37 @@
           "t": "2026-11-02T18:15:14+01:00",
           "by": "consultor",
           "msg": "descripción reescrita"
+        },
+        {
+          "t": "2026-11-08T20:37:44+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-08T20:46:00+01:00",
+          "by": "runner",
+          "msg": "Sin verificación aparte del tester (no toca seguridad, datos reales ni punta a punta); la CI revisa."
+        },
+        {
+          "t": "2026-11-08T20:46:00+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: IT que prueba que añadir una columna deja los ficheros intactos, con doc de demostración; verde en mcp-server salvo 2 fallos ajenos de LakehouseSessionIT (T-221)."
         }
       ],
-      "rank": 900
+      "rank": 900,
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-08T20:46:00+01:00",
+          "min": 8.3,
+          "turns": 17,
+          "tokens": 359675,
+          "cost_usd": 0.23514590000000002,
+          "verdict": "review",
+          "summary": "IT que prueba que añadir una columna deja los ficheros intactos, con doc de demostración; verde en mcp-server salvo 2 fallos ajenos de LakehouseSessionIT (T-221)."
+        }
+      ]
     },
     {
       "id": "T-046",
@@ -17558,6 +17586,30 @@
           "msg": "creada"
         }
       ]
+    },
+    {
+      "id": "T-221",
+      "title": "LakehouseSessionIT: 2 fallos en extensiones sin descarga",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "baja",
+      "estimate_min": 30.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Al pasar el módulo mcp-server fallan 2 tests de LakehouseSessionIT (startsWithoutDownloadingOnceTheExtensionsAreInItsDirectory y otro). Ajeno a T-045; revisar si es de entorno o real. Cómo sabremos si funciona: LakehouseSessionIT en verde.",
+      "deps": [],
+      "created": "2026-11-08T20:45:55+01:00",
+      "updated": "2026-11-08T20:45:55+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-08T20:45:55+01:00",
+          "by": "desarrollador",
+          "msg": "creada"
+        }
+      ]
     }
   ],
   "runners": {
@@ -17576,14 +17628,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-010",
-      "message": "tester con T-010",
+      "current": "T-045",
+      "message": "desarrollador con T-045",
       "pid": 20400,
-      "heartbeat": "2026-11-08T20:37:07+01:00",
+      "heartbeat": "2026-11-08T20:37:45+01:00",
       "enabled": true,
-      "agent": "tester",
-      "started": "2026-11-08T20:37:07+01:00",
-      "live": "live-T-010-tester-20261108-203707.jsonl",
+      "agent": "desarrollador",
+      "started": "2026-11-08T20:37:44+01:00",
+      "live": "live-T-045-desarrollador-20261108-203745.jsonl",
       "pause_reason": null
     }
   }
