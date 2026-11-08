@@ -91,6 +91,12 @@ public class McpServerApplication {
         return new LakehouseSession(properties.settings());
     }
 
+    /** Every tool is measured in ToolResults; this gives it the registry behind /actuator/metrics. */
+    @Bean
+    org.springframework.beans.factory.InitializingBean toolMetrics(io.micrometer.core.instrument.MeterRegistry meters) {
+        return () -> ToolResults.measureWith(meters);
+    }
+
     @Bean
     CatalogReader catalogReader(LakehouseSession session) {
         return new CatalogReader(session);

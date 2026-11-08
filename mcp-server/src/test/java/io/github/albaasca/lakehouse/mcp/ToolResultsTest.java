@@ -8,7 +8,9 @@ import java.sql.SQLException;
 import java.sql.SQLTimeoutException;
 import java.util.List;
 import java.util.NoSuchElementException;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.Test;
+import org.springframework.ai.mcp.annotation.McpTool;
 
 class ToolResultsTest {
 
@@ -17,6 +19,34 @@ class ToolResultsTest {
     private static String text(CallToolResult result) {
         assertThat(result.content()).hasSize(1);
         return ((TextContent) result.content().getFirst()).text();
+    }
+
+    @McpTool(name = "fake_tool", description = "test")
+    CallToolResult fakeTool(boolean fail) {
+        return ToolResults.of(() -> {
+            if (fail) {
+                throw new NoSuchElementException("nope");
+            }
+            return "ok";
+        });
+    }
+
+    @Test
+    void everyCallIsCountedPerToolAndOutcome() {
+        SimpleMeterRegistry meters = new SimpleMeterRegistry();
+        ToolResults.measureWith(meters);
+        try {
+            fakeTool(false);
+            fakeTool(false);
+            fakeTool(true);
+        } finally {
+            ToolResults.measureWith(null);
+        }
+
+        assertThat(meters.get("mcp.tool.calls").tags("tool", "fake_tool", "outcome", "success").timer().count())
+                .isEqualTo(2);
+        assertThat(meters.get("mcp.tool.calls").tags("tool", "fake_tool", "outcome", "error").timer().count())
+                .isEqualTo(1);
     }
 
     @Test

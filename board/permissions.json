@@ -131,6 +131,12 @@
       "why": "concedido automáticamente a desarrollador (T-194): solo lectura dentro del proyecto",
       "by": "runner",
       "at": "2026-11-07T21:42:39+01:00"
+    },
+    {
+      "pattern": "find *",
+      "why": "concedido automáticamente a desarrollador (T-024): solo lectura dentro del proyecto",
+      "by": "runner",
+      "at": "2026-11-08T13:46:52+01:00"
     }
   ],
   "denied": [

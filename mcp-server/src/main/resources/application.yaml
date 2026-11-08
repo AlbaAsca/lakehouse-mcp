@@ -14,6 +14,13 @@ spring:
           prompt: false
           completion: false
 
+# /actuator/metrics/mcp.tool.calls?tag=tool:run_query&tag=outcome:success (needs a key; only health is open).
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics
+
 server:
   address: ${MCP_SERVER_ADDRESS:127.0.0.1}
   port: ${MCP_SERVER_PORT:8090}

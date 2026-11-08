@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-08T13:17:59+01:00",
+  "updated": "2026-11-08T13:46:52+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -34,13 +34,13 @@
   "runner": {
     "enabled": true,
     "state": "working",
-    "current": "T-211",
-    "heartbeat": "2026-11-08T13:14:03+01:00",
-    "message": "desarrollador con T-211",
+    "current": "T-024",
+    "heartbeat": "2026-11-08T13:18:04+01:00",
+    "message": "desarrollador con T-024",
     "pid": 6724,
-    "live": "live-T-211-desarrollador-20261108-131403.jsonl",
+    "live": "live-T-024-desarrollador-20261108-131803.jsonl",
     "agent": "desarrollador",
-    "started": "2026-11-08T13:14:03+01:00"
+    "started": "2026-11-08T13:18:03+01:00"
   },
   "agents": [
     {
@@ -2208,10 +2208,10 @@
       "id": "T-024",
       "title": "MCP: métricas de cada herramienta (Micrometer y Actuator)",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "done",
       "priority": "media",
       "estimate_min": 20.0,
-      "actual_min": null,
+      "actual_min": 28.8,
       "auto": true,
       "manual": null,
       "desc": "El brief pide observabilidad: cuántas veces se llama cada herramienta, cuánto tarda y cuántas falla. Se hace de forma central para que cualquier herramienta nueva quede medida sin tocarla.\nCómo sabremos si funciona: tras varias llamadas en un test, el endpoint de métricas da los contadores exactos por herramienta y resultado.\n\n## Técnico\n- Aspecto o interceptor común; métrica mcp.tool.calls (timer con tags tool, outcome). Actuator expone health y metrics; Prometheus opcional si no añade coste.\n- IT que cuenta llamadas correctas y fallidas. ./mk test.",
@@ -2219,17 +2219,55 @@
         "T-020"
       ],
       "created": "2026-11-02T11:37:15+01:00",
-      "updated": "2026-11-07T18:15:37+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-08T13:46:52+01:00",
+      "started_at": "2026-11-08T13:18:03+01:00",
+      "finished_at": "2026-11-08T13:46:52+01:00",
       "log": [
         {
           "t": "2026-11-02T11:37:15+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-08T13:18:03+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-08T13:46:52+01:00",
+          "by": "runner",
+          "msg": "Sin verificación aparte del tester (no toca seguridad, datos reales ni punta a punta); la CI revisa."
+        },
+        {
+          "t": "2026-11-08T13:46:52+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: métricas `mcp.tool.calls` (herramienta y resultado) en `ToolResults`, expuestas en `/actuator/metrics`; los tests unitarios del módulo pasan y falta un IT con el servidor arrancado, ya que `./mk test MODULE=mcp-server` terminó con código 2 que no pude explicar."
+        },
+        {
+          "t": "2026-11-08T13:46:52+01:00",
+          "by": "desarrollador",
+          "msg": "⚠ 1 comandos denegados: find / -name \"spring-ai-autoconfigure-mcp-server*.jar\" -o -name \"spring-boot-sta"
+        },
+        {
+          "t": "2026-11-08T13:46:52+01:00",
+          "by": "runner",
+          "msg": "✓ permiso concedido automáticamente: find * (solo lectura dentro del proyecto); se reintenta"
         }
       ],
-      "rank": 900
+      "rank": 900,
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-08T13:46:52+01:00",
+          "min": 28.8,
+          "turns": 25,
+          "tokens": 499478,
+          "cost_usd": 0.298572,
+          "verdict": "review",
+          "summary": "métricas `mcp.tool.calls` (herramienta y resultado) en `ToolResults`, expuestas en `/actuator/metrics`; los tests unitarios del módulo pasan y falta un IT con el servidor arrancado, ya que `./mk test "
+        }
+      ]
     },
     {
       "id": "T-025",
@@ -16448,7 +16486,7 @@
       "id": "T-211",
       "title": "Demo: el agente da importes distintos a la referencia",
       "owner": "desarrollador",
-      "status": "done",
+      "status": "next",
       "priority": "alta",
       "estimate_min": 45.0,
       "actual_min": 3.9,
@@ -16457,7 +16495,7 @@
       "desc": "Al ensayar la pregunta de las cinco marcas, el agente responde con la métrica semántica (get_metric) y no con run_query, y los importes no coinciden con la referencia. Cómo sabremos si funciona: ./mk ask con la pregunta de las marcas da las mismas cinco marcas e importes que evals/demo/expected.json, y la salida muestra run_query.\n## Técnico\n8-nov, AGENT_MODEL por defecto, 50 000 filas. Obtenido: nimbora 702942.00, velkaro 371961.23, ostrina 285923.12, quorvo 280932.97, lumbrel 212114.06. Esperado: 704515.14, 373157.08, 286978.02, 284523.31, 216201.67. Herramientas usadas: list_metrics, get_metric (sin run_query). Revisar definición de la métrica en semantic/ (¿excluye reembolsos/negativos/duplicados?) frente a las reglas de expected.json, o el prompt del agente. Además: .env no tenía MCP_ANALYST_KEY/MCP_ADMIN_KEY (daba 401 al agente); añadidas con valores locales aleatorios.",
       "deps": [],
       "created": "2026-11-08T13:13:21+01:00",
-      "updated": "2026-11-08T13:17:59+01:00",
+      "updated": "2026-11-08T13:29:12+01:00",
       "started_at": "2026-11-08T13:14:03+01:00",
       "finished_at": "2026-11-08T13:17:59+01:00",
       "log": [
@@ -16480,6 +16518,11 @@
           "t": "2026-11-08T13:17:59+01:00",
           "by": "desarrollador",
           "msg": "REVIEW: prompt del agente y pregunta de la demo ajustados para que las cifras sin limpiar usen run_query; falta comprobarlo con un modelo real."
+        },
+        {
+          "t": "2026-11-08T13:29:12+01:00",
+          "by": "consultor",
+          "msg": "Reabierta: ./mk ask el 8-nov sigue dando 702942.00 (esperado 704515.14) y usa get_metric sin run_query. Verificar con ./mk ask, no solo tests."
         }
       ],
       "runs": [
@@ -16494,7 +16537,8 @@
           "verdict": "review",
           "summary": "prompt del agente y pregunta de la demo ajustados para que las cifras sin limpiar usen run_query; falta comprobarlo con un modelo real."
         }
-      ]
+      ],
+      "rank": 5
     }
   ],
   "runners": {
