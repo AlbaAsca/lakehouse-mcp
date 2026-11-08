@@ -156,10 +156,13 @@ public class McpServerApplication {
         }
 
         @Bean
-        FixProposals fixProposals(FixProposalStore store, CatalogReader reader, LakehouseProperties lakehouse) {
+        FixProposals fixProposals(FixProposalStore store, CatalogReader reader, LakehouseProperties lakehouse,
+                PipelineProperties pipeline) {
             RepairSession repair = RepairSession.alongside(lakehouse.settings());
             return new FixProposals(store, List.of(new RollbackSnapshot(reader, repair),
-                    new DeduplicatePartition(reader, repair)), Clock.systemUTC());
+                    new DeduplicatePartition(reader, repair),
+                    new ResumeConnector(pipeline.connectUrl(), pipeline.connector(), pipeline.timeout())),
+                    Clock.systemUTC());
         }
 
         @Bean

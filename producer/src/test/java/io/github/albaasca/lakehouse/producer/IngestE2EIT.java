@@ -18,7 +18,10 @@ import java.util.stream.Collectors;
 import org.awaitility.core.ConditionTimeoutException;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 
 /**
  * The whole ingestion path: CSV, seed command, Kafka, sink, Polaris and S3, read back with DuckDB.
@@ -26,6 +29,7 @@ import org.junit.jupiter.api.Test;
  * <p>The sink is registered before any event exists, the order of {@code ./mk up} and then {@code ./mk seed}. The expected
  * rows come from DuckDB's own CSV reader, not from the producer's.
  */
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class IngestE2EIT {
 
     private static final Path SAMPLE = Path.of("../testdata/synthetic-events.csv.gz").toAbsolutePath().normalize();
@@ -131,6 +135,72 @@ class IngestE2EIT {
         assertThat(rows("SELECT DISTINCT folder_day, folder_type FROM " + located + " ORDER BY 1, 2"))
                 .isEqualTo(rows("SELECT DISTINCT strftime(make_timestamp(event_time), '%Y-%m-%d'), event_type FROM ("
                         + CSV_ROWS + ") ORDER BY 1, 2"));
+    }
+
+    /**
+     * Chaos "consumer down" (T-040): with the connector paused the events pile up in Kafka and the table stays behind;
+     * after the resume (what RESUME_CONNECTOR does) the lag goes back to zero and the table holds every row once. Runs
+     * last because it changes the table: the sample is sent a second time, so the reference is the CSV twice.
+     */
+    @Test
+    @Order(Integer.MAX_VALUE)
+    void aPausedConnectorLosesNothingAndRepeatsNothingWhenItIsResumed() throws Exception {
+        long committedBefore = single("SELECT count(*) FROM " + TABLE);
+        assertThat(committedBefore).isEqualTo(SAMPLE_ROWS);
+        assertThat(lagOfTheSink()).as("lag before the failure").isZero();
+
+        connectorCall("PUT", "/connectors/iceberg-sink/pause");
+        await("connector paused").atMost(Duration.ofSeconds(30)).pollInterval(Duration.ofSeconds(1))
+                .until(() -> connect.get("/connectors/iceberg-sink/status").contains("\"state\":\"PAUSED\""));
+        int exit = SeedCommand.execute(new String[] {
+            "--input", SAMPLE.toString(),
+            "--speedup", "1e12",
+            "--bootstrap-servers", stack.kafkaBootstrapServers(),
+            "--schema-registry-url", stack.schemaRegistryUrl()
+        });
+        assertThat(exit).isEqualTo(SeedCommand.OK);
+
+        // The lag is what pipeline_health reads: the whole second batch waits in the topic and the table does not move.
+        Thread.sleep(COMMIT_INTERVAL.multipliedBy(2).toMillis());
+        assertThat(lagOfTheSink()).as("lag while paused").isEqualTo(SAMPLE_ROWS);
+        assertThat(rowsInTheTable()).as("table while paused").isEqualTo(committedBefore);
+
+        connectorCall("PUT", "/connectors/iceberg-sink/resume");
+        try {
+            await("every row of both batches in the table").atMost(ROWS_TIMEOUT).pollInterval(Duration.ofSeconds(5))
+                    .until(IngestE2EIT::rowsInTheTable, rows -> rows >= 2L * SAMPLE_ROWS);
+        } catch (ConditionTimeoutException e) {
+            throw new AssertionError(e.getMessage() + "\n" + connect.diagnostics(), e);
+        }
+        Thread.sleep(COMMIT_INTERVAL.multipliedBy(2).toMillis());
+        await("lag back to zero").atMost(Duration.ofMinutes(1)).until(IngestE2EIT::lagOfTheSink, lag -> lag == 0L);
+
+        duckDb.close();
+        duckDb = openDuckDb(); // a fresh view: the old one may hold the catalog metadata of before
+        String twice ="(" + CSV_ROWS + ") UNION ALL (" + CSV_ROWS + ")";
+        assertThat(single("SELECT count(*) FROM " + TABLE)).isEqualTo(2L * SAMPLE_ROWS);
+        assertThat(rows("(" + twice + ") EXCEPT ALL (" + TABLE_ROWS + ") LIMIT 20")).as("lost").isEmpty();
+        assertThat(rows("(" + TABLE_ROWS + ") EXCEPT ALL (" + twice + ") LIMIT 20")).as("extra or repeated").isEmpty();
+    }
+
+    /** Messages of the topic the sink's group has not committed, summed over the partitions: the lag of pipeline_health. */
+    private static long lagOfTheSink() throws Exception {
+        try (org.apache.kafka.clients.admin.Admin admin = org.apache.kafka.clients.admin.Admin.create(java.util.Map.<String, Object>of(
+                "bootstrap.servers", stack.kafkaBootstrapServers()))) {
+            var committed = admin.listConsumerGroupOffsets("connect-iceberg-sink").partitionsToOffsetAndMetadata().get();
+            var ends = admin.listOffsets(committed.keySet().stream().collect(Collectors.toMap(p -> p,
+                    p -> org.apache.kafka.clients.admin.OffsetSpec.latest()))).all().get();
+            return committed.entrySet().stream()
+                    .mapToLong(e -> ends.get(e.getKey()).offset() - e.getValue().offset()).sum();
+        }
+    }
+
+    private static void connectorCall(String method, String path) throws Exception {
+        var response = java.net.http.HttpClient.newHttpClient().send(
+                java.net.http.HttpRequest.newBuilder(connect.url(path))
+                        .method(method, java.net.http.HttpRequest.BodyPublishers.noBody()).build(),
+                java.net.http.HttpResponse.BodyHandlers.ofString());
+        assertThat(response.statusCode()).as(method + " " + path + ": " + response.body()).isBetween(200, 299);
     }
 
     private static void awaitEveryRow() throws Exception {

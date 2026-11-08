@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-08T15:11:43+01:00",
+  "updated": "2026-11-08T15:43:47+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -34,13 +34,13 @@
   "runner": {
     "enabled": true,
     "state": "working",
-    "current": "T-039",
-    "heartbeat": "2026-11-08T15:00:03+01:00",
-    "message": "tester con T-039",
+    "current": "T-040",
+    "heartbeat": "2026-11-08T15:26:40+01:00",
+    "message": "desarrollador con T-040",
     "pid": 7056,
-    "live": "live-T-039-tester-20261108-150003.jsonl",
-    "agent": "tester",
-    "started": "2026-11-08T15:00:02+01:00"
+    "live": "live-T-040-desarrollador-20261108-152640.jsonl",
+    "agent": "desarrollador",
+    "started": "2026-11-08T15:26:40+01:00"
   },
   "agents": [
     {
@@ -3358,10 +3358,10 @@
       "id": "T-040",
       "title": "Chaos: ciclo completo de consumidor caído",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "done",
       "priority": "alta",
       "estimate_min": 40.0,
-      "actual_min": null,
+      "actual_min": 17.1,
       "auto": true,
       "manual": null,
       "desc": "El conector deja de consumir: los datos se acumulan en Kafka y la tabla se queda atrás. Es el caso más visual de la demo, con la ventaja de que al reanudar no se pierde nada.\nCómo sabremos si funciona: al pausarlo, pipeline_health pasa a FAIL con retraso creciente; tras el arreglo aprobado, el retraso vuelve a cero y la tabla contiene todas las filas.\n\n## Técnico\n- Inyección: PUT /connectors/{name}/pause o parar tareas. FixAction RESUME_CONNECTOR (resume y restart de tareas fallidas por REST de Connect).\n- IT sobre el stack completo de IngestE2EIT (mismos contenedores). Sin duplicados tras reanudar: comparación fila a fila. Stack apagado (memoria). ./mk test.",
@@ -3372,17 +3372,50 @@
         "T-015"
       ],
       "created": "2026-11-02T11:38:51+01:00",
-      "updated": "2026-11-07T18:15:38+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-08T15:43:47+01:00",
+      "started_at": "2026-11-08T15:26:39+01:00",
+      "finished_at": "2026-11-08T15:43:47+01:00",
       "log": [
         {
           "t": "2026-11-02T11:38:51+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-08T15:26:39+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-08T15:43:40+01:00",
+          "by": "consultor",
+          "msg": "Hecho: acción RESUME_CONNECTOR (ResumeConnector, REST de Connect: resume + restart de tareas FAILED, solo el conector vigilado), registrada en McpServerApplication; ResumeConnectorTest (4). IT real en IngestE2EIT: pausa -> lag=50000 y tabla quieta -> resume -> lag 0 y tabla == CSV x2 fila a fila (EXCEPT ALL). Verdes mcp-server y producer. Wiki: añadir RESUME_CONNECTOR a la lista de arreglos (servidor-mcp.md / 04-operacion.md). Pendiente (no hecho): el IT no pasa por propose/approve/apply de FixProposals porque producer y mcp-server no comparten módulo."
+        },
+        {
+          "t": "2026-11-08T15:43:47+01:00",
+          "by": "runner",
+          "msg": "Sin verificación aparte del tester (no toca seguridad, datos reales ni punta a punta); la CI revisa."
+        },
+        {
+          "t": "2026-11-08T15:43:47+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: RESUME_CONNECTOR implementado con test unitario; ciclo pausa/reanudación real verificado en IngestE2EIT; el paso por propose/approve/apply de FixProposals queda sin cubrir en un test."
         }
       ],
-      "rank": 900
+      "rank": 900,
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-08T15:43:47+01:00",
+          "min": 17.1,
+          "turns": 43,
+          "tokens": 1019898,
+          "cost_usd": 0.5376525999999998,
+          "verdict": "review",
+          "summary": "RESUME_CONNECTOR implementado con test unitario; ciclo pausa/reanudación real verificado en IngestE2EIT; el paso por propose/approve/apply de FixProposals queda sin cubrir en un test."
+        }
+      ]
     },
     {
       "id": "T-041",
@@ -16673,18 +16706,18 @@
       "id": "T-212",
       "title": "Agente: poder usar GitHub Models como proveedor gratuito",
       "owner": "desarrollador",
-      "status": "next",
+      "status": "review",
       "priority": "media",
       "estimate_min": 45.0,
-      "actual_min": 1.8,
+      "actual_min": 16.2,
       "auto": false,
       "manual": "Crear un token personal de GitHub con permiso de modelos y ponerlo en .env (GITHUB_MODELS_TOKEN). No lo pegues en el chat.",
       "desc": "Hoy el agente solo funciona con Gemini o Claude, y el cupo gratuito de Gemini se agota o se satura. Se propone que se pueda enchufar cualquier modelo: un proveedor genérico compatible con OpenAI, que se configura solo con tres valores (URL base, clave y nombre del modelo). Con eso valen GitHub Models, Groq, OpenRouter, Mistral, OpenAI y servidores locales (Ollama, el proxy LiteLLM propio). Cómo sabremos si funciona: cambiando solo esos valores en .env, ./mk ask contesta la pregunta de las marcas con las cifras de evals/demo/expected.json, probado con GitHub Models, y los tests cubren el resto con un modelo simulado.\n## Técnico\nTítulo corto: proveedor genérico OpenAI-compatible (la tarjeta nació para GitHub Models). Spring AI: starter openai; AGENT_PROVIDER=openai, AGENT_BASE_URL, AGENT_API_KEY (alias por proveedor opcional), AGENT_MODEL; selección por spring.ai.model.chat como hoy; variables en compose.yaml y .env.example; documentar recetas por proveedor en la wiki (agente.md). Verificar en documentación oficial: llamada a herramientas, límites gratuitos y contexto (~8000 tokens por pregunta). Mantener el aviso de cupo agotado (Outcome.QUOTA) y el tope de coste para cualquier proveedor. Tocar compose.yaml: pasar tests de contenedores. Primera prueba real: GitHub Models con GITHUB_MODELS_TOKEN en .env (manual del responsable).",
       "deps": [],
       "created": "2026-11-08T14:57:38+01:00",
-      "updated": "2026-11-08T15:00:01+01:00",
-      "started_at": "2026-11-08T14:58:11+01:00",
-      "finished_at": "2026-11-08T15:00:01+01:00",
+      "updated": "2026-11-08T15:26:38+01:00",
+      "started_at": "2026-11-08T15:11:53+01:00",
+      "finished_at": "2026-11-08T15:26:20+01:00",
       "log": [
         {
           "t": "2026-11-08T14:57:38+01:00",
@@ -16710,9 +16743,57 @@
           "t": "2026-11-08T15:00:01+01:00",
           "by": "runner",
           "msg": "interrumpida (runner reiniciado); se reintentará"
+        },
+        {
+          "t": "2026-11-08T15:11:53+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-08T15:13:53+01:00",
+          "by": "consultor",
+          "msg": "8-nov: GitHub Models probablemente retirado desde el 30-jul-2026 (fuentes en conflicto, sin confirmar en docs.github.com). NO hace falta GITHUB_MODELS_TOKEN. El proveedor sigue siendo genérico; la primera prueba real será con otro proveedor gratuito (Groq/OpenRouter/Mistral) o el proxy LiteLLM propio, a elegir con la responsable. Quitar GitHub Models de las recetas de la wiki o marcarlo como retirado."
+        },
+        {
+          "t": "2026-11-08T15:26:20+01:00",
+          "by": "consultor",
+          "msg": "Integrado en develop (cherry-pick de 28bf9c3). Tests del módulo agent en verde (exit 0) y pytest agent_compose 10 ok / 4 saltados (ask.sh no se ejecuta en Windows). Sin probar con ningún proveedor real. Para la wiki: receta por proveedor ya escrita en componentes/agente.md; quitar o marcar como retirado GitHub Models. Toca compose.yaml: lo verifica el tester."
+        },
+        {
+          "t": "2026-11-08T15:26:20+01:00",
+          "by": "consultor",
+          "msg": "Implementada y con tests en verde; pendiente del tester (toca compose.yaml)"
+        },
+        {
+          "t": "2026-11-08T15:26:38+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: proveedor OpenAI-compatible (URL base, clave y modelo) implementado, con aviso de cupo por 429 y tests del módulo agent en verde; falta la prueba real con GitHub Models (manual del responsable)."
+        },
+        {
+          "t": "2026-11-08T15:26:38+01:00",
+          "by": "desarrollador",
+          "msg": "⚠ 1 comandos denegados: ls ~/.m2/repository/org/springframework/ai/ 2>/dev/null | grep -i -E \"openai|ant"
+        },
+        {
+          "t": "2026-11-08T15:26:38+01:00",
+          "by": "runner",
+          "msg": "✗ «ls ~/.m2/repository/org/springframework/ai/ 2>/dev/null | grep -i -E \"openai|anthropic\"»: varios comandos, tuberías, redirecciones o heredoc: lanza cada comando por separado y crea ficheros con Write/Edit"
         }
       ],
-      "rank": 1
+      "rank": 1,
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-08T15:26:38+01:00",
+          "min": 14.7,
+          "turns": 25,
+          "tokens": 304985,
+          "cost_usd": 0.19629650000000004,
+          "verdict": "review",
+          "summary": "proveedor OpenAI-compatible (URL base, clave y modelo) implementado, con aviso de cupo por 429 y tests del módulo agent en verde; falta la prueba real con GitHub Models (manual del responsable)."
+        }
+      ]
     }
   ],
   "runners": {
