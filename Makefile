@@ -8,7 +8,7 @@ SPEEDUP ?= 3600
 TABLE ?= ecommerce.events
 RETENTION ?= P7D
 
-.PHONY: up down download-data seed seed-sample test test-board evals chaos demo heal smoke expire ask profile-data
+.PHONY: chaos-consumer-down chaos-undo chaos-table up down download-data seed seed-sample test test-board evals chaos demo heal smoke expire ask profile-data
 up:
 	docker compose up -d --build --wait
 down:
@@ -64,9 +64,23 @@ demo:
 # [PERCENT=10]. Prints the JSON report (with the snapshot before the damage). Runs in the mcp-server image.
 DAY ?= 2019-10-01
 PERCENT ?= 10
+#   consumer-down: stops the sink connector and produces LAG_SAMPLE of the synthetic events so the consumer lag grows.
+#   Undo it with ./mk chaos-undo SCENARIO=consumer-down (starts connect again; the lag drains).
+LAG_SAMPLE ?= 0.1
 chaos:
-	@test -n "$(SCENARIO)" || { echo 'Usage: ./mk chaos SCENARIO=duplicates|empty-partition [TABLE=ns.table] [DAY=YYYY-MM-DD] [PERCENT=10]' >&2; exit 2; }
-	@case "$(SCENARIO)" in duplicates|empty-partition) ;; *) echo "Unknown SCENARIO '$(SCENARIO)': use duplicates or empty-partition" >&2; exit 2;; esac
+	@test -n "$(SCENARIO)" || { echo 'Usage: ./mk chaos SCENARIO=duplicates|empty-partition|consumer-down [TABLE=ns.table] [DAY=YYYY-MM-DD] [PERCENT=10]' >&2; exit 2; }
+	@case "$(SCENARIO)" in duplicates|empty-partition|consumer-down) ;; *) echo "Unknown SCENARIO '$(SCENARIO)': use duplicates, empty-partition or consumer-down" >&2; exit 2;; esac
+	@if [ "$(SCENARIO)" = consumer-down ]; then $(MAKE) --no-print-directory chaos-consumer-down; else $(MAKE) --no-print-directory chaos-table; fi
+chaos-consumer-down:
+	docker compose stop connect
+	rm -f producer/target/producer-*.jar
+	mvn -B -q -pl producer -am -DskipTests package
+	java -jar producer/target/producer-*.jar --input testdata/synthetic-events.csv.gz --sample-rate $(LAG_SAMPLE) --speedup 1e12
+	@echo '{"scenario":"consumer-down","stopped":"connect","sampleRate":$(LAG_SAMPLE),"at":"'$$(date -u +%Y-%m-%dT%H:%M:%SZ)'","undo":"./mk chaos-undo SCENARIO=consumer-down"}'
+chaos-undo:
+	@test "$(SCENARIO)" = consumer-down || { echo 'Usage: ./mk chaos-undo SCENARIO=consumer-down (table scenarios: roll back to snapshotBefore)' >&2; exit 2; }
+	docker compose start connect
+chaos-table:
 	docker compose run --rm --build --no-deps --entrypoint java mcp-server -Xmx256m -Dloader.main=io.github.albaasca.lakehouse.mcp.ChaosCommand -cp /app/mcp-server.jar org.springframework.boot.loader.launch.PropertiesLauncher $(SCENARIO) --table $(TABLE) --day $(DAY) --percent $(PERCENT)
 evals:
 	@echo "$@: not implemented yet, see the board" && exit 1

@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-08T20:12:04+01:00",
+  "updated": "2026-11-08T20:22:22+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -17317,10 +17317,10 @@
       "id": "T-217",
       "title": "make chaos: consumidor caído",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "done",
       "priority": "media",
       "estimate_min": 45.0,
-      "actual_min": null,
+      "actual_min": 10.1,
       "auto": true,
       "manual": null,
       "desc": "Parar el conector del sink para que el retraso crezca y el agente lo detecte. Cómo sabremos si funciona: tras chaos, el consumer lag sube y la herramienta de salud lo marca. ## Técnico: reutilizar la inyección de ConsumerDownCycleIT (T-040) en un escenario consumer-down (docker compose stop del servicio connect + producir eventos); informe JSON y comando de deshacer (start).",
@@ -17328,9 +17328,9 @@
         "T-216"
       ],
       "created": "2026-11-08T19:36:58+01:00",
-      "updated": "2026-11-08T19:36:58+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-08T20:22:22+01:00",
+      "started_at": "2026-11-08T20:12:16+01:00",
+      "finished_at": "2026-11-08T20:22:22+01:00",
       "log": [
         {
           "t": "2026-11-08T19:36:58+01:00",
@@ -17341,6 +17341,34 @@
           "t": "2026-11-08T19:37:40+01:00",
           "by": "tú",
           "msg": "editada: deps"
+        },
+        {
+          "t": "2026-11-08T20:12:16+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-08T20:22:22+01:00",
+          "by": "runner",
+          "msg": "Sin verificación aparte del tester (no toca seguridad, datos reales ni punta a punta); la CI revisa."
+        },
+        {
+          "t": "2026-11-08T20:22:22+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: `./mk chaos SCENARIO=consumer-down` para el conector connect y produce eventos sintéticos (`LAG_SAMPLE`, 0,1 por defecto). Imprime un informe JSON con el comando de deshacer (`./mk chaos-undo SCENARIO=consumer-down`, que arranca connect). Añadí un test que comprueba el mensaje de `ChaosCommand`. Pasé `./mk test MODULE=mcp-server`: sin errores de Maven; la salida pesa 10 MB y solo busqué en ella lí"
+        }
+      ],
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-08T20:22:22+01:00",
+          "min": 10.1,
+          "turns": 19,
+          "tokens": 207405,
+          "cost_usd": 0.1564296,
+          "verdict": "review",
+          "summary": "`./mk chaos SCENARIO=consumer-down` para el conector connect y produce eventos sintéticos (`LAG_SAMPLE`, 0,1 por defecto). Imprime un informe JSON con el comando de deshacer (`./mk chaos-undo SCENARIO"
         }
       ]
     },
@@ -17447,14 +17475,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-216",
-      "message": "desarrollador con T-216",
+      "current": "T-217",
+      "message": "desarrollador con T-217",
       "pid": 20400,
-      "heartbeat": "2026-11-08T20:01:32+01:00",
+      "heartbeat": "2026-11-08T20:12:16+01:00",
       "enabled": true,
       "agent": "desarrollador",
-      "started": "2026-11-08T20:01:32+01:00",
-      "live": "live-T-216-desarrollador-20261108-200132.jsonl",
+      "started": "2026-11-08T20:12:16+01:00",
+      "live": "live-T-217-desarrollador-20261108-201216.jsonl",
       "pause_reason": null
     }
   }

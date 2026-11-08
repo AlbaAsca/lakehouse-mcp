@@ -33,7 +33,9 @@ public final class ChaosCommand {
                         "schema-drift is injected by the producer: java -cp producer.jar ...producer.SchemaDriftCommand");
             }
             if (scenario.equals("consumer-down")) {
-                throw new IllegalArgumentException(scenario + " is not implemented yet");
+                throw new IllegalArgumentException(
+                        "consumer-down stops a container, so it runs from the host: ./mk chaos SCENARIO=consumer-down"
+                                + " (undo: ./mk chaos-undo SCENARIO=consumer-down)");
             }
             throw new IllegalArgumentException("Unknown scenario: " + scenario + ". " + USAGE);
         }

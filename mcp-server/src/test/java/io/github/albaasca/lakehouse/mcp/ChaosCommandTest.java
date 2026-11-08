@@ -33,6 +33,13 @@ class ChaosCommandTest {
     }
 
     @Test
+    void consumerDownPointsToTheHostCommand() {
+        assertThatThrownBy(() -> ChaosCommand.parse(new String[] {"consumer-down"}))
+                .hasMessageContaining("./mk chaos SCENARIO=consumer-down")
+                .hasMessageContaining("chaos-undo");
+    }
+
+    @Test
     void rejectsBadTable() {
         assertThatThrownBy(() -> ChaosCommand.parse(new String[] {"duplicates", "--table", "events", "--day", "2019-10-01"}))
                 .hasMessageContaining("namespace.table");
