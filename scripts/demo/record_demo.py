@@ -4,7 +4,7 @@ No es una captura de pantalla: la salida es la real (filtrada de ruido de compil
 Uso: python scripts/demo/record_demo.py [--output docs/media/demo-minima.gif]
 Requiere Pillow, el stack levantado (./mk up) y la tabla ya cargada (NO ejecuta seed).
 """
-import argparse, re, subprocess, sys, textwrap
+import argparse, json, re, subprocess, sys, textwrap
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
 
@@ -19,15 +19,29 @@ NOISE = re.compile(r"^(\s*(Container|Network|Volume|Image)\s|\[usage\] model cal
 SECRET = re.compile(r"(?i)(key|token|secret)\s*[=:]\s*\S{8,}")
 
 
-def run(question):
-    p = subprocess.run([str(ROOT / ("mk.cmd" if sys.platform == "win32" else "mk")), "ask", f"Q={question}"], cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace")
-    if p.returncode:
-        sys.exit(f"mk ask falló ({p.returncode}) con «{question}»; no se graba.\n{p.stderr[-800:]}")
-    lines = [l.rstrip() for l in (p.stdout + p.stderr).splitlines() if l.strip() and not NOISE.match(l)]
+CACHE = ROOT / "docs/media/_capture.json"  # salida cruda de la última ejecución real; no se sube
+
+
+def run(question, replay):
+    cache = json.loads(CACHE.read_text(encoding="utf-8")) if CACHE.exists() else {}
+    if replay and question in cache:
+        raw = cache[question]
+    else:
+        raw = capture(question)
+        cache[question] = raw
+        CACHE.write_text(json.dumps(cache, ensure_ascii=False), encoding="utf-8")
+    lines = [l.rstrip() for l in raw.splitlines() if l.strip() and not NOISE.match(l)]
     for l in lines:
         if SECRET.search(l):
             sys.exit("Posible secreto en la salida; no se graba.")
     return lines
+
+
+def capture(question):
+    p = subprocess.run([str(ROOT / ("mk.cmd" if sys.platform == "win32" else "mk")), "ask", f"Q={question}"], cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace")
+    if p.returncode:
+        sys.exit(f"mk ask falló ({p.returncode}) con «{question}»; no se graba.\n{p.stderr[-800:]}")
+    return p.stdout + p.stderr
 
 
 def wrap(lines):
@@ -39,8 +53,10 @@ def wrap(lines):
 
 def main():
     ap = argparse.ArgumentParser()
+    ap.add_argument("--replay", action="store_true", help="reusa la última salida real guardada (no gasta cupo del modelo)")
     ap.add_argument("--output", type=Path, default=ROOT / "docs/media/demo-minima.gif")
-    out = ap.parse_args().output
+    args = ap.parse_args()
+    out = args.output
     font = next((ImageFont.truetype(f, FS) for f in ("C:/Windows/Fonts/consola.ttf", "DejaVuSansMono.ttf") if Path(f).exists() or "/" not in f), ImageFont.load_default())
     cw, ch = int(font.getlength("M")), FS + 6
     W, H = COLS * cw + 24, ROWS * ch + 24
@@ -63,7 +79,7 @@ def main():
             screen.append((cmd[:n], PROMPT)); snap(40); screen[:] = base
         screen.append((cmd, PROMPT)); snap(500)
         screen.append(("  ...(el agente piensa y consulta; espera recortada)", DIM)); snap(900); screen.pop()
-        for l in wrap(run(q)):
+        for l in wrap(run(q, args.replay)):
             col = DIM if l.startswith("[usage]") else FG
             screen.append((l, col)); snap(160)
         snap(2200)
