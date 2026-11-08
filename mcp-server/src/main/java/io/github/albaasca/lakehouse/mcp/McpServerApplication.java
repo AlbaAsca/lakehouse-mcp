@@ -157,12 +157,18 @@ public class McpServerApplication {
 
         @Bean
         FixProposals fixProposals(FixProposalStore store, CatalogReader reader, LakehouseProperties lakehouse,
-                PipelineProperties pipeline) {
+                PipelineProperties pipeline, QualityProperties quality) {
             RepairSession repair = RepairSession.alongside(lakehouse.settings());
-            return new FixProposals(store, List.of(new RollbackSnapshot(reader, repair),
+            List<FixAction> actions = new java.util.ArrayList<>(List.of(new RollbackSnapshot(reader, repair),
                     new DeduplicatePartition(reader, repair),
-                    new ResumeConnector(pipeline.connectUrl(), pipeline.connector(), pipeline.timeout())),
-                    Clock.systemUTC());
+                    new ResumeConnector(pipeline.connectUrl(), pipeline.connector(), pipeline.timeout())));
+            String registryUrl = quality.schemaRegistryUrl();
+            if (registryUrl != null && !registryUrl.isBlank()) {
+                actions.add(new AddColumn(reader, repair, pipeline.namespace(), pipeline.table(),
+                        SchemaRegistryFields.typesOf(registryUrl, quality.subject(), pipeline.timeout()),
+                        pipeline.connectUrl(), pipeline.connector(), pipeline.timeout()));
+            }
+            return new FixProposals(store, actions, Clock.systemUTC());
         }
 
         @Bean

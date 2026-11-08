@@ -36,7 +36,9 @@ public final class ChaosCommand {
         return switch (scenario) {
             case "duplicates" -> chaos.duplicates(parts[0], parts[1], day, Double.parseDouble(optionOr(args, "--percent", "10")));
             case "empty-partition" -> chaos.emptyPartition(parts[0], parts[1], day);
-            case "consumer-down", "schema-drift" -> throw new IllegalArgumentException(scenario + " is not implemented yet");
+            case "schema-drift" -> throw new IllegalArgumentException(
+                    "schema-drift is injected by the producer: java -cp producer.jar ...producer.SchemaDriftCommand");
+            case "consumer-down" -> throw new IllegalArgumentException(scenario + " is not implemented yet");
             default -> throw new IllegalArgumentException("Unknown scenario: " + scenario);
         };
     }

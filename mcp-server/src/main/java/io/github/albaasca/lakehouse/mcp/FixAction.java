@@ -13,7 +13,8 @@ interface FixAction {
     enum Type {
         ROLLBACK_SNAPSHOT,
         DEDUPLICATE_PARTITION,
-        RESUME_CONNECTOR
+        RESUME_CONNECTOR,
+        ADD_COLUMN
     }
 
     Type type();

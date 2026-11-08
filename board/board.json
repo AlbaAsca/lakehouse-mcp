@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-08T15:43:47+01:00",
+  "updated": "2026-11-08T16:17:53+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -34,13 +34,13 @@
   "runner": {
     "enabled": true,
     "state": "working",
-    "current": "T-040",
-    "heartbeat": "2026-11-08T15:26:40+01:00",
-    "message": "desarrollador con T-040",
+    "current": "T-041",
+    "heartbeat": "2026-11-08T15:43:54+01:00",
+    "message": "desarrollador con T-041",
     "pid": 7056,
-    "live": "live-T-040-desarrollador-20261108-152640.jsonl",
+    "live": "live-T-041-desarrollador-20261108-154354.jsonl",
     "agent": "desarrollador",
-    "started": "2026-11-08T15:26:40+01:00"
+    "started": "2026-11-08T15:43:53+01:00"
   },
   "agents": [
     {
@@ -3421,10 +3421,10 @@
       "id": "T-041",
       "title": "Chaos: ciclo completo de schema drift",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "done",
       "priority": "media",
       "estimate_min": 45.0,
-      "actual_min": null,
+      "actual_min": 34.0,
       "auto": true,
       "manual": null,
       "desc": "El productor empieza a mandar un campo nuevo, compatible con el contrato, y como la evolución automática está apagada, Iceberg lo ignora sin avisar: se pierden datos en silencio. El chequeo debe compararlo con Schema Registry y el arreglo añade la columna sin reprocesar. De los cuatro, este es el de más incertidumbre.\nCómo sabremos si funciona: tras el arreglo aprobado, los eventos nuevos traen la columna rellena y las filas antiguas siguen intactas con ella en nulo.\n\n## Técnico\n- Inyección: producer con esquema v2 (campo nullable con default).\n- Detección: columnas en Registry que no están en Iceberg (T-025).\n- FixAction ADD_COLUMN con ALTER TABLE ... ADD COLUMN por la instancia de reparación (decisiones 5 y 20; comprobado en T-014 solo sobre tablas escritas por DuckDB). Comprobar si el sink toma la columna sin reiniciar; si no, reiniciar la tarea como parte del arreglo. Si con evolve apagado no se comporta así, ir a blocked con la alternativa.\n- Los eventos entre la deriva y el arreglo no recuperan el campo: documentarlo.\n- IT sobre stack completo. ./mk test.",
@@ -3435,9 +3435,9 @@
         "T-015"
       ],
       "created": "2026-11-02T11:38:51+01:00",
-      "updated": "2026-11-07T18:15:38+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-08T16:17:53+01:00",
+      "started_at": "2026-11-08T15:43:53+01:00",
+      "finished_at": "2026-11-08T16:17:53+01:00",
       "log": [
         {
           "t": "2026-11-02T11:38:51+01:00",
@@ -3453,9 +3453,52 @@
           "t": "2026-11-02T18:15:08+01:00",
           "by": "consultor",
           "msg": "descripción reescrita"
+        },
+        {
+          "t": "2026-11-08T15:43:53+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-08T15:52:51+01:00",
+          "by": "consultor",
+          "msg": "Hecho: ADD_COLUMN (AddColumn.java, tipo sale del Registry, ALTER por la instancia de reparación + restart del conector con tareas), SchemaDriftCommand en producer (v2 con coupon_code), IT SchemaDriftE2EIT y AddColumnTest. Wiki: documentar ADD_COLUMN y que los eventos entre la deriva y el arreglo pierden el campo."
+        },
+        {
+          "t": "2026-11-08T16:17:53+01:00",
+          "by": "runner",
+          "msg": "Sin verificación aparte del tester (no toca seguridad, datos reales ni punta a punta); la CI revisa."
+        },
+        {
+          "t": "2026-11-08T16:17:53+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: ADD_COLUMN con reinicio del conector, SchemaDriftCommand en producer y tests unitarios + IT de punta a punta (SchemaDriftE2EIT) en verde."
+        },
+        {
+          "t": "2026-11-08T16:17:53+01:00",
+          "by": "desarrollador",
+          "msg": "⚠ 1 comandos denegados: until ! docker ps --format '{{.Names}}' | grep -q \"tools-run-08d793317a81\"; do d"
+        },
+        {
+          "t": "2026-11-08T16:17:53+01:00",
+          "by": "runner",
+          "msg": "✗ «until ! docker ps --format '{{.Names}}' | grep -q \"tools-run-08d793317a81\"; do date > /dev»: varios comandos, tuberías, redirecciones o heredoc: lanza cada comando por separado y crea ficheros con Write/Edit"
         }
       ],
-      "rank": 900
+      "rank": 900,
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-08T16:17:53+01:00",
+          "min": 34.0,
+          "turns": 84,
+          "tokens": 4527177,
+          "cost_usd": 1.1821681999999998,
+          "verdict": "review",
+          "summary": "ADD_COLUMN con reinicio del conector, SchemaDriftCommand en producer y tests unitarios + IT de punta a punta (SchemaDriftE2EIT) en verde."
+        }
+      ]
     },
     {
       "id": "T-042",
@@ -6558,7 +6601,7 @@
       "id": "T-097",
       "title": "Probar el recorrido completo con el modelo real y grabar el primer GIF",
       "owner": "consultor",
-      "status": "blocked",
+      "status": "done",
       "priority": "alta",
       "estimate_min": 20.0,
       "actual_min": 828.4,
@@ -6574,7 +6617,7 @@
         "T-096"
       ],
       "created": "2026-11-02T17:37:29+01:00",
-      "updated": "2026-11-07T14:37:13+01:00",
+      "updated": "2026-11-08T15:53:56+01:00",
       "started_at": "2026-11-07T00:48:51+01:00",
       "finished_at": "2026-11-07T14:37:13+01:00",
       "log": [
@@ -6637,6 +6680,16 @@
           "t": "2026-11-08T14:24:59+01:00",
           "by": "consultor",
           "msg": "8-nov: maqueta simulada (docs/media/demo-minima-maqueta.gif, con aviso rojo) subida solo como vista previa. Mañana ~9:00: python scripts/demo/record_demo.py y borrar la maqueta. No enlazar la maqueta desde el README."
+        },
+        {
+          "t": "2026-11-08T15:53:55+01:00",
+          "by": "consultor",
+          "msg": "8-nov: demo grabada con cliente MCP (Claude Code), sin clave de modelo: scripts/demo/record_mcp_demo.py → docs/media/demo-minima.gif. La demo con el agente Spring AI sigue ensayada pero sin grabar (cupo Gemini)."
+        },
+        {
+          "t": "2026-11-08T15:53:56+01:00",
+          "by": "consultor",
+          "msg": "GIF real con cliente MCP publicado"
         }
       ]
     },
@@ -6644,7 +6697,7 @@
       "id": "T-098",
       "title": "README: enseñar el recorrido que ya funciona, con su GIF",
       "owner": "arquitecto",
-      "status": "next",
+      "status": "done",
       "priority": "alta",
       "estimate_min": 15.0,
       "actual_min": null,
@@ -6655,7 +6708,7 @@
         "T-097"
       ],
       "created": "2026-11-02T17:37:35+01:00",
-      "updated": "2026-11-07T18:11:28+01:00",
+      "updated": "2026-11-08T15:53:56+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -6678,6 +6731,11 @@
           "t": "2026-11-07T14:40:41+01:00",
           "by": "consultor",
           "msg": "Entra en la versión 0.1.0 (T-175)."
+        },
+        {
+          "t": "2026-11-08T15:53:56+01:00",
+          "by": "consultor",
+          "msg": "README y wiki enseñan el recorrido con el GIF real y dicen qué es simulado"
         }
       ],
       "rank": 200
@@ -16792,6 +16850,30 @@
           "cost_usd": 0.19629650000000004,
           "verdict": "review",
           "summary": "proveedor OpenAI-compatible (URL base, clave y modelo) implementado, con aviso de cupo por 429 y tests del módulo agent en verde; falta la prueba real con GitHub Models (manual del responsable)."
+        }
+      ]
+    },
+    {
+      "id": "T-213",
+      "title": "run_query rechaza ecommerce.events y no dice cómo escribir la tabla",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "media",
+      "estimate_min": 20.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Al probar el servidor MCP como cliente, run_query rechaza 'ecommerce.events' (el nombre que da list_tables) con 'Table not allowed'. Solo acepta el nombre completo 'lh.ecommerce.events', y el mensaje de error no lo dice. Un agente que no lo sepa puede fallar la pregunta de las filas. Se propone que list_tables y describe_table devuelvan también el nombre listo para usar, y que el error de tabla no permitida sugiera la forma correcta. Cómo sabremos si funciona: SELECT count(*) FROM ecommerce.events falla con un mensaje que dice 'use lh.ecommerce.events', y list_tables incluye ese nombre.\n## Técnico\nObservado el 8-nov con SELECT count(*) FROM ecommerce.events. SqlGuard.checkTable (SqlGuard.java ~380) y QueryTools.runQueryChecked (CATALOG_ALIAS = lh). Alternativa: aceptar también el nombre sin catálogo cuando es único. Tests en mcp-server.",
+      "deps": [],
+      "created": "2026-11-08T15:48:56+01:00",
+      "updated": "2026-11-08T15:48:56+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-08T15:48:56+01:00",
+          "by": "consultor",
+          "msg": "creada"
         }
       ]
     }

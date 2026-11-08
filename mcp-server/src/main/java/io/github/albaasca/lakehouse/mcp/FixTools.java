@@ -25,7 +25,9 @@ public class FixTools {
             + "snapshotId (a snapshot of that table, from describe_table) and takes the table back to it. "
             + "DEDUPLICATE_PARTITION takes namespace, table, day (yyyy-MM-dd, UTC) and sinceSnapshotId (the last snapshot "
             + "before the duplicates arrived) and deletes only the exact copies written after that snapshot on that day; "
-            + "duplicates the source already had stay. Give the "
+            + "duplicates the source already had stay. ADD_COLUMN takes namespace, table and column (a column that "
+            + "data_quality_check reports in schemaDrift.missingInTable); its type comes from Schema Registry. Old rows "
+            + "get NULL; events sent before the fix do not get the field back. Give the "
             + "reason: the person reads it to decide. Answers the proposal, with its id and status PROPOSED.",
             annotations = @McpAnnotations(title = "Propose a fix", readOnlyHint = false, destructiveHint = false,
                     idempotentHint = false, openWorldHint = false))

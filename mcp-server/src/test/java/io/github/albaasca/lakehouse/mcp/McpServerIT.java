@@ -143,7 +143,9 @@ class McpServerIT {
 
         List<String> found = new ArrayList<>();
         tables.forEach(table -> {
-            assertThat(fields(table)).containsExactlyInAnyOrder("namespace", "table");
+            assertThat(fields(table)).containsExactlyInAnyOrder("namespace", "table", "queryName");
+            assertThat(table.get("queryName").asString())
+                    .isEqualTo("lh." + table.get("namespace").asString() + "." + table.get("table").asString());
             found.add(table.get("namespace").asString() + "." + table.get("table").asString());
         });
         assertThat(found).contains(NS + "." + TABLE);

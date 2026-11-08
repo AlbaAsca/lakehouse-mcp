@@ -41,8 +41,15 @@ public final class RepairSession {
         /** A calendar day {@code yyyy-MM-dd}, written bare so a template can put it inside its own quotes. */
         DATE,
         /** A non-empty list of plain column names, written as quoted identifiers separated by commas. */
-        COLUMNS
+        COLUMNS,
+        /** One plain column name, written as a quoted identifier. */
+        COLUMN,
+        /** One of a closed list of column types ({@link #COLUMN_TYPES}), written bare. */
+        COLUMN_TYPE
     }
+
+    static final java.util.Set<String> COLUMN_TYPES = java.util.Set.of("VARCHAR", "BIGINT", "INTEGER", "DOUBLE", "FLOAT",
+            "BOOLEAN", "TIMESTAMPTZ");
 
     /**
      * A fixed statement with {@code {name}} placeholders. The SQL comes from the code, never from a request.
@@ -116,6 +123,18 @@ public final class RepairSession {
                     java.time.LocalDate.parse(text);
                     yield text;
                 }
+                case COLUMN -> {
+                    if (!(value instanceof String c) || !COLUMN_NAME.matcher(c).matches()) {
+                        throw new IllegalArgumentException(name + " must be a plain column name: " + value);
+                    }
+                    yield "\"" + c + "\"";
+                }
+                case COLUMN_TYPE -> {
+                    if (!(value instanceof String t) || !COLUMN_TYPES.contains(t)) {
+                        throw new IllegalArgumentException(name + " must be one of " + COLUMN_TYPES + ": " + value);
+                    }
+                    yield t;
+                }
                 case COLUMNS -> {
                     if (!(value instanceof java.util.List<?> list) || list.isEmpty()) {
                         throw new IllegalArgumentException(name + " must be a non-empty list of column names: " + value);
@@ -154,6 +173,11 @@ public final class RepairSession {
                     + "WHERE copy > 1 AND NOT old_file)",
             Map.of("table", Kind.TABLE, "base", Kind.LONG, "columns", Kind.COLUMNS, "day", Kind.DATE,
                     "next_day", Kind.DATE));
+
+    /** A new optional column; rows already written read it as NULL. */
+    public static final Template ADD_COLUMN = new Template(
+            "ALTER TABLE {table} ADD COLUMN {column} {type}",
+            Map.of("table", Kind.TABLE, "column", Kind.COLUMN, "type", Kind.COLUMN_TYPE));
 
     /** Longest a repair statement may run: a compaction or rollback that hangs must not hold the server forever. */
     public static final Duration DEFAULT_TIMEOUT = Duration.ofMinutes(10);
