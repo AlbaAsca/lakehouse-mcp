@@ -1,7 +1,8 @@
 # Una rama y un PR corto por entrega (T-191)
 
-Estado: **diseño**, nada implementado todavía (lo harán las tarjetas de abajo). Hasta entonces el runner sigue
-subiendo commits a `develop` (`save()` en `board/runner.py`).
+Estado: **implementado en `board/runner.py` y `ci.yml`, apagado por defecto** (`PR_MODE = False`; apagado = el runner
+sube commits a `develop` con `save()`). **Sin probar de punta a punta con un agente real y un PR real.** Cómo se usa:
+[agent-board](wiki/componentes/agent-board.md).
 
 ## Problema
 El runner hace `git push` de cada entrega directamente a `develop`. Un fallo llega a `develop` antes de que nadie lo

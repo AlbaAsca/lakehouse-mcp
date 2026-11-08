@@ -62,6 +62,13 @@ pensar (investigador, experto, arquitecto) y medir (el resto). Cómo arrancarlo,
 - **Permisos:** python, git status/diff/log, lectura, `./mvnw`, `./mk test|evals`, `docker compose ps|logs`. Nada de instalar,
   borrar, `cp`/`mv`, `git add`/`commit`/`push` ni comandos encadenados (`&&`, `;`, `|`, heredoc): el runner hace los commits.
 - Un corte por cupo, o un agente que acaba sin mensaje final, no cuenta como fallo: la tarjeta vuelve a su estado.
+- **Rama y PR por entrega (`PR_MODE` en `board/runner.py`, apagado por defecto; diseño en `docs/pr-workflow.md`):** con
+  `PR_MODE` encendido, cada tarjeta trabaja en su worktree (`../lakehouse-mcp.wt/T-xxx`, rama `feature/T-xxx-slug`) y el
+  runner empuja la rama y abre el PR a `develop`; en cada vuelta fusiona (squash) los PR con CI verde y marca `done`,
+  o devuelve la tarjeta a `next` con el log si la CI está roja (cuenta para `MAX_REJECTS`). `board/board.json` no viaja
+  en las ramas (la CI rechaza el PR que lo toque): el runner lo guarda con commits `chore(board)` a `develop`. Los agentes
+  usan `board.py` con normalidad (el runner les pone `LAKEHOUSE_BOARD_DIR`). **Sin probar de punta a punta**; apagado, rige
+  el flujo anterior (commits directos a `develop`).
 - **Tarjetas nuevas de los agentes:** prioridad baja salvo que algo esté roto o bloqueado; el consultor las ordena antes de cada versión.
 
 ## Tests por niveles

@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-08T19:48:51+01:00",
+  "updated": "2026-11-08T19:49:25+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -16506,10 +16506,10 @@
       "id": "T-201",
       "title": "Documentar el flujo de rama y PR por entrega",
       "owner": "arquitecto",
-      "status": "backlog",
+      "status": "done",
       "priority": "baja",
       "estimate_min": 20.0,
-      "actual_min": null,
+      "actual_min": 0.4,
       "auto": true,
       "manual": null,
       "desc": "Cuando el flujo de PR esté en marcha hay que dejarlo escrito para quien trabaje en el proyecto.\nCómo sabremos si funciona: CLAUDE.md y la wiki del runner describen el flujo tal como funciona, con lo no probado marcado.\n## Técnico\nCLAUDE.md (Ejecución autónoma), docs/wiki/componentes/agent-board.md, quitar de docs/pr-workflow.md el aviso de «diseño».",
@@ -16518,14 +16518,37 @@
         "T-200"
       ],
       "created": "2026-11-07T20:44:35+01:00",
-      "updated": "2026-11-07T20:44:35+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-08T19:49:25+01:00",
+      "started_at": "2026-11-08T19:48:59+01:00",
+      "finished_at": "2026-11-08T19:49:25+01:00",
       "log": [
         {
           "t": "2026-11-07T20:44:35+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-08T19:48:59+01:00",
+          "by": "runner",
+          "msg": "empieza arquitecto"
+        },
+        {
+          "t": "2026-11-08T19:49:25+01:00",
+          "by": "arquitecto",
+          "msg": "DONE: flujo de rama y PR documentado en CLAUDE.md y la wiki del runner, con lo no probado marcado, y quitado el aviso de «diseño»."
+        }
+      ],
+      "runs": [
+        {
+          "agent": "arquitecto",
+          "mode": "work",
+          "at": "2026-11-08T19:49:25+01:00",
+          "min": 0.4,
+          "turns": 11,
+          "tokens": 104887,
+          "cost_usd": 0.1378277,
+          "verdict": "done",
+          "summary": "flujo de rama y PR documentado en CLAUDE.md y la wiki del runner, con lo no probado marcado, y quitado el aviso de «diseño»."
         }
       ]
     },
@@ -17350,14 +17373,14 @@
   "runners": {
     "think": {
       "state": "working",
-      "current": "T-110",
-      "message": "arquitecto con T-110",
+      "current": "T-201",
+      "message": "arquitecto con T-201",
       "pid": 12660,
-      "heartbeat": "2026-11-08T19:48:43+01:00",
+      "heartbeat": "2026-11-08T19:49:00+01:00",
       "enabled": true,
       "agent": "arquitecto",
-      "started": "2026-11-08T19:48:43+01:00",
-      "live": "live-T-110-arquitecto-20261108-194843.jsonl",
+      "started": "2026-11-08T19:49:00+01:00",
+      "live": "live-T-201-arquitecto-20261108-194900.jsonl",
       "contrib_at": "2026-11-02T11:46:22+01:00",
       "contrib_agent": "investigador"
     },
