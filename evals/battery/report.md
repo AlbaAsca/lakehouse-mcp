@@ -14,5 +14,8 @@ Generado con `python evals/battery/run.py` el 2026-11-08 sobre la muestra sinté
 | Q8 | difícil | ¿Cuántos usuarios han comprado dos veces o más? | OK | coincide con la referencia |
 | Q9 | difícil | ¿Cuál es la marca de la primera compra de cada usuario que más se repite (top 3)? (función de ventana) | OK | coincide con la referencia |
 | Q10 | difícil | ¿Cuántas sesiones tienen vista, carrito y compra (embudo completo)? | OK | coincide con la referencia |
+| Q11 | experta | Cuadro de mando de las 5 marcas con más ingresos: embudo, dinero perdido en carritos abandonados, cuota y Pareto acumulado | OK | coincide con la referencia |
+| Q12 | experta | Retención por cohorte: de los usuarios cuya primera compra fue cada día (3 primeros), ¿cuántos volvieron a comprar otro día? | OK | coincide con la referencia |
+| Q13 | experta | Mediana de minutos entre la primera vista y la primera compra de una sesión (solo sesiones con ambas) | OK | coincide con la referencia |
 
-10 de 10 coinciden con la referencia; 0 rechazadas; 0 con resultado distinto.
+13 de 13 coinciden con la referencia; 0 rechazadas; 0 con resultado distinto.
