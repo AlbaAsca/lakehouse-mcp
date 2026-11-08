@@ -104,6 +104,19 @@ Una pregunta de negocio va por la capa semántica; una consulta suelta, por `run
 
 Guion completo: [docs/demo-grabacion.md](docs/demo-grabacion.md) · Explicación paso a paso: [wiki, la demo](docs/wiki/06-demo.md).
 
+## Rendimiento medido
+
+Medido el 8 de noviembre de 2026 con el mes real de octubre de 2019 (42,4 M de filas) en un PC con 7,6 GiB de RAM para Docker, sin clúster.
+
+| Qué | Resultado |
+|---|---|
+| Eventos reales ingeridos | **1 059 008** (2,5 % de las sesiones del mes, enteras), leídos de 42 448 764 filas en 2 min 25 s, unos 7 000 por segundo |
+| Recuento en Iceberg | **1 109 008** filas = 50 000 sintéticas + 1 059 008 enviadas: sin pérdidas ni duplicados |
+| Memoria máxima por contenedor | Connect 826 MiB · Kafka 449 · Polaris 287 · Schema Registry 282 · servidor MCP 264 · SeaweedFS 209 · Postgres 46; ningún contenedor murió por falta de memoria |
+| Consultas de la batería sobre esa tabla | **16 de 16 responden en 0,1–0,6 s** cada una (3,1 s en total), con ventanas, CTE, cohortes y z-score |
+
+Qué **no** dice: solo se ingirió ~1 M de filas, no los 42 M; las consultas son una pasada con el servidor caliente, sin repetir ni medir percentiles; y la tabla mezcla filas reales con la muestra sintética. Para repetirlo: `./mk seed SAMPLE=0.025`. El perfil completo del mes está en [docs/data-profile.md](docs/data-profile.md).
+
 ## Cómo ejecutarlo
 
 Solo necesitas Docker. En Windows, usa `mk.cmd` en lugar de `./mk`.
