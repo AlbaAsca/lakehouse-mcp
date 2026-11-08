@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-08T19:49:25+01:00",
+  "updated": "2026-11-08T20:01:22+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -64,8 +64,8 @@
       "name": "Desarrollador",
       "role": "Implementa las tareas",
       "color": "#7aa2f7",
-      "status": "working",
-      "current": "T-214"
+      "status": "idle",
+      "current": null
     },
     {
       "id": "tester",
@@ -17169,18 +17169,18 @@
       "id": "T-214",
       "title": "Herramientas MCP: avisar cuando el modelo manda un argumento que no existe",
       "owner": "desarrollador",
-      "status": "doing",
+      "status": "done",
       "priority": "media",
       "estimate_min": 25.0,
-      "actual_min": null,
+      "actual_min": 13.4,
       "auto": true,
       "manual": null,
       "desc": "Si un modelo llama a get_metric con un argumento inventado (por ejemplo 'parameters' o 'arguments' en vez de 'limit'), el servidor lo ignora en silencio y devuelve datos sin filtrar. Un agente puede dar una cifra equivocada sin enterarse. Se propone rechazar los argumentos desconocidos con un error que diga cuáles existen. Cómo sabremos si funciona: get_metric con {name:top_brands, parameters:{limit:2}} devuelve un error que lista name, from, to y limit.\n## Técnico\nObservado el 8-nov en la prueba de un agente sin pistas: get_metric devolvió 'arguments':{} y 8 filas con limit pedido en parameters. El inputSchema no declara additionalProperties:false. Revisar todas las herramientas del servidor (run_query, describe_table, time_travel, data_quality_check, etc.) y ToolResults/validación de entrada. Tests en mcp-server.",
       "deps": [],
       "created": "2026-11-08T17:06:36+01:00",
-      "updated": "2026-11-08T19:47:57+01:00",
+      "updated": "2026-11-08T20:01:22+01:00",
       "started_at": "2026-11-08T19:47:57+01:00",
-      "finished_at": null,
+      "finished_at": "2026-11-08T20:01:22+01:00",
       "log": [
         {
           "t": "2026-11-08T17:06:36+01:00",
@@ -17191,6 +17191,39 @@
           "t": "2026-11-08T19:47:57+01:00",
           "by": "runner",
           "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-08T20:01:22+01:00",
+          "by": "runner",
+          "msg": "Sin verificación aparte del tester (no toca seguridad, datos reales ni punta a punta); la CI revisa."
+        },
+        {
+          "t": "2026-11-08T20:01:22+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: Argumentos desconocidos rechazados en el filtro /mcp con error que lista los válidos; tests del módulo mcp-server en verde (4 nuevos)."
+        },
+        {
+          "t": "2026-11-08T20:01:22+01:00",
+          "by": "desarrollador",
+          "msg": "⚠ 1 comandos denegados: find /c/Users/albaa/.m2 -name \"spring-ai-mcp-annotations*.jar\" -o -name \"spring-"
+        },
+        {
+          "t": "2026-11-08T20:01:22+01:00",
+          "by": "runner",
+          "msg": "✓ permiso concedido automáticamente: find * (solo lectura dentro del proyecto); se reintenta"
+        }
+      ],
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-08T20:01:22+01:00",
+          "min": 13.4,
+          "turns": 1,
+          "tokens": 43946,
+          "cost_usd": 0.3100859000000001,
+          "verdict": "review",
+          "summary": "Argumentos desconocidos rechazados en el filtro /mcp con error que lista los válidos; tests del módulo mcp-server en verde (4 nuevos)."
         }
       ]
     },
@@ -17372,11 +17405,11 @@
   ],
   "runners": {
     "think": {
-      "state": "working",
-      "current": "T-201",
-      "message": "arquitecto con T-201",
+      "state": "stopped",
+      "current": null,
+      "message": "Runner parado",
       "pid": 12660,
-      "heartbeat": "2026-11-08T19:49:00+01:00",
+      "heartbeat": "2026-11-08T19:49:33+01:00",
       "enabled": true,
       "agent": "arquitecto",
       "started": "2026-11-08T19:49:00+01:00",

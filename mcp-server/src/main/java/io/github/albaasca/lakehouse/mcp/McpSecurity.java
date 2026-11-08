@@ -116,6 +116,7 @@ final class McpSecurity {
         private final String adminKey;
         private final List<String> allowedOrigins;
         private final JsonMapper json = JsonMapper.builder().build();
+        private final ToolArguments arguments = ToolArguments.ofServer();
 
         ApiKeyFilter(String analystKey, String adminKey, List<String> allowedOrigins) {
             this.analystKey = analystKey;
@@ -137,13 +138,19 @@ final class McpSecurity {
             if (role != null) {
                 SecurityContextHolder.getContext().setAuthentication(UsernamePasswordAuthenticationToken.authenticated(
                         role.toLowerCase(), null, AuthorityUtils.createAuthorityList("ROLE_" + role)));
-                if (ADMIN.equals(role)) {
-                    // admin also holds the analyst role: hasAnyRole(ANALYST, ADMIN) covers it
-                } else if ("POST".equals(request.getMethod()) && request.getRequestURI().equals("/mcp")) {
+                if ("POST".equals(request.getMethod()) && request.getRequestURI().equals("/mcp")) {
                     byte[] body = request.getInputStream().readAllBytes();
                     next = new CachedBody(request, body);
-                    if (calledTools(json, body).stream().anyMatch(ADMIN_TOOLS::contains)) {
+                    // admin also holds the analyst role: hasAnyRole(ANALYST, ADMIN) covers it
+                    if (!ADMIN.equals(role) && calledTools(json, body).stream().anyMatch(ADMIN_TOOLS::contains)) {
                         forbid(response, "This tool needs the admin role");
+                        return;
+                    }
+                    String rejection = arguments.rejection(json, body);
+                    if (rejection != null) {
+                        response.setStatus(HttpServletResponse.SC_OK);
+                        response.setContentType("application/json;charset=UTF-8");
+                        response.getWriter().write(rejection);
                         return;
                     }
                 }
