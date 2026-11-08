@@ -11,7 +11,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 ROOT = Path(__file__).resolve().parents[2]
 URL = "http://127.0.0.1:8090/mcp"
-COLS, ROWS, FS = 100, 32, 15
+COLS, ROWS, FS = 100, 36, 15
 BG, FG, PROMPT, DIM, OK, BAD, BLUE = (24, 26, 31), (220, 223, 228), (120, 200, 140), (130, 136, 148), (158, 206, 106), (247, 118, 142), (122, 162, 247)
 BANNER = "Cliente MCP: Claude Code (sin clave de modelo) · salida real del servidor · datos sintéticos"
 
@@ -106,6 +106,40 @@ def steps(mcp):
     return out, final
 
 
+def rows_preview(text, limit=6):
+    """Resumen de una respuesta run_query para dibujarla: cabecera y las primeras filas."""
+    try:
+        d = json.loads(text)
+        cols, rows = d["columns"], d["rows"]
+    except Exception:
+        return [(text[:160].replace("\n", " "), FG)]
+    fmt = lambda v: f"{v:,.2f}".replace(",", " ") if isinstance(v, float) else str(v)
+    out = [("  ".join(cols), DIM)]
+    for r in rows[:limit]:
+        out.append(("  ".join(fmt(v) for v in r), OK))
+    if len(rows) > limit:
+        out.append((f"… {len(rows) - limit} filas más", DIM))
+    return out
+
+
+def steps_from_transcript(path, final_path):
+    """Lo que hizo un agente de verdad: cada llamada, lo que contestó el servidor (errores y reintentos incluidos)."""
+    calls = []
+    for line in Path(path).read_text(encoding="utf-8").splitlines():
+        e = json.loads(line)
+        args = e["args"]
+        label = args["sql"] if "sql" in args else json.dumps(args, ensure_ascii=False)
+        if not e["ok"] or e["result"].startswith("ERROR"):
+            body = [("Rechazado: " + e["result"][:110].replace("\n", " "), BAD)]
+        elif e["tool"] == "run_query":
+            body = rows_preview(e["result"])
+        else:
+            body = [(e["result"][:150].replace("\n", " "), FG)]
+        calls.append((f'{e["tool"]}("{short(label, 70)}")', body))
+    final = [l for l in Path(final_path).read_text(encoding="utf-8").splitlines() if l.strip()]
+    return calls, final
+
+
 def wrap(text):
     return textwrap.wrap(text, COLS - 2, replace_whitespace=False) or [""]
 
@@ -113,34 +147,43 @@ def wrap(text):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--output", type=Path, default=ROOT / "docs/media/demo-minima.gif")
+    ap.add_argument("--transcript", type=Path, help="registro de llamadas de un agente real (scripts/demo/mcp_call.py)")
+    ap.add_argument("--final", type=Path, help="texto final del agente, tal cual")
+    ap.add_argument("--question", default=None, help="pregunta que se le hizo al agente")
+    ap.add_argument("--banner", default=None)
     ap.add_argument("--capture", type=Path, default=ROOT / "docs/media/_capture_mcp.json")
     args = ap.parse_args()
-    calls, final = steps(Mcp())
+    if args.transcript:
+        calls, final = steps_from_transcript(args.transcript, args.final)
+    else:
+        calls, final = steps(Mcp())
     args.capture.write_text(json.dumps({"calls": calls, "final": final}, ensure_ascii=False), encoding="utf-8")
 
     font = next((ImageFont.truetype(f, FS) for f in ("C:/Windows/Fonts/consola.ttf", "DejaVuSansMono.ttf") if Path(f).exists() or "/" not in f), ImageFont.load_default())
     cw, ch = int(font.getlength("M")), FS + 6
     W, H = COLS * cw + 24, ROWS * ch + 24
+    live = bool(args.transcript)
+    banner = args.banner or ("Agente: Claude decide el SQL en vivo · servidor MCP real · datos sintéticos" if live else BANNER)
     frames, durs, screen = [], [], []
 
     def snap(ms):
         im = Image.new("RGB", (W, H), BG)
         d = ImageDraw.Draw(im)
         d.rectangle((0, 0, W, ch + 8), fill=(36, 40, 59))
-        d.text((12, 6), BANNER, font=font, fill=BLUE)
+        d.text((12, 6), banner, font=font, fill=BLUE)
         for i, (txt, col) in enumerate(screen[-(ROWS - 2):]):
             d.text((12, 12 + ch + 6 + i * ch), txt, font=font, fill=col)
         frames.append(im.quantize(colors=32))
         durs.append(ms)
 
     snap(700)
-    question = "Tú: ¿Dónde estoy perdiendo dinero? Qué marcas concentran mis ingresos, cuánto dejan en carritos abandonados y si algún día se salió de lo normal."
+    question = args.question or "Tú: ¿Dónde estoy perdiendo dinero? Qué marcas concentran mis ingresos, cuánto dejan en carritos abandonados y si algún día se salió de lo normal."
     for n in range(8, len(question) + 1, 3):
         screen.append((question[:n], FG)); snap(45); screen.pop()
     for s in wrap(question):
         screen.append((s, FG))
     snap(900)
-    screen.append(("Claude: lo analizo en el lakehouse con SQL de verdad, vía MCP (SQL abreviado en pantalla).", BLUE)); snap(1200)
+    screen.append(("Claude: no tengo el SQL escrito; descubro las tablas y decido las consultas (SQL abreviado en pantalla)." if live else "Claude: lo analizo en el lakehouse con SQL de verdad, vía MCP (SQL abreviado en pantalla).", BLUE)); snap(1200)
     screen.append(("", FG))
     for call, lines in calls:
         text = "> " + call
@@ -154,7 +197,7 @@ def main():
             for s in wrap(line):
                 screen.append(("  " + s, col)); snap(170)
         snap(1500)
-    screen.append(("", FG)); screen.append(("Respuesta (redactada a partir de lo anterior):", BLUE)); snap(600)
+    screen.append(("", FG)); screen.append(("Respuesta del agente (sin editar):" if live else "Respuesta (redactada a partir de lo anterior):", BLUE)); snap(600)
     for line in final:
         for s in wrap(line):
             screen.append((s, FG)); snap(450)

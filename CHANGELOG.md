@@ -27,8 +27,8 @@ It runs on a synthetic sample of 50,000 events; the real Kaggle month is not par
   by configuration. The OpenAI-compatible provider is tested against a fake server only, not against a real service.
 - **Query battery:** 16 model-free SQL questions of rising difficulty (down to market basket, z-score anomalies and
   re-sessionised visits), each checked against an independent reference (`python evals/battery/run.py`).
-- **Demo:** a GIF recorded with an MCP client (Claude Code) calling the real server, without a model key
-  (`scripts/demo/record_mcp_demo.py`). The same demo with the Spring AI agent is rehearsed but not yet recorded.
+- **Demo:** a GIF of an agent (Claude) that receives only the question and the MCP tools and decides the SQL itself against
+  the real server, with its full call logs (`docs/media/live-agent/`, `scripts/demo/record_mcp_demo.py`). The same demo with the Spring AI agent is rehearsed but not yet recorded.
 - **Maintenance:** snapshot expiry as a one-off process (`./mk expire`).
 - **Quality:** containers-based integration tests with Testcontainers, CI on every push, a synthetic sample with
   the dataset's schema, and an independently computed reference answer for the demo question.

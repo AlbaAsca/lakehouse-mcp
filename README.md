@@ -92,12 +92,12 @@ una página por cada pieza (qué es, cómo se conecta, cómo está configurada y
 </p>
 
 > [!NOTE]
-> **Cómo se grabó este GIF:** un cliente MCP (Claude Code) llama de verdad al servidor, sin clave de ningún modelo. Las llamadas y las respuestas son reales;
-> el texto final lo redacta el script a partir de ellas, y la animación está dibujada (no es una captura de pantalla). La demo con el agente propio de Spring AI
-> (`./mk ask`) está ensayada con Gemini, pero aún no grabada. Lo dice con detalle [la wiki](docs/wiki/06-demo.md#lo-simulado-y-lo-real).
+> **Cómo se grabó este GIF:** un agente (Claude, sin ver ningún SQL previo) recibió solo la pregunta y las herramientas del servidor MCP, y **decidió él** qué llamar y qué SQL escribir.
+> Las llamadas, los errores y las respuestas del servidor son reales, y el texto final es el suyo, sin editar. La animación está dibujada (no es una captura de pantalla) y el SQL va abreviado.
+> Es Claude, no el agente propio de Spring AI: ese está ensayado con Gemini pero aún sin grabar. Los registros completos están en [`docs/media/live-agent/`](docs/media/live-agent/); el primer intento, antes de arreglar un fallo del servidor, también.
 
 <p align="center">
-  <img src="docs/media/demo-minima.gif" alt="Se pregunta en lenguaje natural dónde se pierde dinero; un cliente MCP lanza SQL avanzado al servidor (cuadro de mando por marca y detección de anomalías) y recibe cifras reales; una consulta que lee un fichero es rechazada" width="80%">
+  <img src="docs/media/demo-minima.gif" alt="Un agente recibe la pregunta de dónde se pierde dinero, descubre las tablas del servidor MCP, decide el SQL (ingresos por marca, carritos abandonados, día anómalo) y responde con cifras reales" width="80%">
 </p>
 
 Una pregunta de negocio va por la capa semántica; una consulta suelta, por `run_query`. Los datos son **sintéticos** (mismo esquema que el dataset real).
