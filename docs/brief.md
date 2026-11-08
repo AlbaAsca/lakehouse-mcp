@@ -27,23 +27,25 @@ Kaggle `mkechinov/ecommerce-behavior-data-from-multi-category-store` (REES46).
 4. Data contracts: esquemas versionados en Schema Registry con reglas de compatibilidad, y un test que rompe el build si se rompe el contrato.
 5. Mantenimiento de Iceberg: compactación, expiración de snapshots y evolución de esquema demostrada (añadir una columna sin reprocesar).
 6. Evals del agente: 20-30 preguntas con la respuesta esperada calculada de forma independiente, ejecutadas en CI y con la precisión publicada en el README.
-7. Benchmark: DuckDB 2.0 frente a Trino sobre las mismas consultas, con tabla reproducible (`make bench`).
-8. Seguridad y gobierno: RBAC en las tools MCP (analyst frente a admin), log de auditoría de cada llamada del agente y enmascarado de user_id.
+7. Seguridad y gobierno: RBAC en las tools MCP (analyst frente a admin), log de auditoría de cada llamada del agente y enmascarado de user_id.
+
+La comparación con otro motor de SQL se retiró el 2026-11-02 para ahorrar memoria y tarjetas ([decisión 22](architecture.md#decisiones)).
 
 ## Requisitos técnicos
-- Módulos: producer/, connect/, mcp-server/, agent/, semantic/, evals/, bench/, infra/, docs/
+- Módulos: producer/, connect/, mcp-server/, agent/, semantic/, evals/, testkit/, maintenance/, infra/, docs/
 - Tests unitarios y de integración con Testcontainers; CI sin Kaggle
 - Observabilidad: Micrometer/Actuator, con métricas de las tools MCP
+- Modelo del agente: Gemini por defecto, por su capa gratuita; Claude se elige por configuración, sin tocar el código
 - GitHub Actions: build, tests y evals
-- Makefile: up, down, download-data, seed, test, evals, chaos, bench, demo
+- Makefile: up, down, download-data, seed, test, evals, chaos, demo
 - Sin secretos en el repo (.env.example)
 
 ## Presentación
-- README en inglés: diagrama Mermaid, quickstart, GIF/vídeo de la demo del agente y del self-healing, ejemplos de prompts, resultados de evals y benchmark, "Design decisions" y "Built with agent-board".
+- README en inglés: diagrama Mermaid, quickstart, GIF/vídeo de la demo del agente y del self-healing, ejemplos de prompts, resultados de evals, "Design decisions" y "Built with agent-board".
 - GitHub Pages con arquitectura, demo y decisiones de diseño.
 
 ## Forma de trabajar
-- Fases: infra → productor → ingesta → consulta → MCP → semántica → agente → chaos/self-healing → contracts → mantenimiento Iceberg → evals → benchmark → seguridad → README/Pages. Excepción: se adelanta un recorrido mínimo de principio a fin (`docs/architecture.md`).
+- Fases: infra → productor → ingesta → consulta → MCP → semántica → agente → chaos/self-healing → contracts → mantenimiento Iceberg → evals → seguridad → README/Pages. Excepción: se adelanta un recorrido mínimo de principio a fin (`docs/architecture.md`).
 - El tester construye las respuestas de referencia de las evals sin mirar la implementación.
 - Commits en inglés con Conventional Commits y el id de tarea.
 - Si una versión o característica no existe o no funciona como se espera, a «Te necesita» con una alternativa propuesta.

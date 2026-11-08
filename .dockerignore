@@ -1,0 +1,12 @@
+# Only infra/mcp-server, infra/maintenance and infra/agent build from the root; this keeps .env, .git and target/ out of their context.
+*
+!pom.xml
+!*/pom.xml
+!mcp-server/src/main
+!semantic/src/main
+!maintenance/src/main
+!agent/src/main
+!testkit/src/main
+!infra/mcp-server
+!infra/maintenance
+!infra/agent

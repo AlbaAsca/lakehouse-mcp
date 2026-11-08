@@ -45,9 +45,12 @@ ALLOWED = ["Read", "Edit", "Write", "Glob", "Grep", "WebSearch", "WebFetch",
            "Bash(python *)", "Bash(git status*)", "Bash(git diff*)", "Bash(git log*)",
            "Bash(ls*)", "Bash(cat *)", "Bash(head *)", "Bash(tail *)", "Bash(wc *)", "Bash(mkdir *)", "Bash(diff *)",
            # en Windows la CLI puede usar PowerShell en vez de Bash: mismos permisos
-           "Bash(./mvnw *)", "Bash(./mk test*)", "Bash(./mk evals*)", "Bash(make test*)", "Bash(make evals*)",
+           "Bash(./mvnw *)", "Bash(./mk test)", "Bash(./mk test MODULE=*)", "Bash(./mk test MAVEN_ARGS=*)", "Bash(./mk test-board)",
+           "Bash(./mk evals*)", "Bash(make test)", "Bash(make test MODULE=*)", "Bash(make test MAVEN_ARGS=*)",
+           "Bash(make test-board)", "Bash(make evals*)",
            "Bash(docker compose ps*)", "Bash(docker compose logs*)",
-           "PowerShell(.\\mvnw.cmd *)", "PowerShell(.\\mk.cmd test*)", "PowerShell(.\\mk.cmd evals*)",
+           "PowerShell(.\\mvnw.cmd *)", "PowerShell(.\\mk.cmd test)", "PowerShell(.\\mk.cmd test MODULE=*)",
+           "PowerShell(.\\mk.cmd test MAVEN_ARGS=*)", "PowerShell(.\\mk.cmd test-board)","PowerShell(.\\mk.cmd evals*)",
            "PowerShell(docker compose ps*)", "PowerShell(docker compose logs*)",
            "PowerShell(python *)", "PowerShell(git status*)", "PowerShell(git diff*)", "PowerShell(git log*)",
            "PowerShell(Get-ChildItem*)", "PowerShell(Get-Content*)"]
@@ -61,7 +64,10 @@ DENIED = ["Bash(python -m pip *)", "Bash(pip *)", "Bash(npm *)", "Bash(npx *)", 
 RULES = """Reglas (modo autónomo, permisos: solo código y tests):
 - Nadie va a responder preguntas: decide tú dentro de tu rol, con el criterio más sensato.
 - Sigue CLAUDE.md. Trabaja SOLO en esta tarea. Si ves otras mejoras o bugs, regístralos con
-  `python board/board.py add "Título" --owner <rol> --est <minutos de agente> --prio <alta|media|baja> --desc "..." --by {owner}`.
+  prioridad baja salvo que rompan algo o bloqueen el trabajo (el consultor las ordena antes de cada versión), y antes
+  comprueba con `python board/board.py list` que no existen ya:
+  `python board/board.py followup "Título" "descripción" --owner <rol> --est <minutos de agente> --by {owner}`
+  (más simple que `add`: entra en backlog con prioridad baja; `--prio` opcional).
   Las estimaciones son en MINUTOS DE AGENTE (lo que tardarías tú), no horas humanas.
 - Cómo escribir la descripción de una tarjeta (la lee una persona, no un robot):
   arriba, 2-4 frases en lenguaje llano: qué problema hay, qué idea probamos y por qué; después una línea
@@ -105,7 +111,7 @@ CONTRIB_RULES = """Eres el agente «{agent}» y hoy no hay tareas asignadas para
 1. Ponte al día: CLAUDE.md, `python board/board.py list` y docs/.
 2. Dentro de tu rol: {focus}
 3. Solo si aporta de verdad: registra como mucho 2 tarjetas con
-   `python board/board.py add "Título" --owner <rol> --est <min> --prio <alta|media|baja> --desc "<lenguaje llano; datos técnicos debajo de ## Técnico>" --by {agent}`
+   `python board/board.py followup "Título" "<lenguaje llano; datos técnicos debajo de ## Técnico>" --owner <rol> --est <min> --by {agent}`
    y/o deja el detalle en docs/NOTAS-{agent}.md (fecha + hallazgo + fuente). No dupliques tarjetas ni notas existentes.
 4. No cambies código: eso va por tarjeta.
 - NO edites board/board.json a mano. NO instales nada ni hagas git push. Responde en español.
@@ -151,11 +157,39 @@ def other_instance(b, lane):
     return None
 
 
-def pick(b, lane="all"):
-    """Siguiente tarea ejecutable: (tarea, modo) con modo 'verify' o 'work'. Las verificaciones van al carril measure."""
+def ci_is_red(branch="develop"):
+    """True si la última ejecución completada de la CI en `branch` falló. Sin gh o sin red: False (no bloquea)."""
+    try:
+        r = subprocess.run(["gh", "run", "list", "--branch", branch, "--status", "completed", "--limit", "1",
+                            "--json", "conclusion"], capture_output=True, text=True, timeout=30)
+        runs = json.loads(r.stdout) if r.returncode == 0 and r.stdout.strip() else []
+    except (OSError, subprocess.SubprocessError, ValueError):
+        return False
+    return bool(runs) and runs[0].get("conclusion") == "failure"
+
+
+def is_ci_card(t):
+    return re.search(r"\bCI\b", t.get("title", "")) is not None
+
+
+TESTER_WORDS = ("seguridad", "roles", "datos reales", "csv real", "modelo real", "punta a punta", "recorrido",
+                "testkit", "compose.yaml", "connect/", "infra/", "rollback", "aprobación")
+
+
+def needs_tester(t):
+    """Solo se verifica aparte lo que toca seguridad, datos reales o la integración de punta a punta (CLAUDE.md)."""
+    if t.get("verify") or t.get("owner") == "tester":
+        return True
+    text = f"{t.get('title', '')} {t.get('desc', '')}".lower()
+    return any(w in text for w in TESTER_WORDS)
+
+
+def pick(b, lane="all", ci_red=False):
+    """Siguiente tarea ejecutable: (tarea, modo) con modo 'verify' o 'work'. Las verificaciones van al carril measure.
+    Con la CI en rojo (`ci_red`) solo se cogen tarjetas de arreglo de CI (título con «CI»)."""
     # tareas que necesitan algo del responsable (manual) solo corren cuando el responsable las mueve a Próximo
-    ok = lambda t: t["owner"] != "consultor" and t.get("kind") != "contrib" and bd.deps_done(b, t) and (t.get("auto", True) or t["status"] == "next")
-    key = lambda t: (bd.PRIO.get(t.get("priority"), 1), t["id"])
+    ok = lambda t: t["owner"] != "consultor" and t.get("kind") != "contrib" and not (t.get("pr") and t["status"] == "review") and bd.deps_done(b, t) and (t.get("auto", True) or t["status"] == "next") and (not ci_red or is_ci_card(t))
+    key = lambda t: (bd.rank_of(t), t["id"])
     rev = sorted([t for t in b["tasks"] if t["status"] == "review" and ok(t)], key=key) if lane in ("all", "measure") else []
     if rev:
         return rev[0], "verify"
@@ -166,11 +200,27 @@ def pick(b, lane="all"):
     return None, None
 
 
+def uncommitted():
+    """Rutas con cambios sin confirmar (modificadas o nuevas sin ignorar). Vacía si no hay git."""
+    r = git("status", "--porcelain", "-uall")
+    return [l[3:] for l in (r.stdout.splitlines() if r else []) if len(l) > 3]
+
+
 def build_prompt(t, mode, agent):
     hist = "\n".join(f"- {l['t'][:16]} {l['by']}: {l['msg']}" for l in t.get("log", [])[-8:])
     if mode == "verify":
+        own = claims().get(t["id"], set())  # lo de esta tarjeta se commitea al cerrarla: se verifica en el árbol de trabajo
+        dirty = [p for p in uncommitted() if not p.startswith("board/") and p not in own]
         head = (f"Eres el TESTER. Verifica la tarea {t['id']} «{t['title']}» que el {t['owner']} ha dejado en Revisión.\n"
                 "Revisa el cambio (git log/diff), pasa los tests del módulo, prueba el comportamiento y añade un test que cubra la tarea si no existe. Mira también la última CI de develop (CLAUDE.md, Tests por niveles).")
+        if dirty:
+            head += ("\n\nVERIFICA SOLO LO CONFIRMADO: estos ficheros NO están en git (cambios sin confirmar o nuevos): "
+                     + ", ".join(dirty[:30])
+                     + ". Si el código de la tarjeta depende de alguno (import, referencia, test, config), la verificación FALLA: "
+                       "devuelve la tarjeta con un mensaje que nombre ese fichero, porque en una copia limpia no compilaría.")
+        if own:
+            head += ("\n\nLos ficheros de esta tarjeta aún no están commiteados (el runner los guarda al cerrarla): "
+                     "verifícalos en el árbol de trabajo (git status/diff), no los rechaces por eso: " + ", ".join(sorted(own)[:30]))
         states = STATES_QA
     else:
         head = f"Eres el agente «{agent}». Ejecuta la tarea {t['id']}: {t['title']}"
@@ -180,21 +230,21 @@ def build_prompt(t, mode, agent):
             + RULES.format(owner=agent, states=states))
 
 
-def git(*args):
+def git(*args, cwd=None):
     if not (ROOT / ".git").exists() or not shutil.which("git"):
         return None
     return subprocess.run(["git", *args],  # identidad: la configurada en el repo
-                          cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace")
+                          cwd=cwd or ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace")
 
 
 class GitError(RuntimeError):
     pass
 
 
-def git_retry(*args, tries=5):
+def git_retry(*args, tries=5, cwd=None):
     """Como git(), pero reintenta (p. ej. index.lock del otro carril) y lanza GitError si sigue fallando: un fallo mudo pierde ficheros."""
     for i in range(tries):
-        r = git(*args)
+        r = git(*args, cwd=cwd)
         if r is None or r.returncode == 0:
             return r
         if i < tries - 1:
@@ -240,6 +290,36 @@ def tool_paths(line):
     return out
 
 
+def claim_stream(tag, line, pending):
+    """Apunta un fichero solo cuando su escritura (Write/Edit) ha salido bien: un tool_result con error o denegado no lo apunta.
+    `pending` guarda {id de tool_use: rutas} hasta ver su resultado; lo que quede al cortarse se apunta con claim_pending."""
+    if "tool_use" not in line and "tool_result" not in line:
+        return
+    try:
+        content = json.loads(line)["message"]["content"]
+    except (json.JSONDecodeError, KeyError, TypeError):
+        return
+    for c in content if isinstance(content, list) else []:
+        if not isinstance(c, dict):
+            continue
+        if c.get("type") == "tool_use":
+            paths = tool_paths(json.dumps({"message": {"content": [c]}}))
+            if paths:
+                pending[c.get("id")] = paths
+        elif c.get("type") == "tool_result":
+            paths = pending.pop(c.get("tool_use_id"), None)
+            failed = c.get("is_error") or DENIED_MARK in json.dumps(c.get("content"), ensure_ascii=False)
+            if paths and not failed:
+                claim(tag, paths)
+
+
+def claim_pending(tag, pending):
+    """Corte entre tool_use y tool_result: no se sabe si se escribió, así que se apunta (no se pierde trabajo)."""
+    for paths in pending.values():
+        claim(tag, paths)
+    pending.clear()
+
+
 def claim(tid, paths):
     """Apunta los ficheros de la tarjeta al momento: sobrevive a un corte y el otro carril sabe que no son suyos."""
     if not paths:
@@ -278,8 +358,168 @@ def commit_own(before, msg, tid=None):
     return files
 
 
-def save(before, tid, msg):
-    """Guarda y sube la tarjeta. Si git falla lo deja anotado en ella: sus ficheros siguen apuntados y entran en su siguiente commit."""
+PR_MODE = False  # T-198: cada tarjeta en su worktree y rama feature/T-xxx-slug (docs/pr-workflow.md); apagado = flujo actual
+WT_ROOT = ROOT.parent / (ROOT.name + ".wt")
+
+
+def branch_name(t):
+    slug = re.sub(r"[^a-z0-9]+", "-", t.get("title", "").lower()).strip("-")[:40].strip("-")
+    return f"feature/{t['id']}" + (f"-{slug}" if slug else "")
+
+
+def make_worktree(t, base="develop"):
+    """Crea (o reutiliza) ../<repo>.wt/T-xxx con la rama de la tarjeta partiendo de `base`. Devuelve la ruta."""
+    path = WT_ROOT / t["id"]
+    if path.exists():
+        return path
+    WT_ROOT.mkdir(parents=True, exist_ok=True)
+    br = branch_name(t)
+    exists = git("rev-parse", "--verify", "-q", br)
+    args = ("worktree", "add", str(path), br) if exists and exists.returncode == 0 else ("worktree", "add", "-b", br, str(path), base)
+    git_retry(*args)
+    return path
+
+
+def worktree_env():
+    """Entorno del agente en un worktree: el panel real y el mismo proyecto de compose (volúmenes m2/data compartidos;
+    sin esto compose usaría el nombre de la carpeta, T-xxx). ./mk monta el worktree como /workspace."""
+    return {**os.environ, "LAKEHOUSE_BOARD_DIR": str(bd.F.parent),
+            "COMPOSE_PROJECT_NAME": re.sub(r"[^a-z0-9_-]", "", ROOT.name.lower())}
+
+
+def commit_worktree(wt, msg):
+    """En modo PR no hay claims: todo lo que hay en el worktree es de la tarjeta. board.json no viaja en la rama."""
+    git_retry("add", "-A", cwd=wt)
+    git_retry("reset", "-q", "--", "board/board.json", cwd=wt)
+    pending = git("diff", "--cached", "--quiet", cwd=wt)
+    if pending and pending.returncode:
+        git_retry("commit", "-q", "-m", msg, cwd=wt)
+
+
+def gh(*args, cwd=None):
+    """Llama a `gh`; None si no está o no responde."""
+    try:
+        return subprocess.run(["gh", *args], cwd=cwd or ROOT, capture_output=True, text=True, encoding="utf-8",
+                              errors="replace", timeout=120)
+    except (OSError, subprocess.SubprocessError):
+        return None
+
+
+def publish_pr(wt, t):
+    """Empuja la rama de la tarjeta y abre el PR a develop (si la tarjeta ya tiene uno, solo se actualiza la rama).
+    Devuelve el número del PR; lanza GitError si algo falla."""
+    br = branch_name(t)
+    git_retry("push", "-q", "-u", "origin", br, cwd=wt)
+    if t.get("pr"):
+        return t["pr"]
+    r = gh("pr", "create", "--base", "develop", "--head", br, "--title", f"{t['title']} ({t['id']})"[:200],
+           "--body", f"Entrega de {t['id']}.\n\n{(t.get('desc') or '')[:600]}")
+    m = re.search(r"/pull/(\d+)", r.stdout) if r is not None and r.returncode == 0 else None
+    if not m:
+        raise GitError(f"gh pr create: {((r.stderr or r.stdout) if r is not None else 'gh no responde').strip()[:300]}")
+    return int(m.group(1))
+
+
+def pr_status(n):
+    """'merged' | 'closed' | 'missing' | 'green' | 'red' | 'pending' para el PR n."""
+    v = gh("pr", "view", str(n), "--json", "state")
+    if v is None:
+        return "pending"
+    if v.returncode != 0:
+        return "missing" if re.search(r"no pull requests found|Could not resolve", v.stderr or "", re.I) else "pending"
+    try:
+        state = json.loads(v.stdout).get("state")
+    except ValueError:
+        return "pending"
+    if state in ("MERGED", "CLOSED"):
+        return state.lower()
+    c = gh("pr", "checks", str(n), "--json", "state")
+    try:
+        states = [x.get("state") for x in json.loads(c.stdout)] if c is not None and c.stdout.strip() else []
+    except ValueError:
+        states = []
+    if any(s in ("FAILURE", "ERROR", "TIMED_OUT", "CANCELLED", "STARTUP_FAILURE") for s in states):
+        return "red"
+    if states and all(s in ("SUCCESS", "SKIPPED", "NEUTRAL") for s in states):
+        return "green"
+    return "pending"
+
+
+def failed_log(t, limit=1500):
+    """Cola del log del job que falló en la rama de la tarjeta (mejor esfuerzo)."""
+    r = gh("run", "list", "--branch", branch_name(t), "--status", "failure", "--limit", "1", "--json", "databaseId")
+    try:
+        rid = json.loads(r.stdout)[0]["databaseId"]
+    except (AttributeError, ValueError, IndexError, KeyError, TypeError):
+        return "(sin log de la CI)"
+    lg = gh("run", "view", str(rid), "--log-failed")
+    return (lg.stdout or lg.stderr or "")[-limit:].strip() if lg is not None else "(sin log de la CI)"
+
+
+def commit_board(msg):
+    """Commit del panel directo a develop: pull --rebase y push (solo toca board/, que paths-ignore excluye de la CI)."""
+    try:
+        git_retry("add", "--", "board/board.json")
+        pending = git("diff", "--cached", "--quiet", "--", "board/board.json")
+        if pending and pending.returncode:
+            git_retry("commit", "-q", "-m", msg, "--", "board/board.json")
+        git("pull", "--rebase", "--autostash", "-q")
+        git("push", "-q")
+    except GitError as e:
+        print(f"  ⚠ panel sin guardar: {e}")
+
+
+def check_prs():
+    """Revisa los PR abiertos: verde → squash merge y done; rojo → next con el motivo (cuenta en MAX_REJECTS);
+    pendiente → nada. Devuelve cuántas tarjetas cambiaron."""
+    changed = 0
+    for t in [x for x in bd.load()["tasks"] if x.get("pr") and x["status"] == "review"]:
+        tid, n = t["id"], t["pr"]
+        st = pr_status(n)
+        if st == "pending":
+            continue
+        if st == "green":
+            m = gh("pr", "merge", str(n), "--squash", "--delete-branch")
+            if m is None or (m.returncode != 0 and pr_status(n) != "merged"):
+                continue  # se reintenta en la siguiente vuelta
+            st = "merged"
+        if st == "merged":
+            wtp = WT_ROOT / tid
+            if wtp.exists():
+                git("worktree", "remove", "--force", str(wtp))
+            bd.update(lambda b: bd.set_status(b, bd.task(b, tid), "done", "runner", f"PR #{n} fusionado con la CI en verde"))
+        else:
+            why = failed_log(t) if st == "red" else f"PR #{n} {'cerrado' if st == 'closed' else 'inexistente'}"
+
+            def back(b):
+                x = bd.task(b, tid)
+                x["owner"] = "desarrollador" if x["owner"] == "tester" else x["owner"]
+                x.setdefault("runs", []).append(dict(agent="runner", mode="pr", at=now(), verdict="pr_fail", summary=why[:200]))
+                fails = sum(1 for r in x["runs"] if r.get("verdict") == "pr_fail")
+                if fails >= MAX_REJECTS:
+                    bd.set_status(b, x, "blocked", "runner", f"Bloqueada tras {fails} PR rechazados. Último motivo: {why[:300]}")
+                else:
+                    if st != "red":
+                        x.pop("pr", None)  # PR cerrado o borrado: el siguiente intento abre otro
+                    bd.set_status(b, x, "next", "runner", f"CI del PR #{n}: {st}. {why}")
+            bd.update(back)
+        changed += 1
+    if changed:
+        commit_board("chore(board): PR results")
+    return changed
+
+
+MAX_REJECTS = 3  # rechazos seguidos del tester tras los que la tarjeta se bloquea (T-192)
+FINAL = ("done", "blocked", "human")  # estados que cierran la tarjeta: solo entonces hay commit
+
+
+def save(before, tid, msg, new=None):
+    """Guarda y sube la tarjeta. Si git falla lo deja anotado en ella: sus ficheros siguen apuntados y entran en su siguiente commit.
+    Si `new` es un estado intermedio (review, next…) no hay commit: lo cambiado se apunta y entra en el commit final de la tarjeta."""
+    if new is not None and new not in FINAL:
+        after = snapshot()
+        claim(tid, sorted(p for p, v in after.items() if before.get(p) != v and p != "board/board.json"))
+        return True
     try:
         commit_own(before, msg, tid)
     except GitError as e:
@@ -290,28 +530,55 @@ def save(before, tid, msg):
     return True
 
 
+def save_worktree(wt, tid, msg, new=None):
+    """Modo PR: commit de todo el worktree en su rama (sin push a develop; el PR es de otra tarjeta) y, aparte,
+    commit del panel en el checkout principal."""
+    try:
+        commit_worktree(wt, msg)
+        git_retry("add", "--", "board/board.json")
+        pending = git("diff", "--cached", "--quiet", "--", "board/board.json")
+        if pending and pending.returncode:
+            git_retry("commit", "-q", "-m", f"chore(board): {tid}", "--", "board/board.json")
+    except GitError as e:
+        print(f"  ⚠ {tid} sin guardar: {e}")
+        bd.update(lambda b: bd.log(bd.task(b, tid), "runner", f"⚠ commit fallido en el worktree: {e}"))
+        return False
+    return True
+
+
 # Tope de turnos por rol (medido en un proyecto real: los agentes que investigan gastaban 3-4 veces más por ejecución)
-MAX_TURNS = {"experto": 40, "investigador": 25, "tester": 40}
+MAX_TURNS = {"experto": 40, "investigador": 25, "tester": 40, "desarrollador": 60, "arquitecto": 40}
 
 
-def run_claude(claude, prompt, agent, timeout_s, tag="run", max_turns=80):
+def deny_settings():
+    """Las reglas de denegación son más de mil: en la línea de comandos pasan de los 32 767 caracteres de Windows
+    (WinError 206). Van en un fichero de ajustes."""
+    path = LOGDIR / "deny-settings.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps({"permissions": {"deny": [*DENIED, *pm.rules()[1]]}}), encoding="utf-8")
+    return path
+
+
+def run_claude(claude, prompt, agent, timeout_s, tag="run", max_turns=80, cwd=None):
     """Lanza al agente con salida en streaming: cada evento (texto, herramienta, resultado) se guarda al momento en
     board/runs/live-<tag>-<agente>-<fecha>.jsonl para verlo en directo desde el panel. No cuesta tokens extra:
     es la misma ejecución, solo que la CLI va contando lo que hace en vez de esperar al final."""
     # --strict-mcp-config sin --mcp-config: el agente no carga ningún MCP del proyecto (p. ej. uno que publique o envíe algo fuera)
     cmd = [claude, "-p", "--agent", agent, "--output-format", "stream-json", "--verbose", "--strict-mcp-config",
            "--permission-mode", "acceptEdits", "--permission-prompts", "none",
-           "--max-turns", str(max_turns), "--allowedTools", *ALLOWED, *pm.rules()[0], "--disallowedTools", *DENIED, *pm.rules()[1]]
+           "--max-turns", str(max_turns), "--allowedTools", *ALLOWED, *pm.rules()[0],
+           "--settings", str(deny_settings())]
     live = LOGDIR / f"live-{tag}-{agent}-{datetime.now():%Y%m%d-%H%M%S}.jsonl"
     set_runner(live=live.name)
     errf = live.with_suffix(".err")
-    t0, data, lines, killed = time.time(), {}, [], []
+    t0, data, lines, killed, pending = time.time(), {}, [], [], {}
     try:
         with errf.open("w", encoding="utf-8") as ef:  # stderr a fichero: un pipe lleno bloquearía al agente
             p = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=ef,
-                                 text=True, encoding="utf-8", errors="replace", cwd=ROOT)
+                                 text=True, encoding="utf-8", errors="replace", cwd=cwd or ROOT,
+                                 env=worktree_env() if cwd else None)
     except OSError as e:
-        return dict(text="", err=str(e), code=-1, secs=0, turns=None, cost=None, usage={}, is_error=True)
+        return dict(denied=[], text="", err=str(e), code=-1, secs=0, turns=None, cost=None, usage={}, is_error=True, cut=False)
     timer = threading.Timer(timeout_s, lambda: (killed.append(1), p.kill()))
     timer.start()
     try:
@@ -322,7 +589,7 @@ def run_claude(claude, prompt, agent, timeout_s, tag="run", max_turns=80):
                 f.write(line)
                 f.flush()
                 lines.append(line)
-                claim(tag, tool_paths(line))
+                claim_stream(tag, line, pending)
                 if '"type":"result"' in line.replace(" ", ""):
                     try:
                         data = json.loads(line)
@@ -331,6 +598,7 @@ def run_claude(claude, prompt, agent, timeout_s, tag="run", max_turns=80):
         code = p.wait()
     finally:
         timer.cancel()
+        claim_pending(tag, pending)
     err = errf.read_text(encoding="utf-8", errors="replace")
     errf.unlink(missing_ok=True)
     if killed:
@@ -340,10 +608,15 @@ def run_claude(claude, prompt, agent, timeout_s, tag="run", max_turns=80):
     out_of_turns = data.get("subtype") == "error_max_turns"  # repetirlo daría lo mismo: es un fallo, no un corte
     if out_of_turns and not err:
         err = f"agotó el máximo de {max_turns} turnos sin mensaje final"
+    # Error de la API (p. ej. 529 sobrecarga): el «resultado» es el error, no un veredicto. Se trata como un corte (T-149).
+    api_error = (data.get("is_error") is True and not out_of_turns and not killed
+                 and not any(RESULT_RE.search(l) for l in text.splitlines()))
+    if api_error:
+        err = f"error de la API: {text}" if text.strip() else err
     return dict(denied=denied_commands(lines), text=text, err=err[-2000:] if err else "", code=code, secs=time.time() - t0,
                 turns=data.get("num_turns"), cost=data.get("total_cost_usd"), usage=data.get("usage") or {},
                 is_error=out_of_turns or data.get("is_error", code != 0),
-                cut=not text.strip() and not killed and not out_of_turns)
+                cut=(not text.strip() or api_error) and not killed and not out_of_turns)
 
 
 DENIED_MARK = "Permission for this tool use was denied"
@@ -421,7 +694,16 @@ CUT_MSG = "agente cortado sin mensaje final, se reintentará"
 
 def is_usage_limit(r):
     """La salida de Claude indica que se agotó el límite de uso (no es un fallo de la tarea)."""
-    return bool(LIMIT_RE.search(f"{r.get('text') or ''}\n{r.get('err') or ''}"))
+    text = r.get("text") or ""
+    if any(RESULT_RE.search(l) for l in text.splitlines()):  # terminó y dio veredicto: citar el aviso no es toparse con él
+        return False
+    return bool(LIMIT_RE.search(f"{text}\n{r.get('err') or ''}"))
+
+
+def clean_reason(s):
+    """Motivo legible para el log: una línea, sin el JSON que pueda traer un error de la API."""
+    s = " ".join((s or "").split())
+    return s.split("{", 1)[0].strip(" :")[-200:]
 
 
 def interruption(r):
@@ -429,7 +711,7 @@ def interruption(r):
     if is_usage_limit(r):
         return "limit", LIMIT_MSG
     if r.get("cut"):
-        err = " ".join((r.get("err") or "").split())[-200:]
+        err = clean_reason(r.get("err"))
         return "cut", f"{CUT_MSG}: {err}" if err else CUT_MSG
     return None
 
@@ -443,6 +725,15 @@ def finish(tid, mode, agent, r):
             t = bd.task(b, tid)
             new = "review" if mode == "verify" else "next"
             bd.set_status(b, t, new, agent, msg)
+            cut_denied = r.get("denied") or []
+            if cut_denied:  # también cortado: lo denegado queda anotado y se abre la solicitud (T-151)
+                bd.log(t, agent, f"⚠ {len(cut_denied)} comandos denegados: "
+                       + " | ".join(" ".join(d.split())[:80] for d in cut_denied))
+                notes, _granted, requests = permission_protocol(b, t, cut_denied, r.get("text"), agent)
+                for n in notes:
+                    bd.log(t, "runner", n)
+                if requests:
+                    t["deps"] = sorted(set(t.get("deps") or []) | set(requests))
             for a in b["agents"]:
                 if a["id"] == agent and a.get("current") == tid:
                     a.update(status="idle", current=None)
@@ -456,7 +747,7 @@ def finish(tid, mode, agent, r):
     verdict = m.group(1).lower() if m else ("blocked" if r["is_error"] else "review")
     summary = (m.group(2).strip() if m else (r["err"] or r["text"][-300:]).strip())[:400] or "sin resumen"
     denied = r.get("denied") or []
-    if any("board.py add" in d for d in denied) and verdict in ("done", "review"):
+    if any("board.py add" in d or "board.py followup" in d for d in denied) and verdict in ("done", "review"):
         verdict = "blocked"  # las tarjetas que debía crear no existen
     warn = (f"⚠ {len(denied)} comandos denegados: " + " | ".join(" ".join(d.split())[:80] for d in denied)) if denied else None
     u = r["usage"]
@@ -469,13 +760,29 @@ def finish(tid, mode, agent, r):
             new = {"done": "done", "fail": "next", "human": "human"}.get(verdict, "blocked")
             if new == "next":
                 t["owner"] = "desarrollador"
+                prev = [x for x in t.get("runs", []) if x.get("mode") == "verify"]
+                fails = 0
+                for x in reversed(prev):
+                    if x.get("verdict") != "fail":
+                        break
+                    fails += 1
+                fails += 1  # este rechazo (aún no está en runs)
+                if fails > 1 and prev[-1].get("summary") == summary:
+                    bd.log(t, "runner", f"⚠ rechazo idéntico al anterior ({fails} seguidos)")
+                if fails >= MAX_REJECTS:
+                    new = "blocked"
+                    bd.log(t, "runner", f"Bloqueada tras {fails} rechazos seguidos del tester: "
+                                        f"el desarrollador no avanza. Último motivo: {summary[:200]}")
         else:
             new = {"done": "done", "review": "review", "human": "human"}.get(verdict, "blocked")
             if new == "done" and agent == "desarrollador":
-                new = "review"  # el código siempre lo verifica el tester
+                new = "review"
+            if new == "review" and agent == "desarrollador" and not needs_tester(t):
+                new = "done"  # tarjeta pequeña: sus tests de módulo en verde y la CI hacen de revisor
+                bd.log(t, "runner", "Sin verificación aparte del tester (no toca seguridad, datos reales ni punta a punta); la CI revisa.")
         runs = t.setdefault("runs", [])
         runs.append(dict(agent=agent, mode=mode, at=now(), min=round(r["secs"] / 60, 1), turns=r["turns"],
-                         tokens=toks or None, cost_usd=r["cost"], verdict=verdict))
+                         tokens=toks or None, cost_usd=r["cost"], verdict=verdict, summary=summary[:200]))
         if verdict == "human" and summary:
             t["manual"], t["auto"] = summary, False
         bd.set_status(b, t, new, agent, f"{verdict.upper()}: {summary}")
@@ -599,12 +906,16 @@ def main():
                     break
                 time.sleep(5)
                 continue
+            if PR_MODE and not o.dry_run and check_prs():
+                pass
             b = bd.load()
             if bd.lane_state(b, LANE).get("pause_reason"):  # reanudado: el motivo de la pausa anterior ya no vale
                 set_runner(pause_reason=None)
-            t, mode = pick(b, LANE)
+            red = ci_is_red()
+            t, mode = pick(b, LANE, ci_red=True) if red else pick(b, LANE)
             if not t:
-                set_runner(state="idle", current=None, message="Sin tareas ejecutables")
+                set_runner(state="idle", current=None,
+                           message="CI en rojo: solo tarjetas de arreglo de CI" if red else "Sin tareas ejecutables")
                 if o.contribute and contribute(o) and o.dry_run:
                     break
                 if o.once or o.until_idle:
@@ -628,12 +939,21 @@ def main():
                 else:
                     bd.set_status(b, x, "doing", "runner", f"empieza {agent}")
             bd.update(start)
-            before = snapshot()
+            wt = None
+            if PR_MODE:
+                try:
+                    wt = make_worktree(t)
+                except GitError as e:
+                    print(f"  ⚠ sin worktree para {tid}: {e}")
+                    bd.update(lambda b: bd.log(bd.task(b, tid), "runner", f"⚠ no se pudo crear el worktree: {e}"))
+                    fails += 1
+                    continue
+            before = {} if wt else snapshot()
             set_runner(state="working", current=tid, agent=agent, started=now(), message=f"{agent} con {tid}")
 
             est = t.get("estimate_min") or 15
             r = run_claude(o.claude, build_prompt(t, mode, agent), agent, timeout_s=int(min(120, max(15, est * 4)) * 60), tag=tid,
-                           max_turns=MAX_TURNS.get(agent, 80))
+                           max_turns=MAX_TURNS.get(agent, 80), cwd=wt)
             (LOGDIR / f"{tid}-{agent}-{datetime.now():%Y%m%d-%H%M%S}.txt").write_text(
                 f"{r['text']}\n\n--- stderr ---\n{r['err']}", encoding="utf-8")
             new, verdict, summary = finish(tid, mode, agent, r)
@@ -643,7 +963,21 @@ def main():
                         if a["id"] == "tester" and a.get("current") == tid:
                             a.update(status="idle", current=None)
                 bd.update(free)
-            save(before, tid, f"chore(runner): {tid} {verdict} by {agent}")
+            if wt:
+                save_worktree(wt, tid, f"chore(runner): {tid} {verdict} by {agent}", new)
+                if new == "done":  # entrega completa: PR a develop; done solo cuando se fusione
+                    try:
+                        n = publish_pr(wt, bd.task(bd.load(), tid))
+                        bd.update(lambda b: (bd.task(b, tid).update(pr=n),
+                                             bd.set_status(b, bd.task(b, tid), "review", "runner", f"PR #{n} abierto; espera a la CI")))
+                        new = "review"
+                    except GitError as e:
+                        print(f"  ⚠ {tid} sin PR: {e}")
+                        bd.update(lambda b: bd.set_status(b, bd.task(b, tid), "next", "runner", f"⚠ no se pudo abrir el PR: {e}"))
+                        new = "next"
+                commit_board(f"chore(board): {tid}")
+            else:
+                save(before, tid, f"chore(runner): {tid} {verdict} by {agent}", new)
             print(f"  → {new} en {r['secs'] / 60:.1f} min · {summary}")
 
             if verdict in ("limit", "cut"):  # sin fallo contado; parar hasta el reset (la ejecución programada reintenta)

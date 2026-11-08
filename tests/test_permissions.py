@@ -15,13 +15,24 @@ import permissions as pm  # noqa: E402
 import runner  # noqa: E402
 
 
+def test_saltos_de_linea_dentro_de_comillas_son_texto_no_encadenado():
+    """T-174: una descripción de varias líneas no es una cadena de comandos; dos comandos en líneas distintas sí."""
+    desc = 'python board/board.py add "Título" --owner tester --desc "Arriba llano.\n\n## Técnico\nx; y | z && w"'
+    assert pm.classify(desc)[0] == "seguro"
+    assert pm.classify("python board/board.py note T-1 'a\nb'")[0] == "seguro"
+    assert pm.classify("python board/board.py list\ngit status")[0] == "encadenado"
+    assert pm.classify('python board/board.py add "x"\npython evil.py')[0] == "encadenado"
+    assert pm.classify('python board/board.py add "x" --desc "a $(whoami)"')[0] == "encadenado"
+    assert pm.classify('python board/board.py add "x" --desc "a `whoami`"')[0] == "encadenado"
+    assert pm.classify('python board/board.py add "x" --desc "a" > out.txt')[0] == "encadenado"
+
+
 def test_clasifica_los_comandos_que_se_denegaron_de_verdad():
     assert pm.classify("git show 98cb191 -- board/board.py")[:2] == ("seguro", "git show*")
     assert pm.classify(".venv/Scripts/python board/board.py list")[0] == "seguro"
     assert pm.classify("git tag --list base-v*")[1] == "git tag --list*"
     assert pm.classify("ZERO_N=28 python scripts/run.py")[0] == "encadenado"
     assert pm.classify("cat >> tests/x.py <<'EOF'")[0] == "encadenado"
-    assert pm.classify('python board/board.py add "x" --desc "a\nb"')[0] == "encadenado"
     assert pm.classify("git push origin main")[0] == "prohibido"
     assert pm.classify("kaggle competitions submit -c x")[0] == "prohibido"
     assert pm.classify("python -m pip install x")[0] == "prohibido"
@@ -36,7 +47,14 @@ DESTRUCTIVOS = ["docker compose down -v", "docker compose down", "docker compose
                 "docker system prune -af", "docker volume prune", "docker volume rm data", "docker rm kafka", "docker rmi tools",
                 "docker compose rm -f", "docker exec kafka rm -rf /data", "./mk down", "./mk -n down", "mk down", "./mk.cmd down",
                 "mk.cmd down", ".\\mk.cmd down", "make down", "make down MODULE=producer", "gh repo delete x/y --yes",
-                "gh api -X DELETE repos/x/y"]
+                "gh api -X DELETE repos/x/y",
+                # T-142
+                "docker volume remove data", "docker container remove kafka", "docker image remove tools",
+                "docker network remove n", "docker exec kafka sh -c 'rm -rf /data'", 'docker exec kafka sh -c "rm -rf /data"',
+                "docker compose exec kafka sh -c 'rm -rf /data'", "docker compose down\t-v", 'docker compose "down" -v',
+                "./mk 'down'", "gh api -XDELETE repos/x/y", "gh api --method=DELETE repos/x/y", "gh api -X=DELETE repos/x/y",
+                "gh release delete-asset v1 a.zip", "gh secret remove X", "gh variable remove X", "docker kill kafka",
+                "docker compose up -V", "docker compose up --renew-anon-volumes"]
 NO_DESTRUCTIVOS = ["./mk download-data", "./mk test", "./mk test MODULE=down", "./mk up", "./mk smoke", "mk.cmd up", "make test",
                    "docker ps", "docker compose ps", "docker compose logs kafka", "docker compose up -d", "docker compose config",
                    "docker compose run --rm tools make test", "gh pr view 3"]
@@ -67,6 +85,27 @@ def test_mencionar_un_comando_destructivo_en_una_tarjeta_no_lo_prohibe():
     assert pm.classify('python board/board.py note T-1 "no lanzar docker compose down -v"')[0] != "prohibido"
 
 
+@pytest.mark.parametrize("cmd", [
+    'python board/board.py add "x" --desc "algo del panel"',
+    'python board/board.py add "Quitar rm del script" --owner desarrollador --desc "no usar cp ni mv"',
+    "python board/board.py note T-1 'revisar del y rmdir'",
+])
+def test_del_rm_o_cp_entre_comillas_es_texto(cmd):
+    assert pm.classify(cmd)[0] == "seguro"
+
+
+@pytest.mark.parametrize("cmd", ["del board/board.json", "rm -rf docs", 'cp "a b" c', 'del "board/board.json"',
+                                 'git commit -m "x"', 'powershell -Command "Remove-Item x"', 'bash -c "rm -rf x"'])
+def test_borrar_de_verdad_sigue_prohibido(cmd):
+    assert pm.classify(cmd)[0] == "prohibido"
+
+
+@pytest.mark.parametrize("cmd", ['"rm" -rf docs', "'del' board/board.json", '"cp" a b'])
+def test_quitar_comillas_no_vuelve_seguro_un_comando_entrecomillado(cmd):
+    """T-164: quitar el texto entre comillas no puede dejar pasar el propio comando entre comillas sin revisión."""
+    assert pm.classify(cmd)[0] in ("prohibido", "revisar")
+
+
 def test_un_permiso_amplio_no_abre_lo_destructivo(monkeypatch, tmp_path):
     """Aunque alguien conceda ./mk * o docker *, la orden al agente lleva la denegación, que en la CLI gana a lo permitido."""
     d = {"allowed": [{"pattern": "./mk *"}, {"pattern": "docker *"}], "denied": []}
@@ -86,8 +125,9 @@ def test_un_permiso_amplio_no_abre_lo_destructivo(monkeypatch, tmp_path):
     with pytest.raises(Parar):
         runner.run_claude("claude", "x", "desarrollador", 1)
     cmd = captured["cmd"]
-    allowed = cmd[cmd.index("--allowedTools"):cmd.index("--disallowedTools")]
-    denied = cmd[cmd.index("--disallowedTools"):]
+    allowed = cmd[cmd.index("--allowedTools"):cmd.index("--settings")]
+    # las denegaciones (más de mil) van en un fichero de ajustes para no pasar el límite de la línea de comandos en Windows
+    denied = json.loads((tmp_path / "deny-settings.json").read_text(encoding="utf-8"))["permissions"]["deny"]
     assert "Bash(./mk *)" in allowed and "Bash(docker *)" in allowed
     assert {"Bash(./mk down)", "Bash(docker * prune *)", "Bash(docker * down *)"} <= set(denied)
 

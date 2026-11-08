@@ -3,6 +3,7 @@ package io.github.albaasca.lakehouse.mcp;
 import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLTimeoutException;
@@ -22,7 +23,8 @@ import org.duckdb.DuckDBConnection;
  * Read-only access to the Iceberg catalog through one embedded DuckDB instance and a small pool of its connections.
  *
  * <p>The catalog is attached {@code READ_ONLY} so that even a {@code SELECT} cannot change a table, whatever the SQL
- * validator lets through (docs/spike-duckdb-iceberg.md, question 5). Repairs will need an instance of their own.
+ * validator lets through (docs/spike-duckdb-iceberg.md, question 5). Repairs go through {@link RepairSession}, a
+ * separate instance: no connection here can ever reach a writable catalog (docs/architecture.md, decision 20).
  */
 public final class LakehouseSession implements AutoCloseable {
 
@@ -30,6 +32,7 @@ public final class LakehouseSession implements AutoCloseable {
     public static final String CATALOG_ALIAS = "lh";
 
     /** Iceberg loads avro by itself, so it has to be installed as well for the session to start without internet. */
+    private static final String UTC = "SET TimeZone = 'UTC'";
     private static final List<String> EXTENSIONS = List.of("httpfs", "avro", "iceberg");
 
     /** Polaris catalog. {@code uri} is the base URL, without a trailing slash. */
@@ -46,7 +49,7 @@ public final class LakehouseSession implements AutoCloseable {
             Path extensionDirectory, boolean installExtensions) {
 
         public static Settings of(Catalog catalog, Storage storage) {
-            return new Settings(catalog, storage, 4, Duration.ofSeconds(30), "512MB", null, true);
+            return new Settings(catalog, storage, 4, Duration.ofSeconds(30), "400MB", null, true);
         }
 
         public Settings withPoolSize(int size) {
@@ -93,12 +96,17 @@ public final class LakehouseSession implements AutoCloseable {
         });
         try {
             try (Statement statement = root.createStatement()) {
-                for (String sql : startup(settings)) {
+                for (String sql : startup(settings, true)) {
                     statement.execute(sql);
                 }
             }
             for (int i = 0; i < settings.poolSize(); i++) {
-                idle.add(root.duplicate());
+                DuckDBConnection copy = root.duplicate();
+                idle.add(copy);
+                // A session SET may not carry over to duplicates: set it on each one.
+                try (Statement statement = copy.createStatement()) {
+                    statement.execute(UTC);
+                }
             }
         } catch (SQLException | RuntimeException e) {
             close();
@@ -106,10 +114,13 @@ public final class LakehouseSession implements AutoCloseable {
         }
     }
 
-    private static List<String> startup(Settings settings) {
+    /** Shared with {@link RepairSession}: the only difference between the two instances is {@code READ_ONLY}. */
+    static List<String> startup(Settings settings, boolean readOnly) {
         Catalog catalog = settings.catalog();
         Storage storage = settings.storage();
         List<String> sql = new ArrayList<>();
+        // The sample is stored in UTC: per-day figures must not depend on the machine's zone.
+        sql.add(UTC);
         if (settings.extensionDirectory() != null) {
             sql.add("SET extension_directory = " + quote(settings.extensionDirectory().toString()));
         }
@@ -128,7 +139,7 @@ public final class LakehouseSession implements AutoCloseable {
         sql.add("CREATE SECRET lakehouse_polaris (TYPE iceberg, CLIENT_ID " + quote(catalog.clientId())
                 + ", CLIENT_SECRET " + quote(catalog.clientSecret()) + ", OAUTH2_SERVER_URI "
                 + quote(catalog.uri() + "/api/catalog/v1/oauth/tokens") + ", OAUTH2_SCOPE 'PRINCIPAL_ROLE:ALL')");
-        sql.add("ATTACH " + quote(catalog.name()) + " AS " + CATALOG_ALIAS + " (TYPE iceberg, READ_ONLY, URI "
+        sql.add("ATTACH " + quote(catalog.name()) + " AS " + CATALOG_ALIAS + " (TYPE iceberg, " + (readOnly ? "READ_ONLY, " : "") + "URI "
                 + quote(catalog.uri() + "/api/catalog") + ", SECRET lakehouse_polaris, ACCESS_DELEGATION_MODE 'none')");
         return sql;
     }
@@ -144,13 +155,75 @@ public final class LakehouseSession implements AutoCloseable {
      * @throws SQLException if DuckDB rejects it; the connection stays usable for the next query
      */
     public <T> T query(String sql, RowReader<T> reader) throws SQLException {
+        return withConnection(reserved -> reserved.query(sql, reader));
+    }
+
+    /**
+     * Keeps one connection for the whole of {@code work}, for what lives in a connection, such as a temporary view.
+     * Inside it, use only {@code reserved}: going back to the pool can wait for a connection that this call itself holds.
+     *
+     * @throws SQLTimeoutException if no connection frees up within the query timeout
+     */
+    public <T> T withConnection(Work<T> work) throws SQLException {
         Connection connection = borrow();
         try {
+            return work.run(new Reserved(connection));
+        } finally {
+            release(connection);
+        }
+    }
+
+    /** What to do with a reserved connection. */
+    @FunctionalInterface
+    public interface Work<T> {
+        T run(Reserved reserved) throws SQLException;
+    }
+
+    /** One connection of the pool. Each statement has the query timeout to itself; it is not shared by the whole call. */
+    public final class Reserved {
+
+        private final Connection connection;
+
+        private Reserved(Connection connection) {
+            this.connection = connection;
+        }
+
+        /** Runs a statement that returns rows, as {@link LakehouseSession#query} does. */
+        public <T> T query(String sql, RowReader<T> reader) throws SQLException {
+            return timed(sql, statement -> {
+                try (ResultSet rows = statement.executeQuery(sql)) {
+                    return reader.read(rows);
+                }
+            });
+        }
+
+        /** Runs a prepared statement (values bound, never written into the text) under the same timeout. */
+        public <T> T query(io.github.albaasca.lakehouse.semantic.BoundQuery bound, RowReader<T> reader)
+                throws SQLException {
+            try (PreparedStatement statement = bound.prepare(connection);
+                    Timeout timeout = new Timeout(statement)) {
+                try (ResultSet rows = statement.executeQuery()) {
+                    return reader.read(rows);
+                } catch (SQLException e) {
+                    if (timeout.fired()) {
+                        throw new SQLTimeoutException("Query exceeded " + settings.queryTimeout(), e);
+                    }
+                    throw e;
+                }
+            }
+        }
+
+        /** Runs a statement without rows, such as {@code CREATE VIEW}: the driver refuses those in {@code executeQuery}. */
+        public void execute(String sql) throws SQLException {
+            timed(sql, statement -> statement.execute(sql));
+        }
+
+        private <T> T timed(String sql, StatementWork<T> work) throws SQLException {
             // One Statement per query: after an error the driver closes it, not just the failed query.
             try (Statement statement = connection.createStatement();
                     Timeout timeout = new Timeout(statement)) {
-                try (ResultSet rows = statement.executeQuery(sql)) {
-                    return reader.read(rows);
+                try {
+                    return work.run(statement);
                 } catch (SQLException e) {
                     if (timeout.fired()) {
                         throw new SQLTimeoutException("Query exceeded " + settings.queryTimeout() + ": " + sql, e);
@@ -158,9 +231,12 @@ public final class LakehouseSession implements AutoCloseable {
                     throw e;
                 }
             }
-        } finally {
-            release(connection);
         }
+    }
+
+    @FunctionalInterface
+    private interface StatementWork<T> {
+        T run(Statement statement) throws SQLException;
     }
 
     private Connection borrow() throws SQLException {

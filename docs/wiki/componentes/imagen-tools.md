@@ -43,7 +43,7 @@ Cuando `make up` corre dentro de `tools`, habla con el Docker de tu ordenador a 
 | `download-data` | Sin probar: requiere credenciales de Kaggle |
 | `seed` | Sin probar: requiere el CSV real. El comando que lanza sí está probado con la muestra sintética (`ProducerIT`) |
 | `seed-sample` | ✅ probado con `./mk` y el stack arriba: Kafka confirma las 50.000 filas |
-| `evals`, `chaos`, `bench`, `demo` | ⬜ responden `not implemented yet` |
+| `evals`, `chaos`, `demo` | ⬜ responden `not implemented yet` |
 
 ## Cómo probarlo tú mismo
 
@@ -79,16 +79,16 @@ Tests Java de un solo módulo. Primero compila e instala sus dependencias en la 
 ./mk test MODULE=producer
 ```
 
-Si un test falla o el módulo no existe, termina con error, igual que la suite completa. `mk.cmd test MODULE=<módulo>` pasa los mismos argumentos, pero está sin probar.
+Si un test falla o el módulo no existe, termina con error, igual que la suite completa. `mk.cmd test MODULE=<módulo>` pasa los mismos argumentos y devuelve el mismo código de salida que `docker compose` (probado en `tests/test_mk_cmd.py` con un sustituto de docker; sin probar con Docker real).
 
 Un objetivo pendiente:
 
 ```bash
-./mk bench
+./mk evals
 ```
 ```text
-bench: not implemented yet, see the board
-make: *** [Makefile:20: bench] Error 1
+evals: not implemented yet, see the board
+make: *** [Makefile:49: evals] Error 1
 ```
 
 ## Qué puede fallar
@@ -98,7 +98,7 @@ make: *** [Makefile:20: bench] Error 1
 - **No tienes `~/.kaggle`.** En la sintaxis corta de volúmenes, Compose [crea la ruta si no existe](https://docs.docker.com/reference/compose-file/services/#volumes), así que quedará una carpeta vacía. Solo importa para `download-data`.
 - **Rutas transformadas en Git Bash.** Pon `MSYS_NO_PATHCONV=1` delante si una ruta de contenedor sale con `C:/Program Files/Git/...`.
 - **Dos copias del repo probando a la vez.** `test MODULE=<módulo>` instala las dependencias en la caché de Maven, que comparten todas las copias: una podría usar el `testkit` que acaba de instalar la otra.
-- **Se acumula memoria.** `tools` y `testkit` ocupan RAM. Para tests que levantan Connect o Trino, [`docs/architecture.md`](../../architecture.md#pruebas-qué-puede-verificar-cada-quién) recomienda apagar el stack.
+- **Se acumula memoria.** `tools` y `testkit` ocupan RAM. Para tests que levantan Connect, [`docs/architecture.md`](../../architecture.md#pruebas-qué-puede-verificar-cada-quién) recomienda apagar el stack.
 
 ## Para saber más
 

@@ -101,7 +101,74 @@
       "why": "Herramienta de búsqueda de solo lectura; evita solicitudes repetidas",
       "by": "responsable",
       "at": "2026-11-03T10:27:21+01:00"
+    },
+    {
+      "pattern": "ls *",
+      "why": "concedido automáticamente a desarrollador (T-020): solo lectura dentro del proyecto",
+      "by": "runner",
+      "at": "2026-11-04T20:30:20+01:00"
+    },
+    {
+      "pattern": "grep *",
+      "why": "concedido automáticamente a desarrollador (T-106): solo lectura dentro del proyecto",
+      "by": "runner",
+      "at": "2026-11-06T23:57:37+01:00"
+    },
+    {
+      "pattern": "python *",
+      "why": "concedido automáticamente a tester (T-107): solo lectura dentro del proyecto",
+      "by": "runner",
+      "at": "2026-11-07T17:47:29+01:00"
+    },
+    {
+      "pattern": "git stash*",
+      "why": "concedido por el responsable desde el panel",
+      "by": "responsable",
+      "at": "2026-11-07T20:20:08+01:00"
+    },
+    {
+      "pattern": "git diff*",
+      "why": "concedido automáticamente a desarrollador (T-194): solo lectura dentro del proyecto",
+      "by": "runner",
+      "at": "2026-11-07T21:42:39+01:00"
+    },
+    {
+      "pattern": "find *",
+      "why": "concedido automáticamente a desarrollador (T-024): solo lectura dentro del proyecto",
+      "by": "runner",
+      "at": "2026-11-08T13:46:52+01:00"
     }
   ],
-  "denied": []
+  "denied": [
+    {
+      "pattern": "cmd *",
+      "why": "Abriría cualquier comando de Windows; mk.cmd ya está permitido directamente",
+      "by": "consultor",
+      "at": "2026-11-07T00:39:54+01:00"
+    },
+    {
+      "pattern": "./mk seed*",
+      "why": "Carga datos en el stack compartido: duplicó la tabla de la demo. Solo el responsable",
+      "by": "consultor",
+      "at": "2026-11-07T14:35:37+01:00"
+    },
+    {
+      "pattern": ".\\mk.cmd seed*",
+      "why": "Carga datos en el stack compartido: duplicó la tabla de la demo. Solo el responsable",
+      "by": "consultor",
+      "at": "2026-11-07T14:35:37+01:00"
+    },
+    {
+      "pattern": "make seed*",
+      "why": "Carga datos en el stack compartido: duplicó la tabla de la demo. Solo el responsable",
+      "by": "consultor",
+      "at": "2026-11-07T14:35:38+01:00"
+    },
+    {
+      "pattern": "mk.cmd seed*",
+      "why": "Carga datos en el stack compartido: duplicó la tabla de la demo. Solo el responsable",
+      "by": "consultor",
+      "at": "2026-11-07T14:35:38+01:00"
+    }
+  ]
 }

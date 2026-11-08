@@ -32,6 +32,16 @@ services:
       timeout: 15s
       retries: 12
 
+  # Creates the events topic before the connector exists: otherwise the sink's subscription auto-creates it with 1
+  # partition and the producer (KafkaEventSink.PARTITIONS = 6) finds it already there (T-114). Idempotent.
+  kafka-init:
+    image: apache/kafka:4.4.0
+    depends_on:
+      kafka: {condition: service_healthy}
+    entrypoint: ["/opt/kafka/bin/kafka-topics.sh", "--bootstrap-server", "kafka:9092", "--create", "--if-not-exists",
+                 "--topic", "ecommerce.events", "--partitions", "6", "--replication-factor", "1"]
+    restart: "no"
+
   schema-registry:
     image: confluentinc/cp-schema-registry:8.4.0
     depends_on:
@@ -116,6 +126,7 @@ services:
       kafka: {condition: service_healthy}
       schema-registry: {condition: service_healthy}
       lakehouse-init: {condition: service_completed_successfully}
+      kafka-init: {condition: service_completed_successfully}
     environment:
       CONNECT_BOOTSTRAP_SERVERS: kafka:9092
       CONNECT_REST_ADVERTISED_HOST_NAME: connect
@@ -151,10 +162,66 @@ services:
     env_file: [.env]
     restart: "no"
 
-  trino:
-    image: trinodb/trino:484
-    profiles: [bench]
-    ports: ["8080:8080"]
+  mcp-server:
+    build:
+      context: .
+      dockerfile: infra/mcp-server/Dockerfile
+    depends_on:
+      polaris: {condition: service_healthy}
+      postgres: {condition: service_healthy}
+      lakehouse-init: {condition: service_completed_successfully}
+    environment:
+      MCP_SERVER_ADDRESS: 0.0.0.0
+      POLARIS_CLIENT_ID: ${POLARIS_CLIENT_ID}
+      POLARIS_CLIENT_SECRET: ${POLARIS_CLIENT_SECRET}
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY}
+      S3_SECRET_KEY: ${S3_SECRET_KEY}
+      S3_REGION: ${S3_REGION}
+      MCP_ANALYST_KEY: ${MCP_ANALYST_KEY}
+      MCP_ADMIN_KEY: ${MCP_ADMIN_KEY}
+      OPS_DB_URL: jdbc:postgresql://postgres:5432/ops
+      OPS_DB_USER: polaris
+      OPS_DB_PASSWORD: ${POSTGRES_PASSWORD:-change-me-postgres}
+    # Host loopback only, and every call needs a Bearer key (analyst or admin). Other services reach it at mcp-server:8090.
+    ports: ["127.0.0.1:8090:8090"]
+
+  # One run on demand (`make expire`), never started by `make up`. Takes its arguments from the command line.
+  expire-snapshots:
+    build:
+      context: .
+      dockerfile: infra/maintenance/Dockerfile
+    profiles: [maintenance]
+    depends_on:
+      polaris: {condition: service_healthy}
+      lakehouse-init: {condition: service_completed_successfully}
+    environment:
+      POLARIS_CLIENT_ID: ${POLARIS_CLIENT_ID}
+      POLARIS_CLIENT_SECRET: ${POLARIS_CLIENT_SECRET}
+      POLARIS_REALM: ${POLARIS_REALM}
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY}
+      S3_SECRET_KEY: ${S3_SECRET_KEY}
+      S3_REGION: ${S3_REGION}
+    restart: "no"
+
+  # One question on demand (`make ask Q=...`), never started by `make up`. Answers and exits.
+  agent:
+    build:
+      context: .
+      dockerfile: infra/agent/Dockerfile
+    profiles: [agent]
+    depends_on:
+      mcp-server: {condition: service_healthy}
+    environment:
+      MCP_SERVER_URL: http://mcp-server:8090
+      MCP_ANALYST_KEY: ${MCP_ANALYST_KEY:-}
+      AGENT_PROVIDER: ${AGENT_PROVIDER:-google-genai}
+      AGENT_MODEL: ${AGENT_MODEL:-}
+      AGENT_BASE_URL: ${AGENT_BASE_URL:-https://api.openai.com/v1}
+      AGENT_API_KEY: ${AGENT_API_KEY:-}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+    mem_limit: 1g
+    restart: "no"
 
   # JDK, Maven, make, Docker CLI, DuckDB CLI and Kaggle CLI: nothing is installed on the host.
   tools:

@@ -1,6 +1,6 @@
 # Guion de la primera demo y del GIF
 
-**Sin probar: `./mk ask` aún no existe** (T-096). `./mk seed-sample` ya funciona (T-091), pero el guion entero no se ha ejecutado. Este guion se ejecuta en T-097; corrige aquí lo que cambie. Diseño: [`architecture.md`](architecture.md#recorrido-mínimo-la-primera-demo).
+**Sin probar con un modelo de verdad.** `./mk ask` existe (T-096, probado con un modelo simulado) y `./mk seed-sample` funciona (T-091), pero el guion entero no se ha ejecutado. Este guion se ejecuta en T-097; corrige aquí lo que cambie. Diseño: [`architecture.md`](architecture.md#recorrido-mínimo-la-primera-demo).
 
 ## Antes de grabar
 
@@ -20,7 +20,7 @@ Espera al menos un minuto, porque el conector guarda cada ~30 s, y luego pregunt
 
 ```
 ./mk ask Q="How many rows does the events table have?"
-./mk ask Q="Which five brands have the highest purchase revenue? Show the amounts."
+./mk ask Q="Which five brands have the highest purchase revenue? Sum the price of every purchase row as stored (no deduplication, negative prices included, ignore empty brands). Show the amounts."
 ```
 
 Compara con `evals/demo/expected.json` (T-092):
@@ -37,9 +37,10 @@ Si no cuadra, **no grabes**: copia la salida en una tarjeta para el desarrollado
 |------|-----------|
 | 1 | `./mk up` terminado, con los servicios sanos (recorta la espera) |
 | 2 | `./mk seed-sample` con las filas enviadas |
-| 3 | La pregunta de las marcas, la llamada a `run_query` y la respuesta con cifras |
+| 3 | `How many rows does the events table have?`: se ve `run_query` y la cifra exacta (50 000) |
+| 3b | La pregunta de las marcas: el agente usa `list_metrics` y `get_metric` (capa semántica, por diseño) y da las cifras de `expected.json` |
 | 4 | Opcional: una consulta prohibida, como leer un fichero del disco, rechazada por el validador |
 
-Si la salida no muestra la llamada a `run_query`, avísalo en T-097: sin ella, el GIF no prueba que el agente consulte de verdad.
+La toma 3 es la que prueba que el agente consulta de verdad: si su salida no muestra `run_query`, avísalo en T-097. La 3b no lo muestra, porque las preguntas de negocio van por métricas (`agent/src/main/resources/prompts/system.md`).
 
 Guarda el GIF en `docs/media/demo-minima.gif` (menos de 10 MB). Revisa fotograma a fotograma que no salga ninguna clave. El texto que lo acompañe debe decir que los datos son sintéticos (T-098).

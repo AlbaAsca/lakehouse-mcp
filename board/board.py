@@ -21,12 +21,22 @@ from contextlib import contextmanager
 from datetime import datetime
 from pathlib import Path
 
-F = Path(__file__).with_name("board.json")
-LOCK = Path(__file__).with_name(".lock")
+# LAKEHOUSE_BOARD_DIR: el runner lo pone al lanzar agentes en un worktree, para que board.py toque el panel real
+# (el del checkout principal) y no la copia de board.json que viaja en la rama. Sin variable: el de siempre.
+BOARD_DIR = Path(os.environ.get("LAKEHOUSE_BOARD_DIR") or Path(__file__).parent)
+F = BOARD_DIR / "board.json"
+LOCK = BOARD_DIR / ".lock"
 STATES = ["backlog", "next", "doing", "review", "human", "blocked", "done"]
 COLUMNS = [("backlog", "Backlog"), ("next", "Próximo"), ("doing", "En curso"), ("review", "Revisión"),
            ("human", "Te necesita"), ("blocked", "Bloqueado"), ("done", "Hecho")]
 PRIO = {"alta": 0, "media": 1, "baja": 2}
+DEFAULT_RANK = {"alta": 100, "media": 500, "baja": 900}
+
+
+def rank_of(t):
+    """Orden de ejecución, 1 (primero) a 1000 (último). Sin rank explícito, deriva de la prioridad."""
+    r = t.get("rank")
+    return r if isinstance(r, int) else DEFAULT_RANK.get(t.get("priority"), 500)
 
 
 def now():
@@ -149,6 +159,7 @@ def set_status(b, t, status, by="consultor", msg=None):
     """Cambia estado y gestiona tiempos y agentes automáticamente."""
     prev = t["status"]
     t["status"], t["updated"] = status, now()
+    t.pop("answered", None)
     if status == "doing" and prev != "doing":
         t["started_at"], t["finished_at"] = now(), None
     if prev == "doing" and status != "doing" and t.get("started_at"):
@@ -191,9 +202,14 @@ def main():
     a.add_argument("--prio", default="media", choices=list(PRIO)); a.add_argument("--desc", default="")
     a.add_argument("--status", default="backlog", choices=STATES); a.add_argument("--manual")
     a.add_argument("--by", default="consultor"); a.add_argument("--deps", default="", help="T-001,T-002")
+    fu = sp.add_parser("followup", help="tarjeta de seguimiento simple (backlog, prioridad baja)")
+    fu.add_argument("title"); fu.add_argument("desc", nargs="?", default="")
+    fu.add_argument("--owner", default="desarrollador"); fu.add_argument("--est", type=float, default=15)
+    fu.add_argument("--prio", default="baja", choices=list(PRIO)); fu.add_argument("--by", default="consultor")
     n = sp.add_parser("note"); n.add_argument("id"); n.add_argument("text", nargs="?"); n.add_argument("--msg")
     n.add_argument("--by", default="consultor")
     d = sp.add_parser("desc"); d.add_argument("id"); d.add_argument("text"); d.add_argument("--by", default="consultor")
+    r = sp.add_parser("rank"); r.add_argument("id"); r.add_argument("n", type=int, help="1 (primero) a 1000 (último)")
     e = sp.add_parser("estimate"); e.add_argument("id"); e.add_argument("minutes", type=float)
     sp.add_parser("check")
     o = p.parse_args()
@@ -205,7 +221,7 @@ def main():
             if not o.owner or t["owner"] == o.owner:
                 real = f"{t['actual_min']:.0f}" if t.get("actual_min") is not None else "–"
                 print(f"{t['id']:6} {t['status']:8} {t['owner']:13} est {t.get('estimate_min') or '?':>4} min · real {real:>4}  "
-                      f"{'' if t.get('auto', True) else '[Tú] '}{t['title']}")
+                      f"{'' if t.get('auto', True) else '[Tú] '}{'[RESPONDIDA] ' if t.get('answered') else ''}{t['title']}")
         return
     if o.cmd == "add":
         def f(b):
@@ -213,6 +229,9 @@ def main():
             t["deps"] = [d.strip() for d in o.deps.split(",") if d.strip()]
             return t["id"]
         print(update(f))
+        return
+    if o.cmd == "followup":
+        print(update(lambda b: new_task(b, o.title, o.owner, o.est, o.prio, _unescape(o.desc), "backlog", None, o.by)["id"]))
         return
     if o.cmd == "move":
         update(lambda b: set_status(b, task(b, o.id), o.status, o.by, o.msg)); return
@@ -225,6 +244,12 @@ def main():
         def g(b):
             t = task(b, o.id); t["desc"], t["updated"] = _unescape(o.text), now(); log(t, o.by, "descripción reescrita")
         update(g); return
+    if o.cmd == "rank":
+        assert 1 <= o.n <= 1000, "rank entre 1 y 1000"
+        def rk(b):
+            t = task(b, o.id); t["rank"], t["updated"] = o.n, now()
+            return f"{o.id} rank {o.n}"
+        print(update(rk)); return
     if o.cmd == "estimate":
         def f(b):
             t = task(b, o.id); t["estimate_min"] = o.minutes; log(t, "consultor", f"estimación {o.minutes:g} min")

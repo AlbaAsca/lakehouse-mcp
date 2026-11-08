@@ -19,7 +19,13 @@ public final class CatalogReader {
 
     private static final String CATALOG = LakehouseSession.CATALOG_ALIAS;
 
-    public record TableRef(String namespace, String table) {}
+    /** @param queryName the full name that run_query accepts, e.g. {@code lh.ecommerce.events} */
+    public record TableRef(String namespace, String table, String queryName) {
+
+        public TableRef(String namespace, String table) {
+            this(namespace, table, CATALOG + "." + namespace + "." + table);
+        }
+    }
 
     /** Without nullability on purpose: DuckDB reports every column as nullable, also the ones Iceberg requires. */
     public record Column(String name, String type) {}
@@ -56,7 +62,7 @@ public final class CatalogReader {
     /** @throws NoSuchElementException if the table does not exist */
     public TableDescription describe(String namespace, String table) throws SQLException {
         requireTable(namespace, table);
-        List<Column> columns = session.query("DESCRIBE " + CATALOG + "." + identifier(namespace) + "." + identifier(table),
+        List<Column> columns = session.query("DESCRIBE " + qualifiedName(namespace, table),
                 rows -> {
                     List<Column> out = new ArrayList<>();
                     while (rows.next()) {
@@ -117,10 +123,15 @@ public final class CatalogReader {
 
     /** The functions parse this text as a qualified name, so each part is quoted or a dot in it would split it. */
     private static String functionArgument(String namespace, String table) {
-        return LakehouseSession.quote(CATALOG + "." + identifier(namespace) + "." + identifier(table));
+        return LakehouseSession.quote(qualifiedName(namespace, table));
     }
 
-    private static String identifier(String name) {
+    /** The table as SQL can name it, whatever its name contains. */
+    static String qualifiedName(String namespace, String table) {
+        return CATALOG + "." + identifier(namespace) + "." + identifier(table);
+    }
+
+    static String identifier(String name) {
         return '"' + name.replace("\"", "\"\"") + '"';
     }
 }

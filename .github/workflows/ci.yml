@@ -3,7 +3,12 @@ name: CI
 on:
   push:
     branches: [develop, main]
+    # Runner commits that only move cards (board/, docs/handoff.md) change no code: skip them. A push is skipped
+    # only when every changed file matches, so commits that also touch code still run.
+    paths-ignore: ['board/**', 'docs/handoff.md']
   pull_request:
+  schedule:
+    - cron: '0 3 * * *'   # nightly full suite (runs on the default branch)
 
 permissions:
   contents: read
@@ -33,7 +38,14 @@ jobs:
       # The connector image is not cached. LakehouseStack builds it with ImageFromDockerfile, which always sends the
       # build to the daemon's classic builder: it would not use a buildx cache or an image loaded from one. Caching it
       # needs a change in testkit (reuse a prebuilt image when told so).
-      - name: Build and test
+      #
+      # Fast path (push to develop, PRs to other branches): compile and unit tests only, -DskipITs skips failsafe.
+      # Full suite (*IT with containers): push to main, PRs to main and the nightly run.
+      - name: Build and unit tests (fast)
+        if: ${{ !(github.event_name == 'schedule' || github.ref == 'refs/heads/main' || github.base_ref == 'main') }}
+        run: mvn -B -ntp verify -DskipITs
+      - name: Build and full test suite
+        if: ${{ github.event_name == 'schedule' || github.ref == 'refs/heads/main' || github.base_ref == 'main' }}
         run: mvn -B -ntp verify
       - name: Show disk use
         if: ${{ !success() }}
@@ -50,6 +62,24 @@ jobs:
             **/target/failsafe-reports/
           if-no-files-found: ignore
           retention-days: 7
+
+  no-board-in-pr:
+    # Card state must not travel in code branches: parallel agents would collide on board/board.json.
+    if: ${{ github.event_name == 'pull_request' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Fail if the PR touches board/board.json
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          if git diff --name-only "origin/${BASE_REF}...HEAD" | grep -qx 'board/board.json'; then
+            echo "::error::This PR changes board/board.json; card state is saved by the runner, not by PRs."
+            exit 1
+          fi
 
   board-and-scripts:
     runs-on: ubuntu-24.04

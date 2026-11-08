@@ -54,3 +54,5 @@ La causa simulada es un fallo al pagar esa marca: ese día se ve y se añade al 
 | Carritos de `synth-nimbora` | 184 | 153-196 |
 
 Estas cifras describen la muestra, no son la verdad de referencia de las evals: esa se calcula aparte sobre el CSV. Los tests están en `tests/test_synthetic.py`.
+
+La verdad de referencia de los chequeos de calidad (nulos por columna, duplicados, `price` <= 0 y filas por día y tipo de evento) está en `evals/truth/quality.json`. Si cambia la muestra, se regenera con `python evals/truth/compute_quality_truth.py`; `tests/test_quality_truth.py` falla mientras no esté al día.

@@ -47,6 +47,43 @@ SeedCommand - Kafka confirmed 50000 events
 
 **Sin probar:** que las filas lleguen a la tabla en el stack de `compose.yaml` (ese tramo solo está probado en contenedores, con `IngestE2EIT`), la duplicación en la tabla y el arranque limpio con `docker compose down -v`.
 
+## Preguntar al agente
+
+Con el stack levantado y la clave del proveedor en `.env` (`GEMINI_API_KEY` por defecto; con Claude, `AGENT_PROVIDER=anthropic`, `ANTHROPIC_API_KEY` y `AGENT_MODEL`):
+
+```bash
+./mk ask Q="How many rows does the events table have?"
+```
+
+Arranca el agente en un contenedor solo para esa pregunta (servicio `agent`, perfil `agent`, 1 GB), contesta y termina. La primera vez compila la imagen y tarda unos minutos. Si el servidor MCP no está arriba, lo levanta antes.
+
+- **Comillas:** la pregunta va entera entre comillas dobles. Dentro valen espacios, apóstrofos y comillas dobles escapadas en bash (`\"`); en Windows (`mk.cmd`) no se pueden poner comillas dobles dentro. Evita `$`: `make` lo interpreta antes de pasar la pregunta.
+- **Sin clave:** la imagen del agente termina con código 5, pero `./mk ask` devuelve 2 (es el código de `make` al fallar un paso; no propaga el 5). El mensaje dice cuál falta, por ejemplo `GEMINI_API_KEY is missing in .env`, sin traza de Java.
+- Los demás códigos de salida están en [la página del agente](componentes/agente.md#cómo-termina).
+
+Estado de la comprobación: la imagen está probada con un modelo simulado (`AgentImageIT`: la pregunta llega entera y la respuesta sale por stdout; sin clave, código 5) y el paso de la pregunta por `make` con un `docker` falso (`tests/test_agent_compose.py`). **Sin probar:** `./mk ask` en el stack con un modelo de verdad (T-097) y `mk.cmd` en Windows.
+
+## Expirar snapshots viejos
+
+Cada escritura deja un snapshot y sus ficheros. Este proceso de un solo uso borra los snapshots más antiguos que la retención y los ficheros que solo ellos usaban. No está encendido: arranca, hace su trabajo y termina.
+
+```bash
+./mk expire                                  # ecommerce.events, retención de 7 días
+./mk expire TABLE=ecommerce.events RETENTION=P30D
+```
+
+**Es irreversible:** a un snapshot expirado ya no se puede volver con time travel ni con rollback. El vigente nunca se borra, aunque sea más viejo que la retención.
+
+Salida normal, de una tabla de prueba: `maintenance_it.compacted snapshots: 5 -> 1, files deleted: 7, files that could not be deleted: 0`. Código de salida: 0 si todo fue bien, 1 si falló o quedaron ficheros sin borrar (los lista), 2 si faltan argumentos o variables.
+
+Estado de la comprobación: la lógica está probada con la imagen real contra tablas de prueba (`ExpireSnapshotsIT`). `./mk expire` se ha ejecutado en el stack hasta el catálogo, sin una tabla `ecommerce.events` que expirar (acaba con `Table does not exist`): **sin probar sobre la tabla que escribe el sink**.
+
+Tres cosas que pueden sorprender:
+
+- **Un fichero sustituido no se va hasta que expira el snapshot que lo sustituyó.** Si lo último que pasó en la tabla fue una compactación, sus ficheros viejos siguen ahí hasta la siguiente pasada, cuando ya haya un snapshot posterior y la compactación quede fuera de la retención. Lo fija `afterACompactionTheImageRemovesTheReplacedFilesFromTheStore`.
+- **El fichero de borrado de una compactación se queda.** La compactación de DuckDB lo deja registrado, así que sigue en uso y expirar no lo toca.
+- **Comprueba el almacén antes de confirmar.** Iceberg confirma primero y limpia después, y si entonces no llega al almacén solo escribe avisos y los ficheros quedan huérfanos. Por eso el proceso lee del almacén antes y, si no puede, falla sin expirar nada. Si el almacén cae justo durante la limpieza, esos ficheros siguen sin borrarse (⬜ T-162).
+
 ## Síntomas y remedios
 
 ### Docker no responde
@@ -156,18 +193,20 @@ docker compose exec -T seaweedfs curl -s -o /dev/null -w '%{http_code}\n' -X DEL
 
 **Síntoma (sin probar):** contenedores que se reinician o tests lentos.
 
-**Remedio:** para tests que levanten Connect o Trino, [`docs/architecture.md`](../architecture.md#pruebas-qué-puede-verificar-cada-quién) indica apagar el stack antes. Comprueba el consumo con `docker stats --no-stream`.
+**Remedio:** para tests que levanten Connect, [`docs/architecture.md`](../architecture.md#pruebas-qué-puede-verificar-cada-quién) indica apagar el stack antes. Comprueba el consumo con `docker stats --no-stream`.
 
 ## Integración continua
 
-[`.github/workflows/ci.yml`](../../.github/workflows/ci.yml) se lanza en cada push a `develop` y `main` y en cada pull request, sin secretos ni Kaggle. Tiene dos trabajos:
+[`.github/workflows/ci.yml`](../../.github/workflows/ci.yml) se lanza en cada push a `develop` y `main` y en cada pull request, y cada noche a las 03:00, sin secretos ni Kaggle. En `develop` y en pull requests a otras ramas, `java` compila y pasa solo los tests unitarios (`mvn -B -ntp verify -DskipITs`); la suite completa, con los `*IT` de contenedores, corre en `main`, en pull requests a `main` y en la ejecución nocturna (sin medir aún el tiempo de la ruta rápida en GitHub). Tiene dos trabajos:
 
 | Trabajo | Qué hace | Tiempo máximo |
 |---|---|---|
 | `java` | JDK 25 y `mvn -B -ntp verify`, con Testcontainers sobre el Docker del runner | 60 min |
 | `board-and-scripts` | Python 3.12 y `python -m pytest tests -q` | 10 min |
 
-**Sin probar:** la ejecución en GitHub, y `mvn -B -ntp verify` fuera de la imagen `tools`. Los tiempos máximos son una previsión, no una medida.
+**Probado en GitHub** (así que `mvn -B -ntp verify` también corre bien fuera de la imagen `tools`): el run 41492653907 (`49dfc13`) terminó en verde con `java` en 10 min, y el run 41494026662 (`3c213dc`) en 8,5 min, con 197 tests Java y 115 de pytest, ninguno omitido. Los tiempos máximos de la tabla son un tope de seguridad, no lo que tarda.
+
+**Cancelación:** las ejecuciones se agrupan por rama (`concurrency: ci-<ref>`). Solo en pull requests un push nuevo cancela la ejecución en curso; en `develop` y `main` no se cancela nada, porque cada tarjeta terminada hace push y cancelar allí impediría que alguna ejecución llegara a terminar. GitHub deja como mucho una en curso y otra pendiente por rama.
 
 Si `java` falla, la ejecución muestra el uso de disco y guarda los informes de los tests en el artefacto `test-reports`.
 

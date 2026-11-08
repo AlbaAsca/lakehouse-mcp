@@ -64,6 +64,7 @@ public final class LakehouseStack {
             .withNetwork(network)
             .withNetworkAliases("postgres")
             .withEnv(Map.of("POSTGRES_DB", "polaris", "POSTGRES_USER", "polaris", "POSTGRES_PASSWORD", DB_PASSWORD))
+            .withExposedPorts(5432)
             // Twice: the temporary server used for initdb logs the same line first.
             .waitingFor(Wait.forLogMessage(".*database system is ready to accept connections.*", 2));
     private final GenericContainer<?> seaweedfs = new GenericContainer<>(image("seaweedfs"))
@@ -164,6 +165,19 @@ public final class LakehouseStack {
     /** Base URL of Polaris from the test JVM, without a trailing slash. */
     public String polarisUrl() {
         return "http://" + polaris.getHost() + ":" + polaris.getMappedPort(8181);
+    }
+
+    /** JDBC URL of the {@code ops} database (proposals and audit) from the test JVM; user and password: {@link #dbUser()}, {@link #dbPassword()}. */
+    public String opsJdbcUrl() {
+        return "jdbc:postgresql://" + postgres.getHost() + ":" + postgres.getMappedPort(5432) + "/ops";
+    }
+
+    public String dbUser() {
+        return "polaris";
+    }
+
+    public String dbPassword() {
+        return DB_PASSWORD;
     }
 
     /** {@code host:port} of the S3 API from the test JVM. */

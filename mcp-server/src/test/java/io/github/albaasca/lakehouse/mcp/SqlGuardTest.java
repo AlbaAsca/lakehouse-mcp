@@ -212,6 +212,8 @@ class SqlGuardTest {
         "WITH c AS (SELECT id FROM lh.ns.events), d AS (SELECT id FROM c) SELECT * FROM d UNION ALL SELECT * FROM c",
         "WITH c AS (SELECT 1 AS x) SELECT * FROM (SELECT * FROM c) s WHERE x IN (SELECT x FROM c)",
         "WITH events AS (SELECT 1 AS x) SELECT * FROM events",
+        "SELECT sum(if(id > 1, 1, 0)), count_if(id > 1), countif(id > 2) FROM lh.ns.events",
+        "SELECT name FROM lh.ns.events WHERE name LIKE 'p$%' ESCAPE '$'",
         "SELECT id FROM lh.ns.events LIMIT 3 OFFSET 1",
         "SELECT id FROM lh.ns.events LIMIT 50%",
         "SELECT 'it''s; DROP TABLE x -- not sql' AS text, '/etc/passwd' AS path, 'getenv' AS f",
@@ -323,6 +325,16 @@ class SqlGuardTest {
         assertThatThrownBy(() -> guard.guarded("SELECT * FROM '/etc/passwd'", ALLOWED, 1))
                 .isInstanceOf(Rejected.class)
                 .hasMessage("Table not allowed: /etc/passwd");
+    }
+
+    @Test
+    void aTableWithoutCatalogSuggestsTheFullName() {
+        assertThatThrownBy(() -> guard.guarded("SELECT id FROM ns.events", ALLOWED, 1))
+                .isInstanceOf(Rejected.class)
+                .hasMessage("Table not allowed: ns.events (use lh.ns.events)");
+        assertThatThrownBy(() -> guard.guarded("SELECT id FROM events", ALLOWED, 1))
+                .isInstanceOf(Rejected.class)
+                .hasMessage("Table not allowed: events (use lh.ns.events)");
     }
 
     @Test

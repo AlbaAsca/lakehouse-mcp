@@ -5,7 +5,7 @@
   <parent>
     <groupId>io.github.albaasca</groupId>
     <artifactId>lakehouse-mcp</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
+    <version>0.1.0</version>
   </parent>
   <artifactId>mcp-server</artifactId>
   <dependencies>
@@ -16,6 +16,17 @@
     <dependency>
       <groupId>org.duckdb</groupId>
       <artifactId>duckdb_jdbc</artifactId>
+    </dependency>
+    <!-- Only the admin client, for the lag of the sink's consumer group (pipeline_health). -->
+    <dependency>
+      <groupId>org.apache.kafka</groupId>
+      <artifactId>kafka-clients</artifactId>
+    </dependency>
+    <!-- The ops database: fix proposals (decision 10). Plain JDBC, no pool or ORM. -->
+    <dependency>
+      <groupId>org.postgresql</groupId>
+      <artifactId>postgresql</artifactId>
+      <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>tools.jackson.core</groupId>
@@ -34,10 +45,23 @@
       <artifactId>spring-boot-starter-test</artifactId>
       <scope>test</scope>
     </dependency>
+    <!-- The metrics (YAML) that get_metric serves. -->
+    <dependency>
+      <groupId>io.github.albaasca</groupId>
+      <artifactId>semantic</artifactId>
+    </dependency>
     <dependency>
       <groupId>io.github.albaasca</groupId>
       <artifactId>testkit</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </build>
 </project>

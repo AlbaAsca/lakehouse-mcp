@@ -88,7 +88,7 @@ Una foto de la tabla en un momento dado. Cada escritura crea una nueva, sin dest
 Guardar los datos en grupos lógicos, por ejemplo uno por día, para que una consulta sobre un día no tenga que abrir todo el mes.
 
 ### Compactación y expiración
-Escribir poco a poco deja muchos ficheros pequeños. Compactar los une. Expirar borra snapshots viejos que ya no se necesitan. Es la limpieza periódica de la tabla (⬜ T-047).
+Escribir poco a poco deja muchos ficheros pequeños. Compactar los une. Expirar borra snapshots viejos que ya no se necesitan. Es la limpieza periódica de la tabla (compactar: ⬜ T-047; [expirar](04-operacion.md#expirar-snapshots-viejos): ✅ T-105).
 
 ### Catálogo
 El registro que responde a «¿dónde está la versión actual de la tabla `ventas`?». Es el fichero central de una biblioteca. Todos los que leen y escriben lo consultan, y así todos ven la misma versión. Aquí es [Polaris](componentes/polaris.md).
@@ -99,8 +99,7 @@ El registro que responde a «¿dónde está la versión actual de la tabla `vent
 El lenguaje estándar para preguntar a una tabla: `SELECT count(*) FROM eventos`.
 
 ### Motor de consulta
-El programa que ejecuta el SQL. No tiene por qué guardar los datos. Aquí es [DuckDB](componentes/duckdb.md), que cabe dentro de otro programa. [Trino](componentes/trino.md) es otro motor, pensado para muchas máquinas.
-
+El programa que ejecuta el SQL. No tiene por qué guardar los datos. Aquí es [DuckDB](componentes/duckdb.md), que cabe dentro de otro programa.
 ### Capa semántica
 Un diccionario oficial de métricas de negocio. Define «tasa de conversión» una sola vez, para que nadie la calcule a su manera. [Más](componentes/capa-semantica.md).
 

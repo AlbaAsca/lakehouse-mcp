@@ -36,6 +36,12 @@ def test_note_acepta_msg(board):
     assert [l["msg"] for l in log][-2:] == ["hola", "posicional"]
 
 
+def test_followup_simple(board):
+    tid = cli(board, "followup", "Seguir", "Texto llano", "--by", "tester").strip().split()[-1]
+    t = next(t for t in json.loads((board / "board.json").read_text(encoding="utf-8"))["tasks"] if t["id"] == tid)
+    assert (t["status"], t["priority"], t["owner"], t["desc"]) == ("backlog", "baja", "desarrollador", "Texto llano")
+
+
 def test_flujo_de_tarea(board):
     tid = cli(board, "add", "Probar el panel", "--owner", "desarrollador", "--est", "10", "--prio", "alta").strip().split()[-1]
     cli(board, "move", tid, "doing", "--by", "desarrollador")
@@ -57,7 +63,31 @@ def test_api(board, monkeypatch):
     assert c.patch(f"/api/board/task/{tid}", json={"status": "next"}).json()["ok"]
     assert any(t["id"] == tid and t["status"] == "next" for t in c.get("/api/board").json()["tasks"])
     assert c.post("/api/board/runner", json={"enabled": True}).json()["enabled"] is True
+    # un carril pausado solo (enabled=False en su estado) se despierta con Reanudar
+    server._bd().update(lambda b: b.setdefault("runners", {}).setdefault("measure", {}).update(enabled=False))
+    c.post("/api/board/runner", json={"enabled": True})
+    assert server._bd().load()["runners"]["measure"]["enabled"] is True
     assert c.delete(f"/api/board/task/{tid}").json()["ok"]
+
+
+def test_comentar_en_te_necesita(board):
+    from fastapi.testclient import TestClient
+    sys.path.insert(0, str(board))
+    import importlib
+    import server
+    importlib.reload(server)
+    c = TestClient(server.app)
+    ag = c.post("/api/board/task", json={"title": "A", "owner": "desarrollador"}).json()["id"]
+    co = c.post("/api/board/task", json={"title": "C", "owner": "consultor"}).json()["id"]
+    for t in (ag, co):
+        c.patch(f"/api/board/task/{t}", json={"status": "human"})
+        c.patch(f"/api/board/task/{t}", json={"note": "respuesta"})
+    ts = {t["id"]: t for t in c.get("/api/board").json()["tasks"]}
+    assert ts[ag]["status"] == "next" and ts[ag]["log"][-2]["msg"] == "respuesta"
+    assert ts[co]["status"] == "human" and ts[co]["answered"]
+    assert "[RESPONDIDA]" in cli(board, "list", "--owner", "consultor")
+    c.patch(f"/api/board/task/{co}", json={"status": "next"})
+    assert "[RESPONDIDA]" not in cli(board, "list", "--owner", "consultor")
 
 
 def test_control_del_runner(board, monkeypatch):

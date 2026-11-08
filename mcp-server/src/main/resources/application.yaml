@@ -1,0 +1,77 @@
+spring:
+  application:
+    name: mcp-server
+  ai:
+    mcp:
+      server:
+        name: lakehouse
+        version: 0.1.0
+        type: SYNC
+        protocol: STREAMABLE
+        # Tools are all it has: do not offer the client anything else.
+        capabilities:
+          resource: false
+          prompt: false
+          completion: false
+
+# /actuator/metrics/mcp.tool.calls?tag=tool:run_query&tag=outcome:success (needs a key; only health is open).
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics
+
+server:
+  address: ${MCP_SERVER_ADDRESS:127.0.0.1}
+  port: ${MCP_SERVER_PORT:8090}
+
+# The same variables as compose.yaml. Without a default on purpose: Spring leaves the literal ${VAR} when it is unset, so
+# LakehouseProperties.requireCredentials() stops the start naming the missing variable.
+lakehouse:
+  # Set in the image: extensions already there, nothing is downloaded. Empty: DuckDB's default directory, installing them.
+  extension-directory: ${DUCKDB_EXTENSION_DIRECTORY:}
+  catalog:
+    name: ${POLARIS_CATALOG:lakehouse}
+    uri: ${POLARIS_URI:http://polaris:8181}
+    client-id: ${POLARIS_CLIENT_ID}
+    client-secret: ${POLARIS_CLIENT_SECRET}
+  storage:
+    endpoint: ${S3_ENDPOINT:seaweedfs:8333}
+    access-key: ${S3_ACCESS_KEY}
+    secret-key: ${S3_SECRET_KEY}
+    region: ${S3_REGION}
+  # Bearer keys. Blank = nobody has that role (everything but /actuator/health answers 401). admin: also apply_fix and
+  # POST /fix-proposals/{id}/approvals. The agent gets only the analyst key. allowed-origins: besides localhost.
+  security:
+    analyst-key: ${MCP_ANALYST_KEY:}
+    admin-key: ${MCP_ADMIN_KEY:}
+    allowed-origins: ${MCP_ALLOWED_ORIGINS:}
+  # Proposals of propose_fix. Empty url: the tools propose_fix and apply_fix and /fix-proposals are not offered.
+  ops:
+    url: ${OPS_DB_URL:}
+    user: ${OPS_DB_USER:polaris}
+    password: ${OPS_DB_PASSWORD:}
+  # pipeline_health. The sink of connect/iceberg-sink.json commits about every 30 s: one missed commit is not yet a WARN.
+  pipeline:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:kafka:9092}
+    connect-url: ${CONNECT_URL:http://connect:8083}
+    connector: ${PIPELINE_CONNECTOR:iceberg-sink}
+    topic: ${PIPELINE_TOPIC:ecommerce.events}
+    namespace: ${PIPELINE_NAMESPACE:ecommerce}
+    table: ${PIPELINE_TABLE:events}
+    lag-warn: ${PIPELINE_LAG_WARN:10000}
+    lag-fail: ${PIPELINE_LAG_FAIL:100000}
+    freshness-warn: ${PIPELINE_FRESHNESS_WARN:2m}
+    freshness-fail: ${PIPELINE_FRESHNESS_FAIL:10m}
+    timeout: ${PIPELINE_TIMEOUT:5s}
+  # data_quality_check. 0.7: the planted drop of the sample (purchase on 2024-03-10) is at 0.62 of its median, and no
+  # other day of any event type goes below 0.89 (evals/truth/quality.json).
+  quality:
+    min-volume-ratio: ${QUALITY_MIN_VOLUME_RATIO:0.7}
+    history-days: ${QUALITY_HISTORY_DAYS:7}
+    min-history-days: ${QUALITY_MIN_HISTORY_DAYS:3}
+    # Often empty in the original dataset (no docs/data-profile.md yet): counted, not an issue.
+    known-nulls: ${QUALITY_KNOWN_NULLS:brand,category_code}
+    # Empty turns the schema drift check off.
+    schema-registry-url: ${SCHEMA_REGISTRY_URL:http://schema-registry:8081}
+    subject: ${PIPELINE_SUBJECT:${PIPELINE_TOPIC:ecommerce.events}-value}

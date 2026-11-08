@@ -21,10 +21,10 @@
 > replays real e-commerce events into Apache Kafka; the Iceberg Kafka Connect sink writes them to Apache Iceberg tables,
 > catalogued by Apache Polaris on SeaweedFS and queried with DuckDB 2.0. A Spring AI agent reaches them through an MCP server.
 > **Work in progress:** the infrastructure runs and is verified end to end by a smoke test; the producer, MCP server, agent,
-> evals and benchmark are being built. Everything runs in Docker.
+> and evals are being built. Everything runs in Docker.
 
 > [!NOTE]
-> **Estado: infraestructura levantada, aplicación en construcción.** Hoy funciona lo marcado como ✅ en [Qué hay y qué falta](#qué-hay-y-qué-falta).
+> **Estado: infraestructura, servidor MCP, capa semántica y agente funcionan; la demo está grabada con un cliente MCP.** Hoy funciona lo marcado como ✅ en [Qué hay y qué falta](#qué-hay-y-qué-falta).
 > Aquí no se publica ninguna cifra de precisión ni de rendimiento hasta que exista la medición que la respalde.
 
 ## El problema
@@ -68,19 +68,41 @@ una página por cada pieza (qué es, cómo se conecta, cómo está configurada y
 
 ## Qué hay y qué falta
 
+<p align="center">
+  <img src="docs/img/status.svg" alt="Estado: funcionan el stack, el servidor MCP y la capa semántica; parciales la ingesta, el agente, el chaos y la seguridad; pendientes evals y contratos" width="100%">
+</p>
+
 | | Pieza | Estado |
 |---|---|---|
-| ✅ | Stack en Docker Compose, con healthchecks | Arranca con un comando |
+| ✅ | Stack en Docker Compose, con healthchecks | Arranca con `./mk up` |
 | ✅ | Ida y vuelta DuckDB → Polaris → SeaweedFS | Lo comprueba `./mk smoke` |
-| ✅ | Conector de Iceberg | Un evento llega de Kafka a la tabla, comprobado en contenedores; falta el stack completo con el mes real |
-| ✅ | Herramientas en una imagen (`tools`) | JDK, Maven, make, DuckDB y Kaggle, sin instalar nada |
-| ✅ | Persistencia del catálogo de Polaris | En Postgres: sobrevive a un reinicio |
-| 🚧 | Productor e ingesta del mes real | Lectura, muestreo y orden hechos; falta el envío y la ingesta |
-| ⬜ | Servidor MCP: `list_tables`, `describe_table`, `run_query`, `get_metric`, `pipeline_health`, `data_quality_check`, `time_travel`, `propose_fix`, `apply_fix` | Planificado |
-| ⬜ | Capa semántica y agente | Planificado |
-| ⬜ | Self-healing con `make chaos` | Planificado |
-| ⬜ | Data contracts y mantenimiento de Iceberg | Planificado |
-| ⬜ | Evals, benchmark frente a Trino, RBAC y auditoría | Planificado |
+| ✅ | Conector de Iceberg y muestra sintética | Cargada de verdad: 50 000 filas en `ecommerce.events` (8-nov) |
+| ✅ | Servidor MCP | Nueve herramientas (`list_tables`, `describe_table`, `run_query`, `get_metric`, `pipeline_health`, `data_quality_check`, `time_travel`, `propose_fix`, `apply_fix`), validador de SQL de solo lectura y roles analyst/admin por clave |
+| ✅ | Capa semántica | Métricas en YAML con `get_metric`; la referencia de la demo coincide con la métrica |
+| 🟡 | Agente (Spring AI, Gemini por defecto, Claude por configuración) | Contesta por MCP y respeta topes. Ensayado con Gemini el 8-nov: las cinco marcas y sus importes cuadran con la referencia. El GIF de la demo usa un cliente MCP, no este agente |
+| 🟡 | Self-healing con `./mk chaos` | Hecho el ciclo de duplicados; faltan partición vacía, consumidor caído y schema drift |
+| 🟡 | Seguridad | Hechos roles y claves, con prueba de 401/403; falta la auditoría y el enmascarado de `user_id` |
+| 🟡 | Productor y mes real | Muestra sintética funciona; el mes real de Kaggle sigue sin probarse |
+| ⬜ | Data contracts, compactación, evals en CI | Planificado |
+
+## La demo
+
+<p align="center">
+  <img src="docs/img/demo-flow.svg" alt="Recorrido de una pregunta: tú, agente, servidor MCP, get_metric o run_query, DuckDB" width="100%">
+</p>
+
+> [!NOTE]
+> **Cómo se grabó este GIF:** un agente (Claude, sin ver ningún SQL previo) recibió solo la pregunta y las herramientas del servidor MCP, y **decidió él** qué llamar y qué SQL escribir.
+> Las llamadas, los errores y las respuestas del servidor son reales, y el texto final es el suyo, sin editar. La animación está dibujada (no es una captura de pantalla) y el SQL va abreviado.
+> Es Claude, no el agente propio de Spring AI: ese está ensayado con Gemini pero aún sin grabar. Los registros completos están en [`docs/media/live-agent/`](docs/media/live-agent/); el primer intento, antes de arreglar un fallo del servidor, también.
+
+<p align="center">
+  <img src="docs/media/demo-minima.gif" alt="Un agente recibe la pregunta de dónde se pierde dinero, descubre las tablas del servidor MCP, decide el SQL (ingresos por marca, carritos abandonados, día anómalo) y responde con cifras reales" width="80%">
+</p>
+
+Una pregunta de negocio va por la capa semántica; una consulta suelta, por `run_query`. Los datos son **sintéticos** (mismo esquema que el dataset real).
+
+Guion completo: [docs/demo-grabacion.md](docs/demo-grabacion.md) · Explicación paso a paso: [wiki, la demo](docs/wiki/06-demo.md).
 
 ## Cómo ejecutarlo
 
@@ -97,17 +119,18 @@ cp .env.example .env   # y cambia las contraseñas
 | Otras formas | |
 |---|---|
 | Cargar la muestra sintética, sin Kaggle (con el stack arriba; repetirlo duplica filas) | `./mk seed-sample` |
+| Preguntar al agente (con el stack arriba y la clave en `.env`; sin probar con un modelo de verdad) | `./mk ask Q="How many rows does the events table have?"` |
 | Descargar el dataset (necesita `~/.kaggle`) | `./mk download-data` |
 | Otro mes | `./mk download-data MONTH=2019-Nov` |
-| Reproducir el mes en Kafka (con el stack arriba) | `./mk seed` (por defecto 1 % de las sesiones a 3600×) |
-| Otra muestra, velocidad o mes | `./mk seed MONTH=2019-Nov SAMPLE=0.1 SPEEDUP=60` |
+| Reproducir el mes en Kafka (con el stack arriba; sin probar con el CSV real) | `./mk seed` (por defecto 1 % de las sesiones a 3600×) |
+| Otra muestra, velocidad o mes (sin probar con el CSV real) | `./mk seed MONTH=2019-Nov SAMPLE=0.1 SPEEDUP=60` |
 | Ver el estado de los servicios | `docker compose ps` |
 | Ver los logs de un servicio | `docker compose logs --tail 50 connect` |
 | Maven dentro del contenedor | `./mvnw verify` |
 | Apagar | `./mk down` |
 | Apagar y borrar los datos | `docker compose down -v` |
 
-Los objetivos `evals`, `chaos`, `bench` y `demo` ya existen en el `Makefile`, pero todavía avisan de que no están implementados.
+Los objetivos `evals`, `chaos` y `demo` ya existen en el `Makefile`, pero todavía avisan de que no están implementados.
 
 ## Los datos
 
@@ -156,7 +179,7 @@ python board/server.py   # http://localhost:8020
 Es un proyecto de portfolio, no una plataforma de producción, y está a medio construir:
 
 - **El catálogo de Polaris se guarda en Postgres.** Un test demuestra que sobrevive a un reinicio de Polaris en contenedores de prueba; falta comprobarlo en el stack completo.
-- **Un solo nodo de todo.** Un broker y una instancia de cada servicio, con unos 8 GB de RAM para Docker. Trino solo arranca para el benchmark.
+- **Un solo nodo de todo.** Un broker y una instancia de cada servicio, con unos 8 GB de RAM para Docker.
 - **Secretos locales.** Las credenciales son claves estáticas en `.env`, adecuadas para una demo local.
 - **Coste de las evals.** Llaman a un modelo de pago, así que no pueden lanzarse enteras en cada push.
 

@@ -28,6 +28,8 @@ class IcebergSinkFlowIT {
 
     /** Waits for the commit interval of connect/iceberg-sink.json (30 s) a few times over. */
     private static final Duration ROW_TIMEOUT = Duration.ofMinutes(3);
+    /** Shorter than the 30 s of the real file (IcebergSinkConfigIT checks that one): saves a commit cycle per test. */
+    private static final Duration FAST_COMMIT = Duration.ofSeconds(5);
     private static final String KAFKA_IMAGE = "apache/kafka:4.4.0";
     private static final Path ROOT = LakehouseStack.repositoryRoot();
     private static final HttpClient HTTP = HttpClient.newHttpClient();
@@ -62,7 +64,7 @@ class IcebergSinkFlowIT {
     @Test
     void anEventEndsUpAsARowOfTheIcebergTable() throws Exception {
         produceEvent();
-        connect.register();
+        connect.register(FAST_COMMIT);
 
         connect.awaitRunningTask();
         awaitRow();
@@ -77,7 +79,7 @@ class IcebergSinkFlowIT {
                 .withCopyToContainer(Transferable.of(garbage + "\n"), "/tmp/garbage.txt")
                 .withCommand("sh", "-c", "/opt/kafka/bin/kafka-console-producer.sh --bootstrap-server kafka:9092"
                         + " --topic ecommerce.events < /tmp/garbage.txt"));
-        connect.register();
+        connect.register(FAST_COMMIT);
 
         String deadLetters = stack.runOnce(new GenericContainer<>(KAFKA_IMAGE)
                 .withCommand("sh", "-c", "/opt/kafka/bin/kafka-console-consumer.sh --bootstrap-server kafka:9092"

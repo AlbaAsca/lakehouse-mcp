@@ -67,7 +67,16 @@ Panel: `python board/server.py` y abre `http://localhost:8020`. Se comprobó que
 - **Corte por límite de uso, o agente que termina sin mensaje final.** La tarjeta vuelve a su estado sin contar como fallo y el runner para hasta la siguiente ejecución (T-013, T-084). Puede dejar ficheros a medias en la rama.
 - **Pausa automática.** Tres fallos seguidos del agente (error o tiempo agotado; un `RESULT: blocked` no cuenta) pausan el carril, y el panel muestra el motivo en «En pausa: …» (T-084).
 - **Un carril se apaga y no vuelve solo.** El botón arranca con `--until-idle`: un carril sin tarjetas listas sale, y las que lleguen después no lo despiertan. Las del arquitecto y el investigador esperan hasta volver a pulsar **▶ Iniciar** o hasta la ejecución programada (T-082).
+- **Verificar con ficheros sin subir (T-079).** Al verificar, el runner lista en el prompt del tester los ficheros sin confirmar y le ordena fallar la tarjeta, nombrando el fichero, si el código depende de alguno. No es una copia limpia (worktree): es un aviso, sin probar con un agente real.
 - **Comandos denegados.** Quedan anotados en la tarjeta.
+
+## Operar el runner
+- **Arrancar:** botón **▶ Iniciar** del panel, `run-agents.bat` / `./run-agents.sh`, o la tarea programada de `scripts/install-schedule.ps1`
+  (cada 3 h, sin rondas de aportación). **■ Parar** mata al agente en curso y devuelve su tarjeta a Próximo; pausa con el botón o con `board/STOP`.
+- **Ver qué hace** sin gastar tokens: «Ver en directo» en el panel, que lee `board/runs/live-*.jsonl`.
+- **Carriles:** nunca hay dos del mismo carril a la vez, y cada uno confirma solo los ficheros que cambió.
+- **Límites:** tiempo máximo por tarjeta de 4 × la estimación, entre 15 y 120 min; tope de turnos por rol en `MAX_TURNS` de `board/runner.py`.
+- **Modelo:** el tester usa Sonnet (`model` en `.claude/agents/tester.md`); el resto, el de la sesión.
 
 ## Para saber más
 

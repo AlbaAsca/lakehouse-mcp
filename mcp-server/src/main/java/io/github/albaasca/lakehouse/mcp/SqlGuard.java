@@ -124,7 +124,7 @@ public final class SqlGuard {
     static final Set<String> FUNCTIONS = Set.of(
             // Aggregates.
             "any_value", "approx_count_distinct", "approx_quantile", "arg_max", "arg_min", "avg", "bool_and", "bool_or",
-            "corr", "count", "count_star", "first", "last", "max", "median", "min", "mode", "quantile", "quantile_cont",
+            "corr", "count", "count_if", "countif", "count_star", "first", "last", "max", "median", "min", "mode", "quantile", "quantile_cont",
             "quantile_disc", "stddev", "stddev_pop", "stddev_samp", "string_agg", "sum", "var_pop", "var_samp", "variance",
             // Numbers.
             "abs", "ceil", "ceiling", "exp", "floor", "greatest", "least", "ln", "log", "log10", "log2", "mod", "pow",
@@ -132,7 +132,7 @@ public final class SqlGuard {
             // Text.
             // Out: lpad, rpad, replace and regexp_replace. They build one cell of any size past memory_limit and the row
             // limit (T-019: 4.8 GB of memory with a limit of 256 MB, even if only its length comes out). || does not.
-            "concat", "concat_ws", "contains", "ends_with", "left", "length", "lower", "ltrim", "nullif",
+            "concat", "concat_ws", "contains", "ends_with", "if", "left", "length", "like_escape", "not_like_escape", "lower", "ltrim", "nullif",
             "regexp_extract", "regexp_matches", "right", "rtrim", "split_part",
             "starts_with", "strpos", "substr", "substring", "trim", "upper",
             // Dates. INTERVAL 1 DAY arrives as to_days(trunc(...)).
@@ -230,9 +230,15 @@ public final class SqlGuard {
     private static List<Object> row(ResultSet rows, int width) throws SQLException {
         List<Object> row = new ArrayList<>(width);
         for (int i = 1; i <= width; i++) {
-            row.add(rows.getObject(i));
+            row.add(value(rows, i));
         }
         return row;
+    }
+
+    /** A TIMESTAMP is read as a LocalDateTime: java.sql.Timestamp goes through the machine's zone and moves skipped hours. */
+    static Object value(ResultSet rows, int column) throws SQLException {
+        Object value = rows.getObject(column);
+        return value instanceof java.sql.Timestamp ? rows.getObject(column, java.time.LocalDateTime.class) : value;
     }
 
     private String serialize(String sql) throws SQLException {
@@ -305,10 +311,28 @@ public final class SqlGuard {
                 deepest = Math.max(deepest, walk(property.getValue(), scope, tables));
             }
         }
-        if (text(node, "type").equals("BASE_TABLE") && isCte(node, ctes.keySet())) {
-            deepest += ctes.get(text(node, "table_name"));
+        if (text(node, "type").equals("BASE_TABLE")) {
+            deepest += cteDepth(node, ctes);
         }
         return deepest + 1;
+    }
+
+    /**
+     * T-147: DuckDB resolves CTEs ignoring case ({@code WITH A ... SELECT FROM a}), so the depth is counted that way,
+     * conservatively. The allowed-tables check stays exact ({@link #isCte}).
+     */
+    private static int cteDepth(JsonNode table, Map<String, Integer> ctes) {
+        if (!text(table, "catalog_name").isEmpty() || !text(table, "schema_name").isEmpty()) {
+            return 0;
+        }
+        String name = text(table, "table_name");
+        int depth = 0;
+        for (Map.Entry<String, Integer> cte : ctes.entrySet()) {
+            if (cte.getKey().equalsIgnoreCase(name)) {
+                depth = Math.max(depth, cte.getValue());
+            }
+        }
+        return depth;
     }
 
     /** Exact case on purpose: if DuckDB matched CTEs differently, a near miss must not pass as a CTE and read a file. */
@@ -363,7 +387,15 @@ public final class SqlGuard {
         }
         if (tables.stream().noneMatch(allowed -> allowed.isReachedBy(catalog, schema, table))) {
             String written = (catalog.isEmpty() ? "" : catalog + ".") + (schema.isEmpty() ? "" : schema + ".") + table;
-            throw new Rejected(Rule.TABLE, "Table not allowed: " + written);
+            String hint = catalog.isEmpty()
+                    ? tables.stream()
+                            .filter(a -> !a.catalog().isEmpty() && a.table().equalsIgnoreCase(table)
+                                    && (schema.isEmpty() || a.schema().equalsIgnoreCase(schema)))
+                            .findFirst()
+                            .map(a -> " (use " + a.catalog() + "." + a.schema() + "." + a.table() + ")")
+                            .orElse("")
+                    : "";
+            throw new Rejected(Rule.TABLE, "Table not allowed: " + written + hint);
         }
     }
 

@@ -12,9 +12,24 @@ while [ "$i" -lt 60 ]; do
   code=$(curl -sS -o /tmp/out -w '%{http_code}' -X PUT "$C/connectors/$NAME/config" \
     -H 'Content-Type: application/json' -d @/tmp/config.json || true)
   case "$code" in
-    200|201) echo "$NAME: $code"; exit 0 ;;
+    200|201) echo "$NAME: $code"; break ;;
     000|404|409|5*) i=$((i + 1)); sleep 2 ;;
     *) echo "$NAME: $code"; cat /tmp/out; exit 1 ;;
   esac
 done
-echo "$NAME: Connect not ready, last answer $code"; cat /tmp/out; exit 1
+case "$code" in 200|201) ;; *) echo "$NAME: Connect not ready, last answer $code"; cat /tmp/out; exit 1 ;; esac
+
+# Connect never restarts a FAILED task by itself (T-141: after the PC slept, the sink lost its group session and its task
+# died). Re-running this init, as ./mk up does, revives it; on a healthy connector it restarts nothing. Right after a
+# create the worker may still be rebalancing (404/409/5xx): retry a little, then leave it to ./mk smoke to report.
+i=0
+while [ "$i" -lt 15 ]; do
+  code=$(curl -sS -o /tmp/out -w '%{http_code}' -X POST \
+    "$C/connectors/$NAME/restart?includeTasks=true&onlyFailed=true" || true)
+  case "$code" in
+    202|204) echo "$NAME: restart of failed tasks requested ($code)"; exit 0 ;;
+    000|404|409|5*) i=$((i + 1)); sleep 2 ;;
+    *) break ;;
+  esac
+done
+echo "$NAME: WARNING restart of failed tasks answered $code, check ./mk smoke"; cat /tmp/out

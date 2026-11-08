@@ -36,6 +36,35 @@ def test_pick_por_carril():
     assert runner.pick(b, "measure") == (None, None)
 
 
+def test_pick_con_ci_en_rojo_solo_tarjetas_ci():
+    b = _tasks()
+    assert runner.pick(b, "all", ci_red=True) == (None, None)
+    b["tasks"][1]["title"] = "Arreglar CI de develop"
+    task, mode = runner.pick(b, "all", ci_red=True)
+    assert (task["id"], mode) == ("T-002", "work")
+
+
+_REAL_CI_IS_RED = runner.ci_is_red
+
+
+@pytest.fixture(autouse=True)
+def _sin_gh_real(monkeypatch):
+    monkeypatch.setattr(runner, "ci_is_red", lambda *a, **k: False)
+
+
+def test_ci_is_red(monkeypatch):
+    monkeypatch.setattr(runner, "ci_is_red", _REAL_CI_IS_RED)
+
+    def fake(out, code=0):
+        return lambda *a, **k: subprocess.CompletedProcess(a, code, out, "")
+    monkeypatch.setattr(runner.subprocess, "run", fake('[{"conclusion":"failure"}]'))
+    assert runner.ci_is_red()
+    monkeypatch.setattr(runner.subprocess, "run", fake('[{"conclusion":"success"}]'))
+    assert not runner.ci_is_red()
+    monkeypatch.setattr(runner.subprocess, "run", fake("", 1))
+    assert not runner.ci_is_red()
+
+
 def test_guarda_de_instancia_por_carril():
     import os
     alive = os.getppid()  # un proceso vivo que no es este (el que lanza pytest)
@@ -74,6 +103,16 @@ def repo(tmp_path, monkeypatch):
 
 def _committed(g):
     return g("show", "--name-only", "--format=", "HEAD").split()
+
+
+def test_verify_avisa_de_ficheros_sin_confirmar(repo):
+    root, g = repo
+    t = {"id": "T-1", "title": "x", "owner": "desarrollador", "log": []}
+    assert "NO están en git" not in runner.build_prompt(t, "verify", "tester")
+    (root / "Falta.java").write_text("x", encoding="utf-8")
+    p = runner.build_prompt(t, "verify", "tester")
+    assert "NO están en git" in p and "Falta.java" in p
+    assert "Falta.java" not in runner.build_prompt(t, "work", "desarrollador")
 
 
 def test_commit_solo_con_ficheros_propios(repo):
@@ -170,6 +209,19 @@ def test_fallo_de_git_conserva_lo_apuntado_y_se_anota_en_la_tarjeta(repo, monkey
     assert _committed(g) == ["board/board.json", "mio.py"]
 
 
+def test_estado_intermedio_no_commitea_y_el_final_recoge_todo(repo):
+    root, g = repo
+    before = runner.snapshot()
+    (root / "mio.py").write_text("x", encoding="utf-8")
+    (root / "gen.txt").write_text("y", encoding="utf-8")
+    (root / "board/board.json").write_text("1", encoding="utf-8")
+    assert runner.save(before, "T-1", "chore: T-1", "review") is True
+    assert g("log", "--format=%s", "-1").strip() == "init"
+    assert runner.claims() == {"T-1": {"gen.txt", "mio.py"}}
+    assert runner.save(runner.snapshot(), "T-1", "chore: T-1", "done") is True
+    assert _committed(g) == ["board/board.json", "gen.txt", "mio.py"]
+
+
 def test_git_retry_supera_un_bloqueo_pasajero(repo, monkeypatch):
     root, g = repo
     before = runner.snapshot()
@@ -253,6 +305,40 @@ def test_limpia_carriles_con_pid_muerto():
         assert b["runners"][k]["state"] == "stopped" and b["runners"][k]["current"] is None
 
 
+def test_worktree_por_tarjeta_aisla_ficheros_y_no_commitea_el_panel(repo, tmp_path, monkeypatch):
+    root, g = repo
+    g("branch", "-M", "develop")
+    monkeypatch.setattr(runner, "WT_ROOT", tmp_path / "wt")
+    ta, tb = {"id": "T-1", "title": "Uno / dos!"}, {"id": "T-2", "title": "Otra"}
+    wa, wb = runner.make_worktree(ta), runner.make_worktree(tb)
+    assert wa == tmp_path / "wt" / "T-1" and runner.branch_name(ta) == "feature/T-1-uno-dos"
+    assert runner.make_worktree(ta) == wa  # reutiliza
+    (wa / "a.txt").write_text("a", encoding="utf-8")
+    (wb / "b.txt").write_text("b", encoding="utf-8")
+    (wa / "board" / "board.json").write_text("copia vieja", encoding="utf-8")
+    runner.commit_worktree(wa, "feat: a (T-1)")
+    runner.commit_worktree(wb, "feat: b (T-2)")
+    show = lambda w: subprocess.run(["git", "show", "--name-only", "--format=", "HEAD"], cwd=w, capture_output=True,
+                                    text=True).stdout.split()
+    assert show(wa) == ["a.txt"] and show(wb) == ["b.txt"]
+    assert not (root / "a.txt").exists()  # el árbol principal no se toca
+
+
+def test_worktree_env_apunta_al_panel_real_y_al_mismo_compose():
+    env = runner.worktree_env()
+    assert env["LAKEHOUSE_BOARD_DIR"] == str(runner.bd.F.parent)
+    assert env["COMPOSE_PROJECT_NAME"] == runner.ROOT.name.lower()
+
+
+def test_board_py_usa_lakehouse_board_dir(tmp_path):
+    r = subprocess.run([sys.executable, "-c", "import board; print(board.F)"], cwd=Path(runner.__file__).parent,
+                       env={**os.environ, "LAKEHOUSE_BOARD_DIR": str(tmp_path)}, capture_output=True, text=True)
+    assert Path(r.stdout.strip()) == tmp_path / "board.json"
+    r = subprocess.run([sys.executable, "-c", "import board; print(board.F)"], cwd=Path(runner.__file__).parent,
+                       env={k: v for k, v in os.environ.items() if k != "LAKEHOUSE_BOARD_DIR"}, capture_output=True, text=True)
+    assert Path(r.stdout.strip()) == Path(runner.__file__).parent / "board.json"
+
+
 def test_los_tests_no_tocan_el_board_real():
     assert runner.bd.F.parent != Path(runner.__file__).parent
 
@@ -312,6 +398,21 @@ def test_agente_cortado_vuelve_a_su_estado_sin_json_en_el_registro(monkeypatch, 
     assert t["status"] == after and not t.get("runs")
     assert t["log"][-1]["msg"] == runner.CUT_MSG
     assert not any("session_id" in e["msg"] or "{" in e["msg"] for e in t["log"])
+
+
+def test_tres_rechazos_seguidos_bloquean_la_tarjeta():
+    tid = _new_card("review")
+    r = dict(text="RESULT: fail — falta Foo.java", err="", code=0, secs=5, turns=1, cost=None, usage={}, is_error=False)
+    out = []
+    for _ in range(3):
+        out.append(runner.finish(tid, "verify", "tester", r)[0])
+        if out[-1] == "next":  # el desarrollador la vuelve a entregar sin cambios
+            runner.bd.update(lambda b: runner.bd.set_status(b, runner.bd.task(b, tid), "review", "desarrollador", "entrega"))
+    assert out == ["next", "next", "blocked"]
+    t = runner.bd.task(runner.bd.load(), tid)
+    assert t["status"] == "blocked"
+    assert any("Bloqueada tras 3 rechazos" in e["msg"] for e in t["log"])
+    assert any("idéntico" in e["msg"] for e in t["log"])
 
 
 def test_corte_con_stderr_lo_da_como_motivo():
@@ -486,6 +587,159 @@ def test_denegados_avisan_y_bloquean(monkeypatch):
 def test_sin_denegados_sin_nota(monkeypatch):
     t, (new, verdict, _) = _finish(monkeypatch, False)
     assert (new, verdict) == ("done", "done") and t["log"] == []
+
+
+def _result(tool_id, **kw):
+    return json.dumps({"type": "user", "message": {"content": [{"type": "tool_result", "tool_use_id": tool_id, **kw}]}})
+
+
+def _claims_of(root, lines):
+    got = []
+    orig = runner.claim
+    runner.claim = lambda tag, paths: got.extend(paths)
+    try:
+        pending = {}
+        for line in lines:
+            runner.claim_stream("T-1", line, pending)
+        runner.claim_pending("T-1", pending)
+    finally:
+        runner.claim = orig
+    return got
+
+
+def test_edicion_denegada_o_fallida_no_se_apunta_pero_la_cortada_si(repo):
+    root, _ = repo
+    use = _use("Edit", file_path=str(root / "dirty.txt"))
+    assert _claims_of(root, [use, _result("a", content="ok")]) == ["dirty.txt"]
+    assert _claims_of(root, [use, _result("a", content="Permission for this tool use was denied")]) == []
+    assert _claims_of(root, [use, _result("a", content="boom", is_error=True)]) == []
+    assert _claims_of(root, [use]) == ["dirty.txt"]  # cortado antes del resultado: no se pierde
+
+
+def test_citar_el_aviso_de_limite_con_veredicto_no_es_limite():
+    cita = "El mensaje «usage limit reached» aparece en el log.\nRESULT: done — ok"
+    assert runner.interruption(dict(text=cita, err="", cut=False)) is None
+    assert runner.interruption(dict(text="usage limit reached", err="", cut=False)) == ("limit", runner.LIMIT_MSG)
+
+
+def test_error_de_api_es_un_corte_sin_json(monkeypatch, tmp_path):
+    tid = _new_card("doing")
+    ev = {"type": "result", "subtype": "success", "is_error": True,
+          "result": 'API Error: 529 {"type":"error","error":{"type":"overloaded_error"}}'}
+    r = _stream(monkeypatch, tmp_path, [ev], code=1)
+    assert r["cut"]
+    new, verdict, summary = runner.finish(tid, "work", "desarrollador", r)
+    assert (new, verdict) == ("next", "cut") and "{" not in summary and "API Error: 529" in summary
+    t = runner.bd.task(runner.bd.load(), tid)
+    assert not t.get("runs") and all("{" not in e["msg"] for e in t["log"])
+
+
+def test_cortado_con_denegados_deja_el_aviso(monkeypatch):
+    fake = {"tasks": [{"id": "T-1", "owner": "investigador", "status": "doing", "log": []}], "agents": []}
+    monkeypatch.setattr(runner.bd, "update", lambda f: f(fake))
+    monkeypatch.setattr(runner.bd, "task", lambda b, tid: b["tasks"][0])
+    monkeypatch.setattr(runner.bd, "set_status", lambda b, t, s, by, msg: t.update(status=s))
+    monkeypatch.setattr(runner.bd, "log", lambda t, by, msg: t["log"].append(msg))
+    monkeypatch.setattr(runner, "permission_protocol", lambda *a: ([], [], []))
+    r = dict(text="", err="", cut=True, denied=["python board/board.py add X"])
+    assert runner.finish("T-1", "work", "investigador", r)[1] == "cut"
+    assert any(m.startswith("⚠ 1 comandos denegados: python board/board.py add X") for m in fake["tasks"][0]["log"])
+
+
+def test_permiso_de_tests_solo_las_formas_previstas():
+    allowed = set(runner.ALLOWED)
+    assert "Bash(./mk test*)" not in allowed and "Bash(make test*)" not in allowed
+    assert "PowerShell(.\\mk.cmd test*)" not in allowed
+    assert {"Bash(./mk test)", "Bash(./mk test MODULE=*)", "Bash(./mk test-board)"} <= allowed
+
+
+def _pr_card(status="review", pr=7):
+    def f(b):
+        t = runner.bd.new_task(b, "Entrega X", "desarrollador", 5, prio="alta", desc="d", by="test")
+        t["pr"] = pr
+        runner.bd.set_status(b, t, status, "test")
+        return t["id"]
+    return runner.bd.update(f)
+
+
+def _fake_gh(monkeypatch, status, calls):
+    monkeypatch.setattr(runner, "pr_status", lambda n: status)
+    monkeypatch.setattr(runner, "failed_log", lambda t, **k: "boom en el job")
+    monkeypatch.setattr(runner, "commit_board", lambda m: calls.append(("board", m)))
+    monkeypatch.setattr(runner, "git", lambda *a, **k: calls.append(("git", a)))
+    monkeypatch.setattr(runner, "gh", lambda *a, **k: calls.append(("gh", a)) or subprocess.CompletedProcess(a, 0, "", ""))
+
+
+def test_check_prs_verde_fusiona_y_cierra(monkeypatch):
+    calls = []
+    tid = _pr_card()
+    _fake_gh(monkeypatch, "green", calls)
+    # tras el merge, pr_status ya diría merged; aquí basta con rc 0
+    assert runner.check_prs() == 1
+    assert ("gh", ("pr", "merge", "7", "--squash", "--delete-branch")) in calls
+    assert runner.bd.task(runner.bd.load(), tid)["status"] == "done"
+
+
+def test_check_prs_rojo_vuelve_a_next_con_motivo_y_cuenta(monkeypatch):
+    calls = []
+    tid = _pr_card()
+    _fake_gh(monkeypatch, "red", calls)
+    assert runner.check_prs() == 1
+    t = runner.bd.task(runner.bd.load(), tid)
+    assert t["status"] == "next" and t["pr"] == 7 and not any(c[0] == "gh" for c in calls)
+    assert "boom en el job" in t["history"][-1]["msg"] if "history" in t else True
+    for _ in range(runner.MAX_REJECTS - 1):  # rojo repetido → bloqueada
+        runner.bd.update(lambda b: runner.bd.set_status(b, runner.bd.task(b, tid), "review", "test"))
+        runner.check_prs()
+    assert runner.bd.task(runner.bd.load(), tid)["status"] == "blocked"
+
+
+def test_check_prs_pendiente_no_hace_nada_y_pick_ignora_la_tarjeta(monkeypatch):
+    calls = []
+    tid = _pr_card()
+    _fake_gh(monkeypatch, "pending", calls)
+    assert runner.check_prs() == 0 and not calls
+    b = runner.bd.load()
+    assert runner.bd.task(b, tid)["status"] == "review"
+    assert runner.pick(b, "measure")[0] is None or runner.pick(b, "measure")[0]["id"] != tid
+
+
+def test_check_prs_pr_inexistente_vuelve_a_next_sin_pr(monkeypatch):
+    calls = []
+    tid = _pr_card()
+    _fake_gh(monkeypatch, "missing", calls)
+    runner.check_prs()
+    t = runner.bd.task(runner.bd.load(), tid)
+    assert t["status"] == "next" and "pr" not in t
+
+
+def test_pr_status_interpreta_checks(monkeypatch):
+    def fake(view, checks):
+        def g(*a, **k):
+            out = view if a[1] == "view" else checks
+            return subprocess.CompletedProcess(a, 0, out, "")
+        return g
+    st = lambda checks: (monkeypatch.setattr(runner, "gh", fake('{"state":"OPEN"}', checks)), runner.pr_status(1))[1]
+    assert st('[{"state":"SUCCESS"},{"state":"SKIPPED"}]') == "green"
+    assert st('[{"state":"SUCCESS"},{"state":"FAILURE"}]') == "red"
+    assert st('[{"state":"SUCCESS"},{"state":"PENDING"}]') == "pending"
+    assert st("") == "pending"
+    monkeypatch.setattr(runner, "gh", fake('{"state":"MERGED"}', ""))
+    assert runner.pr_status(1) == "merged"
+
+
+def test_publish_pr_empuja_y_abre(monkeypatch):
+    calls = []
+    monkeypatch.setattr(runner, "git_retry", lambda *a, **k: calls.append(a))
+    monkeypatch.setattr(runner, "gh", lambda *a, **k: subprocess.CompletedProcess(
+        a, 0, "https://github.com/o/r/pull/42\n", ""))
+    t = {"id": "T-9", "title": "Algo", "desc": "d"}
+    assert runner.publish_pr("wt", t) == 42
+    assert calls[0][:3] == ("push", "-q", "-u") and calls[0][-1] == runner.branch_name(t) or calls[0][-2] == runner.branch_name(t)
+    monkeypatch.setattr(runner, "gh", lambda *a, **k: subprocess.CompletedProcess(a, 1, "", "nope"))
+    with pytest.raises(runner.GitError):
+        runner.publish_pr("wt", t)
+    assert runner.publish_pr("wt", {**t, "pr": 5}) == 5  # ya tiene PR: solo empuja
 
 
 def test_runner_no_carga_mcp_del_proyecto():

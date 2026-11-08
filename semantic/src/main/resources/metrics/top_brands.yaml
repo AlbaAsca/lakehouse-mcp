@@ -1,0 +1,46 @@
+# Rules: docs/metrics.md. Same valid purchases as average_ticket.
+# Rows: the brands in order (1..limit), then one last row with brand NULL: revenue without brand
+# (always present, revenue 0 when there is none; purchases counts them; share over all valid revenue).
+name: top_brands
+description: >-
+  Brands with the most revenue, highest first (ties by brand name, code-point order). The last row, with a null brand,
+  holds the revenue of purchases that have no brand; it is not part of the ranking.
+unit: money in the unit of price (2 decimals); share is a ratio (6 decimals)
+parameters:
+  - name: from
+    type: date
+  - name: to
+    type: date
+  - name: limit
+    type: integer
+    default: 10
+    min: 1
+sql: |
+  WITH p AS (
+    SELECT user_session, price, NULLIF(brand, '') AS brand,
+           CAST(timezone('UTC', event_time) AS DATE) AS day
+    FROM (SELECT DISTINCT * FROM ${table}) ev
+    WHERE event_type = 'purchase' AND user_session IS NOT NULL AND user_session <> '' AND price > 0
+  ),
+  w AS (
+    SELECT * FROM p
+    WHERE (CAST(:from AS DATE) IS NULL OR day >= CAST(:from AS DATE))
+      AND (CAST(:to AS DATE) IS NULL OR day <= CAST(:to AS DATE))
+  ),
+  total AS (SELECT coalesce(sum(price), 0) AS revenue FROM w),
+  by_brand AS (
+    SELECT brand, round(sum(price), 2) AS revenue, count(*) AS purchases, sum(price) AS raw_revenue
+    FROM w WHERE brand IS NOT NULL GROUP BY brand
+  ),
+  ranked AS (
+    SELECT *, row_number() OVER (ORDER BY revenue DESC, brand) AS pos FROM by_brand
+  )
+  SELECT brand, revenue, purchases,
+         round(raw_revenue / NULLIF((SELECT revenue FROM total), 0), 6) AS share
+  FROM (
+    SELECT pos, brand, revenue, purchases, raw_revenue FROM ranked WHERE pos <= CAST(:limit AS BIGINT)
+    UNION ALL
+    SELECT 1000000000, CAST(NULL AS VARCHAR), round(coalesce(sum(price), 0), 2), count(*), coalesce(sum(price), 0)
+    FROM w WHERE brand IS NULL
+  )
+  ORDER BY pos

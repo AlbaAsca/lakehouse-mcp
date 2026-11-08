@@ -15,11 +15,11 @@ agente Spring AI / Claude Desktop -> MCP -> mcp-server -> DuckDB lectura (READ_O
 | # | Decisión | Descartado y por qué |
 |---|----------|----------------------|
 | 1 | **Catálogo Polaris en Postgres** (`relational-jdbc`, 1.8.0). Un servicio de un solo uso con `apache/polaris-admin-tool:1.8.0` (misma versión que el servidor) hace el bootstrap. El esquema `polaris_schema` debe existir antes: lo crea un SQL dentro de una imagen propia de Postgres. | Memoria: pierde el catálogo al reiniciar (404). H2 en fichero: no es lo que se usa en producción. MongoDB: otro servicio sin ventaja. Volver a crear el catálogo al arrancar: oculta el problema y pierde las tablas registradas. |
-| 2 | **SeaweedFS sin STS.** Polaris con `stsUnavailable:true`; DuckDB con `ACCESS_DELEGATION_MODE 'none'` y secreto S3 propio; Connect y Trino con claves estáticas. | MinIO: repositorio archivado. Credenciales vendidas: requieren STS. |
+| 2 | **SeaweedFS sin STS.** Polaris con `stsUnavailable:true`; DuckDB con `ACCESS_DELEGATION_MODE 'none'` y secreto S3 propio; Connect con claves estáticas. | MinIO: repositorio archivado. Credenciales vendidas: requieren STS. |
 | 3 | **Ingesta con el sink oficial de Iceberg en Connect**, con commits cada ~30 s y la evolución automática de esquema apagada: así el *schema drift* es un fallo detectable y reparable. | Flink o Spark Streaming: no caben en 7,6 GB y no aportan nada a la demo. |
 | 4 | **DuckDB embebido en `mcp-server`** para todo el SQL. | Trino para todo: necesita varios GB encendidos siempre. |
 | 5 | **Todo el catálogo por DuckDB, sin Iceberg Java API en `mcp-server`.** Snapshots con `iceberg_snapshots`; rollback con `CALL iceberg_rollback_to_snapshot`; añadir columna con `ALTER TABLE`, todo comprobado en T-014. Las particiones, con `iceberg_partition_specs`: comprobada en T-017, sin HTTP a Polaris. Las columnas, con `DESCRIBE`: `information_schema.columns` da datos falsos con esta extensión. Time travel con `AT (VERSION => id)`. | API Java: la razón era que la documentación no cubría estas operaciones, y ya no es cierto. Añade `iceberg-core`, `iceberg-aws` y posibles conflictos con Spring Boot 4 sin aportar nada aquí. `snapshot_from_id`: exige una función de tabla que el validador prohíbe. `AT (TIMESTAMP => ...)`: su zona horaria está sin verificar. |
-| 6 | **Compactar con DuckDB** (`CALL iceberg_rewrite_data_files`, con `min_input_files` explícito), desde la instancia de reparación. **Expirar snapshots: según T-087**, porque DuckDB no tiene función. Si Trino se queda por el benchmark, `expire_snapshots` con Trino. Si se va, un proceso de un solo uso con la API Java de Iceberg, fuera de `mcp-server` (T-105). | Compactar con Trino: 2 GB para algo que DuckDB ya hace, y sin verificar que lea los borrados de DuckDB. Spark: otra imagen pesada. Compactación propia: reimplementa algo delicado. Expirar con `remove-snapshots` del REST de Iceberg: la [API Java](https://iceberg.apache.org/javadoc/1.2.0/org/apache/iceberg/ExpireSnapshots.html) borra los ficheros en el cliente, y no se ha comprobado que el catálogo lo haga; se corre el riesgo de dejar ficheros huérfanos. |
+| 6 | **Compactar con DuckDB** (`CALL iceberg_rewrite_data_files`, con `min_input_files` explícito), desde la instancia de reparación. **Expirar snapshots: un proceso de un solo uso con la API Java de Iceberg, fuera de `mcp-server`** (módulo `maintenance`, T-105), porque DuckDB no tiene función. | Un motor SQL distribuido: unos 2 GB para algo que DuckDB ya hace (ver decisión 22). Spark: otra imagen pesada. Compactación propia: reimplementa algo delicado. Expirar con `remove-snapshots` del REST de Iceberg: la [API Java](https://iceberg.apache.org/javadoc/1.2.0/org/apache/iceberg/ExpireSnapshots.html) borra los ficheros en el cliente, y no se ha comprobado que el catálogo lo haga; se corre el riesgo de dejar ficheros huérfanos. |
 | 7 | **Validar SQL con el parser de DuckDB** (`json_serialize_sql`), con [seis reglas](spike-duckdb-iceberg.md#6-json_serialize_sql-como-validador): una sentencia; recorrer todo el árbol; solo tipos de `from_table` y tablas permitidos, porque una ruta como `'/etc/passwd'` llega como `BASE_TABLE`; una CTE solo vale en su ámbito y se valida su cuerpo; **lista de funciones permitidas**; `at_clause` rechazado. Lo que falte en la lista da un error claro y se añade. | Regex: se esquiva. JSqlParser: otro dialecto, puede discrepar del motor real. Lista de funciones prohibidas: no se sabe qué otras exponen datos del proceso. |
 | 8 | **Métricas en YAML dentro de `semantic/`**, biblioteca que usa `mcp-server`. | dbt o Cube: un servicio y un flujo de más para cuatro métricas. SQL improvisado por el modelo: no es reproducible. |
 | 9 | **Arreglos de catálogo cerrado.** `propose_fix` guarda acción, parámetros y efecto esperado. La aprobación entra por `POST /fix-proposals/{id}/approvals`, con credencial de admin que el modelo nunca recibe. `apply_fix` rechaza lo no aprobado. | SQL libre del modelo: indefendible. Pedir confirmación al modelo: se la puede dar él solo. |
@@ -35,6 +35,7 @@ agente Spring AI / Claude Desktop -> MCP -> mcp-server -> DuckDB lectura (READ_O
 | 19 | **`rewrite-timestamp` es un desplazamiento fijo**: el primer evento es «ahora» y los demás conservan su separación original, también con aceleración. Los días siguen siendo días y el particionado y las métricas diarias no cambian. Con aceleración mayor que 1, los eventos posteriores llevan horas por delante del reloj. | Comprimir los timestamps con la aceleración: la hora coincidiría con la de envío, pero el mes cabría en unas horas y una sola partición diaria. |
 | 20 | **Dos instancias de DuckDB en `mcp-server`.** La de lectura solo tiene `lh` con `READ_ONLY`, atiende todo lo que sale del modelo y, sin validador, también rechaza el `SELECT` de rollback. La de reparación es escribible, ejecuta solo plantillas de `FixAction` y mantenimiento con parámetros, nunca SQL del modelo, y se abre al usarla y se cierra al terminar. | Una instancia con dos catálogos: bastaría nombrar el escribible para llegar a él, y el validador volvería a ser la única barrera. Solo validador: un `SELECT` de rollback ya cambió una tabla en T-014. |
 | 21 | **`time_travel` es la única vía al pasado, para los dos roles.** `time_travel(table, snapshot_id o instante, sql)`: el servidor comprueba la tabla, crea `CREATE OR REPLACE TEMP VIEW at_snapshot AS SELECT <proyección del rol> FROM lh.ns.t AT (VERSION => id)` y ejecuta `sql` con el validador, donde `at_snapshot` es la única tabla permitida. La proyección de analyst usa la misma expresión de hash que su vista. Un instante con zona obligatoria se convierte en id: último snapshot con `timestamp_ms` anterior o igual. Los id de snapshot los da `describe_table`. | `AT` escrito por el modelo: a través de la vista falla y, sobre la tabla base, saltaría el enmascarado. Sin time travel para analyst: el brief lo pide como herramienta y no hace falta renunciar. Sombrear el nombre de la tabla con la vista temporal: precedencia sin comprobar. |
+| 22 | **Sin benchmark ni Trino** (2026-11-02, decisión de la responsable; T-087, limpieza en T-108). DuckDB es el único motor de SQL. | Benchmark DuckDB frente a Trino: unos 2 GB de los 7,6 GB, parar Connect mientras corre y tres tarjetas (T-044, T-049, T-052) para una tabla del README. Su otro uso, expirar snapshots, ya lo cubre el módulo `maintenance` (decisión 6). |
 
 Los endpoints HTTP propios siguen HATEOAS, en plural y kebab-case.
 
@@ -56,7 +57,8 @@ Pregunta de la demo: las cinco marcas con más ingresos por compras. Se contrast
 | **Primera versión del agente solo con `run_query`** (T-094). | Esperar a `get_metric`: 4 tarjetas más de capa semántica (T-027, T-029, T-031, T-033). Decisión 8 aplazada, no anulada: T-034 la añade después. |
 | **Servidor MCP en el compose en cuanto consulta** (T-093). | Esperar a T-028 tal como estaba: arrastraba T-022, T-023, T-024, T-025 y T-026, ninguna necesaria aquí. |
 | **Validador SQL dentro del recorrido** (T-019). | Quitarlo para ir más rápido: un modelo con SQL libre en un repo público contradice el mensaje del proyecto. |
-| **Tope de iteraciones desde la primera versión** (T-094); tokens y gasto siguen en T-035. | Dejarlo todo para T-035: la primera ejecución real gastaría sin freno. Además, T-032 pide una clave con límite de gasto. |
+| **Tope de llamadas a herramientas desde la primera versión** (T-094), con el de Spring AI (`AGENT_MAX_TOOL_CALLS`); tokens y gasto siguen en T-035. | Dejarlo todo para T-035: la primera ejecución real gastaría sin freno. Un bucle propio: repetiría lo que Spring AI ya trae y cuenta mejor, porque también suma las llamadas que llegan juntas. |
+| **Gemini por defecto, Claude por configuración** (`AGENT_PROVIDER`, decisión de la responsable). La capa gratuita permite repetir la demo sin gastar; los dos van en el jar y solo arranca el elegido. Un 429 se informa como cuota, no como respuesta fallida. | Solo Anthropic: cada prueba cuesta dinero. Elegir con perfiles de Maven: habría que recompilar para cambiar de modelo. |
 
 La pregunta «¿por qué cayeron las compras?» y el self-healing quedan fuera: siguen siendo el objetivo de la demo completa (T-036, T-042, T-046, T-059).
 
@@ -70,7 +72,7 @@ Las ramas A y B no se esperan: los tests de consulta cargan la muestra sin Kafka
 | B. Consulta y MCP | T-014 → T-016 → T-106 y T-019; T-016 → T-017; T-016 + T-017 → T-020; T-106 + T-019 + T-020 → T-021 | investigador y desarrollador |
 | C. Agente | T-021 → T-093 y T-094 → T-096 | desarrollador |
 | D. Comando y referencia | T-091 y T-092 (independientes) | desarrollador y tester |
-| E. Demo | T-032 (clave) → T-097 (probar y grabar, [guion](demo-grabacion.md)) → T-098 (README) | responsable y arquitecto |
+| E. Demo | T-032 (clave; con Gemini por defecto, `GEMINI_API_KEY`) → T-097 (probar y grabar, [guion](demo-grabacion.md)) → T-098 (README) | responsable y arquitecto |
 
 Estimación: ~390 min de agente en las tarjetas automáticas (T-014, T-015, T-016, T-017, T-019, T-020, T-021, T-091 a T-094, T-096) y ~25 min de la responsable, sin contar T-089 ni lo que quede de T-072, T-012 y T-013. Los tiempos reales hasta ahora van muy por debajo de lo estimado, pero T-012 terminó en 14 min y su conector no funcionaba: la integración es donde puede desviarse.
 
@@ -90,12 +92,13 @@ Propuesta en orden; decide la responsable. Quitar una tarjeta exige retirarla ta
 
 | Orden | Recorte | Qué se pierde |
 |-------|---------|---------------|
-| 1 | Benchmark: T-049, T-052 y T-044 (decisión en T-087). Compactar ya no usa Trino; expirar pasa a T-105 con la API Java | Una tabla del README y un punto del brief |
-| 2 | Claude Desktop: T-028, T-030 | Un segundo cliente; el agente ya demuestra MCP |
-| 3 | Pages: T-058, T-062 | Repite lo que ya está en el README y la wiki |
-| 4 | Mantenimiento: T-047 y T-105 | Compactación y expiración. Conviene conservar T-045 (añadir una columna), que es barata y vistosa |
-| 5 | Chaos: T-039 y T-041 | Se queda en dos fallos de cuatro (duplicados y consumidor caído) |
-| 6 | Métricas de herramientas: T-024 | Observabilidad, invisible en la demo |
+| 1 | Claude Desktop: T-028, T-030 | Un segundo cliente; el agente ya demuestra MCP |
+| 2 | Pages: T-058, T-062 | Repite lo que ya está en el README y la wiki |
+| 3 | Mantenimiento: T-047 y T-105 | Compactación y expiración. Conviene conservar T-045 (añadir una columna), que es barata y vistosa |
+| 4 | Chaos: T-039 y T-041 | Se queda en dos fallos de cuatro (duplicados y consumidor caído) |
+| 5 | Métricas de herramientas: T-024 | Observabilidad, invisible en la demo |
+
+Ya recortado: el benchmark (decisión 22).
 
 **No recortar:** el validador (T-019), la aprobación humana (T-026) ni una parte de las evals con referencia independiente (T-048, T-056). Son lo que distingue este proyecto de otra demo de un agente con SQL.
 
@@ -105,8 +108,8 @@ Los agentes solo ejecutan `./mk test|test-board|evals`, `python`, git de lectura
 
 - **Lo normal:** Testcontainers dentro de `./mk test`, con un kit común (módulo nuevo `testkit`) que levanta imágenes construidas desde `infra/`.
 - **Tiempo:** `./mk test MODULE=<módulo>` prueba un solo módulo sin los tests de sus dependencias; la suite completa la pasa la CI. Tests unitarios con surefire, integración con failsafe, contenedores compartidos por módulo: un stack y un worker de Connect por JVM, con topic y conector propios en cada clase de test que los necesite. No se usa `testcontainers.reuse.enable`, para que cada ejecución parta de limpio.
-- **Memoria:** ejecutar `./mk test` con el stack apagado si el test levanta Connect o Trino.
-- **Stack completo (`up`, `seed`, `chaos`, `bench`, `demo`):** tarjetas `--manual` de dueño `consultor`, que el runner no ejecuta.
+- **Memoria:** ejecutar `./mk test` con el stack apagado si el test levanta Connect.
+- **Stack completo (`up`, `seed`, `chaos`, `demo`):** tarjetas `--manual` de dueño `consultor`, que el runner no ejecuta.
 
 ## Memoria (Docker: ~7,6 GB)
 
@@ -121,16 +124,15 @@ Los agentes solo ejecutan `./mk test|test-board|evals`, `python`, git de lectura
 | mcp-server | 1 GB |
 | **Total siempre encendido** | **~4,4 GB** |
 | Agente o `tools` (a demanda) | 1 GB |
-| Trino (solo perfil `bench`) | 2 GB |
 
-Con todo encendido queda ~0,2 GB de margen: durante `bench` conviene parar Connect.
+Con todo encendido quedan ~2,2 GB de margen.
 
 Reparto inicial del 1 GB de `mcp-server`, sin medir: JVM 256 MB, DuckDB de lectura 400 MB y DuckDB de reparación 256 MB, esta solo mientras está abierta.
 
 ## Riesgos abiertos
 
 - **DuckDB sobre lo que escribe el sink.** T-014 lo [comprobó](spike-duckdb-iceberg.md) con ficheros escritos por DuckDB. Sin verificar: borrar, hacer rollback, añadir columna y compactar sobre ficheros del sink, o mientras el sink hace commit (T-038, T-039, T-041, T-047).
-- **El time travel de la decisión 21.** Cada pieza está comprobada, pero no juntas: vista temporal con `AT`, catálogo `READ_ONLY` y hash, ni con un esquema antiguo. Lo decide un test de T-021. Si falla, analyst se queda sin `time_travel`, con un error claro, y se anota aquí.
+- **El time travel de la decisión 21, con hash.** T-021 comprobó que la vista temporal con `AT` funciona sobre el catálogo `READ_ONLY` y sobre un snapshot con esquema anterior, que responde con las columnas de entonces (`QueryToolsIT`), con ficheros escritos por DuckDB. Falta la proyección con hash de analyst (T-054). Si falla, analyst se queda sin `time_travel`, con un error claro, y se anota aquí.
 - **`READ_ONLY` protege el catálogo, no S3.** La instancia de lectura lleva la misma clave S3 de la decisión 2. Lo que impide leer o escribir ficheros directamente es el validador, hasta que se apliquen los ajustes de seguridad de DuckDB propuestos en [`NOTAS-investigador.md`](NOTAS-investigador.md), que ahora pueden limitarse a esta instancia.
 - **Compactar con volumen real:** sin medir. Con 256 MB puede quedarse corta (T-047).
 - **Bootstrap repetido:** la documentación de 1.8.0 dice que es idempotente, pero no indica el código de salida. Si no es 0, `./mk up` fallaría la segunda vez.
