@@ -53,6 +53,8 @@ final class McpSecurity {
                 .logout(logout -> logout.disable())
                 .exceptionHandling(e -> e.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
                 .authorizeHttpRequests(requests -> requests
+                        // error dispatches (e.g. a 500) must not be re-judged as unauthenticated and masked as 401
+                        .dispatcherTypeMatchers(jakarta.servlet.DispatcherType.ERROR).permitAll()
                         .requestMatchers("/actuator/health", "/actuator/health/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/fix-proposals/*/approvals").hasRole(ADMIN)
                         .anyRequest().hasAnyRole(ANALYST, ADMIN))
@@ -125,7 +127,7 @@ final class McpSecurity {
         protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
                 throws ServletException, IOException {
             if (!originAllowed(request.getHeader("Origin"), allowedOrigins)) {
-                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Origin not allowed");
+                forbid(response, "Origin not allowed");
                 return;
             }
             String header = request.getHeader("Authorization");
@@ -141,12 +143,19 @@ final class McpSecurity {
                     byte[] body = request.getInputStream().readAllBytes();
                     next = new CachedBody(request, body);
                     if (calledTools(json, body).stream().anyMatch(ADMIN_TOOLS::contains)) {
-                        response.sendError(HttpServletResponse.SC_FORBIDDEN, "This tool needs the admin role");
+                        forbid(response, "This tool needs the admin role");
                         return;
                     }
                 }
             }
             chain.doFilter(next, response);
+        }
+
+        /** 403 written directly: sendError would forward to /error, which needs a key and turns it into 401. */
+        private static void forbid(HttpServletResponse response, String message) throws IOException {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            response.setContentType("text/plain;charset=UTF-8");
+            response.getWriter().write(message);
         }
     }
 

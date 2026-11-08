@@ -8,7 +8,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Controller;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,9 +24,11 @@ import org.springframework.web.bind.annotation.ResponseBody;
  * Where a person reviews and approves proposals. Not an MCP tool: the model does not see this resource. Responses carry
  * {@code _links} to what can be done next (HATEOAS): {@code approve} only while the proposal is PROPOSED.
  *
- * <p>Not annotated as a component: {@link McpServerApplication.OpsConfiguration} registers it only when the ops database
- * is configured.
+ * <p>It must be a {@code @Controller}: Spring MVC ignores a bean with only {@code @RequestMapping} (404). It exists only
+ * when the ops database is configured, like the rest of {@link McpServerApplication.OpsConfiguration}.
  */
+@Controller
+@ConditionalOnExpression("!'${lakehouse.ops.url:}'.isEmpty()")
 @ResponseBody
 @RequestMapping("/fix-proposals")
 public class FixProposalController {

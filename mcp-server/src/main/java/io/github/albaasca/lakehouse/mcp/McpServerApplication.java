@@ -166,11 +166,6 @@ public class McpServerApplication {
         ApprovalGate approvalGate() {
             return ApprovalGate.OPEN;
         }
-
-        @Bean
-        FixProposalController fixProposalController(FixProposals proposals, ApprovalGate gate) {
-            return new FixProposalController(proposals, gate);
-        }
     }
 
     /** API keys of the two roles (see {@link McpSecurity}). Blank means nobody holds that role. */

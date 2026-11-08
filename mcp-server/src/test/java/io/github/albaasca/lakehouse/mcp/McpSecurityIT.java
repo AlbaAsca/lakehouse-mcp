@@ -16,7 +16,6 @@ import java.sql.DriverManager;
 import java.util.Comparator;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -108,7 +107,6 @@ class McpSecurityIT {
     }
 
     @Test
-    @Disabled("T-209: 403/200 of the analyst arrive as 401")
     void theAnalystReadsButCannotApproveAndTheAdminCan() throws Exception {
         Proposal proposal = newProposal();
         String path = "/fix-proposals/" + proposal.id() + "/approvals";
@@ -125,7 +123,6 @@ class McpSecurityIT {
     }
 
     @Test
-    @Disabled("T-209: sendError(403) reaches the client as 401")
     void applyFixOverMcpIsForbiddenToTheAnalystButNotToTheAdmin() throws Exception {
         assertThat(send("POST", "/mcp", ANALYST, null, INIT)).isEqualTo(200);
         assertThat(send("POST", "/mcp", ANALYST, null, APPLY)).isEqualTo(403);
@@ -137,7 +134,6 @@ class McpSecurityIT {
     }
 
     @Test
-    @Disabled("T-209: sendError(403) reaches the client as 401")
     void aForeignOriginIsRefusedEvenWithTheAdminKey() throws Exception {
         assertThat(send("POST", "/mcp", ADMIN, "http://evil.example", INIT)).isEqualTo(403);
         assertThat(send("GET", "/fix-proposals", ADMIN, "http://evil.example", null)).isEqualTo(403);

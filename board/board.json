@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-07T23:07:45+01:00",
+  "updated": "2026-11-08T10:22:01+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -33,12 +33,14 @@
   ],
   "runner": {
     "enabled": true,
-    "state": "stopped",
-    "current": null,
-    "heartbeat": "2026-11-07T21:13:35+01:00",
-    "message": "Parado desde el panel",
-    "pid": null,
-    "live": "live-dbg-tester-20261107-211335.jsonl"
+    "state": "working",
+    "current": "T-209",
+    "heartbeat": "2026-11-08T10:16:31+01:00",
+    "message": "tester con T-209",
+    "pid": 1700,
+    "live": "live-T-209-tester-20261108-101631.jsonl",
+    "agent": "tester",
+    "started": "2026-11-08T10:16:31+01:00"
   },
   "agents": [
     {
@@ -16158,33 +16160,72 @@
       "id": "T-209",
       "title": "Seguridad: un 403 del filtro de claves llega al cliente como 401",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "done",
       "priority": "alta",
       "estimate_min": 30.0,
-      "actual_min": null,
+      "actual_min": 33.1,
       "auto": true,
       "manual": null,
       "desc": "Con la aplicación entera levantada, un Origin ajeno con clave de admin, o el analista llamando a apply_fix, devuelven 401 en vez de 403. Además un analista con clave válida que pide GET /fix-proposals recibe 401 en vez de 200. Parece que sendError(403) reenvía a /error, que también exige clave, y el cliente ve 401. El test unitario no lo detecta porque usa una respuesta simulada.\nCómo sabremos si funciona: McpSecurityIT (hoy con tres tests @Disabled) pasa sin desactivar nada: Origin ajeno 403, analista con apply_fix 403, analista GET /fix-proposals 200, analista POST aprobaciones 403 y admin 201.\n## Técnico\nMcpSecurity.ApiKeyFilter usa response.sendError(403) y la cadena exige autenticación en el despacho ERROR (log: AuthorizationDeniedException en /error). Arreglo probable: setStatus(403) y escribir cuerpo sin sendError, o permitir DispatcherType.ERROR. Revisar aparte por qué GET /fix-proposals con clave analyst da 401 (probable 500 enmascarado; ver log de McpSecurityIT). Quitar los @Disabled de McpSecurityIT (creado en T-181).",
       "deps": [],
       "created": "2026-11-07T23:07:14+01:00",
-      "updated": "2026-11-07T23:07:14+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-08T10:22:01+01:00",
+      "started_at": "2026-11-07T23:07:55+01:00",
+      "finished_at": "2026-11-07T23:40:59+01:00",
       "log": [
         {
           "t": "2026-11-07T23:07:14+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-07T23:07:55+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-07T23:40:59+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: 403 del filtro de claves llega como 403 (setStatus + ERROR permitido), /fix-proposals ya se registra como controlador, McpSecurityIT sin @Disabled y tests de mcp-server en verde"
+        },
+        {
+          "t": "2026-11-07T23:41:01+01:00",
+          "by": "tester",
+          "msg": "verificando"
+        },
+        {
+          "t": "2026-11-08T10:16:31+01:00",
+          "by": "tester",
+          "msg": "verificando"
+        },
+        {
+          "t": "2026-11-08T10:22:01+01:00",
+          "by": "consultor",
+          "msg": "Tests del módulo mcp-server en verde (exit 0)"
         }
-      ]
+      ],
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-07T23:40:59+01:00",
+          "min": 33.0,
+          "turns": 37,
+          "tokens": 905616,
+          "cost_usd": 0.35754040000000004,
+          "verdict": "review",
+          "summary": "403 del filtro de claves llega como 403 (setStatus + ERROR permitido), /fix-proposals ya se registra como controlador, McpSecurityIT sin @Disabled y tests de mcp-server en verde"
+        }
+      ],
+      "verify_started": "2026-11-08T10:16:31+01:00"
     }
   ],
   "runners": {
     "think": {
       "state": "stopped",
       "current": null,
-      "message": "Runner parado",
-      "pid": 16496,
+      "message": "Runner parado (pid muerto)",
+      "pid": null,
       "heartbeat": "2026-11-07T22:55:16+01:00",
       "enabled": true,
       "agent": "arquitecto",
@@ -16194,15 +16235,15 @@
       "contrib_agent": "investigador"
     },
     "measure": {
-      "state": "working",
-      "current": "T-181",
-      "message": "tester con T-181",
-      "pid": 24704,
-      "heartbeat": "2026-11-07T23:07:33+01:00",
+      "state": "stopped",
+      "current": null,
+      "message": "Runner parado (pid muerto)",
+      "pid": null,
+      "heartbeat": "2026-11-07T23:41:02+01:00",
       "enabled": true,
       "agent": "tester",
-      "started": "2026-11-07T23:07:33+01:00",
-      "live": "live-T-181-tester-20261107-230733.jsonl",
+      "started": "2026-11-07T23:41:01+01:00",
+      "live": "live-T-209-tester-20261107-234102.jsonl",
       "pause_reason": null
     }
   }
