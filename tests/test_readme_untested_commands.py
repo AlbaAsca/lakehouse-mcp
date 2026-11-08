@@ -1,4 +1,5 @@
-"""T-075: las órdenes `./mk seed` (CSV real) del README deben marcarse «sin probar»."""
+"""T-075: las órdenes `./mk seed` (CSV real) del README deben marcarse «sin probar», salvo la medida de T-018
+(`SAMPLE=0.025`, ver «Rendimiento medido»)."""
 import re
 from pathlib import Path
 
@@ -9,5 +10,5 @@ def test_mk_seed_rows_marked_untested():
     rows = [l for l in README.read_text(encoding="utf-8").splitlines()
             if re.search(r"`\./mk seed( |`)", l)]
     assert len(rows) >= 2
-    for row in rows:
+    for row in (r for r in rows if "SAMPLE=0.025" not in r):
         assert "sin probar" in row.lower(), row
