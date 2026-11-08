@@ -25,6 +25,8 @@ It runs on a synthetic sample of 50,000 events; the real Kaggle month is not par
 - **Agent (Spring AI 2.0):** answers questions with `./mk ask`, with caps on iterations, tokens, cost and time.
   Gemini by default; Claude and any OpenAI-compatible service (`AGENT_PROVIDER=openai` with base URL, key and model)
   by configuration. The OpenAI-compatible provider is tested against a fake server only, not against a real service.
+- **Query battery:** 16 model-free SQL questions of rising difficulty (down to market basket, z-score anomalies and
+  re-sessionised visits), each checked against an independent reference (`python evals/battery/run.py`).
 - **Demo:** a GIF recorded with an MCP client (Claude Code) calling the real server, without a model key
   (`scripts/demo/record_mcp_demo.py`). The same demo with the Spring AI agent is rehearsed but not yet recorded.
 - **Maintenance:** snapshot expiry as a one-off process (`./mk expire`).
