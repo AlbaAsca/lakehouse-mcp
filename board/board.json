@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-08T16:49:45+01:00",
+  "updated": "2026-11-08T19:48:51+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -33,11 +33,11 @@
   ],
   "runner": {
     "enabled": true,
-    "state": "working",
-    "current": "T-043",
-    "heartbeat": "2026-11-08T16:42:41+01:00",
-    "message": "desarrollador con T-043",
-    "pid": 7056,
+    "state": "stopped",
+    "current": null,
+    "heartbeat": "2026-11-08T19:16:33+01:00",
+    "message": "Runner parado (pid muerto)",
+    "pid": null,
     "live": "live-T-043-desarrollador-20261108-164241.jsonl",
     "agent": "desarrollador",
     "started": "2026-11-08T16:42:40+01:00"
@@ -64,8 +64,8 @@
       "name": "Desarrollador",
       "role": "Implementa las tareas",
       "color": "#7aa2f7",
-      "status": "idle",
-      "current": null
+      "status": "working",
+      "current": "T-214"
     },
     {
       "id": "tester",
@@ -537,7 +537,7 @@
       "id": "T-007",
       "title": "Infra: perfilar el CSV real y dejar el informe",
       "owner": "consultor",
-      "status": "backlog",
+      "status": "done",
       "priority": "media",
       "estimate_min": 5.0,
       "actual_min": null,
@@ -548,7 +548,7 @@
         "T-003"
       ],
       "created": "2026-11-02T11:35:33+01:00",
-      "updated": "2026-11-07T18:15:36+01:00",
+      "updated": "2026-11-08T19:20:13+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -556,6 +556,21 @@
           "t": "2026-11-02T11:35:33+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-08T19:05:14+01:00",
+          "by": "tú",
+          "msg": "→ Próximo"
+        },
+        {
+          "t": "2026-11-08T19:20:13+01:00",
+          "by": "consultor",
+          "msg": "Informe generado: 42.448.764 filas, 31 días, ordenado, 30.220 duplicados exactos, 68.673 precios <=0, 13,5M sin category_code, 6,1M sin brand. Arreglado profile-data.sql (file_row_number no soportado; temp_directory y memory_limit). CSV extraído en el volumen data."
+        },
+        {
+          "t": "2026-11-08T19:20:13+01:00",
+          "by": "consultor",
+          "msg": "perfil real en docs/data-profile.md"
         }
       ],
       "rank": 900
@@ -1623,7 +1638,7 @@
       "id": "T-018",
       "title": "Ingesta: cargar el mes real y anotar rendimiento",
       "owner": "consultor",
-      "status": "backlog",
+      "status": "done",
       "priority": "media",
       "estimate_min": 20.0,
       "actual_min": null,
@@ -1635,7 +1650,7 @@
         "T-005"
       ],
       "created": "2026-11-02T11:36:53+01:00",
-      "updated": "2026-11-07T18:15:36+01:00",
+      "updated": "2026-11-08T19:29:47+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -1658,6 +1673,21 @@
           "t": "2026-11-02T18:22:57+01:00",
           "by": "consultor",
           "msg": "Con datos reales no enviar respuestas a la capa gratuita de Gemini (Google puede usarlas): usar una cuenta de pago."
+        },
+        {
+          "t": "2026-11-08T19:05:19+01:00",
+          "by": "tú",
+          "msg": "→ Próximo"
+        },
+        {
+          "t": "2026-11-08T19:29:47+01:00",
+          "by": "consultor",
+          "msg": "Carga real: SAMPLE=0.025 SPEEDUP=20000. Leídas 42.448.764 filas, enviados 1.059.008 eventos (0 tardíos) en 2m25s (~7.000/s); total seed 165s. Iceberg: 1.109.008 filas = 50.000 sintéticas + 1.059.008, exacto, tardó ~1 min más en asentarse tras el envío. RAM máx por contenedor: connect 826 MiB, kafka 449, polaris 287, schema-registry 282, mcp-server 264, seaweedfs 209, postgres 46; ningún OOM (límite del PC 7,6 GiB). Para 5M faltaría probar: connect es el que más crece. Arreglado Makefile: jars viejos de producer/target rompían seed tras subir de versión. La tabla ya mezcla sintético+real: la batería/demo no coincide con su referencia hasta down -v + seed-sample."
+        },
+        {
+          "t": "2026-11-08T19:29:47+01:00",
+          "by": "consultor",
+          "msg": "1.109.008 filas en Iceberg = enviadas; sin OOM"
         }
       ],
       "rank": 900
@@ -2631,7 +2661,7 @@
       "id": "T-030",
       "title": "MCP: probar Claude Desktop contra el servidor",
       "owner": "consultor",
-      "status": "backlog",
+      "status": "next",
       "priority": "baja",
       "estimate_min": 10.0,
       "actual_min": null,
@@ -2642,7 +2672,7 @@
         "T-028"
       ],
       "created": "2026-11-02T11:37:59+01:00",
-      "updated": "2026-11-07T18:15:37+01:00",
+      "updated": "2026-11-08T19:05:23+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -2650,6 +2680,11 @@
           "t": "2026-11-02T11:37:59+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-08T19:05:23+01:00",
+          "by": "tú",
+          "msg": "→ Próximo"
         }
       ],
       "rank": 900
@@ -3717,7 +3752,7 @@
       "id": "T-046",
       "title": "Chaos: demo real de los cuatro fallos con el modelo verdadero",
       "owner": "consultor",
-      "status": "backlog",
+      "status": "blocked",
       "priority": "alta",
       "estimate_min": 30.0,
       "actual_min": null,
@@ -3734,7 +3769,7 @@
         "T-018"
       ],
       "created": "2026-11-02T11:39:40+01:00",
-      "updated": "2026-11-07T18:15:39+01:00",
+      "updated": "2026-11-08T19:35:32+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -3742,6 +3777,21 @@
           "t": "2026-11-02T11:39:40+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-08T19:05:28+01:00",
+          "by": "tú",
+          "msg": "→ Próximo"
+        },
+        {
+          "t": "2026-11-08T19:35:32+01:00",
+          "by": "consultor",
+          "msg": "No se puede lanzar hoy: 'make chaos' y 'make demo' siguen siendo un stub ('not implemented yet' en el Makefile) y no existe ningún SCENARIO que inyecte los fallos; los ciclos de T-039/040/041/042 solo están probados con guion en tests. Hace falta una tarjeta que implemente 'chaos' (inyectar duplicados, partición vacía, consumidor caído y schema drift en el stack) antes de esta. Además necesita el modelo real y aprobación en consola (el cupo de Gemini está agotado hasta mañana)."
+        },
+        {
+          "t": "2026-11-08T19:35:32+01:00",
+          "by": "consultor",
+          "msg": "falta implementar make chaos/demo"
         }
       ],
       "rank": 900
@@ -7588,10 +7638,10 @@
       "id": "T-110",
       "title": "Semántica: comprobar las definiciones con el dataset real",
       "owner": "arquitecto",
-      "status": "backlog",
+      "status": "done",
       "priority": "media",
       "estimate_min": 15.0,
-      "actual_min": null,
+      "actual_min": 0.8,
       "auto": true,
       "manual": null,
       "desc": "Las definiciones de las métricas se escribieron sin poder ver el dataset real: los casos raros se contaron solo en la muestra sintética. Si en los datos reales abundan las compras sin carrito, las sesiones con varias compras o las marcas vacías, alguna regla podría dar resultados engañosos. Proponemos contrastar el documento con el informe del perfil real y corregirlo antes de que dependa más trabajo de él.\nCómo sabremos si funciona: el documento recoge las proporciones reales y dice, regla a regla, si se mantiene o cambia y por qué.\n## Técnico\nEntrada: informe de perfil de T-007, sin copiar datos reales al repo. Actualizar la tabla «Cuánto importa cada caso» de docs/metrics.md con filas distintas, sesión nula, price <= 0, brand nula, compra sin carrito, varias compras por sesión y sesiones que cruzan medianoche UTC. Si cambia una regla, avisar en T-029 y T-031.",
@@ -7599,17 +7649,76 @@
         "T-007"
       ],
       "created": "2026-11-02T18:35:32+01:00",
-      "updated": "2026-11-07T18:15:46+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-08T19:48:51+01:00",
+      "started_at": "2026-11-08T19:48:42+01:00",
+      "finished_at": "2026-11-08T19:48:51+01:00",
       "log": [
         {
           "t": "2026-11-02T18:35:32+01:00",
           "by": "arquitecto",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-08T19:47:57+01:00",
+          "by": "runner",
+          "msg": "empieza arquitecto"
+        },
+        {
+          "t": "2026-11-08T19:48:41+01:00",
+          "by": "arquitecto",
+          "msg": "BLOCKED: tabla de docs/metrics.md contrastada con el perfil real: ninguna regla cambia con lo medido; los casos que el perfil no mide quedan «n/m» y se piden en T-220."
+        },
+        {
+          "t": "2026-11-08T19:48:41+01:00",
+          "by": "arquitecto",
+          "msg": "⚠ 1 comandos denegados: python board/board.py followup \"Perfil real: medir los casos raros de las compra"
+        },
+        {
+          "t": "2026-11-08T19:48:41+01:00",
+          "by": "runner",
+          "msg": "✓ permiso concedido automáticamente: python * (solo lectura dentro del proyecto); se reintenta"
+        },
+        {
+          "t": "2026-11-08T19:48:41+01:00",
+          "by": "runner",
+          "msg": "se reintentará con los permisos resueltos"
+        },
+        {
+          "t": "2026-11-08T19:48:42+01:00",
+          "by": "runner",
+          "msg": "empieza arquitecto"
+        },
+        {
+          "t": "2026-11-08T19:48:51+01:00",
+          "by": "arquitecto",
+          "msg": "DONE: `docs/metrics.md` está contrastada con el perfil real y ninguna regla cambia con lo medido, así que no hay aviso para T-029 ni T-031. Los casos que el perfil no mide (compra sin carrito, varias compras por sesión, cruce de medianoche, y el peso en compras de `price` <= 0 y `brand` nula) quedan como «n/m» y se piden en T-220."
         }
       ],
-      "rank": 900
+      "rank": 900,
+      "runs": [
+        {
+          "agent": "arquitecto",
+          "mode": "work",
+          "at": "2026-11-08T19:48:41+01:00",
+          "min": 0.7,
+          "turns": 10,
+          "tokens": 191499,
+          "cost_usd": 0.22830960000000003,
+          "verdict": "blocked",
+          "summary": "tabla de docs/metrics.md contrastada con el perfil real: ninguna regla cambia con lo medido; los casos que el perfil no mide quedan «n/m» y se piden en T-220."
+        },
+        {
+          "agent": "arquitecto",
+          "mode": "work",
+          "at": "2026-11-08T19:48:51+01:00",
+          "min": 0.1,
+          "turns": 3,
+          "tokens": 42685,
+          "cost_usd": 0.08945539999999999,
+          "verdict": "done",
+          "summary": "`docs/metrics.md` está contrastada con el perfil real y ninguna regla cambia con lo medido, así que no hay aviso para T-029 ni T-031. Los casos que el perfil no mide (compra sin carrito, varias compra"
+        }
+      ]
     },
     {
       "id": "T-111",
@@ -10567,7 +10676,7 @@
       "id": "T-175",
       "title": "Publicar la versión 0.1.0: primera demo de principio a fin",
       "owner": "consultor",
-      "status": "backlog",
+      "status": "done",
       "priority": "alta",
       "estimate_min": 20.0,
       "actual_min": null,
@@ -10587,7 +10696,7 @@
         "T-113"
       ],
       "created": "2026-11-07T14:40:38+01:00",
-      "updated": "2026-11-07T14:40:38+01:00",
+      "updated": "2026-11-08T17:50:52+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -10605,6 +10714,16 @@
           "t": "2026-11-07T14:46:02+01:00",
           "by": "tú",
           "msg": "editada: manual"
+        },
+        {
+          "t": "2026-11-08T17:50:51+01:00",
+          "by": "consultor",
+          "msg": "v0.1.0 publicada el 8-nov: main 7460486, etiqueta v0.1.0, release en GitHub con el GIF, CI de main en verde. develop en 0.2.0-SNAPSHOT."
+        },
+        {
+          "t": "2026-11-08T17:50:52+01:00",
+          "by": "consultor",
+          "msg": "0.1.0 publicada y CI de main en verde"
         }
       ]
     },
@@ -16414,23 +16533,38 @@
       "id": "T-202",
       "title": "[Tú] Ajustes de GitHub para trabajar con PR",
       "owner": "consultor",
-      "status": "backlog",
+      "status": "done",
       "priority": "media",
       "estimate_min": 5.0,
-      "actual_min": null,
+      "actual_min": 2.3,
       "auto": false,
       "manual": "En GitHub (Settings > General > Pull Requests) activar «Allow squash merging» y «Automatically delete head branches»; en terminal ejecutar gh auth status y comprobar que el token puede crear PR",
       "desc": "El runner abrirá y fusionará PR con la herramienta gh y necesita que el repositorio lo permita.\nCómo sabremos si funciona: gh pr list responde y la opción de fusionar con squash está disponible.\n## Técnico\nRepo privado sin Pro: no hay protección de rama, quien fusiona es el runner.",
       "deps": [],
       "created": "2026-11-07T20:44:37+01:00",
-      "updated": "2026-11-07T20:44:37+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-08T18:53:12+01:00",
+      "started_at": "2026-11-08T18:50:54+01:00",
+      "finished_at": "2026-11-08T18:53:12+01:00",
       "log": [
         {
           "t": "2026-11-07T20:44:37+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-08T18:50:51+01:00",
+          "by": "tú",
+          "msg": "→ Próximo"
+        },
+        {
+          "t": "2026-11-08T18:50:54+01:00",
+          "by": "tú",
+          "msg": "→ En curso"
+        },
+        {
+          "t": "2026-11-08T18:53:12+01:00",
+          "by": "tú",
+          "msg": "→ Hecho"
         }
       ]
     },
@@ -17007,32 +17141,236 @@
           "summary": "la sugerencia \"use lh.ns.tabla\" y el campo queryName ya estaban en 447cc6d; los tests de mcp-server pasan."
         }
       ]
+    },
+    {
+      "id": "T-214",
+      "title": "Herramientas MCP: avisar cuando el modelo manda un argumento que no existe",
+      "owner": "desarrollador",
+      "status": "doing",
+      "priority": "media",
+      "estimate_min": 25.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Si un modelo llama a get_metric con un argumento inventado (por ejemplo 'parameters' o 'arguments' en vez de 'limit'), el servidor lo ignora en silencio y devuelve datos sin filtrar. Un agente puede dar una cifra equivocada sin enterarse. Se propone rechazar los argumentos desconocidos con un error que diga cuáles existen. Cómo sabremos si funciona: get_metric con {name:top_brands, parameters:{limit:2}} devuelve un error que lista name, from, to y limit.\n## Técnico\nObservado el 8-nov en la prueba de un agente sin pistas: get_metric devolvió 'arguments':{} y 8 filas con limit pedido en parameters. El inputSchema no declara additionalProperties:false. Revisar todas las herramientas del servidor (run_query, describe_table, time_travel, data_quality_check, etc.) y ToolResults/validación de entrada. Tests en mcp-server.",
+      "deps": [],
+      "created": "2026-11-08T17:06:36+01:00",
+      "updated": "2026-11-08T19:47:57+01:00",
+      "started_at": "2026-11-08T19:47:57+01:00",
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-08T17:06:36+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        },
+        {
+          "t": "2026-11-08T19:47:57+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        }
+      ]
+    },
+    {
+      "id": "T-215",
+      "title": "Chaos: implementar make chaos y make demo (inyectar los 4 fallos)",
+      "owner": "arquitecto",
+      "status": "done",
+      "priority": "media",
+      "estimate_min": 60.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Hoy 'make chaos' y 'make demo' solo avisan de que no están implementados. Hay que poder provocar a propósito cada fallo (duplicados, partición vacía, consumidor caído, schema drift) en el stack, para ver al agente detectarlo y repararlo.\nCómo sabremos si funciona: ./mk chaos SCENARIO=<fallo> provoca el fallo y deja el stack listo para que el agente lo detecte; desbloquea T-046.\n\n## Técnico\nMakefile: objetivo 'evals chaos' es un stub. Los ciclos de T-039..T-042 existen como tests con guion; reutilizar su inyección.",
+      "deps": [],
+      "created": "2026-11-08T19:35:32+01:00",
+      "updated": "2026-11-08T19:37:02+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-08T19:35:32+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        },
+        {
+          "t": "2026-11-08T19:37:02+01:00",
+          "by": "consultor",
+          "msg": "Troceada en T-216 (duplicates+empty-partition, reutiliza Chaos/ChaosCommand), T-217 consumer-down, T-218 schema-drift, T-219 demo. T-217..T-219 deben depender de T-216 (creadas con dep T-215 por error)."
+        },
+        {
+          "t": "2026-11-08T19:37:02+01:00",
+          "by": "arquitecto",
+          "msg": "Diseño troceado en T-216..T-219"
+        }
+      ]
+    },
+    {
+      "id": "T-216",
+      "title": "make chaos: duplicados y partición vacía sobre el stack real",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "media",
+      "estimate_min": 60.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Hoy make chaos es un stub. Se conecta ./mk chaos SCENARIO=duplicates|empty-partition a la clase Chaos ya existente, ejecutada en el contenedor del mcp-server. Cómo sabremos si funciona: tras el comando, la tabla real muestra el fallo y el informe JSON da el snapshot previo. ## Técnico: Makefile target chaos (separar de evals) -> docker compose run mcp-server ChaosCommand $(SCENARIO) --table --day --percent; variables TABLE/DAY por defecto; error claro si SCENARIO vacío o desconocido; test de ChaosCommandTest para el parseo.",
+      "deps": [],
+      "created": "2026-11-08T19:36:58+01:00",
+      "updated": "2026-11-08T19:36:58+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-08T19:36:58+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ]
+    },
+    {
+      "id": "T-217",
+      "title": "make chaos: consumidor caído",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "media",
+      "estimate_min": 45.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Parar el conector del sink para que el retraso crezca y el agente lo detecte. Cómo sabremos si funciona: tras chaos, el consumer lag sube y la herramienta de salud lo marca. ## Técnico: reutilizar la inyección de ConsumerDownCycleIT (T-040) en un escenario consumer-down (docker compose stop del servicio connect + producir eventos); informe JSON y comando de deshacer (start).",
+      "deps": [
+        "T-216"
+      ],
+      "created": "2026-11-08T19:36:58+01:00",
+      "updated": "2026-11-08T19:36:58+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-08T19:36:58+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        },
+        {
+          "t": "2026-11-08T19:37:40+01:00",
+          "by": "tú",
+          "msg": "editada: deps"
+        }
+      ]
+    },
+    {
+      "id": "T-218",
+      "title": "make chaos: schema drift",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "media",
+      "estimate_min": 60.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Emitir eventos con un campo nuevo o cambiado contra el stack real. Cómo sabremos si funciona: el agente detecta el drift tras make chaos. ## Técnico: envolver SchemaDriftCommand (producer, T-041) como escenario schema-drift en el target chaos; mismos parámetros y salida JSON.",
+      "deps": [
+        "T-216"
+      ],
+      "created": "2026-11-08T19:36:58+01:00",
+      "updated": "2026-11-08T19:36:58+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-08T19:36:58+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        },
+        {
+          "t": "2026-11-08T19:37:40+01:00",
+          "by": "tú",
+          "msg": "editada: deps"
+        }
+      ]
+    },
+    {
+      "id": "T-219",
+      "title": "make demo: encadenar ask, chaos y heal",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "media",
+      "estimate_min": 45.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "make demo ya llama a ask, chaos y heal; falta que funcione con chaos real y escenario elegible. Cómo sabremos si funciona: ./mk demo SCENARIO=duplicates acaba con la tabla reparada tras aprobar y. ## Técnico: DEMO_SCENARIO por defecto duplicates; separar evals de chaos en el Makefile; comprobar mk.cmd; revisar pregunta ask tras la reparación (T-042); verify:true.",
+      "deps": [
+        "T-216"
+      ],
+      "created": "2026-11-08T19:36:58+01:00",
+      "updated": "2026-11-08T19:36:58+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-08T19:36:58+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        },
+        {
+          "t": "2026-11-08T19:37:40+01:00",
+          "by": "tú",
+          "msg": "editada: deps"
+        }
+      ]
+    },
+    {
+      "id": "T-220",
+      "title": "Perfil real: medir los casos raros de las compras",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "baja",
+      "estimate_min": 30.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "El informe del perfil real no dice cuántas compras no tienen carrito, cuántas sesiones compran más de una vez, cuántas cruzan medianoche ni cuántas compras tienen precio cero o marca vacía. Sin eso, las definiciones de las métricas no se pueden contrastar del todo con los datos reales. Se propone ampliar el perfil con esas cifras agregadas, sin copiar datos.\nCómo sabremos si funciona: el informe del perfil trae esas cifras y la tabla de docs/metrics.md pasa de n/m a valores reales.\n## Técnico\nAmpliar el comando de T-003 (bloqueada) con: sesiones con purchase y sin cart; sesiones con más de una compra (filas distintas); sesiones cuyo primer y último evento caen en distinto día UTC; filas purchase con price<=0; filas purchase con brand nula o vacía; compras con sesión nula. Después rellenar las filas n/m de docs/metrics.md y avisar en T-029/T-031 si una regla cambia.",
+      "deps": [],
+      "created": "2026-11-08T19:48:36+01:00",
+      "updated": "2026-11-08T19:48:36+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-08T19:48:36+01:00",
+          "by": "arquitecto",
+          "msg": "creada"
+        }
+      ]
     }
   ],
   "runners": {
     "think": {
-      "state": "stopped",
-      "current": null,
-      "message": "Runner parado (pid muerto)",
-      "pid": null,
-      "heartbeat": "2026-11-07T22:55:16+01:00",
+      "state": "working",
+      "current": "T-110",
+      "message": "arquitecto con T-110",
+      "pid": 12660,
+      "heartbeat": "2026-11-08T19:48:43+01:00",
       "enabled": true,
       "agent": "arquitecto",
-      "started": "2026-11-07T20:44:47+01:00",
-      "live": "live-T-191-arquitecto-20261107-204447.jsonl",
+      "started": "2026-11-08T19:48:43+01:00",
+      "live": "live-T-110-arquitecto-20261108-194843.jsonl",
       "contrib_at": "2026-11-02T11:46:22+01:00",
       "contrib_agent": "investigador"
     },
     "measure": {
-      "state": "stopped",
-      "current": null,
-      "message": "Runner parado (pid muerto)",
-      "pid": null,
-      "heartbeat": "2026-11-07T23:41:02+01:00",
+      "state": "working",
+      "current": "T-214",
+      "message": "desarrollador con T-214",
+      "pid": 20400,
+      "heartbeat": "2026-11-08T19:47:58+01:00",
       "enabled": true,
-      "agent": "tester",
-      "started": "2026-11-07T23:41:01+01:00",
-      "live": "live-T-209-tester-20261107-234102.jsonl",
+      "agent": "desarrollador",
+      "started": "2026-11-08T19:47:58+01:00",
+      "live": "live-T-214-desarrollador-20261108-194758.jsonl",
       "pause_reason": null
     }
   }

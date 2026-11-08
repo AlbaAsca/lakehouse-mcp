@@ -35,20 +35,22 @@ Descartado: filtrar los eventos de la ventana y agrupar después. Es más simple
 
 ### Cuánto importa cada caso
 
-Muestra sintética, `testdata/synthetic-events.csv.gz`. El dataset real no estaba disponible al escribir esto, así que **sus proporciones están sin comprobar**.
+Muestra sintética (`testdata/synthetic-events.csv.gz`) frente al dataset real (octubre de 2019, 42.448.764 filas, 9.244.421 sesiones), según `docs/data-profile.md` (T-007). Contrastado en T-110. «n/m» = el perfil actual no lo mide.
 
-| Caso | Cantidad |
-|---|---|
-| Filas / filas distintas | 50.000 / 49.750 |
-| Sesiones, sin filas de sesión nula ni copias | 19.800 |
-| Sesiones que cruzan medianoche UTC | 44 |
-| Filas de compra con sesión nula, contando copias | 9 |
-| Filas de compra con `price` <= 0, contando copias | 13 |
-| Filas de compra con `brand` nula, contando copias | 330 |
-| Sesiones con compra pero sin carrito | 0 |
-| Sesiones con más de una compra | 0 |
+| Caso | Sintética | Real | ¿Se mantiene la regla? |
+|---|---|---|---|
+| Filas / filas distintas (copias) | 50.000 / 49.750 (0,5 %) | 42.448.764 / 42.418.544 (30.220 copias, 0,07 %) | Sí. Pocas copias, pero la regla es necesaria para `make chaos` y no cuesta nada. |
+| Sesión nula (todas las filas) | 9 filas de compra | 2 filas (0,000005 %) | Sí. Irrelevante en la práctica; se conserva por cuadrar totales. |
+| `price` <= 0 (todos los tipos) | 13 filas de compra | 68.673 filas (0,16 %); `price` nunca es no numérico ni nulo; mínimo 0,0 | Sí. Mínimo 0,0: son ceros, no negativos, así que la duda de si un negativo es devolución no se plantea. Cuántos son compras: n/m. |
+| `brand` nula (todos los tipos) | 330 filas de compra | 6.113.008 filas (14,4 %) | Sí. Es frecuente, por eso `revenue_without_brand` y `share` sobre el total son necesarios. Peso en compras: n/m. |
+| Compra sin carrito | 0 | n/m | Sí. La regla (compra implica carrito) es la prudente si abundan. Si son muchas, `cart_to_purchase` y el abandono se leen con cautela. |
+| Sesiones con más de una compra | 0 | n/m | Sí. Ticket por sesión; ya definido. |
+| Sesiones que cruzan medianoche UTC | 44 | n/m | Sí. Con 9,2 M de sesiones en 31 días habrá miles; la regla evita partirlas. |
+| Tipos de evento | view, cart, purchase | view 40.779.399, cart 926.516, purchase 742.849 (compras = 1,75 %) | Sí. No hay otros tipos. |
 
-La muestra no contiene los dos últimos casos, pero las reglas los cubren y el dataset real podría tenerlos.
+**Conclusión:** con lo medido, ninguna regla cambia; no hay que avisar a T-029 ni a T-031. Pendiente: las filas n/m (compra sin carrito, varias compras por sesión, cruce de medianoche, compras con `price` <= 0 o `brand` nula) necesitan ampliar el perfil; se pide en una tarjeta de seguimiento. Hasta entonces, esas proporciones reales están **sin comprobar**.
+
+Las compras reales son solo el 1,75 % de las filas (742.849), así que el 0,16 % de `price` <= 0 y el 14,4 % de `brand` nula, medidos sobre todas las filas, no se pueden trasladar a las compras.
 
 ## Etapa de una sesión
 
