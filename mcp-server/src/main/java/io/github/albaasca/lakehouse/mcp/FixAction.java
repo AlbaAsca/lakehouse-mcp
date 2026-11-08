@@ -25,7 +25,7 @@ interface FixAction {
     Map<String, Object> validate(Map<String, Object> params) throws SQLException;
 
     /** What will change, in a sentence for the person who approves. Takes canonical parameters. */
-    String expectedEffect(Map<String, Object> params);
+    String expectedEffect(Map<String, Object> params) throws SQLException;
 
     /** Does the repair. Takes canonical parameters, already approved. */
     void apply(Map<String, Object> params) throws SQLException;

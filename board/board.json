@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-08T14:17:49+01:00",
+  "updated": "2026-11-08T15:11:43+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -34,13 +34,13 @@
   "runner": {
     "enabled": true,
     "state": "working",
-    "current": "T-028",
-    "heartbeat": "2026-11-08T13:52:00+01:00",
-    "message": "desarrollador con T-028",
-    "pid": 6724,
-    "live": "live-T-028-desarrollador-20261108-135200.jsonl",
-    "agent": "desarrollador",
-    "started": "2026-11-08T13:52:00+01:00"
+    "current": "T-039",
+    "heartbeat": "2026-11-08T15:00:03+01:00",
+    "message": "tester con T-039",
+    "pid": 7056,
+    "live": "live-T-039-tester-20261108-150003.jsonl",
+    "agent": "tester",
+    "started": "2026-11-08T15:00:02+01:00"
   },
   "agents": [
     {
@@ -3284,10 +3284,10 @@
       "id": "T-039",
       "title": "Chaos: ciclo completo de partición vacía",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "done",
       "priority": "media",
       "estimate_min": 30.0,
-      "actual_min": null,
+      "actual_min": 10.5,
       "auto": true,
       "manual": null,
       "desc": "Un día de datos desaparece. El chequeo debe verlo como volumen anómalo y el arreglo es volver al snapshot sano, aprovechando que Iceberg conserva el histórico. También tiene que quedar claro qué pasa con lo escrito después del fallo.\nCómo sabremos si funciona: tras el arreglo aprobado, el día recupera sus filas exactas; si hubo escrituras posteriores, la propuesta lo avisa antes de aprobar.\n\n## Técnico\nDetecta: partición vacía en data_quality_check. Arreglo: ROLLBACK_SNAPSHOT (T-026). propose_fix devuelve los snapshots y el recuento de filas que se perderían. IT scripted por MCP real con caso con y sin escrituras posteriores. ./mk test.",
@@ -3297,17 +3297,62 @@
         "T-026"
       ],
       "created": "2026-11-02T11:38:50+01:00",
-      "updated": "2026-11-07T18:15:38+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-08T15:11:43+01:00",
+      "started_at": "2026-11-08T14:17:59+01:00",
+      "finished_at": "2026-11-08T14:28:29+01:00",
       "log": [
         {
           "t": "2026-11-02T11:38:50+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-08T14:17:59+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-08T14:28:29+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: la propuesta de ROLLBACK_SNAPSHOT lista los snapshots descartados y las filas que se perderían, y avisa si hay escrituras posteriores; `EmptyPartitionCycleIT` cubre los casos con y sin ellas y los tests de mcp-server pasan."
+        },
+        {
+          "t": "2026-11-08T15:00:02+01:00",
+          "by": "tester",
+          "msg": "verificando"
+        },
+        {
+          "t": "2026-11-08T15:11:43+01:00",
+          "by": "tester",
+          "msg": "DONE: EmptyPartitionCycleIT pasa (2/2, con y sin escrituras posteriores) y los 146 tests del módulo mcp-server están en verde."
         }
       ],
-      "rank": 900
+      "rank": 900,
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-08T14:28:29+01:00",
+          "min": 10.5,
+          "turns": 22,
+          "tokens": 476176,
+          "cost_usd": 0.28646770000000005,
+          "verdict": "review",
+          "summary": "la propuesta de ROLLBACK_SNAPSHOT lista los snapshots descartados y las filas que se perderían, y avisa si hay escrituras posteriores; `EmptyPartitionCycleIT` cubre los casos con y sin ellas y los tes"
+        },
+        {
+          "agent": "tester",
+          "mode": "verify",
+          "at": "2026-11-08T15:11:43+01:00",
+          "min": 11.7,
+          "turns": 3,
+          "tokens": 88322,
+          "cost_usd": 0.1553899,
+          "verdict": "done",
+          "summary": "EmptyPartitionCycleIT pasa (2/2, con y sin escrituras posteriores) y los 146 tests del módulo mcp-server están en verde."
+        }
+      ],
+      "verify_started": "2026-11-08T15:00:02+01:00"
     },
     {
       "id": "T-040",
@@ -6554,6 +6599,11 @@
           "t": "2026-11-08T14:01:37+01:00",
           "by": "consultor",
           "msg": "8-nov: referencia alineada con la métrica; el ensayo cuadra. Falta solo grabar."
+        },
+        {
+          "t": "2026-11-08T14:24:59+01:00",
+          "by": "consultor",
+          "msg": "8-nov: maqueta simulada (docs/media/demo-minima-maqueta.gif, con aviso rojo) subida solo como vista previa. Mañana ~9:00: python scripts/demo/record_demo.py y borrar la maqueta. No enlazar la maqueta desde el README."
         }
       ]
     },
@@ -16618,6 +16668,51 @@
         }
       ],
       "rank": 5
+    },
+    {
+      "id": "T-212",
+      "title": "Agente: poder usar GitHub Models como proveedor gratuito",
+      "owner": "desarrollador",
+      "status": "next",
+      "priority": "media",
+      "estimate_min": 45.0,
+      "actual_min": 1.8,
+      "auto": false,
+      "manual": "Crear un token personal de GitHub con permiso de modelos y ponerlo en .env (GITHUB_MODELS_TOKEN). No lo pegues en el chat.",
+      "desc": "Hoy el agente solo funciona con Gemini o Claude, y el cupo gratuito de Gemini se agota o se satura. Se propone que se pueda enchufar cualquier modelo: un proveedor genérico compatible con OpenAI, que se configura solo con tres valores (URL base, clave y nombre del modelo). Con eso valen GitHub Models, Groq, OpenRouter, Mistral, OpenAI y servidores locales (Ollama, el proxy LiteLLM propio). Cómo sabremos si funciona: cambiando solo esos valores en .env, ./mk ask contesta la pregunta de las marcas con las cifras de evals/demo/expected.json, probado con GitHub Models, y los tests cubren el resto con un modelo simulado.\n## Técnico\nTítulo corto: proveedor genérico OpenAI-compatible (la tarjeta nació para GitHub Models). Spring AI: starter openai; AGENT_PROVIDER=openai, AGENT_BASE_URL, AGENT_API_KEY (alias por proveedor opcional), AGENT_MODEL; selección por spring.ai.model.chat como hoy; variables en compose.yaml y .env.example; documentar recetas por proveedor en la wiki (agente.md). Verificar en documentación oficial: llamada a herramientas, límites gratuitos y contexto (~8000 tokens por pregunta). Mantener el aviso de cupo agotado (Outcome.QUOTA) y el tope de coste para cualquier proveedor. Tocar compose.yaml: pasar tests de contenedores. Primera prueba real: GitHub Models con GITHUB_MODELS_TOKEN en .env (manual del responsable).",
+      "deps": [],
+      "created": "2026-11-08T14:57:38+01:00",
+      "updated": "2026-11-08T15:00:01+01:00",
+      "started_at": "2026-11-08T14:58:11+01:00",
+      "finished_at": "2026-11-08T15:00:01+01:00",
+      "log": [
+        {
+          "t": "2026-11-08T14:57:38+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        },
+        {
+          "t": "2026-11-08T14:57:57+01:00",
+          "by": "consultor",
+          "msg": "descripción reescrita"
+        },
+        {
+          "t": "2026-11-08T14:57:57+01:00",
+          "by": "consultor",
+          "msg": "Alcance ampliado por la responsable: cualquier modelo, no solo GitHub Models."
+        },
+        {
+          "t": "2026-11-08T14:58:11+01:00",
+          "by": "consultor",
+          "msg": "Prioridad máxima por la responsable; lanzada al desarrollador en su propia copia (worktree)"
+        },
+        {
+          "t": "2026-11-08T15:00:01+01:00",
+          "by": "runner",
+          "msg": "interrumpida (runner reiniciado); se reintentará"
+        }
+      ],
+      "rank": 1
     }
   ],
   "runners": {

@@ -48,9 +48,47 @@ final class RollbackSnapshot implements FixAction {
     }
 
     @Override
-    public String expectedEffect(Map<String, Object> params) {
-        return "The table " + params.get("namespace") + "." + params.get("table") + " goes back to snapshot "
+    public String expectedEffect(Map<String, Object> params) throws SQLException {
+        String base = "The table " + params.get("namespace") + "." + params.get("table") + " goes back to snapshot "
                 + params.get("snapshotId") + ": rows written after it are no longer visible.";
+        long target = whole(params.get("snapshotId"));
+        var snapshots = reader.snapshots((String) params.get("namespace"), (String) params.get("table"));
+        var chosen = snapshots.stream().filter(s -> s.snapshotId() == target).findFirst().orElse(null);
+        if (chosen == null) {
+            return base;
+        }
+        var discarded = snapshots.stream().filter(s -> s.sequenceNumber() > chosen.sequenceNumber()).toList();
+        if (discarded.isEmpty()) {
+            return base + " It is already the current snapshot: nothing is lost.";
+        }
+        long written = 0;
+        StringBuilder list = new StringBuilder();
+        for (var s : discarded) {
+            long added = number(s.summary().get("added-records"));
+            long deleted = number(s.summary().get("deleted-records"));
+            if ("append".equals(s.operation()) || "overwrite".equals(s.operation())) {
+                written += added;
+            }
+            list.append(list.length() == 0 ? "" : ", ").append(s.snapshotId()).append(" (").append(s.operation())
+                    .append(" +").append(added).append(" -").append(deleted).append(")");
+        }
+        long rowsNow = number(snapshots.get(snapshots.size() - 1).summary().get("total-records"));
+        long rowsThen = number(chosen.summary().get("total-records"));
+        StringBuilder out = new StringBuilder(base).append(" Snapshots discarded: ").append(list)
+                .append(". Rows in the table: ").append(rowsNow).append(" now, ").append(rowsThen).append(" after the rollback.");
+        if (written > 0) {
+            out.append(" WARNING: ").append(written).append(" rows were added by writes after that snapshot and will be lost;"
+                    + " check they are not good data before approving.");
+        }
+        return out.toString();
+    }
+
+    private static long number(String value) {
+        try {
+            return value == null ? 0 : Long.parseLong(value.strip());
+        } catch (NumberFormatException e) {
+            return 0;
+        }
     }
 
     @Override
