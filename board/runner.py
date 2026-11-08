@@ -188,7 +188,7 @@ def pick(b, lane="all", ci_red=False):
     """Siguiente tarea ejecutable: (tarea, modo) con modo 'verify' o 'work'. Las verificaciones van al carril measure.
     Con la CI en rojo (`ci_red`) solo se cogen tarjetas de arreglo de CI (título con «CI»)."""
     # tareas que necesitan algo del responsable (manual) solo corren cuando el responsable las mueve a Próximo
-    ok = lambda t: t["owner"] != "consultor" and t.get("kind") != "contrib" and bd.deps_done(b, t) and (t.get("auto", True) or t["status"] == "next") and (not ci_red or is_ci_card(t))
+    ok = lambda t: t["owner"] != "consultor" and t.get("kind") != "contrib" and not (t.get("pr") and t["status"] == "review") and bd.deps_done(b, t) and (t.get("auto", True) or t["status"] == "next") and (not ci_red or is_ci_card(t))
     key = lambda t: (bd.rank_of(t), t["id"])
     rev = sorted([t for t in b["tasks"] if t["status"] == "review" and ok(t)], key=key) if lane in ("all", "measure") else []
     if rev:
@@ -394,6 +394,119 @@ def commit_worktree(wt, msg):
     pending = git("diff", "--cached", "--quiet", cwd=wt)
     if pending and pending.returncode:
         git_retry("commit", "-q", "-m", msg, cwd=wt)
+
+
+def gh(*args, cwd=None):
+    """Llama a `gh`; None si no está o no responde."""
+    try:
+        return subprocess.run(["gh", *args], cwd=cwd or ROOT, capture_output=True, text=True, encoding="utf-8",
+                              errors="replace", timeout=120)
+    except (OSError, subprocess.SubprocessError):
+        return None
+
+
+def publish_pr(wt, t):
+    """Empuja la rama de la tarjeta y abre el PR a develop (si la tarjeta ya tiene uno, solo se actualiza la rama).
+    Devuelve el número del PR; lanza GitError si algo falla."""
+    br = branch_name(t)
+    git_retry("push", "-q", "-u", "origin", br, cwd=wt)
+    if t.get("pr"):
+        return t["pr"]
+    r = gh("pr", "create", "--base", "develop", "--head", br, "--title", f"{t['title']} ({t['id']})"[:200],
+           "--body", f"Entrega de {t['id']}.\n\n{(t.get('desc') or '')[:600]}")
+    m = re.search(r"/pull/(\d+)", r.stdout) if r is not None and r.returncode == 0 else None
+    if not m:
+        raise GitError(f"gh pr create: {((r.stderr or r.stdout) if r is not None else 'gh no responde').strip()[:300]}")
+    return int(m.group(1))
+
+
+def pr_status(n):
+    """'merged' | 'closed' | 'missing' | 'green' | 'red' | 'pending' para el PR n."""
+    v = gh("pr", "view", str(n), "--json", "state")
+    if v is None:
+        return "pending"
+    if v.returncode != 0:
+        return "missing" if re.search(r"no pull requests found|Could not resolve", v.stderr or "", re.I) else "pending"
+    try:
+        state = json.loads(v.stdout).get("state")
+    except ValueError:
+        return "pending"
+    if state in ("MERGED", "CLOSED"):
+        return state.lower()
+    c = gh("pr", "checks", str(n), "--json", "state")
+    try:
+        states = [x.get("state") for x in json.loads(c.stdout)] if c is not None and c.stdout.strip() else []
+    except ValueError:
+        states = []
+    if any(s in ("FAILURE", "ERROR", "TIMED_OUT", "CANCELLED", "STARTUP_FAILURE") for s in states):
+        return "red"
+    if states and all(s in ("SUCCESS", "SKIPPED", "NEUTRAL") for s in states):
+        return "green"
+    return "pending"
+
+
+def failed_log(t, limit=1500):
+    """Cola del log del job que falló en la rama de la tarjeta (mejor esfuerzo)."""
+    r = gh("run", "list", "--branch", branch_name(t), "--status", "failure", "--limit", "1", "--json", "databaseId")
+    try:
+        rid = json.loads(r.stdout)[0]["databaseId"]
+    except (AttributeError, ValueError, IndexError, KeyError, TypeError):
+        return "(sin log de la CI)"
+    lg = gh("run", "view", str(rid), "--log-failed")
+    return (lg.stdout or lg.stderr or "")[-limit:].strip() if lg is not None else "(sin log de la CI)"
+
+
+def commit_board(msg):
+    """Commit del panel directo a develop: pull --rebase y push (solo toca board/, que paths-ignore excluye de la CI)."""
+    try:
+        git_retry("add", "--", "board/board.json")
+        pending = git("diff", "--cached", "--quiet", "--", "board/board.json")
+        if pending and pending.returncode:
+            git_retry("commit", "-q", "-m", msg, "--", "board/board.json")
+        git("pull", "--rebase", "--autostash", "-q")
+        git("push", "-q")
+    except GitError as e:
+        print(f"  ⚠ panel sin guardar: {e}")
+
+
+def check_prs():
+    """Revisa los PR abiertos: verde → squash merge y done; rojo → next con el motivo (cuenta en MAX_REJECTS);
+    pendiente → nada. Devuelve cuántas tarjetas cambiaron."""
+    changed = 0
+    for t in [x for x in bd.load()["tasks"] if x.get("pr") and x["status"] == "review"]:
+        tid, n = t["id"], t["pr"]
+        st = pr_status(n)
+        if st == "pending":
+            continue
+        if st == "green":
+            m = gh("pr", "merge", str(n), "--squash", "--delete-branch")
+            if m is None or (m.returncode != 0 and pr_status(n) != "merged"):
+                continue  # se reintenta en la siguiente vuelta
+            st = "merged"
+        if st == "merged":
+            wtp = WT_ROOT / tid
+            if wtp.exists():
+                git("worktree", "remove", "--force", str(wtp))
+            bd.update(lambda b: bd.set_status(b, bd.task(b, tid), "done", "runner", f"PR #{n} fusionado con la CI en verde"))
+        else:
+            why = failed_log(t) if st == "red" else f"PR #{n} {'cerrado' if st == 'closed' else 'inexistente'}"
+
+            def back(b):
+                x = bd.task(b, tid)
+                x["owner"] = "desarrollador" if x["owner"] == "tester" else x["owner"]
+                x.setdefault("runs", []).append(dict(agent="runner", mode="pr", at=now(), verdict="pr_fail", summary=why[:200]))
+                fails = sum(1 for r in x["runs"] if r.get("verdict") == "pr_fail")
+                if fails >= MAX_REJECTS:
+                    bd.set_status(b, x, "blocked", "runner", f"Bloqueada tras {fails} PR rechazados. Último motivo: {why[:300]}")
+                else:
+                    if st != "red":
+                        x.pop("pr", None)  # PR cerrado o borrado: el siguiente intento abre otro
+                    bd.set_status(b, x, "next", "runner", f"CI del PR #{n}: {st}. {why}")
+            bd.update(back)
+        changed += 1
+    if changed:
+        commit_board("chore(board): PR results")
+    return changed
 
 
 MAX_REJECTS = 3  # rechazos seguidos del tester tras los que la tarjeta se bloquea (T-192)
@@ -793,6 +906,8 @@ def main():
                     break
                 time.sleep(5)
                 continue
+            if PR_MODE and not o.dry_run and check_prs():
+                pass
             b = bd.load()
             if bd.lane_state(b, LANE).get("pause_reason"):  # reanudado: el motivo de la pausa anterior ya no vale
                 set_runner(pause_reason=None)
@@ -850,6 +965,17 @@ def main():
                 bd.update(free)
             if wt:
                 save_worktree(wt, tid, f"chore(runner): {tid} {verdict} by {agent}", new)
+                if new == "done":  # entrega completa: PR a develop; done solo cuando se fusione
+                    try:
+                        n = publish_pr(wt, bd.task(bd.load(), tid))
+                        bd.update(lambda b: (bd.task(b, tid).update(pr=n),
+                                             bd.set_status(b, bd.task(b, tid), "review", "runner", f"PR #{n} abierto; espera a la CI")))
+                        new = "review"
+                    except GitError as e:
+                        print(f"  ⚠ {tid} sin PR: {e}")
+                        bd.update(lambda b: bd.set_status(b, bd.task(b, tid), "next", "runner", f"⚠ no se pudo abrir el PR: {e}"))
+                        new = "next"
+                commit_board(f"chore(board): {tid}")
             else:
                 save(before, tid, f"chore(runner): {tid} {verdict} by {agent}", new)
             print(f"  → {new} en {r['secs'] / 60:.1f} min · {summary}")

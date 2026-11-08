@@ -653,6 +653,95 @@ def test_permiso_de_tests_solo_las_formas_previstas():
     assert {"Bash(./mk test)", "Bash(./mk test MODULE=*)", "Bash(./mk test-board)"} <= allowed
 
 
+def _pr_card(status="review", pr=7):
+    def f(b):
+        t = runner.bd.new_task(b, "Entrega X", "desarrollador", 5, prio="alta", desc="d", by="test")
+        t["pr"] = pr
+        runner.bd.set_status(b, t, status, "test")
+        return t["id"]
+    return runner.bd.update(f)
+
+
+def _fake_gh(monkeypatch, status, calls):
+    monkeypatch.setattr(runner, "pr_status", lambda n: status)
+    monkeypatch.setattr(runner, "failed_log", lambda t, **k: "boom en el job")
+    monkeypatch.setattr(runner, "commit_board", lambda m: calls.append(("board", m)))
+    monkeypatch.setattr(runner, "git", lambda *a, **k: calls.append(("git", a)))
+    monkeypatch.setattr(runner, "gh", lambda *a, **k: calls.append(("gh", a)) or subprocess.CompletedProcess(a, 0, "", ""))
+
+
+def test_check_prs_verde_fusiona_y_cierra(monkeypatch):
+    calls = []
+    tid = _pr_card()
+    _fake_gh(monkeypatch, "green", calls)
+    # tras el merge, pr_status ya diría merged; aquí basta con rc 0
+    assert runner.check_prs() == 1
+    assert ("gh", ("pr", "merge", "7", "--squash", "--delete-branch")) in calls
+    assert runner.bd.task(runner.bd.load(), tid)["status"] == "done"
+
+
+def test_check_prs_rojo_vuelve_a_next_con_motivo_y_cuenta(monkeypatch):
+    calls = []
+    tid = _pr_card()
+    _fake_gh(monkeypatch, "red", calls)
+    assert runner.check_prs() == 1
+    t = runner.bd.task(runner.bd.load(), tid)
+    assert t["status"] == "next" and t["pr"] == 7 and not any(c[0] == "gh" for c in calls)
+    assert "boom en el job" in t["history"][-1]["msg"] if "history" in t else True
+    for _ in range(runner.MAX_REJECTS - 1):  # rojo repetido → bloqueada
+        runner.bd.update(lambda b: runner.bd.set_status(b, runner.bd.task(b, tid), "review", "test"))
+        runner.check_prs()
+    assert runner.bd.task(runner.bd.load(), tid)["status"] == "blocked"
+
+
+def test_check_prs_pendiente_no_hace_nada_y_pick_ignora_la_tarjeta(monkeypatch):
+    calls = []
+    tid = _pr_card()
+    _fake_gh(monkeypatch, "pending", calls)
+    assert runner.check_prs() == 0 and not calls
+    b = runner.bd.load()
+    assert runner.bd.task(b, tid)["status"] == "review"
+    assert runner.pick(b, "measure")[0] is None or runner.pick(b, "measure")[0]["id"] != tid
+
+
+def test_check_prs_pr_inexistente_vuelve_a_next_sin_pr(monkeypatch):
+    calls = []
+    tid = _pr_card()
+    _fake_gh(monkeypatch, "missing", calls)
+    runner.check_prs()
+    t = runner.bd.task(runner.bd.load(), tid)
+    assert t["status"] == "next" and "pr" not in t
+
+
+def test_pr_status_interpreta_checks(monkeypatch):
+    def fake(view, checks):
+        def g(*a, **k):
+            out = view if a[1] == "view" else checks
+            return subprocess.CompletedProcess(a, 0, out, "")
+        return g
+    st = lambda checks: (monkeypatch.setattr(runner, "gh", fake('{"state":"OPEN"}', checks)), runner.pr_status(1))[1]
+    assert st('[{"state":"SUCCESS"},{"state":"SKIPPED"}]') == "green"
+    assert st('[{"state":"SUCCESS"},{"state":"FAILURE"}]') == "red"
+    assert st('[{"state":"SUCCESS"},{"state":"PENDING"}]') == "pending"
+    assert st("") == "pending"
+    monkeypatch.setattr(runner, "gh", fake('{"state":"MERGED"}', ""))
+    assert runner.pr_status(1) == "merged"
+
+
+def test_publish_pr_empuja_y_abre(monkeypatch):
+    calls = []
+    monkeypatch.setattr(runner, "git_retry", lambda *a, **k: calls.append(a))
+    monkeypatch.setattr(runner, "gh", lambda *a, **k: subprocess.CompletedProcess(
+        a, 0, "https://github.com/o/r/pull/42\n", ""))
+    t = {"id": "T-9", "title": "Algo", "desc": "d"}
+    assert runner.publish_pr("wt", t) == 42
+    assert calls[0][:3] == ("push", "-q", "-u") and calls[0][-1] == runner.branch_name(t) or calls[0][-2] == runner.branch_name(t)
+    monkeypatch.setattr(runner, "gh", lambda *a, **k: subprocess.CompletedProcess(a, 1, "", "nope"))
+    with pytest.raises(runner.GitError):
+        runner.publish_pr("wt", t)
+    assert runner.publish_pr("wt", {**t, "pr": 5}) == 5  # ya tiene PR: solo empuja
+
+
 def test_runner_no_carga_mcp_del_proyecto():
     import inspect
     assert "--strict-mcp-config" in inspect.getsource(runner.run_claude)

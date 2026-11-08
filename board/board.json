@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-08T13:09:58+01:00",
+  "updated": "2026-11-08T13:12:04+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -34,13 +34,13 @@
   "runner": {
     "enabled": true,
     "state": "working",
-    "current": "T-198",
-    "heartbeat": "2026-11-08T13:08:20+01:00",
-    "message": "desarrollador con T-198",
-    "pid": 1700,
-    "live": "live-T-198-desarrollador-20261108-130820.jsonl",
+    "current": "T-199",
+    "heartbeat": "2026-11-08T13:10:06+01:00",
+    "message": "desarrollador con T-199",
+    "pid": 3576,
+    "live": "live-T-199-desarrollador-20261108-131006.jsonl",
     "agent": "desarrollador",
-    "started": "2026-11-08T13:08:20+01:00"
+    "started": "2026-11-08T13:10:06+01:00"
   },
   "agents": [
     {
@@ -15919,10 +15919,10 @@
       "id": "T-199",
       "title": "Abrir un PR por entrega y fusionarlo solo cuando la CI esté en verde",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "done",
       "priority": "media",
       "estimate_min": 80.0,
-      "actual_min": null,
+      "actual_min": 2.0,
       "auto": true,
       "manual": null,
       "desc": "Hoy el runner sube lo terminado directamente a develop y la CI se entera después. Se propone que suba la rama de la entrega, abra un PR corto a develop y lo fusione solo si la CI queda en verde; si queda en rojo, la tarjeta vuelve con el motivo.\nCómo sabremos si funciona: una entrega completa llega a develop mediante un PR con la CI en verde, y una con la CI en rojo vuelve a Próximo con el motivo sin tocar develop.\n## Técnico\nDiseño: docs/pr-workflow.md (decisión 5). runner.py: tras el agente, push de la rama, gh pr create, campo pr en la tarjeta; al inicio de cada vuelta revisar PR abiertos con gh pr checks/view: verde, gh pr merge --squash --delete-branch, quitar worktree, done; rojo, next con el log del job y cuenta en MAX_REJECTS (T-192); pendiente, nada. Commits de panel directos a develop con git pull --rebase antes del push. Solo bajo PR_MODE. Tests con gh y git simulados.",
@@ -15930,14 +15930,42 @@
         "T-198"
       ],
       "created": "2026-11-07T20:44:31+01:00",
-      "updated": "2026-11-07T20:44:31+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-08T13:12:04+01:00",
+      "started_at": "2026-11-08T13:10:06+01:00",
+      "finished_at": "2026-11-08T13:12:04+01:00",
       "log": [
         {
           "t": "2026-11-07T20:44:31+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-08T13:10:06+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-08T13:12:04+01:00",
+          "by": "runner",
+          "msg": "Sin verificación aparte del tester (no toca seguridad, datos reales ni punta a punta); la CI revisa."
+        },
+        {
+          "t": "2026-11-08T13:12:04+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: PR por entrega con merge solo en verde y vuelta a Próximo con el log si la CI falla, bajo PR_MODE, con tests simulados en verde."
+        }
+      ],
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-08T13:12:04+01:00",
+          "min": 2.0,
+          "turns": 19,
+          "tokens": 356833,
+          "cost_usd": 0.2750198,
+          "verdict": "review",
+          "summary": "PR por entrega con merge solo en verde y vuelta a Próximo con el log si la CI falla, bajo PR_MODE, con tests simulados en verde."
         }
       ]
     },
