@@ -22,7 +22,24 @@ SECRET = re.compile(r"(?i)(key|token|secret)\s*[=:]\s*\S{8,}")
 CACHE = ROOT / "docs/media/_capture.json"  # salida cruda de la última ejecución real; no se sube
 
 
-def run(question, replay):
+MOCK = {
+    QUESTIONS[0]: ["There are 50,000 rows in the events table.", "Tools used: `run_query`"],
+    QUESTIONS[1]: [
+        "The five brands with the highest purchase revenue are:",
+        "1. **synth-nimbora**: 702,942.00",
+        "2. **synth-velkaro**: 371,961.23",
+        "3. **synth-ostrina**: 285,923.12",
+        "4. **synth-quorvo**: 280,932.97",
+        "5. **synth-lumbrel**: 212,114.06",
+        "Tools used: `list_metrics`, `get_metric` (metric: `top_brands`).",
+    ],
+}
+BANNER = "MAQUETA SIMULADA - NO ES SALIDA REAL (se sustituira por la grabacion real)"
+
+
+def run(question, replay, mock=False):
+    if mock:
+        return MOCK[question]
     cache = json.loads(CACHE.read_text(encoding="utf-8")) if CACHE.exists() else {}
     if replay and question in cache:
         raw = cache[question]
@@ -53,10 +70,13 @@ def wrap(lines):
 
 def main():
     ap = argparse.ArgumentParser()
+    ap.add_argument("--mock", action="store_true", help="maqueta con texto fijo y aviso visible; no llama al modelo")
     ap.add_argument("--replay", action="store_true", help="reusa la última salida real guardada (no gasta cupo del modelo)")
     ap.add_argument("--output", type=Path, default=ROOT / "docs/media/demo-minima.gif")
     args = ap.parse_args()
     out = args.output
+    if args.mock and out.name == "demo-minima.gif":
+        out = out.with_name("demo-minima-maqueta.gif")
     font = next((ImageFont.truetype(f, FS) for f in ("C:/Windows/Fonts/consola.ttf", "DejaVuSansMono.ttf") if Path(f).exists() or "/" not in f), ImageFont.load_default())
     cw, ch = int(font.getlength("M")), FS + 6
     W, H = COLS * cw + 24, ROWS * ch + 24
@@ -65,8 +85,11 @@ def main():
     def snap(ms):
         im = Image.new("RGB", (W, H), BG)
         d = ImageDraw.Draw(im)
-        for i, (txt, col) in enumerate(screen[-ROWS:]):
-            d.text((12, 12 + i * ch), txt, font=font, fill=col)
+        if args.mock:
+            d.rectangle((0, 0, W, ch + 8), fill=(150, 40, 40))
+            d.text((12, 6), BANNER, font=font, fill=(255, 255, 255))
+        for i, (txt, col) in enumerate(screen[-(ROWS - 2):]):
+            d.text((12, 12 + ch + 6 + i * ch), txt, font=font, fill=col)
         frames.append(im.quantize(colors=32))
         durs.append(ms)
 
@@ -79,7 +102,7 @@ def main():
             screen.append((cmd[:n], PROMPT)); snap(40); screen[:] = base
         screen.append((cmd, PROMPT)); snap(500)
         screen.append(("  ...(el agente piensa y consulta; espera recortada)", DIM)); snap(900); screen.pop()
-        for l in wrap(run(q, args.replay)):
+        for l in wrap(run(q, args.replay, args.mock)):
             col = DIM if l.startswith("[usage]") else FG
             screen.append((l, col)); snap(160)
         snap(2200)
