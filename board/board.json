@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-08T13:51:52+01:00",
+  "updated": "2026-11-08T14:01:37+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -34,13 +34,13 @@
   "runner": {
     "enabled": true,
     "state": "working",
-    "current": "T-211",
-    "heartbeat": "2026-11-08T13:46:58+01:00",
-    "message": "desarrollador con T-211",
+    "current": "T-028",
+    "heartbeat": "2026-11-08T13:52:00+01:00",
+    "message": "desarrollador con T-028",
     "pid": 6724,
-    "live": "live-T-211-desarrollador-20261108-134658.jsonl",
+    "live": "live-T-028-desarrollador-20261108-135200.jsonl",
     "agent": "desarrollador",
-    "started": "2026-11-08T13:46:58+01:00"
+    "started": "2026-11-08T13:52:00+01:00"
   },
   "agents": [
     {
@@ -64,8 +64,8 @@
       "name": "Desarrollador",
       "role": "Implementa las tareas",
       "color": "#7aa2f7",
-      "status": "idle",
-      "current": null
+      "status": "working",
+      "current": "T-028"
     },
     {
       "id": "tester",
@@ -2515,7 +2515,7 @@
       "id": "T-028",
       "title": "MCP: servidor en el compose y configuración para Claude Desktop",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "doing",
       "priority": "media",
       "estimate_min": 15.0,
       "actual_min": null,
@@ -2529,8 +2529,8 @@
         "T-026"
       ],
       "created": "2026-11-02T11:37:44+01:00",
-      "updated": "2026-11-07T18:15:37+01:00",
-      "started_at": null,
+      "updated": "2026-11-08T13:51:59+01:00",
+      "started_at": "2026-11-08T13:51:59+01:00",
       "finished_at": null,
       "log": [
         {
@@ -2547,6 +2547,11 @@
           "t": "2026-11-02T17:37:13+01:00",
           "by": "arquitecto",
           "msg": "descripción reescrita"
+        },
+        {
+          "t": "2026-11-08T13:51:59+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
         }
       ],
       "rank": 900
@@ -6521,6 +6526,11 @@
           "t": "2026-11-08T13:13:21+01:00",
           "by": "consultor",
           "msg": "8-nov: ensayo NO cuadra (importes distintos, sin run_query). No grabar. Ver nueva tarjeta."
+        },
+        {
+          "t": "2026-11-08T14:01:37+01:00",
+          "by": "consultor",
+          "msg": "8-nov: referencia alineada con la métrica; el ensayo cuadra. Falta solo grabar."
         }
       ]
     },
@@ -16548,6 +16558,16 @@
           "t": "2026-11-08T13:51:52+01:00",
           "by": "desarrollador",
           "msg": "REVIEW: prompt reforzado para que las preguntas con reglas de cálculo propias usen run_query; tests de `agent` en verde, falta comprobar `./mk ask` con un modelo real (el proveedor no tenía cuota)"
+        },
+        {
+          "t": "2026-11-08T13:57:00+01:00",
+          "by": "consultor",
+          "msg": "Causa (consultor, 8-nov): semantic/.../top_brands.yaml usa DISTINCT + price>0 + user_session no vacía; evals/demo/expected.json suma duplicados, negativos y ceros. No es fallo del agente: dos definiciones. Propuesta: alinear expected.json con la métrica (docs/metrics.md) y recalcular. Pendiente de OK de la responsable."
+        },
+        {
+          "t": "2026-11-08T14:01:37+01:00",
+          "by": "consultor",
+          "msg": "Hecha opción A: expected.json recalculado con las reglas de la métrica (dedup exacto, price>0, sesión no vacía) en reference.py independiente; coincide con el agente. 7 tests en verde."
         }
       ],
       "runs": [

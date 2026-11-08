@@ -20,8 +20,9 @@ spec.loader.exec_module(reference)
 
 
 def write_sample(path, events):
-    """events: (event_type, brand, price). El resto de columnas no influye."""
-    lines = [HEADER] + [f"2024-03-01 00:00:00 UTC,{t},1,2,a.b,{b},{p},3,s" for t, b, p in events]
+    """events: (event_type, brand, price[, session]). La sesión por defecto es única, así que no hay duplicados."""
+    lines = [HEADER] + [f"2024-03-01 00:00:00 UTC,{e[0]},1,2,a.b,{e[1]},{e[2]},3,{e[3] if len(e) > 3 else f's{i}'}"
+                        for i, e in enumerate(events)]
     path.write_bytes(gzip.compress(("\n".join(lines) + "\n").encode("utf-8")))
     return path
 
@@ -32,23 +33,24 @@ def top(result):
 
 def test_caso_a_mano(tmp_path):
     sample = write_sample(tmp_path / "s.csv.gz", [
-        ("purchase", "acme", "10.10"),
-        ("purchase", "acme", "10.10"),  # duplicado exacto: cuenta dos veces
+        ("purchase", "acme", "10.10", "d"),
+        ("purchase", "acme", "10.10", "d"),  # duplicado exacto: cuenta una vez
         ("purchase", "acme", "0.10"),
         ("purchase", "beta", "30.00"),
-        ("purchase", "beta", "-5.00"),  # negativo: resta
+        ("purchase", "beta", "-5.00"),  # negativo: no cuenta
+        ("purchase", "zeta", "7.00", ""),  # sin sesión: no cuenta
         ("purchase", "", "999.00"),  # sin marca: fuera del ranking, pero es una fila
         ("view", "gamma", "1000.00"),  # no es compra
         ("cart", "gamma", "1000.00"),  # no es compra
         ("purchase", "delta", "0.00"),
     ])
     result = reference.compute(sample)
-    assert result["total_rows"] == 9
-    assert top(result) == [("beta", "25.00"), ("acme", "20.30"), ("delta", "0.00")]
+    assert result["total_rows"] == 10
+    assert top(result) == [("beta", "30.00"), ("acme", "10.20")]
 
 
 def test_suma_exacta_sin_error_de_coma_flotante(tmp_path):
-    sample = write_sample(tmp_path / "s.csv.gz", [("purchase", "acme", "0.10")] * 3)
+    sample = write_sample(tmp_path / "s.csv.gz", [("purchase", "acme", "0.10")] * 3)  # sesiones distintas
     assert top(reference.compute(sample)) == [("acme", "0.30")]
 
 
@@ -70,7 +72,7 @@ def test_el_fichero_subido_es_lo_que_sale_de_recalcular():
 
 def test_las_reglas_estan_documentadas_en_el_fichero():
     rules = " ".join(json.loads(EXPECTED.read_text(encoding="utf-8"))["rules"])
-    assert "duplicados" in rules and "marca vacía" in rules
+    assert "duplicados" in rules and "marca vacía" in rules and "sesión" in rules
 
 
 def test_elemento_a_elemento_contra_recalculo_en_crudo():
@@ -79,10 +81,10 @@ def test_elemento_a_elemento_contra_recalculo_en_crudo():
     assert lines[0] == HEADER
     assert '"' not in "".join(lines)
     revenue = defaultdict(Fraction)
-    for line in lines[1:]:
+    for line in dict.fromkeys(lines[1:]):  # sin duplicados exactos, conservando el orden
         fields = line.split(",")
         assert len(fields) == 9
-        if fields[1] == "purchase" and fields[5] != "":
+        if fields[1] == "purchase" and fields[5] != "" and fields[8] != "" and Fraction(fields[6]) > 0:
             revenue[fields[5]] += Fraction(fields[6])
     raw = sorted(revenue.items(), key=lambda item: (-item[1], item[0]))[:5]
 

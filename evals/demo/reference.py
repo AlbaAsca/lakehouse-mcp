@@ -3,9 +3,10 @@
 Se calcula desde la muestra, solo con la biblioteca estándar y sin nada de la aplicación ni de la base de datos.
 
 Reglas:
-1. Sin quitar duplicados: T-015 exige que lleguen todas las filas, así que cada fila repetida cuenta y suma.
-2. Se excluyen las compras con marca vacía: «sin marca» no es una marca que pueda salir en el ranking.
-3. Se suma el precio tal cual, también los negativos y los cero que trae la muestra (se pide la suma de price, sin filtrar).
+Mismas compras válidas que la métrica top_brands (docs/metrics.md), calculadas aquí aparte y sin usar su YAML:
+1. Se quitan los duplicados exactos (filas idénticas en todas las columnas): cada fila distinta cuenta una vez.
+2. Solo cuentan compras con precio mayor que 0 y con sesión (user_session) no vacía.
+3. Se excluyen las compras con marca vacía: «sin marca» no es una marca que pueda salir en el ranking.
 4. Un empate en ingresos se resuelve por nombre de marca, para que el resultado no dependa del orden de lectura.
 
 Uso: python evals/demo/reference.py [--input muestra.csv.gz] [--output expected.json]
@@ -24,9 +25,9 @@ DEFAULT_INPUT = ROOT / "testdata" / "synthetic-events.csv.gz"
 DEFAULT_OUTPUT = Path(__file__).resolve().with_name("expected.json")
 TOP = 5
 RULES = [
-    "Sin quitar duplicados: T-015 exige que lleguen todas las filas, así que cada fila repetida cuenta y suma.",
+    "Se quitan los duplicados exactos (filas idénticas en todas las columnas): cada fila distinta cuenta una vez.",
+    "Solo cuentan compras con precio mayor que 0 y con sesión (user_session) no vacía.",
     "Se excluyen las compras con marca vacía.",
-    "Se suma el precio tal cual, incluidos los negativos y los cero de la muestra.",
     "Un empate en ingresos se resuelve por nombre de marca.",
 ]
 
@@ -35,10 +36,15 @@ def compute(sample):
     """Devuelve el contenido de expected.json para un CSV comprimido con gzip. Decimal: sumar float acumularía error."""
     total_rows = 0
     revenue = defaultdict(Decimal)
+    seen = set()
     with gzip.open(sample, "rt", encoding="utf-8", newline="") as f:
         for row in csv.DictReader(f):
             total_rows += 1
-            if row["event_type"] == "purchase" and row["brand"]:
+            key = tuple(row.values())
+            if key in seen:
+                continue
+            seen.add(key)
+            if row["event_type"] == "purchase" and row["brand"] and row["user_session"] and Decimal(row["price"]) > 0:
                 revenue[row["brand"]] += Decimal(row["price"])
     ranking = sorted(revenue.items(), key=lambda item: (-item[1], item[0]))[:TOP]
     return {
