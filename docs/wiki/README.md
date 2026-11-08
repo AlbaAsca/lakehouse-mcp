@@ -33,7 +33,7 @@ Cada página empieza en lenguaje llano y avanza hasta el detalle técnico. Puede
 | ✅ | Catálogo persistente, imagen `tools`, muestra sintética | [Polaris](componentes/polaris.md), [Postgres](componentes/postgres.md), [Imagen tools](componentes/imagen-tools.md) |
 | ✅ | Conector hacia Iceberg | [Kafka Connect](componentes/kafka-connect.md) |
 | 🚧 | Productor y ingesta de principio a fin | [Productor](componentes/productor.md) |
-| ✅ | Servidor MCP: nueve herramientas, validador de SQL y roles por clave | [Servidor MCP](componentes/servidor-mcp.md), [DuckDB](componentes/duckdb.md#dentro-del-servidor-mcp) |
+| ✅ | Servidor MCP: nueve herramientas, validador de SQL, lectura del catálogo y roles por clave | [Servidor MCP](componentes/servidor-mcp.md), [DuckDB](componentes/duckdb.md#dentro-del-servidor-mcp) |
 | ✅ | Capa semántica: métricas en YAML y `get_metric` | [Capa semántica](componentes/capa-semantica.md) |
 | 🟡 | Agente: contesta por MCP; ensayado con Gemini, falta el GIF real | [Agente](componentes/agente.md), [la demo](06-demo.md) |
 | 🟡 | Chaos y self-healing (hecho el ciclo de duplicados), seguridad (falta auditoría) | Planificado el resto: `./mk chaos` completo y `./mk demo` |
