@@ -31,10 +31,12 @@ test-board:
 # Needs the stack up and the real CSV in /data/raw. Kaggle may deliver the file zipped.
 seed:
 	test -f /data/raw/$(MONTH).csv || unzip -o /data/raw/$(MONTH).csv.zip -d /data/raw
+	rm -f producer/target/producer-*.jar
 	mvn -B -q -pl producer -am -DskipTests package
 	java -jar producer/target/producer-*.jar --input /data/raw/$(MONTH).csv --sample-rate $(SAMPLE) --speedup $(SPEEDUP)
 # Needs the stack up, nothing else: the synthetic sample is in the repo. All of it, without waiting.
 seed-sample:
+	rm -f producer/target/producer-*.jar
 	mvn -B -q -pl producer -am -DskipTests package
 	java -jar producer/target/producer-*.jar --input testdata/synthetic-events.csv.gz --sample-rate 1 --speedup 1e12
 	@echo "seed-sample: running it again duplicates the rows in the table (docker compose down -v starts clean)."
