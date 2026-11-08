@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-08T20:01:22+01:00",
+  "updated": "2026-11-08T20:12:04+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -17265,23 +17265,51 @@
       "id": "T-216",
       "title": "make chaos: duplicados y partición vacía sobre el stack real",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "done",
       "priority": "media",
       "estimate_min": 60.0,
-      "actual_min": null,
+      "actual_min": 10.6,
       "auto": true,
       "manual": null,
       "desc": "Hoy make chaos es un stub. Se conecta ./mk chaos SCENARIO=duplicates|empty-partition a la clase Chaos ya existente, ejecutada en el contenedor del mcp-server. Cómo sabremos si funciona: tras el comando, la tabla real muestra el fallo y el informe JSON da el snapshot previo. ## Técnico: Makefile target chaos (separar de evals) -> docker compose run mcp-server ChaosCommand $(SCENARIO) --table --day --percent; variables TABLE/DAY por defecto; error claro si SCENARIO vacío o desconocido; test de ChaosCommandTest para el parseo.",
       "deps": [],
       "created": "2026-11-08T19:36:58+01:00",
-      "updated": "2026-11-08T19:36:58+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-08T20:12:04+01:00",
+      "started_at": "2026-11-08T20:01:31+01:00",
+      "finished_at": "2026-11-08T20:12:04+01:00",
       "log": [
         {
           "t": "2026-11-08T19:36:58+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-08T20:01:31+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-08T20:12:04+01:00",
+          "by": "runner",
+          "msg": "Sin verificación aparte del tester (no toca seguridad, datos reales ni punta a punta); la CI revisa."
+        },
+        {
+          "t": "2026-11-08T20:12:04+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: `./mk chaos` conectado a ChaosCommand en el contenedor del `mcp-server`, con validación y 4 tests nuevos en verde; sin probar contra el stack real."
+        }
+      ],
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-08T20:12:04+01:00",
+          "min": 10.5,
+          "turns": 20,
+          "tokens": 340879,
+          "cost_usd": 0.2255504,
+          "verdict": "review",
+          "summary": "`./mk chaos` conectado a ChaosCommand en el contenedor del `mcp-server`, con validación y 4 tests nuevos en verde; sin probar contra el stack real."
         }
       ]
     },
@@ -17419,14 +17447,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-214",
-      "message": "desarrollador con T-214",
+      "current": "T-216",
+      "message": "desarrollador con T-216",
       "pid": 20400,
-      "heartbeat": "2026-11-08T19:47:58+01:00",
+      "heartbeat": "2026-11-08T20:01:32+01:00",
       "enabled": true,
       "agent": "desarrollador",
-      "started": "2026-11-08T19:47:58+01:00",
-      "live": "live-T-214-desarrollador-20261108-194758.jsonl",
+      "started": "2026-11-08T20:01:32+01:00",
+      "live": "live-T-216-desarrollador-20261108-200132.jsonl",
       "pause_reason": null
     }
   }

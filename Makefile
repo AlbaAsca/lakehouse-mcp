@@ -60,5 +60,13 @@ demo:
 	$(MAKE) ask Q="$(DEMO_Q)"
 	$(MAKE) chaos
 	$(MAKE) heal
-evals chaos:
+# Injects a failure into the real table: ./mk chaos SCENARIO=duplicates|empty-partition [TABLE=ns.table] [DAY=YYYY-MM-DD]
+# [PERCENT=10]. Prints the JSON report (with the snapshot before the damage). Runs in the mcp-server image.
+DAY ?= 2019-10-01
+PERCENT ?= 10
+chaos:
+	@test -n "$(SCENARIO)" || { echo 'Usage: ./mk chaos SCENARIO=duplicates|empty-partition [TABLE=ns.table] [DAY=YYYY-MM-DD] [PERCENT=10]' >&2; exit 2; }
+	@case "$(SCENARIO)" in duplicates|empty-partition) ;; *) echo "Unknown SCENARIO '$(SCENARIO)': use duplicates or empty-partition" >&2; exit 2;; esac
+	docker compose run --rm --build --no-deps --entrypoint java mcp-server -Xmx256m -Dloader.main=io.github.albaasca.lakehouse.mcp.ChaosCommand -cp /app/mcp-server.jar org.springframework.boot.loader.launch.PropertiesLauncher $(SCENARIO) --table $(TABLE) --day $(DAY) --percent $(PERCENT)
+evals:
 	@echo "$@: not implemented yet, see the board" && exit 1
