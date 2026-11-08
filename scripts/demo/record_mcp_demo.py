@@ -11,7 +11,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 ROOT = Path(__file__).resolve().parents[2]
 URL = "http://127.0.0.1:8090/mcp"
-COLS, ROWS, FS = 100, 27, 15
+COLS, ROWS, FS = 100, 30, 15
 BG, FG, PROMPT, DIM, OK, BAD, BLUE = (24, 26, 31), (220, 223, 228), (120, 200, 140), (130, 136, 148), (158, 206, 106), (247, 118, 142), (122, 162, 247)
 BANNER = "Cliente MCP: Claude Code (sin clave de modelo) · salida real del servidor · datos sintéticos"
 
@@ -102,6 +102,14 @@ def main():
         durs.append(ms)
 
     snap(700)
+    question = "Tú: ¿Cuántas filas tiene la tabla de eventos y qué cinco marcas ingresan más por compras?"
+    for n in range(8, len(question) + 1, 3):
+        screen.append((question[:n], FG)); snap(45); screen.pop()
+    for s in wrap(question):
+        screen.append((s, FG))
+    snap(900)
+    screen.append(("Claude: lo consulto en el lakehouse con las herramientas MCP del servidor.", BLUE)); snap(1200)
+    screen.append(("", FG))
     for call, lines in calls:
         text = "> " + call
         shown = wrap(text)
