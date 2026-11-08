@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-08T13:46:52+01:00",
+  "updated": "2026-11-08T13:51:52+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -34,13 +34,13 @@
   "runner": {
     "enabled": true,
     "state": "working",
-    "current": "T-024",
-    "heartbeat": "2026-11-08T13:18:04+01:00",
-    "message": "desarrollador con T-024",
+    "current": "T-211",
+    "heartbeat": "2026-11-08T13:46:58+01:00",
+    "message": "desarrollador con T-211",
     "pid": 6724,
-    "live": "live-T-024-desarrollador-20261108-131803.jsonl",
+    "live": "live-T-211-desarrollador-20261108-134658.jsonl",
     "agent": "desarrollador",
-    "started": "2026-11-08T13:18:03+01:00"
+    "started": "2026-11-08T13:46:58+01:00"
   },
   "agents": [
     {
@@ -15987,6 +15987,11 @@
           "t": "2026-11-08T13:09:58+01:00",
           "by": "runner",
           "msg": "? permiso solicitado: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\board\\runner.py * (T-210); la tarjeta espera la decisión"
+        },
+        {
+          "t": "2026-11-08T13:49:37+01:00",
+          "by": "tú",
+          "msg": "✓ permiso concedido: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\board\\runner.py *"
         }
       ],
       "runs": [
@@ -16454,7 +16459,7 @@
       "id": "T-210",
       "title": "Solicitud de permiso: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\board\\runner.py *",
       "owner": "consultor",
-      "status": "human",
+      "status": "done",
       "priority": "media",
       "estimate_min": 2,
       "actual_min": null,
@@ -16463,7 +16468,7 @@
       "desc": "El agente «desarrollador» necesitaba un comando que no está en su lista de permitidos y se lo bloquearon mientras hacía T-198. No es de solo lectura ni está prohibido, así que lo tiene que validar una persona.\n\nPara qué lo quería: (no lo explicó)\n\nCómo decidir: concede si es seguro repetirlo sin supervisión dentro del proyecto; deniega si escribe fuera, publica, borra o usa la red.\n\n## Técnico\n- Comando: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\board\\runner.py\n- Patrón que se concedería: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\board\\runner.py *\n- Tarjeta: T-198",
       "deps": [],
       "created": "2026-11-08T13:09:58+01:00",
-      "updated": "2026-11-08T13:09:58+01:00",
+      "updated": "2026-11-08T13:49:37+01:00",
       "started_at": null,
       "finished_at": null,
       "log": [
@@ -16471,6 +16476,11 @@
           "t": "2026-11-08T13:09:58+01:00",
           "by": "runner",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-08T13:49:37+01:00",
+          "by": "tú",
+          "msg": "✓ Concedido: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\board\\runner.py *"
         }
       ],
       "kind": "permiso",
@@ -16486,18 +16496,18 @@
       "id": "T-211",
       "title": "Demo: el agente da importes distintos a la referencia",
       "owner": "desarrollador",
-      "status": "next",
+      "status": "done",
       "priority": "alta",
       "estimate_min": 45.0,
-      "actual_min": 3.9,
+      "actual_min": 8.8,
       "auto": true,
       "manual": null,
       "desc": "Al ensayar la pregunta de las cinco marcas, el agente responde con la métrica semántica (get_metric) y no con run_query, y los importes no coinciden con la referencia. Cómo sabremos si funciona: ./mk ask con la pregunta de las marcas da las mismas cinco marcas e importes que evals/demo/expected.json, y la salida muestra run_query.\n## Técnico\n8-nov, AGENT_MODEL por defecto, 50 000 filas. Obtenido: nimbora 702942.00, velkaro 371961.23, ostrina 285923.12, quorvo 280932.97, lumbrel 212114.06. Esperado: 704515.14, 373157.08, 286978.02, 284523.31, 216201.67. Herramientas usadas: list_metrics, get_metric (sin run_query). Revisar definición de la métrica en semantic/ (¿excluye reembolsos/negativos/duplicados?) frente a las reglas de expected.json, o el prompt del agente. Además: .env no tenía MCP_ANALYST_KEY/MCP_ADMIN_KEY (daba 401 al agente); añadidas con valores locales aleatorios.",
       "deps": [],
       "created": "2026-11-08T13:13:21+01:00",
-      "updated": "2026-11-08T13:29:12+01:00",
-      "started_at": "2026-11-08T13:14:03+01:00",
-      "finished_at": "2026-11-08T13:17:59+01:00",
+      "updated": "2026-11-08T13:51:52+01:00",
+      "started_at": "2026-11-08T13:46:58+01:00",
+      "finished_at": "2026-11-08T13:51:52+01:00",
       "log": [
         {
           "t": "2026-11-08T13:13:21+01:00",
@@ -16523,6 +16533,21 @@
           "t": "2026-11-08T13:29:12+01:00",
           "by": "consultor",
           "msg": "Reabierta: ./mk ask el 8-nov sigue dando 702942.00 (esperado 704515.14) y usa get_metric sin run_query. Verificar con ./mk ask, no solo tests."
+        },
+        {
+          "t": "2026-11-08T13:46:58+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-08T13:51:52+01:00",
+          "by": "runner",
+          "msg": "Sin verificación aparte del tester (no toca seguridad, datos reales ni punta a punta); la CI revisa."
+        },
+        {
+          "t": "2026-11-08T13:51:52+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: prompt reforzado para que las preguntas con reglas de cálculo propias usen run_query; tests de `agent` en verde, falta comprobar `./mk ask` con un modelo real (el proveedor no tenía cuota)"
         }
       ],
       "runs": [
@@ -16536,6 +16561,17 @@
           "cost_usd": 0.1256242,
           "verdict": "review",
           "summary": "prompt del agente y pregunta de la demo ajustados para que las cifras sin limpiar usen run_query; falta comprobarlo con un modelo real."
+        },
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-08T13:51:52+01:00",
+          "min": 4.9,
+          "turns": 16,
+          "tokens": 227564,
+          "cost_usd": 0.1310754,
+          "verdict": "review",
+          "summary": "prompt reforzado para que las preguntas con reglas de cálculo propias usen run_query; tests de `agent` en verde, falta comprobar `./mk ask` con un modelo real (el proveedor no tenía cuota)"
         }
       ],
       "rank": 5
