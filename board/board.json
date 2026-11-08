@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-08T10:24:24+01:00",
+  "updated": "2026-11-08T13:08:16+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -34,13 +34,13 @@
   "runner": {
     "enabled": true,
     "state": "working",
-    "current": "T-209",
-    "heartbeat": "2026-11-08T10:16:31+01:00",
-    "message": "tester con T-209",
+    "current": "T-181",
+    "heartbeat": "2026-11-08T10:24:32+01:00",
+    "message": "tester con T-181",
     "pid": 1700,
-    "live": "live-T-209-tester-20261108-101631.jsonl",
+    "live": "live-T-181-tester-20261108-102432.jsonl",
     "agent": "tester",
-    "started": "2026-11-08T10:16:31+01:00"
+    "started": "2026-11-08T10:24:32+01:00"
   },
   "agents": [
     {
@@ -10579,18 +10579,18 @@
       "id": "T-181",
       "title": "Seguridad: prueba de punta a punta de 401 y aprobaciones solo de admin",
       "owner": "tester",
-      "status": "next",
+      "status": "done",
       "priority": "media",
       "estimate_min": 20.0,
-      "actual_min": 11.9,
+      "actual_min": 175.7,
       "auto": true,
       "manual": null,
       "desc": "Las pruebas actuales comprueban el filtro de claves y las herramientas por rol, pero no recorren la aplicación entera con peticiones HTTP.\nCómo sabremos si funciona: con la aplicación levantada, sin clave da 401 (salvo la salud), el analista recibe 403 al aprobar y el administrador 201.\n## Técnico\nIT con SpringBootTest + Postgres ops: GET /actuator/health 200 sin clave; /mcp y /fix-proposals 401 sin clave; POST /fix-proposals/{id}/approvals 403 con analyst y 201 con admin; apply_fix 403 con analyst; Origin ajeno 403.",
       "deps": [],
       "created": "2026-11-07T17:42:06+01:00",
-      "updated": "2026-11-08T10:23:39+01:00",
-      "started_at": "2026-11-07T23:07:32+01:00",
-      "finished_at": "2026-11-07T23:07:45+01:00",
+      "updated": "2026-11-08T13:08:16+01:00",
+      "started_at": "2026-11-08T10:24:31+01:00",
+      "finished_at": "2026-11-08T13:08:16+01:00",
       "log": [
         {
           "t": "2026-11-07T17:42:06+01:00",
@@ -10641,6 +10641,16 @@
           "t": "2026-11-08T10:23:39+01:00",
           "by": "consultor",
           "msg": "T-209 (403 llegaba como 401) ya resuelto en 45f0a91: repetir la prueba de punta a punta"
+        },
+        {
+          "t": "2026-11-08T10:24:31+01:00",
+          "by": "runner",
+          "msg": "empieza tester"
+        },
+        {
+          "t": "2026-11-08T13:08:16+01:00",
+          "by": "tester",
+          "msg": "DONE: McpSecurityIT pasa con 4 de 4 tests, sin omitidos: 401 sin clave, 403 para el analista, 201 para el administrador, `apply_fix` y Origin ajeno."
         }
       ],
       "runs": [
@@ -10665,6 +10675,17 @@
           "cost_usd": 0.08735530000000001,
           "verdict": "fail",
           "summary": "McpSecurityIT confirma salud 200 y 401 sin clave o con clave mala, pero los 403 del filtro llegan como 401 y el analista recibe 401 en `GET /fix-proposals`. Está registrado en T-209 y los 3 tests rojo"
+        },
+        {
+          "agent": "tester",
+          "mode": "work",
+          "at": "2026-11-08T13:08:16+01:00",
+          "min": 163.7,
+          "turns": 1,
+          "tokens": 21669,
+          "cost_usd": 0.1612544,
+          "verdict": "done",
+          "summary": "McpSecurityIT pasa con 4 de 4 tests, sin omitidos: 401 sin clave, 403 para el analista, 201 para el administrador, `apply_fix` y Origin ajeno."
         }
       ],
       "rank": 20
