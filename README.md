@@ -97,7 +97,7 @@ una página por cada pieza (qué es, cómo se conecta, cómo está configurada y
 > (`./mk ask`) está ensayada con Gemini, pero aún no grabada. Lo dice con detalle [la wiki](docs/wiki/06-demo.md#lo-simulado-y-lo-real).
 
 <p align="center">
-  <img src="docs/media/demo-minima.gif" alt="Un cliente MCP llama a list_tables, run_query y get_metric del servidor y recibe las cifras reales; una consulta que lee un fichero del disco es rechazada" width="80%">
+  <img src="docs/media/demo-minima.gif" alt="Se pregunta en lenguaje natural y un cliente MCP llama a list_tables, run_query y get_metric del servidor y recibe las cifras reales; una consulta que lee un fichero del disco es rechazada" width="80%">
 </p>
 
 Una pregunta de negocio va por la capa semántica; una consulta suelta, por `run_query`. Los datos son **sintéticos** (mismo esquema que el dataset real).
