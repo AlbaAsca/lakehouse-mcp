@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-08T13:08:16+01:00",
+  "updated": "2026-11-08T13:09:58+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -34,13 +34,13 @@
   "runner": {
     "enabled": true,
     "state": "working",
-    "current": "T-181",
-    "heartbeat": "2026-11-08T10:24:32+01:00",
-    "message": "tester con T-181",
+    "current": "T-198",
+    "heartbeat": "2026-11-08T13:08:20+01:00",
+    "message": "desarrollador con T-198",
     "pid": 1700,
-    "live": "live-T-181-tester-20261108-102432.jsonl",
-    "agent": "tester",
-    "started": "2026-11-08T10:24:32+01:00"
+    "live": "live-T-198-desarrollador-20261108-130820.jsonl",
+    "agent": "desarrollador",
+    "started": "2026-11-08T13:08:20+01:00"
   },
   "agents": [
     {
@@ -15849,25 +15849,69 @@
       "id": "T-198",
       "title": "Cada tarjeta trabaja en su propia copia de git, con el panel compartido",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "done",
       "priority": "media",
       "estimate_min": 80.0,
-      "actual_min": null,
+      "actual_min": 1.6,
       "auto": true,
       "manual": null,
       "desc": "Hoy los dos carriles comparten un solo árbol de trabajo y el runner tiene que adivinar qué fichero es de cada tarjeta. Se propone que cada tarjeta trabaje en su propia copia (worktree) y rama feature/T-xxx-slug, y que el panel real siga siendo uno solo.\nCómo sabremos si funciona: dos tarjetas en paralelo no mezclan ficheros y, desde una copia, board.py modifica el board.json del checkout principal.\n## Técnico\nDiseño: docs/pr-workflow.md (decisiones 1-3 y 6). board.py: ruta de LAKEHOUSE_BOARD_DIR con respaldo a la actual (el lock también). runner.py: crear worktree en ../lakehouse-mcp.wt/T-xxx desde develop, lanzar al agente con ese cwd y la variable, commit con git add -A dentro del worktree (retirar claims/snapshot/commit_own en este modo). Interruptor PR_MODE apagado por defecto. Comprobar que ./mk funciona desde un worktree. Tests en tests/test_runner.py y de board. Anotar qué cambia para la wiki (agent-board).",
       "deps": [
-        "T-189"
+        "T-189",
+        "T-210"
       ],
       "created": "2026-11-07T20:44:27+01:00",
-      "updated": "2026-11-07T20:44:27+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-08T13:09:58+01:00",
+      "started_at": "2026-11-08T13:08:20+01:00",
+      "finished_at": "2026-11-08T13:09:58+01:00",
       "log": [
         {
           "t": "2026-11-07T20:44:27+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-08T13:08:20+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-08T13:09:52+01:00",
+          "by": "desarrollador",
+          "msg": "Hecho con PR_MODE=False por defecto: board.py lee LAKEHOUSE_BOARD_DIR (F y LOCK); runner: make_worktree/commit_worktree/save_worktree/worktree_env, run_claude(cwd). Compose: ./mk monta '.' (el worktree) y el proyecto compose se fija con COMPOSE_PROJECT_NAME para compartir volúmenes m2/data; SIN PROBAR con Docker. Quedan para la pasada completa (T-191 tarjeta 2): push/PR/merge, retirar claims en este modo, poner PR_MODE=True. Wiki (agent-board): documentar PR_MODE, ../lakehouse-mcp.wt/T-xxx y LAKEHOUSE_BOARD_DIR."
+        },
+        {
+          "t": "2026-11-08T13:09:58+01:00",
+          "by": "runner",
+          "msg": "Sin verificación aparte del tester (no toca seguridad, datos reales ni punta a punta); la CI revisa."
+        },
+        {
+          "t": "2026-11-08T13:09:58+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: worktree por tarjeta y panel compartido implementados tras `PR_MODE` (apagado) con tests en verde; `./mk` desde un worktree sin probar con Docker."
+        },
+        {
+          "t": "2026-11-08T13:09:58+01:00",
+          "by": "desarrollador",
+          "msg": "⚠ 1 comandos denegados: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\board\\runner.py"
+        },
+        {
+          "t": "2026-11-08T13:09:58+01:00",
+          "by": "runner",
+          "msg": "? permiso solicitado: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\board\\runner.py * (T-210); la tarjeta espera la decisión"
+        }
+      ],
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-08T13:09:58+01:00",
+          "min": 1.6,
+          "turns": 32,
+          "tokens": 501141,
+          "cost_usd": 0.3021872,
+          "verdict": "review",
+          "summary": "worktree por tarjeta y panel compartido implementados tras `PR_MODE` (apagado) con tests en verde; `./mk` desde un worktree sin probar con Docker."
         }
       ]
     },
@@ -16261,6 +16305,38 @@
         }
       ],
       "verify_started": "2026-11-08T10:16:31+01:00"
+    },
+    {
+      "id": "T-210",
+      "title": "Solicitud de permiso: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\board\\runner.py *",
+      "owner": "consultor",
+      "status": "human",
+      "priority": "media",
+      "estimate_min": 2,
+      "actual_min": null,
+      "auto": false,
+      "manual": "Abre la tarjeta y pulsa «Conceder» o «Denegar».",
+      "desc": "El agente «desarrollador» necesitaba un comando que no está en su lista de permitidos y se lo bloquearon mientras hacía T-198. No es de solo lectura ni está prohibido, así que lo tiene que validar una persona.\n\nPara qué lo quería: (no lo explicó)\n\nCómo decidir: concede si es seguro repetirlo sin supervisión dentro del proyecto; deniega si escribe fuera, publica, borra o usa la red.\n\n## Técnico\n- Comando: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\board\\runner.py\n- Patrón que se concedería: C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\board\\runner.py *\n- Tarjeta: T-198",
+      "deps": [],
+      "created": "2026-11-08T13:09:58+01:00",
+      "updated": "2026-11-08T13:09:58+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-08T13:09:58+01:00",
+          "by": "runner",
+          "msg": "creada"
+        }
+      ],
+      "kind": "permiso",
+      "perm": {
+        "pattern": "C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\board\\runner.py *",
+        "command": "C:\\Users\\albaa\\Documents\\2026\\lakehouse-mcp\\board\\runner.py",
+        "agent": "desarrollador",
+        "task": "T-198",
+        "why": ""
+      }
     }
   ],
   "runners": {

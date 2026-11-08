@@ -230,21 +230,21 @@ def build_prompt(t, mode, agent):
             + RULES.format(owner=agent, states=states))
 
 
-def git(*args):
+def git(*args, cwd=None):
     if not (ROOT / ".git").exists() or not shutil.which("git"):
         return None
     return subprocess.run(["git", *args],  # identidad: la configurada en el repo
-                          cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace")
+                          cwd=cwd or ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace")
 
 
 class GitError(RuntimeError):
     pass
 
 
-def git_retry(*args, tries=5):
+def git_retry(*args, tries=5, cwd=None):
     """Como git(), pero reintenta (p. ej. index.lock del otro carril) y lanza GitError si sigue fallando: un fallo mudo pierde ficheros."""
     for i in range(tries):
-        r = git(*args)
+        r = git(*args, cwd=cwd)
         if r is None or r.returncode == 0:
             return r
         if i < tries - 1:
@@ -358,6 +358,44 @@ def commit_own(before, msg, tid=None):
     return files
 
 
+PR_MODE = False  # T-198: cada tarjeta en su worktree y rama feature/T-xxx-slug (docs/pr-workflow.md); apagado = flujo actual
+WT_ROOT = ROOT.parent / (ROOT.name + ".wt")
+
+
+def branch_name(t):
+    slug = re.sub(r"[^a-z0-9]+", "-", t.get("title", "").lower()).strip("-")[:40].strip("-")
+    return f"feature/{t['id']}" + (f"-{slug}" if slug else "")
+
+
+def make_worktree(t, base="develop"):
+    """Crea (o reutiliza) ../<repo>.wt/T-xxx con la rama de la tarjeta partiendo de `base`. Devuelve la ruta."""
+    path = WT_ROOT / t["id"]
+    if path.exists():
+        return path
+    WT_ROOT.mkdir(parents=True, exist_ok=True)
+    br = branch_name(t)
+    exists = git("rev-parse", "--verify", "-q", br)
+    args = ("worktree", "add", str(path), br) if exists and exists.returncode == 0 else ("worktree", "add", "-b", br, str(path), base)
+    git_retry(*args)
+    return path
+
+
+def worktree_env():
+    """Entorno del agente en un worktree: el panel real y el mismo proyecto de compose (volúmenes m2/data compartidos;
+    sin esto compose usaría el nombre de la carpeta, T-xxx). ./mk monta el worktree como /workspace."""
+    return {**os.environ, "LAKEHOUSE_BOARD_DIR": str(bd.F.parent),
+            "COMPOSE_PROJECT_NAME": re.sub(r"[^a-z0-9_-]", "", ROOT.name.lower())}
+
+
+def commit_worktree(wt, msg):
+    """En modo PR no hay claims: todo lo que hay en el worktree es de la tarjeta. board.json no viaja en la rama."""
+    git_retry("add", "-A", cwd=wt)
+    git_retry("reset", "-q", "--", "board/board.json", cwd=wt)
+    pending = git("diff", "--cached", "--quiet", cwd=wt)
+    if pending and pending.returncode:
+        git_retry("commit", "-q", "-m", msg, cwd=wt)
+
+
 MAX_REJECTS = 3  # rechazos seguidos del tester tras los que la tarjeta se bloquea (T-192)
 FINAL = ("done", "blocked", "human")  # estados que cierran la tarjeta: solo entonces hay commit
 
@@ -379,6 +417,22 @@ def save(before, tid, msg, new=None):
     return True
 
 
+def save_worktree(wt, tid, msg, new=None):
+    """Modo PR: commit de todo el worktree en su rama (sin push a develop; el PR es de otra tarjeta) y, aparte,
+    commit del panel en el checkout principal."""
+    try:
+        commit_worktree(wt, msg)
+        git_retry("add", "--", "board/board.json")
+        pending = git("diff", "--cached", "--quiet", "--", "board/board.json")
+        if pending and pending.returncode:
+            git_retry("commit", "-q", "-m", f"chore(board): {tid}", "--", "board/board.json")
+    except GitError as e:
+        print(f"  ⚠ {tid} sin guardar: {e}")
+        bd.update(lambda b: bd.log(bd.task(b, tid), "runner", f"⚠ commit fallido en el worktree: {e}"))
+        return False
+    return True
+
+
 # Tope de turnos por rol (medido en un proyecto real: los agentes que investigan gastaban 3-4 veces más por ejecución)
 MAX_TURNS = {"experto": 40, "investigador": 25, "tester": 40, "desarrollador": 60, "arquitecto": 40}
 
@@ -392,7 +446,7 @@ def deny_settings():
     return path
 
 
-def run_claude(claude, prompt, agent, timeout_s, tag="run", max_turns=80):
+def run_claude(claude, prompt, agent, timeout_s, tag="run", max_turns=80, cwd=None):
     """Lanza al agente con salida en streaming: cada evento (texto, herramienta, resultado) se guarda al momento en
     board/runs/live-<tag>-<agente>-<fecha>.jsonl para verlo en directo desde el panel. No cuesta tokens extra:
     es la misma ejecución, solo que la CLI va contando lo que hace en vez de esperar al final."""
@@ -408,7 +462,8 @@ def run_claude(claude, prompt, agent, timeout_s, tag="run", max_turns=80):
     try:
         with errf.open("w", encoding="utf-8") as ef:  # stderr a fichero: un pipe lleno bloquearía al agente
             p = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=ef,
-                                 text=True, encoding="utf-8", errors="replace", cwd=ROOT)
+                                 text=True, encoding="utf-8", errors="replace", cwd=cwd or ROOT,
+                                 env=worktree_env() if cwd else None)
     except OSError as e:
         return dict(denied=[], text="", err=str(e), code=-1, secs=0, turns=None, cost=None, usage={}, is_error=True, cut=False)
     timer = threading.Timer(timeout_s, lambda: (killed.append(1), p.kill()))
@@ -769,12 +824,21 @@ def main():
                 else:
                     bd.set_status(b, x, "doing", "runner", f"empieza {agent}")
             bd.update(start)
-            before = snapshot()
+            wt = None
+            if PR_MODE:
+                try:
+                    wt = make_worktree(t)
+                except GitError as e:
+                    print(f"  ⚠ sin worktree para {tid}: {e}")
+                    bd.update(lambda b: bd.log(bd.task(b, tid), "runner", f"⚠ no se pudo crear el worktree: {e}"))
+                    fails += 1
+                    continue
+            before = {} if wt else snapshot()
             set_runner(state="working", current=tid, agent=agent, started=now(), message=f"{agent} con {tid}")
 
             est = t.get("estimate_min") or 15
             r = run_claude(o.claude, build_prompt(t, mode, agent), agent, timeout_s=int(min(120, max(15, est * 4)) * 60), tag=tid,
-                           max_turns=MAX_TURNS.get(agent, 80))
+                           max_turns=MAX_TURNS.get(agent, 80), cwd=wt)
             (LOGDIR / f"{tid}-{agent}-{datetime.now():%Y%m%d-%H%M%S}.txt").write_text(
                 f"{r['text']}\n\n--- stderr ---\n{r['err']}", encoding="utf-8")
             new, verdict, summary = finish(tid, mode, agent, r)
@@ -784,7 +848,10 @@ def main():
                         if a["id"] == "tester" and a.get("current") == tid:
                             a.update(status="idle", current=None)
                 bd.update(free)
-            save(before, tid, f"chore(runner): {tid} {verdict} by {agent}", new)
+            if wt:
+                save_worktree(wt, tid, f"chore(runner): {tid} {verdict} by {agent}", new)
+            else:
+                save(before, tid, f"chore(runner): {tid} {verdict} by {agent}", new)
             print(f"  → {new} en {r['secs'] / 60:.1f} min · {summary}")
 
             if verdict in ("limit", "cut"):  # sin fallo contado; parar hasta el reset (la ejecución programada reintenta)

@@ -305,6 +305,40 @@ def test_limpia_carriles_con_pid_muerto():
         assert b["runners"][k]["state"] == "stopped" and b["runners"][k]["current"] is None
 
 
+def test_worktree_por_tarjeta_aisla_ficheros_y_no_commitea_el_panel(repo, tmp_path, monkeypatch):
+    root, g = repo
+    g("branch", "-M", "develop")
+    monkeypatch.setattr(runner, "WT_ROOT", tmp_path / "wt")
+    ta, tb = {"id": "T-1", "title": "Uno / dos!"}, {"id": "T-2", "title": "Otra"}
+    wa, wb = runner.make_worktree(ta), runner.make_worktree(tb)
+    assert wa == tmp_path / "wt" / "T-1" and runner.branch_name(ta) == "feature/T-1-uno-dos"
+    assert runner.make_worktree(ta) == wa  # reutiliza
+    (wa / "a.txt").write_text("a", encoding="utf-8")
+    (wb / "b.txt").write_text("b", encoding="utf-8")
+    (wa / "board" / "board.json").write_text("copia vieja", encoding="utf-8")
+    runner.commit_worktree(wa, "feat: a (T-1)")
+    runner.commit_worktree(wb, "feat: b (T-2)")
+    show = lambda w: subprocess.run(["git", "show", "--name-only", "--format=", "HEAD"], cwd=w, capture_output=True,
+                                    text=True).stdout.split()
+    assert show(wa) == ["a.txt"] and show(wb) == ["b.txt"]
+    assert not (root / "a.txt").exists()  # el árbol principal no se toca
+
+
+def test_worktree_env_apunta_al_panel_real_y_al_mismo_compose():
+    env = runner.worktree_env()
+    assert env["LAKEHOUSE_BOARD_DIR"] == str(runner.bd.F.parent)
+    assert env["COMPOSE_PROJECT_NAME"] == runner.ROOT.name.lower()
+
+
+def test_board_py_usa_lakehouse_board_dir(tmp_path):
+    r = subprocess.run([sys.executable, "-c", "import board; print(board.F)"], cwd=Path(runner.__file__).parent,
+                       env={**os.environ, "LAKEHOUSE_BOARD_DIR": str(tmp_path)}, capture_output=True, text=True)
+    assert Path(r.stdout.strip()) == tmp_path / "board.json"
+    r = subprocess.run([sys.executable, "-c", "import board; print(board.F)"], cwd=Path(runner.__file__).parent,
+                       env={k: v for k, v in os.environ.items() if k != "LAKEHOUSE_BOARD_DIR"}, capture_output=True, text=True)
+    assert Path(r.stdout.strip()) == Path(runner.__file__).parent / "board.json"
+
+
 def test_los_tests_no_tocan_el_board_real():
     assert runner.bd.F.parent != Path(runner.__file__).parent
 

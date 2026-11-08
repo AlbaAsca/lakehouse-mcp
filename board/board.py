@@ -21,8 +21,11 @@ from contextlib import contextmanager
 from datetime import datetime
 from pathlib import Path
 
-F = Path(__file__).with_name("board.json")
-LOCK = Path(__file__).with_name(".lock")
+# LAKEHOUSE_BOARD_DIR: el runner lo pone al lanzar agentes en un worktree, para que board.py toque el panel real
+# (el del checkout principal) y no la copia de board.json que viaja en la rama. Sin variable: el de siempre.
+BOARD_DIR = Path(os.environ.get("LAKEHOUSE_BOARD_DIR") or Path(__file__).parent)
+F = BOARD_DIR / "board.json"
+LOCK = BOARD_DIR / ".lock"
 STATES = ["backlog", "next", "doing", "review", "human", "blocked", "done"]
 COLUMNS = [("backlog", "Backlog"), ("next", "Próximo"), ("doing", "En curso"), ("review", "Revisión"),
            ("human", "Te necesita"), ("blocked", "Bloqueado"), ("done", "Hecho")]
