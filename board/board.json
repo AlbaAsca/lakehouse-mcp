@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-08T22:17:44+01:00",
+  "updated": "2026-11-08T22:19:31+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -4155,10 +4155,10 @@
       "id": "T-051",
       "title": "Evals: preguntas de anomalías y diagnóstico con referencia",
       "owner": "tester",
-      "status": "backlog",
+      "status": "done",
       "priority": "media",
       "estimate_min": 30.0,
-      "actual_min": null,
+      "actual_min": 1.6,
       "auto": true,
       "manual": null,
       "desc": "Además de cifras, el agente tiene que saber explicar: qué día cayeron las compras, en qué segmento, y si los datos están sucios. El tester añade esas preguntas desde lo plantado en la muestra, sin mirar el agente.\nCómo sabremos si funciona: en total hay 25-30 preguntas, unas 8 marcadas para el subconjunto barato, y cada diagnóstico se corrige con criterios fijos.\n\n## Técnico\nAmplía evals/questions con tipo diagnosis: hechos obligatorios (día, segmento, magnitud con tolerancia) y prohibidos. Sin modelo como juez (decisión 16). El subconjunto cubre cada tipo y las preguntas más baratas de responder. ./mk test-board.",
@@ -4166,17 +4166,40 @@
         "T-048"
       ],
       "created": "2026-11-02T11:40:08+01:00",
-      "updated": "2026-11-07T18:15:40+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-08T22:19:31+01:00",
+      "started_at": "2026-11-08T22:17:52+01:00",
+      "finished_at": "2026-11-08T22:19:31+01:00",
       "log": [
         {
           "t": "2026-11-02T11:40:08+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-08T22:17:52+01:00",
+          "by": "runner",
+          "msg": "empieza tester"
+        },
+        {
+          "t": "2026-11-08T22:19:31+01:00",
+          "by": "tester",
+          "msg": "DONE: 12 diagnósticos con referencia independiente y corrector fijo; 30 preguntas, subconjunto de 8, tests en verde."
         }
       ],
-      "rank": 900
+      "rank": 900,
+      "runs": [
+        {
+          "agent": "tester",
+          "mode": "work",
+          "at": "2026-11-08T22:19:31+01:00",
+          "min": 1.6,
+          "turns": 24,
+          "tokens": 701576,
+          "cost_usd": 0.3729781,
+          "verdict": "done",
+          "summary": "12 diagnósticos con referencia independiente y corrector fijo; 30 preguntas, subconjunto de 8, tests en verde."
+        }
+      ]
     },
     {
       "id": "T-052",
@@ -17765,6 +17788,30 @@
           "summary": "tests del productor recalculados con la verdad de referencia, `./mk test MODULE=producer` en verde; corregido también QualityToolsIT (201/101)."
         }
       ]
+    },
+    {
+      "id": "T-223",
+      "title": "Evals: el ejecutor debe usar el corrector de diagnósticos",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "baja",
+      "estimate_min": 10.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "Las preguntas de diagnóstico (evals/questions/diagnosis.yaml) se corrigen con grade_diagnosis() de evals/truth/compute_eval_truth.py (sin modelo como juez). El ejecutor de T-056 debe reutilizarlo y leer también el tipo diagnosis. Cómo sabremos si funciona: el informe puntúa las 30 preguntas, incluidos los 12 diagnósticos.",
+      "deps": [],
+      "created": "2026-11-08T22:19:25+01:00",
+      "updated": "2026-11-08T22:19:25+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-08T22:19:25+01:00",
+          "by": "tester",
+          "msg": "creada"
+        }
+      ]
     }
   ],
   "runners": {
@@ -17783,14 +17830,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-048",
-      "message": "tester con T-048",
+      "current": "T-051",
+      "message": "tester con T-051",
       "pid": 23508,
-      "heartbeat": "2026-11-08T22:16:35+01:00",
+      "heartbeat": "2026-11-08T22:17:52+01:00",
       "enabled": true,
       "agent": "tester",
-      "started": "2026-11-08T22:16:35+01:00",
-      "live": "live-T-048-tester-20261108-221635.jsonl",
+      "started": "2026-11-08T22:17:52+01:00",
+      "live": "live-T-051-tester-20261108-221752.jsonl",
       "pause_reason": null
     }
   }

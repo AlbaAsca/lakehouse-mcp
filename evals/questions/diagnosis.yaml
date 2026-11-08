@@ -1,0 +1,315 @@
+[
+  {
+    "id": "D01",
+    "question": "¿Qué día se desplomaron las compras de alguna marca? Indica la fecha.",
+    "type": "diagnosis",
+    "expected": {
+      "required": [
+        [
+          "2024-03-10",
+          "10 de marzo",
+          "10/03",
+          "10/03"
+        ]
+      ],
+      "forbidden": [
+        "no hay ninguna caída",
+        "no hubo ninguna caída",
+        "no se detecta ninguna caída",
+        "no hay anomalías"
+      ],
+      "numbers": []
+    },
+    "grading": "Cada grupo de hechos obligatorios aparece (cualquier alias), no aparece ningún texto prohibido y cada número esperado coincide con alguno de la respuesta dentro de su tolerancia. Sin modelo como juez.",
+    "in_subset": true
+  },
+  {
+    "id": "D02",
+    "question": "¿En qué marca (segmento) se concentra la caída de compras? Indica la marca.",
+    "type": "diagnosis",
+    "expected": {
+      "required": [
+        [
+          "synth-nimbora"
+        ]
+      ],
+      "forbidden": [
+        "no hay ninguna caída",
+        "no hubo ninguna caída",
+        "no se detecta ninguna caída",
+        "no hay anomalías"
+      ],
+      "numbers": []
+    },
+    "grading": "Cada grupo de hechos obligatorios aparece (cualquier alias), no aparece ningún texto prohibido y cada número esperado coincide con alguno de la respuesta dentro de su tolerancia. Sin modelo como juez.",
+    "in_subset": true
+  },
+  {
+    "id": "D03",
+    "question": "¿Cuántas compras válidas (precio mayor que 0, sin duplicados) tuvo la marca synth-nimbora el 10 de marzo de 2024?",
+    "type": "diagnosis",
+    "expected": {
+      "required": [
+        [
+          "synth-nimbora"
+        ]
+      ],
+      "forbidden": [
+        "no hay ninguna caída",
+        "no hubo ninguna caída",
+        "no se detecta ninguna caída",
+        "no hay anomalías"
+      ],
+      "numbers": [
+        {
+          "label": "compras de la marca ese día",
+          "value": 3,
+          "tolerance": 0
+        }
+      ]
+    },
+    "grading": "Cada grupo de hechos obligatorios aparece (cualquier alias), no aparece ningún texto prohibido y cada número esperado coincide con alguno de la respuesta dentro de su tolerancia. Sin modelo como juez.",
+    "in_subset": false
+  },
+  {
+    "id": "D04",
+    "question": "¿Cuánto cayeron, en porcentaje, las compras de synth-nimbora ese día frente a su mediana de los demás días? Redondea al entero.",
+    "type": "diagnosis",
+    "expected": {
+      "required": [
+        [
+          "synth-nimbora"
+        ]
+      ],
+      "forbidden": [
+        "no hay ninguna caída",
+        "no hubo ninguna caída",
+        "no se detecta ninguna caída",
+        "no hay anomalías"
+      ],
+      "numbers": [
+        {
+          "label": "caída en %",
+          "value": 88.5,
+          "tolerance": 3
+        }
+      ]
+    },
+    "grading": "Cada grupo de hechos obligatorios aparece (cualquier alias), no aparece ningún texto prohibido y cada número esperado coincide con alguno de la respuesta dentro de su tolerancia. Sin modelo como juez.",
+    "in_subset": false
+  },
+  {
+    "id": "D05",
+    "question": "¿Cuál es la mediana diaria de compras válidas de synth-nimbora en los demás días del periodo?",
+    "type": "diagnosis",
+    "expected": {
+      "required": [],
+      "forbidden": [
+        "no hay ninguna caída",
+        "no hubo ninguna caída",
+        "no se detecta ninguna caída",
+        "no hay anomalías"
+      ],
+      "numbers": [
+        {
+          "label": "mediana de compras",
+          "value": 26.0,
+          "tolerance": 2
+        }
+      ]
+    },
+    "grading": "Cada grupo de hechos obligatorios aparece (cualquier alias), no aparece ningún texto prohibido y cada número esperado coincide con alguno de la respuesta dentro de su tolerancia. Sin modelo como juez.",
+    "in_subset": false
+  },
+  {
+    "id": "D06",
+    "question": "¿Dónde del embudo se perdieron las ventas de synth-nimbora ese día: en las vistas, en el carrito o al pagar? Compara con los demás días.",
+    "type": "diagnosis",
+    "expected": {
+      "required": [
+        [
+          "pago",
+          "pagar",
+          "compra",
+          "checkout",
+          "cart a purchase",
+          "carrito a compra",
+          "del carrito"
+        ]
+      ],
+      "forbidden": [
+        "las vistas cayeron",
+        "cayeron las vistas",
+        "las vistas bajaron",
+        "se perdieron las vistas",
+        "no se añadió al carrito",
+        "no hubo carritos"
+      ],
+      "numbers": []
+    },
+    "grading": "Cada grupo de hechos obligatorios aparece (cualquier alias), no aparece ningún texto prohibido y cada número esperado coincide con alguno de la respuesta dentro de su tolerancia. Sin modelo como juez.",
+    "in_subset": true
+  },
+  {
+    "id": "D07",
+    "question": "¿Cuántos carritos (eventos cart sin duplicados) tuvo synth-nimbora ese día? ¿Fue un día normal para esa marca?",
+    "type": "diagnosis",
+    "expected": {
+      "required": [
+        [
+          "normal",
+          "habitual",
+          "similar",
+          "en línea",
+          "dentro del rango",
+          "no cayó",
+          "no cayeron",
+          "sin caída"
+        ]
+      ],
+      "forbidden": [
+        "también cayeron los carritos",
+        "carritos cayeron"
+      ],
+      "numbers": [
+        {
+          "label": "carritos de la marca ese día",
+          "value": 37,
+          "tolerance": 0
+        }
+      ]
+    },
+    "grading": "Cada grupo de hechos obligatorios aparece (cualquier alias), no aparece ningún texto prohibido y cada número esperado coincide con alguno de la respuesta dentro de su tolerancia. Sin modelo como juez.",
+    "in_subset": false
+  },
+  {
+    "id": "D08",
+    "question": "¿Hay filas duplicadas exactas en los datos? Di cuántas copias sobrantes hay.",
+    "type": "diagnosis",
+    "expected": {
+      "required": [
+        [
+          "duplicad"
+        ]
+      ],
+      "forbidden": [
+        "no hay duplicados",
+        "no hay filas duplicadas",
+        "sin duplicados"
+      ],
+      "numbers": [
+        {
+          "label": "copias sobrantes",
+          "value": 250,
+          "tolerance": 0
+        }
+      ]
+    },
+    "grading": "Cada grupo de hechos obligatorios aparece (cualquier alias), no aparece ningún texto prohibido y cada número esperado coincide con alguno de la respuesta dentro de su tolerancia. Sin modelo como juez.",
+    "in_subset": true
+  },
+  {
+    "id": "D09",
+    "question": "¿Cuántas filas no tienen marca (brand vacía), contando todas las filas sin quitar duplicados?",
+    "type": "diagnosis",
+    "expected": {
+      "required": [],
+      "forbidden": [],
+      "numbers": [
+        {
+          "label": "filas sin marca",
+          "value": 7261,
+          "tolerance": 0
+        }
+      ]
+    },
+    "grading": "Cada grupo de hechos obligatorios aparece (cualquier alias), no aparece ningún texto prohibido y cada número esperado coincide con alguno de la respuesta dentro de su tolerancia. Sin modelo como juez.",
+    "in_subset": false
+  },
+  {
+    "id": "D10",
+    "question": "¿Hay sesiones sin identificar (user_session vacío)? Di cuántas filas, sin quitar duplicados.",
+    "type": "diagnosis",
+    "expected": {
+      "required": [
+        [
+          "user_session",
+          "sesión",
+          "sesion",
+          "sesiones"
+        ]
+      ],
+      "forbidden": [
+        "no hay sesiones sin identificar",
+        "todas las filas tienen sesión"
+      ],
+      "numbers": [
+        {
+          "label": "filas sin user_session",
+          "value": 50,
+          "tolerance": 0
+        }
+      ]
+    },
+    "grading": "Cada grupo de hechos obligatorios aparece (cualquier alias), no aparece ningún texto prohibido y cada número esperado coincide con alguno de la respuesta dentro de su tolerancia. Sin modelo como juez.",
+    "in_subset": false
+  },
+  {
+    "id": "D11",
+    "question": "¿Hay precios fuera de rango? Di cuántas filas tienen precio 0 y cuántas negativo, sin quitar duplicados.",
+    "type": "diagnosis",
+    "expected": {
+      "required": [
+        [
+          "cero"
+        ],
+        [
+          "negativ"
+        ]
+      ],
+      "forbidden": [
+        "no hay precios",
+        "todos los precios son válidos"
+      ],
+      "numbers": [
+        {
+          "label": "precio 0",
+          "value": 100,
+          "tolerance": 0
+        },
+        {
+          "label": "precio negativo",
+          "value": 101,
+          "tolerance": 0
+        }
+      ]
+    },
+    "grading": "Cada grupo de hechos obligatorios aparece (cualquier alias), no aparece ningún texto prohibido y cada número esperado coincide con alguno de la respuesta dentro de su tolerancia. Sin modelo como juez.",
+    "in_subset": false
+  },
+  {
+    "id": "D12",
+    "question": "¿Es fiable la cifra de compras de ese día, o hay datos sucios que la distorsionen? Indica el número de filas duplicadas exactas del periodo.",
+    "type": "diagnosis",
+    "expected": {
+      "required": [
+        [
+          "duplicad"
+        ]
+      ],
+      "forbidden": [
+        "los datos están limpios",
+        "no hay datos sucios"
+      ],
+      "numbers": [
+        {
+          "label": "copias sobrantes",
+          "value": 250,
+          "tolerance": 0
+        }
+      ]
+    },
+    "grading": "Cada grupo de hechos obligatorios aparece (cualquier alias), no aparece ningún texto prohibido y cada número esperado coincide con alguno de la respuesta dentro de su tolerancia. Sin modelo como juez.",
+    "in_subset": false
+  }
+]

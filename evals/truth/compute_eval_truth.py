@@ -30,7 +30,11 @@ GRADING = {
     "number": "Número dentro de la tolerancia.",
     "set": "Mismos elementos, en cualquier orden.",
     "ranking": "Mismos elementos en el mismo orden; los valores, dentro de la tolerancia.",
+    "diagnosis": "Cada grupo de hechos obligatorios aparece (cualquier alias), no aparece ningún texto prohibido y cada "
+                 "número esperado coincide con alguno de la respuesta dentro de su tolerancia. Sin modelo como juez.",
 }
+# Subconjunto barato (~8): E01/E03 (number), E13 (set), E17 (ranking) y 4 diagnósticos que cubren día, marca, embudo y datos sucios
+SUBSET = {"E01", "E03", "E13", "E17", "D01", "D02", "D06", "D08"}
 
 
 def q2(x, exp="0.01"):
@@ -139,6 +143,144 @@ def questions(d):
     return out
 
 
+def norm(text):
+    return " ".join(text.lower().replace("*", "").split())
+
+
+def numbers_in(text):
+    """Números del texto; acepta 1.234,5 / 1,234.5 / 12,5 / 12.5 y un % pegado."""
+    import re
+    out = []
+    for tok in re.findall(r"-?\d[\d.,]*", text):
+        tok = tok.rstrip(".,")
+        if "," in tok and "." in tok:
+            tok = tok.replace(".", "").replace(",", ".") if tok.rfind(",") > tok.rfind(".") else tok.replace(",", "")
+        elif tok.count(".") > 1 or (tok.count(".") == 1 and len(tok.split(".")[1]) == 3 and "," not in tok):
+            tok = tok.replace(".", "")
+        elif tok.count(",") > 1 or (tok.count(",") == 1 and len(tok.split(",")[1]) == 3):
+            tok = tok.replace(",", "")
+        else:
+            tok = tok.replace(",", ".")
+        try:
+            out.append(float(tok))
+        except ValueError:
+            pass
+    return out
+
+
+def grade_diagnosis(item, answer):
+    """Corrección fija, sin modelo como juez (decisión 16).
+    expected = {required: [[alias, ...], ...], forbidden: [texto, ...], numbers: [{label, value, tolerance}]}.
+    Pasa si: de cada grupo de required aparece algún alias; no aparece ningún forbidden; cada número esperado
+    tiene algún número del texto a distancia <= tolerance. Devuelve (ok, motivos_de_fallo)."""
+    e, t, why = item["expected"], norm(answer), []
+    for group in e["required"]:
+        if not any(norm(a) in t for a in group):
+            why.append("falta: " + " / ".join(group))
+    for f in e["forbidden"]:
+        if norm(f) in t:
+            why.append("prohibido: " + f)
+    nums = numbers_in(answer)
+    for n in e["numbers"]:
+        if not any(abs(x - n["value"]) <= n["tolerance"] for x in nums):
+            why.append(f"número: {n['label']} = {n['value']} ± {n['tolerance']}")
+    return not why, why
+
+
+def diagnosis(path):
+    """Hechos plantados en la muestra, calculados aquí sobre el CSV (sin mirar agente ni servidor)."""
+    with gzip.open(path, "rt", encoding="utf-8", newline="") as f:
+        rd = csv.reader(f)
+        next(rd)
+        raw = [tuple(r) for r in rd]
+    rows = list(dict.fromkeys(raw))
+    buy, cart = defaultdict(lambda: defaultdict(int)), defaultdict(lambda: defaultdict(int))
+    view = defaultdict(lambda: defaultdict(int))
+    for r in rows:
+        day, kind, brand = r[0][:10], r[1], r[5]
+        if kind == "purchase" and r[6] and Decimal(r[6]) > 0:
+            buy[brand][day] += 1
+        elif kind == "cart":
+            cart[brand][day] += 1
+        elif kind == "view":
+            view[brand][day] += 1
+    days = sorted({r[0][:10] for r in rows})
+
+    def median(xs):
+        xs = sorted(xs)
+        return (xs[len(xs) // 2] + xs[(len(xs) - 1) // 2]) / 2
+
+    # Marca y día con la peor caída relativa frente a su mediana de los demás días
+    worst = None
+    for b in buy:
+        if not b:
+            continue
+        for dy in days:
+            others = median([buy[b][x] for x in days if x != dy])
+            if others >= 10:
+                ratio = buy[b][dy] / others
+                if worst is None or ratio < worst[0]:
+                    worst = (ratio, b, dy, others)
+    ratio, brand, day, med = worst
+    n_day = buy[brand][day]
+    fall = round((1 - n_day / med) * 100, 1)
+    med_cart = median([cart[brand][x] for x in days if x != day])
+    med_view = median([view[brand][x] for x in days if x != day])
+    dup = len(raw) - len(rows)
+    no_brand = sum(1 for r in raw if not r[5])
+    no_sess = sum(1 for r in raw if not r[8])
+    zero = sum(1 for r in raw if r[6] and Decimal(r[6]) == 0)
+    neg = sum(1 for r in raw if r[6] and Decimal(r[6]) < 0)
+    d_iso = day
+    d_es = f"{int(day[8:])} de marzo"
+    alias_day = [d_iso, d_es, f"{int(day[8:])}/03", f"{day[8:]}/03"]
+    N = lambda label, v, tol=0: {"label": label, "value": v, "tolerance": tol}
+    no_fall = ["no hay ninguna caída", "no hubo ninguna caída", "no se detecta ninguna caída", "no hay anomalías"]
+    # (id, texto, required, forbidden, numbers, in_subset)
+    return [
+        ("D01", "¿Qué día se desplomaron las compras de alguna marca? Indica la fecha.",
+         [alias_day], no_fall, [], True),
+        ("D02", "¿En qué marca (segmento) se concentra la caída de compras? Indica la marca.",
+         [[brand]], no_fall, [], True),
+        ("D03", f"¿Cuántas compras válidas (precio mayor que 0, sin duplicados) tuvo la marca {brand} el {d_es} de 2024?",
+         [[brand]], no_fall, [N("compras de la marca ese día", n_day)], True),
+        ("D04", f"¿Cuánto cayeron, en porcentaje, las compras de {brand} ese día frente a su mediana de los demás días? Redondea al entero.",
+         [[brand]], no_fall, [N("caída en %", fall, 3)], False),
+        ("D05", f"¿Cuál es la mediana diaria de compras válidas de {brand} en los demás días del periodo?",
+         [], no_fall, [N("mediana de compras", med, 2)], False),
+        ("D06", f"¿Dónde del embudo se perdieron las ventas de {brand} ese día: en las vistas, en el carrito o al pagar? "
+                f"Compara con los demás días.",
+         [["pago", "pagar", "compra", "checkout", "cart a purchase", "carrito a compra", "del carrito"]],
+         ["las vistas cayeron", "cayeron las vistas", "las vistas bajaron", "se perdieron las vistas",
+          "no se añadió al carrito", "no hubo carritos"], [], True),
+        ("D07", f"¿Cuántos carritos (eventos cart sin duplicados) tuvo {brand} ese día? ¿Fue un día normal para esa marca?",
+         [["normal", "habitual", "similar", "en línea", "dentro del rango", "no cayó", "no cayeron", "sin caída"]],
+         ["también cayeron los carritos", "carritos cayeron"], [N("carritos de la marca ese día", cart[brand][day])], False),
+        ("D08", "¿Hay filas duplicadas exactas en los datos? Di cuántas copias sobrantes hay.",
+         [["duplicad"]], ["no hay duplicados", "no hay filas duplicadas", "sin duplicados"], [N("copias sobrantes", dup)], True),
+        ("D09", "¿Cuántas filas no tienen marca (brand vacía), contando todas las filas sin quitar duplicados?",
+         [], [], [N("filas sin marca", no_brand)], False),
+        ("D10", "¿Hay sesiones sin identificar (user_session vacío)? Di cuántas filas, sin quitar duplicados.",
+         [["user_session", "sesión", "sesion", "sesiones"]], ["no hay sesiones sin identificar", "todas las filas tienen sesión"],
+         [N("filas sin user_session", no_sess)], False),
+        ("D11", "¿Hay precios fuera de rango? Di cuántas filas tienen precio 0 y cuántas negativo, sin quitar duplicados.",
+         [["cero"], ["negativ"]], ["no hay precios", "todos los precios son válidos"],
+         [N("precio 0", zero), N("precio negativo", neg)], True),
+        ("D12", "¿Es fiable la cifra de compras de ese día, o hay datos sucios que la distorsionen? "
+                "Indica el número de filas duplicadas exactas del periodo.",
+         [["duplicad"]], ["los datos están limpios", "no hay datos sucios"], [N("copias sobrantes", dup)], False),
+    ]
+
+
+def diagnosis_items(d_rows):
+    out = []
+    for qid, text, req, forb, nums, subset in d_rows:
+        out.append({"id": qid, "question": text, "type": "diagnosis",
+                    "expected": {"required": req, "forbidden": forb, "numbers": nums},
+                    "grading": GRADING["diagnosis"], "in_subset": subset})
+    return out
+
+
 def render(items):
     return json.dumps(items, ensure_ascii=False, indent=2) + "\n"
 
@@ -151,6 +293,10 @@ def main(argv=None):
     ap.add_argument("--check", action="store_true", help="no escribe; falla si los ficheros no están al día")
     a = ap.parse_args(argv)
     out = questions(Data(a.input))
+    out["diagnosis"] = diagnosis_items(diagnosis(a.input))
+    for items in out.values():  # subconjunto barato: uno por tipo y los diagnósticos de una sola consulta
+        for q in items:
+            q["in_subset"] = q["id"] in SUBSET
     stale = []
     for typ, items in out.items():
         path = a.outdir / f"{typ}.yaml"

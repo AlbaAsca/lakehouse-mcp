@@ -14,7 +14,7 @@
     "type": "number",
     "expected": 717.09,
     "grading": "Número dentro de la tolerancia.",
-    "in_subset": true,
+    "in_subset": false,
     "tolerance": 0.01
   },
   {
@@ -32,7 +32,7 @@
     "type": "number",
     "expected": 95,
     "grading": "Número dentro de la tolerancia.",
-    "in_subset": true,
+    "in_subset": false,
     "tolerance": 0
   },
   {
@@ -41,7 +41,7 @@
     "type": "number",
     "expected": 0.228692,
     "grading": "Número dentro de la tolerancia.",
-    "in_subset": true,
+    "in_subset": false,
     "tolerance": 1e-06
   },
   {
@@ -59,7 +59,7 @@
     "type": "number",
     "expected": 98456.43,
     "grading": "Número dentro de la tolerancia.",
-    "in_subset": true,
+    "in_subset": false,
     "tolerance": 0.01
   },
   {
@@ -86,7 +86,7 @@
     "type": "number",
     "expected": 913,
     "grading": "Número dentro de la tolerancia.",
-    "in_subset": true,
+    "in_subset": false,
     "tolerance": 0
   },
   {
