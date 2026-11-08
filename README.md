@@ -24,7 +24,7 @@
 > and evals are being built. Everything runs in Docker.
 
 > [!NOTE]
-> **Estado: infraestructura, servidor MCP, capa semántica y agente funcionan; falta la grabación real de la demo.** Hoy funciona lo marcado como ✅ en [Qué hay y qué falta](#qué-hay-y-qué-falta).
+> **Estado: infraestructura, servidor MCP, capa semántica y agente funcionan; la demo está grabada con un cliente MCP.** Hoy funciona lo marcado como ✅ en [Qué hay y qué falta](#qué-hay-y-qué-falta).
 > Aquí no se publica ninguna cifra de precisión ni de rendimiento hasta que exista la medición que la respalde.
 
 ## El problema
@@ -79,7 +79,7 @@ una página por cada pieza (qué es, cómo se conecta, cómo está configurada y
 | ✅ | Conector de Iceberg y muestra sintética | Cargada de verdad: 50 000 filas en `ecommerce.events` (8-nov) |
 | ✅ | Servidor MCP | Nueve herramientas (`list_tables`, `describe_table`, `run_query`, `get_metric`, `pipeline_health`, `data_quality_check`, `time_travel`, `propose_fix`, `apply_fix`), validador de SQL de solo lectura y roles analyst/admin por clave |
 | ✅ | Capa semántica | Métricas en YAML con `get_metric`; la referencia de la demo coincide con la métrica |
-| 🟡 | Agente (Spring AI, Gemini por defecto, Claude por configuración) | Contesta por MCP y respeta topes. Ensayado con Gemini el 8-nov: las cinco marcas y sus importes cuadran con la referencia. **Falta el GIF con salida real** |
+| 🟡 | Agente (Spring AI, Gemini por defecto, Claude por configuración) | Contesta por MCP y respeta topes. Ensayado con Gemini el 8-nov: las cinco marcas y sus importes cuadran con la referencia. El GIF de la demo usa un cliente MCP, no este agente |
 | 🟡 | Self-healing con `./mk chaos` | Hecho el ciclo de duplicados; faltan partición vacía, consumidor caído y schema drift |
 | 🟡 | Seguridad | Hechos roles y claves, con prueba de 401/403; falta la auditoría y el enmascarado de `user_id` |
 | 🟡 | Productor y mes real | Muestra sintética funciona; el mes real de Kaggle sigue sin probarse |
@@ -91,13 +91,13 @@ una página por cada pieza (qué es, cómo se conecta, cómo está configurada y
   <img src="docs/img/demo-flow.svg" alt="Recorrido de una pregunta: tú, agente, servidor MCP, get_metric o run_query, DuckDB" width="100%">
 </p>
 
-> [!WARNING]
-> **El GIF de abajo es una maqueta simulada, no una grabación real.** Lleva un aviso rojo en cada fotograma. Las cifras de las marcas salen de un ensayo real
-> del 8-nov; la respuesta «50 000 filas» y la línea `run_query` de la primera pregunta son la salida esperada, sin ver aún. Se sustituirá por la grabación real
-> con `python scripts/demo/record_demo.py` en cuanto se renueve el cupo diario gratuito de Gemini.
+> [!NOTE]
+> **Cómo se grabó este GIF:** un cliente MCP (Claude Code) llama de verdad al servidor, sin clave de ningún modelo. Las llamadas y las respuestas son reales;
+> el texto final lo redacta el script a partir de ellas, y la animación está dibujada (no es una captura de pantalla). La demo con el agente propio de Spring AI
+> (`./mk ask`) está ensayada con Gemini, pero aún no grabada. Lo dice con detalle [la wiki](docs/wiki/06-demo.md#lo-simulado-y-lo-real).
 
 <p align="center">
-  <img src="docs/media/demo-minima-maqueta.gif" alt="Maqueta simulada de la demo: dos preguntas al agente y sus respuestas" width="80%">
+  <img src="docs/media/demo-minima.gif" alt="Un cliente MCP llama a list_tables, run_query y get_metric del servidor y recibe las cifras reales; una consulta que lee un fichero del disco es rechazada" width="80%">
 </p>
 
 Una pregunta de negocio va por la capa semántica; una consulta suelta, por `run_query`. Los datos son **sintéticos** (mismo esquema que el dataset real).

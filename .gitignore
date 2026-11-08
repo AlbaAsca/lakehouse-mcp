@@ -12,3 +12,4 @@ data/
 *.csv
 *.csv.zip
 docs/media/_capture.json
+docs/media/_capture_mcp.json

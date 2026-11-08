@@ -1,6 +1,8 @@
 # La demo: una pregunta de principio a fin
 
-> **Estado (8-nov-2026):** el ensayo con Gemini cuadra con la referencia. El GIF que se enseña es una **maqueta simulada**; la grabación real está pendiente de que se renueve el cupo gratuito del modelo.
+> **Estado (8-nov-2026):** la demo está grabada con un cliente MCP (Claude Code), sin clave de modelo. La demo con el agente propio de Spring AI está ensayada con Gemini, pero no grabada: el cupo gratuito del modelo estaba agotado.
+
+<p align="center"><img src="../media/demo-minima.gif" alt="Cliente MCP llamando a las herramientas del servidor" width="80%"></p>
 
 ## En una frase
 
@@ -27,22 +29,26 @@ Escribes una pregunta en lenguaje normal, un agente de IA la convierte en una co
 | Elemento | Real | Simulado |
 |---|---|---|
 | Stack, 50 000 filas y claves locales | ✅ | |
-| Cinco marcas e importes de la respuesta | ✅ ensayo del 8-nov | |
-| Respuesta «50 000 filas» y línea `run_query` | | 🟥 esperada, aún no vista |
-| El GIF `demo-minima-maqueta.gif` | | 🟥 animación dibujada, con aviso rojo en cada fotograma |
+| Llamadas a `list_tables`, `run_query` y `get_metric`, y sus respuestas | ✅ las da el servidor en cada grabación | |
+| Rechazo de la consulta que lee un fichero del disco | ✅ lo hace el validador | |
+| El agente que decide qué herramienta llamar | | 🟡 aquí es Claude Code como cliente MCP, no el agente de Spring AI |
+| Texto de la respuesta final | | 🟡 lo redacta el script a partir de las respuestas |
+| La animación del GIF | | 🟡 dibujada con Pillow, no es una captura de pantalla |
+| Demo con el agente Java (`./mk ask`) | ✅ ensayo del 8-nov con Gemini cuadró con la referencia | 🟥 sin grabar |
 
-## Cómo se grabará la versión real
+## Cómo se grabó
 
 ```bash
-python scripts/demo/record_demo.py
+python scripts/demo/record_mcp_demo.py
 ```
 
-Ejecuta las dos preguntas del guion contra el stack real, filtra el ruido de Docker, aborta si ve algo que parezca una clave y dibuja la terminal en `docs/media/demo-minima.gif`. No es una captura de pantalla: el texto es el real y la animación es sintética. `--replay` reutiliza la última salida real sin gastar cupo.
+Necesita el stack arriba y `MCP_ANALYST_KEY` en `.env`. No usa ningún modelo, no gasta cupo y no carga datos. Para grabar con el agente Java cuando haya cupo: `python scripts/demo/record_demo.py` (el GIF con el agente se guardaría en `docs/media/`).
 
 ## Qué puede fallar
 
 | Síntoma | Causa | Qué hacer |
 |---|---|---|
 | El agente recibe 401 | Faltan `MCP_ANALYST_KEY` y `MCP_ADMIN_KEY` en `.env` | Añadir dos cadenas aleatorias y `./mk up` |
+| Error de nombre de tabla (`Table not allowed`) | `run_query` pide el nombre completo `lh.ecommerce.events` | Escribirlo así (T-213 lo hará explícito) |
 | Error de cuota (429) | Se acabaron las 20 peticiones diarias del modelo gratuito | Esperar a la renovación, hacia las 9:00 en España |
 | Importes distintos de la referencia | Se cargó la muestra dos veces | No repetir `./mk seed-sample` |
