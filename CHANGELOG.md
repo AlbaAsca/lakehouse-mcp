@@ -2,6 +2,8 @@
 
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versions: [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
 ## [0.1.0] - 2026-11-08
 
 The first end-to-end demo: an AI agent answers a business question by querying Iceberg tables through MCP.

@@ -6,7 +6,7 @@ Piensa en una tienda online. Cada clic es una nota. Las notas llegan por una cin
 
 Cada página empieza en lenguaje llano y avanza hasta el detalle técnico. Puedes parar donde quieras.
 
-> **Fecha de esta foto:** 7 de noviembre de 2026, sobre la rama `develop` en el commit `090b32f`. El proyecto se está construyendo mientras se escribe esto: si algo no coincide, mandan el código y [el panel](componentes/agent-board.md).
+> **Fecha de esta foto:** 8 de noviembre de 2026, versión 0.1.0 (rama `release/0.1.0`). El proyecto se está construyendo mientras se escribe esto: si algo no coincide, mandan el código y [el panel](componentes/agent-board.md).
 
 ## Dos rutas de lectura
 
