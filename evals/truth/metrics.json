@@ -11,1022 +11,1010 @@
   ],
   "total": {
     "funnel": {
-      "view_sessions": 19800,
-      "cart_sessions": 6813,
-      "purchase_sessions": 3273,
-      "view_to_cart": 0.344091,
-      "cart_to_purchase": 0.480405,
-      "view_to_purchase": 0.165303
+      "view_sessions": 23871,
+      "cart_sessions": 1185,
+      "purchase_sessions": 914,
+      "view_to_cart": 0.049642,
+      "cart_to_purchase": 0.771308,
+      "view_to_purchase": 0.038289
     },
     "cart_abandonment": {
-      "cart_sessions": 6813,
-      "abandoned_sessions": 3540,
-      "abandonment_rate": 0.519595
+      "cart_sessions": 1185,
+      "abandoned_sessions": 271,
+      "abandonment_rate": 0.228692
     },
     "average_ticket": {
-      "revenue": 2350850.57,
-      "orders": 3261,
-      "average_ticket": 720.9
+      "revenue": 654718.47,
+      "orders": 913,
+      "average_ticket": 717.11
     },
     "top_brands": {
       "brands": [
         {
           "brand": "synth-nimbora",
-          "revenue": 702942.0,
-          "purchases": 1103,
-          "share": 0.299016
-        },
-        {
-          "brand": "synth-velkaro",
-          "revenue": 371961.23,
-          "purchases": 495,
-          "share": 0.158224
+          "revenue": 224812.18,
+          "purchases": 354,
+          "share": 0.343372
         },
         {
           "brand": "synth-ostrina",
-          "revenue": 285923.12,
-          "purchases": 371,
-          "share": 0.121625
+          "revenue": 72110.68,
+          "purchases": 88,
+          "share": 0.11014
+        },
+        {
+          "brand": "synth-velkaro",
+          "revenue": 71261.55,
+          "purchases": 100,
+          "share": 0.108843
         },
         {
           "brand": "synth-quorvo",
-          "revenue": 280932.97,
-          "purchases": 342,
-          "share": 0.119503
+          "revenue": 64018.08,
+          "purchases": 79,
+          "share": 0.09778
         },
         {
           "brand": "synth-lumbrel",
-          "revenue": 212114.06,
-          "purchases": 271,
-          "share": 0.090229
+          "revenue": 50366.85,
+          "purchases": 63,
+          "share": 0.076929
         },
         {
           "brand": "synth-tessavi",
-          "revenue": 156318.56,
-          "purchases": 209,
-          "share": 0.066494
+          "revenue": 47687.72,
+          "purchases": 63,
+          "share": 0.072837
         },
         {
           "brand": "synth-brondel",
-          "revenue": 101385.98,
-          "purchases": 143,
-          "share": 0.043127
+          "revenue": 26004.98,
+          "purchases": 38,
+          "share": 0.039719
         }
       ],
-      "revenue_without_brand": 239272.65,
+      "revenue_without_brand": 98456.43,
       "brands_total": 7
     }
   },
   "by_day": {
     "2024-03-01": {
       "funnel": {
-        "view_sessions": 1420,
-        "cart_sessions": 495,
-        "purchase_sessions": 244,
-        "view_to_cart": 0.348592,
-        "cart_to_purchase": 0.492929,
-        "view_to_purchase": 0.171831
+        "view_sessions": 1681,
+        "cart_sessions": 69,
+        "purchase_sessions": 53,
+        "view_to_cart": 0.041047,
+        "cart_to_purchase": 0.768116,
+        "view_to_purchase": 0.031529
       },
       "cart_abandonment": {
-        "cart_sessions": 495,
-        "abandoned_sessions": 251,
-        "abandonment_rate": 0.507071
+        "cart_sessions": 69,
+        "abandoned_sessions": 16,
+        "abandonment_rate": 0.231884
       },
       "average_ticket": {
-        "revenue": 164192.93,
-        "orders": 237,
-        "average_ticket": 692.8
+        "revenue": 34839.53,
+        "orders": 52,
+        "average_ticket": 669.99
       },
       "top_brands": {
         "brands": [
           {
             "brand": "synth-nimbora",
-            "revenue": 48830.07,
-            "purchases": 83,
-            "share": 0.297394
-          },
-          {
-            "brand": "synth-velkaro",
-            "revenue": 26923.19,
-            "purchases": 35,
-            "share": 0.163973
-          },
-          {
-            "brand": "synth-lumbrel",
-            "revenue": 21673.64,
-            "purchases": 27,
-            "share": 0.132001
+            "revenue": 14524.64,
+            "purchases": 25,
+            "share": 0.416901
           },
           {
             "brand": "synth-quorvo",
-            "revenue": 14747.72,
-            "purchases": 21,
-            "share": 0.089819
-          },
-          {
-            "brand": "synth-ostrina",
-            "revenue": 11583.9,
-            "purchases": 20,
-            "share": 0.070551
+            "revenue": 7110.24,
+            "purchases": 8,
+            "share": 0.204085
           },
           {
             "brand": "synth-tessavi",
-            "revenue": 9769.4,
-            "purchases": 12,
-            "share": 0.0595
+            "revenue": 2692.04,
+            "purchases": 7,
+            "share": 0.07727
           },
           {
-            "brand": "synth-brondel",
-            "revenue": 7023.4,
-            "purchases": 10,
-            "share": 0.042775
+            "brand": "synth-lumbrel",
+            "revenue": 2328.95,
+            "purchases": 2,
+            "share": 0.066848
+          },
+          {
+            "brand": "synth-velkaro",
+            "revenue": 1577.87,
+            "purchases": 2,
+            "share": 0.04529
+          },
+          {
+            "brand": "synth-ostrina",
+            "revenue": 1159.31,
+            "purchases": 3,
+            "share": 0.033276
           }
         ],
-        "revenue_without_brand": 23641.61,
-        "brands_total": 7
+        "revenue_without_brand": 5446.48,
+        "brands_total": 6
       }
     },
     "2024-03-02": {
       "funnel": {
-        "view_sessions": 1474,
-        "cart_sessions": 503,
-        "purchase_sessions": 250,
-        "view_to_cart": 0.341248,
-        "cart_to_purchase": 0.497018,
-        "view_to_purchase": 0.169607
+        "view_sessions": 1726,
+        "cart_sessions": 81,
+        "purchase_sessions": 69,
+        "view_to_cart": 0.046929,
+        "cart_to_purchase": 0.851852,
+        "view_to_purchase": 0.039977
       },
       "cart_abandonment": {
-        "cart_sessions": 503,
-        "abandoned_sessions": 253,
-        "abandonment_rate": 0.502982
+        "cart_sessions": 81,
+        "abandoned_sessions": 12,
+        "abandonment_rate": 0.148148
       },
       "average_ticket": {
-        "revenue": 181286.22,
-        "orders": 252,
-        "average_ticket": 719.39
+        "revenue": 45110.68,
+        "orders": 69,
+        "average_ticket": 653.78
       },
       "top_brands": {
         "brands": [
           {
             "brand": "synth-nimbora",
-            "revenue": 44340.31,
-            "purchases": 69,
-            "share": 0.244587
-          },
-          {
-            "brand": "synth-velkaro",
-            "revenue": 25167.15,
-            "purchases": 33,
-            "share": 0.138825
-          },
-          {
-            "brand": "synth-quorvo",
-            "revenue": 24896.18,
-            "purchases": 30,
-            "share": 0.137331
+            "revenue": 15184.92,
+            "purchases": 22,
+            "share": 0.336615
           },
           {
             "brand": "synth-ostrina",
-            "revenue": 20200.86,
-            "purchases": 26,
-            "share": 0.111431
-          },
-          {
-            "brand": "synth-lumbrel",
-            "revenue": 16913.13,
-            "purchases": 23,
-            "share": 0.093295
-          },
-          {
-            "brand": "synth-brondel",
-            "revenue": 13588.42,
-            "purchases": 18,
-            "share": 0.074956
+            "revenue": 5919.89,
+            "purchases": 7,
+            "share": 0.13123
           },
           {
             "brand": "synth-tessavi",
-            "revenue": 11190.54,
-            "purchases": 16,
-            "share": 0.061729
+            "revenue": 4517.41,
+            "purchases": 5,
+            "share": 0.100141
+          },
+          {
+            "brand": "synth-quorvo",
+            "revenue": 2557.68,
+            "purchases": 5,
+            "share": 0.056698
+          },
+          {
+            "brand": "synth-velkaro",
+            "revenue": 2446.64,
+            "purchases": 7,
+            "share": 0.054236
+          },
+          {
+            "brand": "synth-lumbrel",
+            "revenue": 2297.66,
+            "purchases": 3,
+            "share": 0.050934
+          },
+          {
+            "brand": "synth-brondel",
+            "revenue": 577.38,
+            "purchases": 3,
+            "share": 0.012799
           }
         ],
-        "revenue_without_brand": 24989.63,
+        "revenue_without_brand": 11609.1,
         "brands_total": 7
       }
     },
     "2024-03-03": {
       "funnel": {
-        "view_sessions": 1416,
-        "cart_sessions": 461,
-        "purchase_sessions": 241,
-        "view_to_cart": 0.325565,
-        "cart_to_purchase": 0.522777,
-        "view_to_purchase": 0.170198
+        "view_sessions": 1711,
+        "cart_sessions": 86,
+        "purchase_sessions": 69,
+        "view_to_cart": 0.050263,
+        "cart_to_purchase": 0.802326,
+        "view_to_purchase": 0.040327
       },
       "cart_abandonment": {
-        "cart_sessions": 461,
-        "abandoned_sessions": 220,
-        "abandonment_rate": 0.477223
+        "cart_sessions": 86,
+        "abandoned_sessions": 17,
+        "abandonment_rate": 0.197674
       },
       "average_ticket": {
-        "revenue": 179026.14,
-        "orders": 239,
-        "average_ticket": 749.06
+        "revenue": 53978.83,
+        "orders": 70,
+        "average_ticket": 771.13
       },
       "top_brands": {
         "brands": [
           {
             "brand": "synth-nimbora",
-            "revenue": 58177.73,
-            "purchases": 85,
-            "share": 0.324968
+            "revenue": 12778.49,
+            "purchases": 21,
+            "share": 0.236732
           },
           {
             "brand": "synth-velkaro",
-            "revenue": 24117.79,
-            "purchases": 32,
-            "share": 0.134717
-          },
-          {
-            "brand": "synth-quorvo",
-            "revenue": 23504.38,
-            "purchases": 30,
-            "share": 0.13129
+            "revenue": 9766.37,
+            "purchases": 12,
+            "share": 0.18093
           },
           {
             "brand": "synth-ostrina",
-            "revenue": 22143.89,
-            "purchases": 28,
-            "share": 0.123691
+            "revenue": 7233.5,
+            "purchases": 9,
+            "share": 0.134006
           },
           {
-            "brand": "synth-lumbrel",
-            "revenue": 19019.61,
-            "purchases": 21,
-            "share": 0.106239
+            "brand": "synth-quorvo",
+            "revenue": 5759.25,
+            "purchases": 6,
+            "share": 0.106695
           },
           {
             "brand": "synth-tessavi",
-            "revenue": 11950.56,
-            "purchases": 12,
-            "share": 0.066753
+            "revenue": 4957.54,
+            "purchases": 5,
+            "share": 0.091842
+          },
+          {
+            "brand": "synth-lumbrel",
+            "revenue": 4303.5,
+            "purchases": 5,
+            "share": 0.079726
           },
           {
             "brand": "synth-brondel",
-            "revenue": 8220.91,
-            "purchases": 10,
-            "share": 0.04592
+            "revenue": 2101.0,
+            "purchases": 3,
+            "share": 0.038923
           }
         ],
-        "revenue_without_brand": 11891.27,
+        "revenue_without_brand": 7079.18,
         "brands_total": 7
       }
     },
     "2024-03-04": {
       "funnel": {
-        "view_sessions": 1451,
-        "cart_sessions": 513,
-        "purchase_sessions": 250,
-        "view_to_cart": 0.353549,
-        "cart_to_purchase": 0.487329,
-        "view_to_purchase": 0.172295
+        "view_sessions": 1743,
+        "cart_sessions": 104,
+        "purchase_sessions": 86,
+        "view_to_cart": 0.059667,
+        "cart_to_purchase": 0.826923,
+        "view_to_purchase": 0.04934
       },
       "cart_abandonment": {
-        "cart_sessions": 513,
-        "abandoned_sessions": 263,
-        "abandonment_rate": 0.512671
+        "cart_sessions": 104,
+        "abandoned_sessions": 18,
+        "abandonment_rate": 0.173077
       },
       "average_ticket": {
-        "revenue": 178296.29,
-        "orders": 251,
-        "average_ticket": 710.34
+        "revenue": 59887.27,
+        "orders": 85,
+        "average_ticket": 704.56
       },
       "top_brands": {
         "brands": [
           {
             "brand": "synth-nimbora",
-            "revenue": 60139.55,
-            "purchases": 91,
-            "share": 0.337301
+            "revenue": 24128.39,
+            "purchases": 40,
+            "share": 0.402897
           },
           {
             "brand": "synth-velkaro",
-            "revenue": 26974.53,
-            "purchases": 40,
-            "share": 0.15129
-          },
-          {
-            "brand": "synth-ostrina",
-            "revenue": 21751.81,
-            "purchases": 28,
-            "share": 0.121998
+            "revenue": 8102.23,
+            "purchases": 10,
+            "share": 0.135291
           },
           {
             "brand": "synth-quorvo",
-            "revenue": 19505.25,
-            "purchases": 22,
-            "share": 0.109398
+            "revenue": 6070.78,
+            "purchases": 7,
+            "share": 0.10137
           },
           {
-            "brand": "synth-lumbrel",
-            "revenue": 11615.28,
-            "purchases": 18,
-            "share": 0.065146
+            "brand": "synth-ostrina",
+            "revenue": 6070.72,
+            "purchases": 6,
+            "share": 0.101369
           },
           {
             "brand": "synth-brondel",
-            "revenue": 11294.07,
-            "purchases": 14,
-            "share": 0.063344
+            "revenue": 4224.67,
+            "purchases": 6,
+            "share": 0.070544
+          },
+          {
+            "brand": "synth-lumbrel",
+            "revenue": 3099.54,
+            "purchases": 6,
+            "share": 0.051756
           },
           {
             "brand": "synth-tessavi",
-            "revenue": 8727.18,
-            "purchases": 14,
-            "share": 0.048948
+            "revenue": 1903.11,
+            "purchases": 4,
+            "share": 0.031778
           }
         ],
-        "revenue_without_brand": 18288.62,
+        "revenue_without_brand": 6287.83,
         "brands_total": 7
       }
     },
     "2024-03-05": {
       "funnel": {
-        "view_sessions": 1436,
-        "cart_sessions": 505,
-        "purchase_sessions": 263,
-        "view_to_cart": 0.351671,
-        "cart_to_purchase": 0.520792,
-        "view_to_purchase": 0.183148
+        "view_sessions": 1682,
+        "cart_sessions": 82,
+        "purchase_sessions": 65,
+        "view_to_cart": 0.048751,
+        "cart_to_purchase": 0.792683,
+        "view_to_purchase": 0.038644
       },
       "cart_abandonment": {
-        "cart_sessions": 505,
-        "abandoned_sessions": 242,
-        "abandonment_rate": 0.479208
+        "cart_sessions": 82,
+        "abandoned_sessions": 17,
+        "abandonment_rate": 0.207317
       },
       "average_ticket": {
-        "revenue": 191039.26,
-        "orders": 260,
-        "average_ticket": 734.77
+        "revenue": 46491.86,
+        "orders": 66,
+        "average_ticket": 704.42
       },
       "top_brands": {
         "brands": [
           {
             "brand": "synth-nimbora",
-            "revenue": 68726.93,
-            "purchases": 102,
-            "share": 0.359753
-          },
-          {
-            "brand": "synth-velkaro",
-            "revenue": 35131.54,
-            "purchases": 42,
-            "share": 0.183897
-          },
-          {
-            "brand": "synth-quorvo",
-            "revenue": 22389.59,
-            "purchases": 22,
-            "share": 0.117199
+            "revenue": 18531.83,
+            "purchases": 26,
+            "share": 0.398604
           },
           {
             "brand": "synth-ostrina",
-            "revenue": 14017.8,
-            "purchases": 22,
-            "share": 0.073377
-          },
-          {
-            "brand": "synth-tessavi",
-            "revenue": 12772.63,
-            "purchases": 19,
-            "share": 0.066859
+            "revenue": 4985.64,
+            "purchases": 8,
+            "share": 0.107237
           },
           {
             "brand": "synth-lumbrel",
-            "revenue": 9648.47,
-            "purchases": 14,
-            "share": 0.050505
+            "revenue": 3154.7,
+            "purchases": 3,
+            "share": 0.067855
+          },
+          {
+            "brand": "synth-quorvo",
+            "revenue": 2589.69,
+            "purchases": 5,
+            "share": 0.055702
+          },
+          {
+            "brand": "synth-tessavi",
+            "revenue": 2100.9,
+            "purchases": 2,
+            "share": 0.045189
           },
           {
             "brand": "synth-brondel",
-            "revenue": 9488.74,
-            "purchases": 11,
-            "share": 0.049669
+            "revenue": 2044.2,
+            "purchases": 3,
+            "share": 0.043969
+          },
+          {
+            "brand": "synth-velkaro",
+            "revenue": 1912.59,
+            "purchases": 5,
+            "share": 0.041138
           }
         ],
-        "revenue_without_brand": 18863.56,
+        "revenue_without_brand": 11172.31,
         "brands_total": 7
       }
     },
     "2024-03-06": {
       "funnel": {
-        "view_sessions": 1320,
-        "cart_sessions": 454,
-        "purchase_sessions": 221,
-        "view_to_cart": 0.343939,
-        "cart_to_purchase": 0.486784,
-        "view_to_purchase": 0.167424
+        "view_sessions": 1744,
+        "cart_sessions": 94,
+        "purchase_sessions": 74,
+        "view_to_cart": 0.053899,
+        "cart_to_purchase": 0.787234,
+        "view_to_purchase": 0.042431
       },
       "cart_abandonment": {
-        "cart_sessions": 454,
-        "abandoned_sessions": 233,
-        "abandonment_rate": 0.513216
+        "cart_sessions": 94,
+        "abandoned_sessions": 20,
+        "abandonment_rate": 0.212766
       },
       "average_ticket": {
-        "revenue": 165485.66,
-        "orders": 223,
-        "average_ticket": 742.09
+        "revenue": 53801.15,
+        "orders": 74,
+        "average_ticket": 727.04
       },
       "top_brands": {
         "brands": [
           {
             "brand": "synth-nimbora",
-            "revenue": 65219.09,
-            "purchases": 94,
-            "share": 0.394107
-          },
-          {
-            "brand": "synth-velkaro",
-            "revenue": 23251.4,
-            "purchases": 31,
-            "share": 0.140504
-          },
-          {
-            "brand": "synth-ostrina",
-            "revenue": 18678.98,
-            "purchases": 24,
-            "share": 0.112874
+            "revenue": 19612.2,
+            "purchases": 32,
+            "share": 0.364531
           },
           {
             "brand": "synth-quorvo",
-            "revenue": 17947.43,
-            "purchases": 22,
-            "share": 0.108453
+            "revenue": 6635.26,
+            "purchases": 7,
+            "share": 0.123329
           },
           {
-            "brand": "synth-lumbrel",
-            "revenue": 13219.15,
-            "purchases": 17,
-            "share": 0.079881
+            "brand": "synth-velkaro",
+            "revenue": 5423.41,
+            "purchases": 8,
+            "share": 0.100805
           },
           {
             "brand": "synth-tessavi",
-            "revenue": 6491.06,
-            "purchases": 8,
-            "share": 0.039224
+            "revenue": 5225.51,
+            "purchases": 6,
+            "share": 0.097126
+          },
+          {
+            "brand": "synth-lumbrel",
+            "revenue": 4974.49,
+            "purchases": 5,
+            "share": 0.092461
+          },
+          {
+            "brand": "synth-ostrina",
+            "revenue": 3212.24,
+            "purchases": 4,
+            "share": 0.059706
           },
           {
             "brand": "synth-brondel",
-            "revenue": 3328.41,
-            "purchases": 5,
-            "share": 0.020113
+            "revenue": 2167.47,
+            "purchases": 2,
+            "share": 0.040287
           }
         ],
-        "revenue_without_brand": 17350.14,
+        "revenue_without_brand": 6550.57,
         "brands_total": 7
       }
     },
     "2024-03-07": {
       "funnel": {
-        "view_sessions": 1400,
-        "cart_sessions": 478,
-        "purchase_sessions": 244,
-        "view_to_cart": 0.341429,
-        "cart_to_purchase": 0.51046,
-        "view_to_purchase": 0.174286
+        "view_sessions": 1693,
+        "cart_sessions": 77,
+        "purchase_sessions": 63,
+        "view_to_cart": 0.045481,
+        "cart_to_purchase": 0.818182,
+        "view_to_purchase": 0.037212
       },
       "cart_abandonment": {
-        "cart_sessions": 478,
-        "abandoned_sessions": 234,
-        "abandonment_rate": 0.48954
+        "cart_sessions": 77,
+        "abandoned_sessions": 14,
+        "abandonment_rate": 0.181818
       },
       "average_ticket": {
-        "revenue": 170682.19,
-        "orders": 244,
-        "average_ticket": 699.52
+        "revenue": 49377.86,
+        "orders": 63,
+        "average_ticket": 783.78
       },
       "top_brands": {
         "brands": [
           {
             "brand": "synth-nimbora",
-            "revenue": 48877.14,
-            "purchases": 81,
-            "share": 0.286363
+            "revenue": 13167.17,
+            "purchases": 21,
+            "share": 0.266661
           },
           {
             "brand": "synth-ostrina",
-            "revenue": 29534.28,
-            "purchases": 37,
-            "share": 0.173037
-          },
-          {
-            "brand": "synth-velkaro",
-            "revenue": 28809.64,
-            "purchases": 39,
-            "share": 0.168791
-          },
-          {
-            "brand": "synth-quorvo",
-            "revenue": 22201.19,
-            "purchases": 26,
-            "share": 0.130073
-          },
-          {
-            "brand": "synth-lumbrel",
-            "revenue": 10544.54,
-            "purchases": 15,
-            "share": 0.061779
+            "revenue": 10187.04,
+            "purchases": 11,
+            "share": 0.206308
           },
           {
             "brand": "synth-tessavi",
-            "revenue": 6944.8,
-            "purchases": 9,
-            "share": 0.040688
+            "revenue": 6264.78,
+            "purchases": 7,
+            "share": 0.126874
           },
           {
-            "brand": "synth-brondel",
-            "revenue": 5762.05,
-            "purchases": 10,
-            "share": 0.033759
+            "brand": "synth-velkaro",
+            "revenue": 5776.5,
+            "purchases": 8,
+            "share": 0.116986
+          },
+          {
+            "brand": "synth-quorvo",
+            "revenue": 5195.51,
+            "purchases": 5,
+            "share": 0.105219
+          },
+          {
+            "brand": "synth-lumbrel",
+            "revenue": 1296.79,
+            "purchases": 1,
+            "share": 0.026263
           }
         ],
-        "revenue_without_brand": 18008.55,
-        "brands_total": 7
+        "revenue_without_brand": 7490.07,
+        "brands_total": 6
       }
     },
     "2024-03-08": {
       "funnel": {
-        "view_sessions": 1411,
-        "cart_sessions": 492,
-        "purchase_sessions": 237,
-        "view_to_cart": 0.348689,
-        "cart_to_purchase": 0.481707,
-        "view_to_purchase": 0.167966
+        "view_sessions": 1709,
+        "cart_sessions": 72,
+        "purchase_sessions": 54,
+        "view_to_cart": 0.04213,
+        "cart_to_purchase": 0.75,
+        "view_to_purchase": 0.031597
       },
       "cart_abandonment": {
-        "cart_sessions": 492,
-        "abandoned_sessions": 255,
-        "abandonment_rate": 0.518293
+        "cart_sessions": 72,
+        "abandoned_sessions": 18,
+        "abandonment_rate": 0.25
       },
       "average_ticket": {
-        "revenue": 172152.3,
-        "orders": 234,
-        "average_ticket": 735.69
+        "revenue": 45419.77,
+        "orders": 53,
+        "average_ticket": 856.98
       },
       "top_brands": {
         "brands": [
           {
             "brand": "synth-nimbora",
-            "revenue": 48636.94,
-            "purchases": 77,
-            "share": 0.282523
-          },
-          {
-            "brand": "synth-quorvo",
-            "revenue": 26805.32,
-            "purchases": 32,
-            "share": 0.155707
+            "revenue": 18571.84,
+            "purchases": 23,
+            "share": 0.408893
           },
           {
             "brand": "synth-velkaro",
-            "revenue": 26124.8,
-            "purchases": 34,
-            "share": 0.151754
-          },
-          {
-            "brand": "synth-ostrina",
-            "revenue": 22173.87,
-            "purchases": 26,
-            "share": 0.128804
+            "revenue": 5739.25,
+            "purchases": 6,
+            "share": 0.12636
           },
           {
             "brand": "synth-lumbrel",
-            "revenue": 12044.53,
-            "purchases": 13,
-            "share": 0.069964
+            "revenue": 4592.15,
+            "purchases": 6,
+            "share": 0.101105
+          },
+          {
+            "brand": "synth-quorvo",
+            "revenue": 4251.67,
+            "purchases": 4,
+            "share": 0.093608
           },
           {
             "brand": "synth-tessavi",
-            "revenue": 7668.01,
-            "purchases": 11,
-            "share": 0.044542
+            "revenue": 2505.25,
+            "purchases": 3,
+            "share": 0.055158
+          },
+          {
+            "brand": "synth-ostrina",
+            "revenue": 2357.54,
+            "purchases": 2,
+            "share": 0.051906
           },
           {
             "brand": "synth-brondel",
-            "revenue": 5128.72,
-            "purchases": 7,
-            "share": 0.029792
+            "revenue": 1853.01,
+            "purchases": 3,
+            "share": 0.040797
           }
         ],
-        "revenue_without_brand": 23570.11,
+        "revenue_without_brand": 5549.06,
         "brands_total": 7
       }
     },
     "2024-03-09": {
       "funnel": {
-        "view_sessions": 1374,
-        "cart_sessions": 465,
-        "purchase_sessions": 231,
-        "view_to_cart": 0.338428,
-        "cart_to_purchase": 0.496774,
-        "view_to_purchase": 0.168122
+        "view_sessions": 1679,
+        "cart_sessions": 89,
+        "purchase_sessions": 66,
+        "view_to_cart": 0.053008,
+        "cart_to_purchase": 0.741573,
+        "view_to_purchase": 0.039309
       },
       "cart_abandonment": {
-        "cart_sessions": 465,
-        "abandoned_sessions": 234,
-        "abandonment_rate": 0.503226
+        "cart_sessions": 89,
+        "abandoned_sessions": 23,
+        "abandonment_rate": 0.258427
       },
       "average_ticket": {
-        "revenue": 161482.87,
-        "orders": 230,
-        "average_ticket": 702.1
+        "revenue": 51001.41,
+        "orders": 66,
+        "average_ticket": 772.75
       },
       "top_brands": {
         "brands": [
           {
             "brand": "synth-nimbora",
-            "revenue": 54074.69,
-            "purchases": 86,
-            "share": 0.334863
-          },
-          {
-            "brand": "synth-velkaro",
-            "revenue": 34035.7,
-            "purchases": 46,
-            "share": 0.21077
-          },
-          {
-            "brand": "synth-ostrina",
-            "revenue": 18231.78,
-            "purchases": 26,
-            "share": 0.112902
-          },
-          {
-            "brand": "synth-quorvo",
-            "revenue": 13722.76,
-            "purchases": 20,
-            "share": 0.08498
+            "revenue": 19018.87,
+            "purchases": 24,
+            "share": 0.372909
           },
           {
             "brand": "synth-lumbrel",
-            "revenue": 11105.64,
-            "purchases": 14,
-            "share": 0.068773
+            "revenue": 8315.66,
+            "purchases": 12,
+            "share": 0.163048
+          },
+          {
+            "brand": "synth-ostrina",
+            "revenue": 5892.24,
+            "purchases": 8,
+            "share": 0.115531
+          },
+          {
+            "brand": "synth-velkaro",
+            "revenue": 4861.11,
+            "purchases": 7,
+            "share": 0.095313
           },
           {
             "brand": "synth-tessavi",
-            "revenue": 8887.76,
-            "purchases": 14,
-            "share": 0.055038
+            "revenue": 4333.75,
+            "purchases": 5,
+            "share": 0.084973
           },
           {
             "brand": "synth-brondel",
-            "revenue": 4944.24,
-            "purchases": 6,
-            "share": 0.030618
+            "revenue": 1677.04,
+            "purchases": 2,
+            "share": 0.032882
+          },
+          {
+            "brand": "synth-quorvo",
+            "revenue": 791.84,
+            "purchases": 2,
+            "share": 0.015526
           }
         ],
-        "revenue_without_brand": 16480.3,
+        "revenue_without_brand": 6110.9,
         "brands_total": 7
       }
     },
     "2024-03-10": {
       "funnel": {
-        "view_sessions": 1360,
-        "cart_sessions": 477,
-        "purchase_sessions": 151,
-        "view_to_cart": 0.350735,
-        "cart_to_purchase": 0.316562,
-        "view_to_purchase": 0.111029
+        "view_sessions": 1784,
+        "cart_sessions": 95,
+        "purchase_sessions": 50,
+        "view_to_cart": 0.053251,
+        "cart_to_purchase": 0.526316,
+        "view_to_purchase": 0.028027
       },
       "cart_abandonment": {
-        "cart_sessions": 477,
-        "abandoned_sessions": 326,
-        "abandonment_rate": 0.683438
+        "cart_sessions": 95,
+        "abandoned_sessions": 45,
+        "abandonment_rate": 0.473684
       },
       "average_ticket": {
-        "revenue": 107105.71,
-        "orders": 150,
-        "average_ticket": 714.04
+        "revenue": 38592.08,
+        "orders": 49,
+        "average_ticket": 787.59
       },
       "top_brands": {
         "brands": [
           {
-            "brand": "synth-velkaro",
-            "revenue": 25817.55,
-            "purchases": 33,
-            "share": 0.241047
+            "brand": "synth-lumbrel",
+            "revenue": 8410.35,
+            "purchases": 9,
+            "share": 0.217929
           },
           {
-            "brand": "synth-ostrina",
-            "revenue": 19517.16,
-            "purchases": 26,
-            "share": 0.182223
+            "brand": "synth-velkaro",
+            "revenue": 6186.11,
+            "purchases": 7,
+            "share": 0.160295
           },
           {
             "brand": "synth-quorvo",
-            "revenue": 15061.74,
-            "purchases": 22,
-            "share": 0.140625
+            "revenue": 5816.87,
+            "purchases": 6,
+            "share": 0.150727
+          },
+          {
+            "brand": "synth-ostrina",
+            "revenue": 4856.19,
+            "purchases": 5,
+            "share": 0.125834
           },
           {
             "brand": "synth-tessavi",
-            "revenue": 14827.75,
-            "purchases": 20,
-            "share": 0.13844
-          },
-          {
-            "brand": "synth-lumbrel",
-            "revenue": 12639.62,
-            "purchases": 16,
-            "share": 0.118011
+            "revenue": 3039.34,
+            "purchases": 7,
+            "share": 0.078756
           },
           {
             "brand": "synth-nimbora",
-            "revenue": 4787.82,
-            "purchases": 10,
-            "share": 0.044702
+            "revenue": 2220.52,
+            "purchases": 3,
+            "share": 0.057538
           },
           {
             "brand": "synth-brondel",
-            "revenue": 3887.81,
-            "purchases": 7,
-            "share": 0.036299
+            "revenue": 491.6,
+            "purchases": 1,
+            "share": 0.012738
           }
         ],
-        "revenue_without_brand": 10566.26,
+        "revenue_without_brand": 7571.1,
         "brands_total": 7
       }
     },
     "2024-03-11": {
       "funnel": {
-        "view_sessions": 1386,
-        "cart_sessions": 471,
-        "purchase_sessions": 238,
-        "view_to_cart": 0.339827,
-        "cart_to_purchase": 0.505308,
-        "view_to_purchase": 0.171717
+        "view_sessions": 1704,
+        "cart_sessions": 89,
+        "purchase_sessions": 67,
+        "view_to_cart": 0.05223,
+        "cart_to_purchase": 0.752809,
+        "view_to_purchase": 0.039319
       },
       "cart_abandonment": {
-        "cart_sessions": 471,
-        "abandoned_sessions": 233,
-        "abandonment_rate": 0.494692
+        "cart_sessions": 89,
+        "abandoned_sessions": 22,
+        "abandonment_rate": 0.247191
       },
       "average_ticket": {
-        "revenue": 173383.42,
-        "orders": 238,
-        "average_ticket": 728.5
+        "revenue": 52585.55,
+        "orders": 67,
+        "average_ticket": 784.86
       },
       "top_brands": {
         "brands": [
           {
             "brand": "synth-nimbora",
-            "revenue": 51762.23,
-            "purchases": 88,
-            "share": 0.298542
-          },
-          {
-            "brand": "synth-ostrina",
-            "revenue": 25692.55,
-            "purchases": 31,
-            "share": 0.148183
-          },
-          {
-            "brand": "synth-velkaro",
-            "revenue": 24121.87,
-            "purchases": 35,
-            "share": 0.139124
-          },
-          {
-            "brand": "synth-quorvo",
-            "revenue": 21745.44,
-            "purchases": 24,
-            "share": 0.125418
-          },
-          {
-            "brand": "synth-lumbrel",
-            "revenue": 18785.49,
-            "purchases": 20,
-            "share": 0.108347
-          },
-          {
-            "brand": "synth-tessavi",
-            "revenue": 12000.2,
-            "purchases": 16,
-            "share": 0.069212
+            "revenue": 19056.16,
+            "purchases": 29,
+            "share": 0.362384
           },
           {
             "brand": "synth-brondel",
-            "revenue": 7983.54,
-            "purchases": 9,
-            "share": 0.046046
+            "revenue": 6270.01,
+            "purchases": 6,
+            "share": 0.119234
+          },
+          {
+            "brand": "synth-velkaro",
+            "revenue": 5409.48,
+            "purchases": 7,
+            "share": 0.10287
+          },
+          {
+            "brand": "synth-quorvo",
+            "revenue": 4939.94,
+            "purchases": 5,
+            "share": 0.093941
+          },
+          {
+            "brand": "synth-ostrina",
+            "revenue": 3916.37,
+            "purchases": 6,
+            "share": 0.074476
+          },
+          {
+            "brand": "synth-tessavi",
+            "revenue": 3348.06,
+            "purchases": 3,
+            "share": 0.063669
+          },
+          {
+            "brand": "synth-lumbrel",
+            "revenue": 1288.17,
+            "purchases": 1,
+            "share": 0.024497
           }
         ],
-        "revenue_without_brand": 11292.1,
+        "revenue_without_brand": 8357.36,
         "brands_total": 7
       }
     },
     "2024-03-12": {
       "funnel": {
-        "view_sessions": 1522,
-        "cart_sessions": 531,
-        "purchase_sessions": 251,
-        "view_to_cart": 0.348883,
-        "cart_to_purchase": 0.472693,
-        "view_to_purchase": 0.164915
+        "view_sessions": 1679,
+        "cart_sessions": 78,
+        "purchase_sessions": 58,
+        "view_to_cart": 0.046456,
+        "cart_to_purchase": 0.74359,
+        "view_to_purchase": 0.034544
       },
       "cart_abandonment": {
-        "cart_sessions": 531,
-        "abandoned_sessions": 280,
-        "abandonment_rate": 0.527307
+        "cart_sessions": 78,
+        "abandoned_sessions": 20,
+        "abandonment_rate": 0.25641
       },
       "average_ticket": {
-        "revenue": 175391.64,
-        "orders": 248,
-        "average_ticket": 707.22
+        "revenue": 35674.64,
+        "orders": 59,
+        "average_ticket": 604.65
       },
       "top_brands": {
         "brands": [
           {
             "brand": "synth-nimbora",
-            "revenue": 50383.6,
-            "purchases": 82,
-            "share": 0.287263
-          },
-          {
-            "brand": "synth-lumbrel",
-            "revenue": 24833.48,
-            "purchases": 32,
-            "share": 0.141589
-          },
-          {
-            "brand": "synth-quorvo",
-            "revenue": 23447.68,
-            "purchases": 27,
-            "share": 0.133688
+            "revenue": 15506.15,
+            "purchases": 28,
+            "share": 0.434655
           },
           {
             "brand": "synth-velkaro",
-            "revenue": 22299.62,
-            "purchases": 28,
-            "share": 0.127142
+            "revenue": 5189.04,
+            "purchases": 7,
+            "share": 0.145455
           },
           {
             "brand": "synth-ostrina",
-            "revenue": 20057.72,
-            "purchases": 26,
-            "share": 0.11436
+            "revenue": 4769.46,
+            "purchases": 5,
+            "share": 0.133693
           },
           {
-            "brand": "synth-tessavi",
-            "revenue": 14759.86,
-            "purchases": 20,
-            "share": 0.084154
+            "brand": "synth-lumbrel",
+            "revenue": 2317.19,
+            "purchases": 3,
+            "share": 0.064953
           },
           {
             "brand": "synth-brondel",
-            "revenue": 7518.55,
-            "purchases": 13,
-            "share": 0.042867
+            "revenue": 2259.39,
+            "purchases": 4,
+            "share": 0.063333
+          },
+          {
+            "brand": "synth-quorvo",
+            "revenue": 2051.75,
+            "purchases": 4,
+            "share": 0.057513
+          },
+          {
+            "brand": "synth-tessavi",
+            "revenue": 430.01,
+            "purchases": 1,
+            "share": 0.012054
           }
         ],
-        "revenue_without_brand": 12091.13,
+        "revenue_without_brand": 3151.65,
         "brands_total": 7
       }
     },
     "2024-03-13": {
       "funnel": {
-        "view_sessions": 1391,
-        "cart_sessions": 495,
-        "purchase_sessions": 232,
-        "view_to_cart": 0.355859,
-        "cart_to_purchase": 0.468687,
-        "view_to_purchase": 0.166786
+        "view_sessions": 1665,
+        "cart_sessions": 87,
+        "purchase_sessions": 72,
+        "view_to_cart": 0.052252,
+        "cart_to_purchase": 0.827586,
+        "view_to_purchase": 0.043243
       },
       "cart_abandonment": {
-        "cart_sessions": 495,
-        "abandoned_sessions": 263,
-        "abandonment_rate": 0.531313
+        "cart_sessions": 87,
+        "abandoned_sessions": 15,
+        "abandonment_rate": 0.172414
       },
       "average_ticket": {
-        "revenue": 168236.69,
-        "orders": 233,
-        "average_ticket": 722.05
+        "revenue": 45245.38,
+        "orders": 71,
+        "average_ticket": 637.26
       },
       "top_brands": {
         "brands": [
           {
             "brand": "synth-nimbora",
-            "revenue": 48451.88,
-            "purchases": 75,
-            "share": 0.287998
+            "revenue": 20139.29,
+            "purchases": 32,
+            "share": 0.445113
           },
           {
             "brand": "synth-velkaro",
-            "revenue": 28465.07,
-            "purchases": 37,
-            "share": 0.169197
+            "revenue": 6103.77,
+            "purchases": 10,
+            "share": 0.134904
           },
           {
             "brand": "synth-ostrina",
-            "revenue": 23395.28,
-            "purchases": 27,
-            "share": 0.139062
-          },
-          {
-            "brand": "synth-lumbrel",
-            "revenue": 17110.2,
-            "purchases": 21,
-            "share": 0.101703
-          },
-          {
-            "brand": "synth-quorvo",
-            "revenue": 14186.32,
-            "purchases": 22,
-            "share": 0.084324
+            "revenue": 6019.74,
+            "purchases": 8,
+            "share": 0.133047
           },
           {
             "brand": "synth-tessavi",
-            "revenue": 13049.89,
-            "purchases": 18,
-            "share": 0.077569
+            "revenue": 3436.02,
+            "purchases": 4,
+            "share": 0.075942
+          },
+          {
+            "brand": "synth-quorvo",
+            "revenue": 2021.99,
+            "purchases": 5,
+            "share": 0.044689
           },
           {
             "brand": "synth-brondel",
-            "revenue": 5442.74,
-            "purchases": 10,
-            "share": 0.032352
+            "revenue": 1092.68,
+            "purchases": 3,
+            "share": 0.02415
+          },
+          {
+            "brand": "synth-lumbrel",
+            "revenue": 291.3,
+            "purchases": 1,
+            "share": 0.006438
           }
         ],
-        "revenue_without_brand": 18135.31,
+        "revenue_without_brand": 6140.59,
         "brands_total": 7
       }
     },
     "2024-03-14": {
       "funnel": {
-        "view_sessions": 1439,
-        "cart_sessions": 473,
-        "purchase_sessions": 220,
-        "view_to_cart": 0.3287,
-        "cart_to_purchase": 0.465116,
-        "view_to_purchase": 0.152884
+        "view_sessions": 1671,
+        "cart_sessions": 82,
+        "purchase_sessions": 68,
+        "view_to_cart": 0.049072,
+        "cart_to_purchase": 0.829268,
+        "view_to_purchase": 0.040694
       },
       "cart_abandonment": {
-        "cart_sessions": 473,
-        "abandoned_sessions": 253,
-        "abandonment_rate": 0.534884
+        "cart_sessions": 82,
+        "abandoned_sessions": 14,
+        "abandonment_rate": 0.170732
       },
       "average_ticket": {
-        "revenue": 163089.25,
-        "orders": 222,
-        "average_ticket": 734.64
+        "revenue": 42712.46,
+        "orders": 69,
+        "average_ticket": 619.02
       },
       "top_brands": {
         "brands": [
           {
             "brand": "synth-nimbora",
-            "revenue": 50534.02,
-            "purchases": 80,
-            "share": 0.309855
+            "revenue": 12371.71,
+            "purchases": 28,
+            "share": 0.289651
           },
           {
             "brand": "synth-quorvo",
-            "revenue": 20771.97,
-            "purchases": 22,
-            "share": 0.127366
-          },
-          {
-            "brand": "synth-velkaro",
-            "revenue": 20721.38,
-            "purchases": 30,
-            "share": 0.127055
+            "revenue": 8225.61,
+            "purchases": 10,
+            "share": 0.192581
           },
           {
             "brand": "synth-ostrina",
-            "revenue": 18943.24,
-            "purchases": 24,
-            "share": 0.116153
-          },
-          {
-            "brand": "synth-tessavi",
-            "revenue": 17278.92,
-            "purchases": 20,
-            "share": 0.105948
+            "revenue": 5530.8,
+            "purchases": 6,
+            "share": 0.129489
           },
           {
             "brand": "synth-lumbrel",
-            "revenue": 12961.28,
-            "purchases": 20,
-            "share": 0.079474
+            "revenue": 3696.4,
+            "purchases": 6,
+            "share": 0.086541
+          },
+          {
+            "brand": "synth-tessavi",
+            "revenue": 2934.0,
+            "purchases": 4,
+            "share": 0.068692
+          },
+          {
+            "brand": "synth-velkaro",
+            "revenue": 2767.18,
+            "purchases": 4,
+            "share": 0.064786
           },
           {
             "brand": "synth-brondel",
-            "revenue": 7774.38,
-            "purchases": 13,
-            "share": 0.047669
+            "revenue": 1246.53,
+            "purchases": 2,
+            "share": 0.029184
           }
         ],
-        "revenue_without_brand": 14104.06,
+        "revenue_without_brand": 5940.23,
         "brands_total": 7
       }
     }

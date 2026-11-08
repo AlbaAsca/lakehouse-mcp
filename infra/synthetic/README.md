@@ -30,11 +30,11 @@ Cantidades de la muestra versionada, contando duplicados:
 
 | Caso | Filas | Cómo se genera |
 |---|---|---|
-| `category_code` nulo | 11.952 | categorías sin código, fijo por producto |
-| `brand` nulo | 5.029 | productos sin marca, fijo por producto |
+| `category_code` nulo | 16.853 | categorías sin código, fijo por producto (≈34 %; real 32 %) |
+| `brand` nulo | 7.261 | productos sin marca, fijo por producto (≈15 %; real 14 %) |
 | `user_session` nulo | 50 | solo en el último evento de una sesión |
 | `price` 0 | 100 | por evento: 1 de cada 500 filas |
-| `price` negativo | 102 | por evento: 1 de cada 500 filas |
+| `price` negativo | 101 | por evento: 1 de cada 500 filas |
 | duplicados exactos | 250 copias | 1 de cada 200 filas; 49.750 filas distintas |
 
 Con otro tamaño se mantienen las proporciones de los casos por evento. Mínimo: 1.000 filas, para que aparezcan todos.
@@ -43,15 +43,19 @@ Con otro tamaño se mantienen las proporciones de los casos por evento. Mínimo:
 
 **El 2024-03-10 casi no se compra la marca `synth-nimbora`.** Es lo que el agente tiene que encontrar y explicar.
 
-La causa simulada es un fallo al pagar esa marca: ese día se ve y se añade al carrito con normalidad, pero la probabilidad de comprar lo que hay en el carrito pasa del 50 % al 5 %. Solo afecta a esa marca (un 35 % del tráfico) y ese día.
+La causa simulada es un fallo al pagar esa marca: ese día se ve y se añade al carrito con normalidad, pero la probabilidad de comprar lo que hay en el carrito pasa del 80 % al 8 %. Solo afecta a esa marca (un 48 % de las vistas) y ese día.
 
 | Eventos, sin quitar duplicados | 2024-03-10 | Resto de días (mín-máx) |
 |---|---:|---:|
-| Compras de `synth-nimbora` | 10 | 69-104 |
-| Compras de las demás marcas | 140 | 130-183 |
-| Compras totales | 150 | 224-263 |
-| Vistas de `synth-nimbora` | 966 | 947-1.042 |
-| Carritos de `synth-nimbora` | 184 | 153-196 |
+| Compras de `synth-nimbora` | 3 | 21-41 |
+| Compras de las demás marcas | 47 | 28-50 |
+| Compras totales | 50 | 53-86 |
+| Vistas de `synth-nimbora` | 1.418 | 1.307-1.449 |
+| Carritos de `synth-nimbora` | 37 | 23-49 |
+
+## Proporciones frente al perfil real
+
+Calibradas con los agregados de `docs/data-profile.md` (sin valores individuales); `tests/test_synthetic.py` exige estar a ±5 puntos: vistas ≈96 % (real 96,07), carritos ≈2,4 % (2,18), compras ≈1,9 % (1,75). Con tan pocas compras la caída plantada es más fina que antes, de ahí el mayor peso de `synth-nimbora`.
 
 Estas cifras describen la muestra, no son la verdad de referencia de las evals: esa se calcula aparte sobre el CSV. Los tests están en `tests/test_synthetic.py`.
 

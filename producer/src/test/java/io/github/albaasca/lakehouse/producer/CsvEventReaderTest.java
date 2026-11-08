@@ -99,8 +99,8 @@ class CsvEventReaderTest {
     void theDirtyCasesOfTheSampleAllSurvive() throws IOException {
         List<GenericRecord> events = readAll(CsvEventReader.open(SAMPLE));
 
-        assertThat(events.stream().filter(e -> e.get("category_code") == null)).hasSize(11_952);
-        assertThat(events.stream().filter(e -> e.get("brand") == null)).hasSize(5_029);
+        assertThat(events.stream().filter(e -> e.get("category_code") == null)).hasSize(16_853);
+        assertThat(events.stream().filter(e -> e.get("brand") == null)).hasSize(7_261);
         assertThat(events.stream().filter(e -> e.get("user_session") == null)).hasSize(50);
         assertThat(events.stream().filter(e -> (Double) e.get("price") == 0.0)).hasSize(100);
         assertThat(events.stream().filter(e -> (Double) e.get("price") < 0.0)).hasSize(102);

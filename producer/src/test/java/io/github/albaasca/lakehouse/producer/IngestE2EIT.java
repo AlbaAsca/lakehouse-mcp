@@ -108,8 +108,8 @@ class IngestE2EIT {
     /** The amounts documented in infra/synthetic/README.md: nothing upstream cleaned the sample on the way. */
     @Test
     void theDirtyRowsAndDuplicatesOfTheOriginKeepTheirNumbers() throws Exception {
-        assertThat(single("SELECT count(*) FILTER (WHERE category_code IS NULL) FROM " + TABLE)).isEqualTo(11_952);
-        assertThat(single("SELECT count(*) FILTER (WHERE brand IS NULL) FROM " + TABLE)).isEqualTo(5_029);
+        assertThat(single("SELECT count(*) FILTER (WHERE category_code IS NULL) FROM " + TABLE)).isEqualTo(16_853);
+        assertThat(single("SELECT count(*) FILTER (WHERE brand IS NULL) FROM " + TABLE)).isEqualTo(7_261);
         assertThat(single("SELECT count(*) FILTER (WHERE user_session IS NULL) FROM " + TABLE)).isEqualTo(50);
         assertThat(single("SELECT count(*) FILTER (WHERE price = 0) FROM " + TABLE)).isEqualTo(100);
         assertThat(single("SELECT count(*) FILTER (WHERE price < 0) FROM " + TABLE)).isEqualTo(102);

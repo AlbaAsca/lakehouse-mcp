@@ -71,13 +71,13 @@ def test_coincide_con_lo_documentado_en_la_muestra():
     q = json.loads(QUALITY.read_text(encoding="utf-8"))
     t = q["totals"]
     assert t["rows"] == 50000 and t["distinct_rows"] == 49750 and t["duplicate_copies"] == 250
-    assert t["nulls"] == {**{c: 0 for c in COLUMNS}, "category_code": 11952, "brand": 5029, "user_session": 50}
-    assert (t["price_zero"], t["price_negative"]) == (100, 102)
+    assert t["nulls"] == {**{c: 0 for c in COLUMNS}, "category_code": 16853, "brand": 7261, "user_session": 50}
+    assert (t["price_zero"], t["price_negative"]) == (100, 101)
     assert len(q["by_day"]) == 14
     assert list(q["by_day"])[0] == "2024-03-01" and list(q["by_day"])[-1] == "2024-03-14"
     purchases = {day: v["rows_by_event_type"]["purchase"] for day, v in q["by_day"].items()}
-    assert purchases.pop("2024-03-10") == 150
-    assert min(purchases.values()) == 224 and max(purchases.values()) == 263
+    assert purchases.pop("2024-03-10") == 50
+    assert min(purchases.values()) == 53 and max(purchases.values()) == 86
 
 
 def test_elemento_a_elemento_contra_recalculo_en_crudo():

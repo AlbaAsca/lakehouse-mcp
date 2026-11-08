@@ -29,8 +29,9 @@ DROP_DAY = datetime(2024, 3, 10, tzinfo=timezone.utc)
 DROP_BRAND = "synth-nimbora"
 DROP_FACTOR = 0.1
 
-CART_RATE = 0.35
-PURCHASE_RATE = 0.5
+# Calibrado con docs/data-profile.md: ~96 % vistas, ~2 % carritos, ~2 % compras (1-3 vistas por sesión).
+CART_RATE = 0.05
+PURCHASE_RATE = 0.8
 
 # Ids en rangos propios, por encima de los del dataset real. None = marca o categoría nula.
 PRODUCT_ID_BASE = 900_000_000
@@ -38,12 +39,12 @@ USER_ID_BASE = 900_000_000
 CATEGORY_ID_BASE = 9_000_000_000_000_000_000
 PRODUCTS_PER_BRAND = 40
 USERS = 8000
-BRANDS = (("synth-nimbora", 0.35), ("synth-velkaro", 0.15), ("synth-ostrina", 0.12),
+BRANDS = (("synth-nimbora", 0.50), ("synth-velkaro", 0.15), ("synth-ostrina", 0.12),
           ("synth-quorvo", 0.10), ("synth-lumbrel", 0.08), ("synth-tessavi", 0.06),
-          ("synth-brondel", 0.04), (None, 0.10))
+          ("synth-brondel", 0.04), (None, 0.18))  # marca nula real: 14 %
 CATEGORY_CODES = ("synth.gadgets.phone", "synth.gadgets.tablet", "synth.home.kettle",
                   "synth.home.lamp", "synth.garden.hose", "synth.sport.ball",
-                  "synth.sport.racket", "synth.toys.kite", None, None)
+                  "synth.sport.racket", "synth.toys.kite", None, None, None, None)  # 4/12 ≈ 33 % nulos (real: 32 %)
 
 
 class Rng:
@@ -152,8 +153,16 @@ def generate(seed, rows):
     for position, i in enumerate(bad_prices):
         events[i][6] = 0 if position % 2 == 0 else -events[i][6]
     # Solo el último evento de la sesión pierde el id: así las sesiones siguen siendo coherentes.
+    # Con tan pocos carritos reales, la mitad (si hay) se toma de sesiones que acaban en carrito o compra:
+    # así quedan huérfanos con paso previo, no solo vistas.
     last_events = [i for i in session_ends if i < target]
-    for i in rng.sample_indices(last_events, rows // 1000):
+    with_funnel = [i for i in last_events if events[i][1] != "view"]
+    wanted = rows // 1000
+    chosen = rng.sample_indices(with_funnel, min(len(with_funnel), (wanted + 1) // 2))
+    taken = set(chosen)
+    rest = [i for i in last_events if i not in taken]
+    chosen += rng.sample_indices(rest, wanted - len(chosen))
+    for i in chosen:
         events[i][8] = None
 
     # Copias exactas, sobre el evento ya ensuciado.

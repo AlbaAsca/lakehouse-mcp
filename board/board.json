@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-08T20:32:16+01:00",
+  "updated": "2026-11-08T20:37:35+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -794,10 +794,10 @@
       "id": "T-010",
       "title": "Infra: acercar la muestra sintética al perfil real",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "done",
       "priority": "media",
       "estimate_min": 15.0,
-      "actual_min": null,
+      "actual_min": 4.7,
       "auto": true,
       "manual": null,
       "desc": "La primera versión de la muestra se basa en lo que dice el brief. Cuando esté el informe del CSV real, conviene ajustar proporciones y añadir suciedad que no hubiéramos previsto, para que CI no pruebe un mundo más limpio que el real.\nCómo sabremos si funciona: las proporciones de la muestra (nulos, tipos de evento) quedan dentro de un margen del informe y cada tipo de suciedad del informe tiene su caso.\n\n## Técnico\nLeer docs/data-profile.md; ajustar generate.py y regenerar el fichero. Test comparando proporciones con margen de ±5 puntos, valores fijados en el test. Se usan solo agregados, sin valores individuales. Verificación: ./mk test-board.",
@@ -806,17 +806,62 @@
         "T-007"
       ],
       "created": "2026-11-02T11:35:56+01:00",
-      "updated": "2026-11-07T18:15:36+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-08T20:37:35+01:00",
+      "started_at": "2026-11-08T20:32:24+01:00",
+      "finished_at": "2026-11-08T20:37:04+01:00",
       "log": [
         {
           "t": "2026-11-02T11:35:56+01:00",
           "by": "consultor",
           "msg": "creada"
+        },
+        {
+          "t": "2026-11-08T20:32:24+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-08T20:37:04+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: muestra recalibrada al perfil real (±5 puntos), regenerada, con test nuevo y las cifras de verdad y de los tests actualizadas; tests Python en verde, tests Java sin ejecutar"
+        },
+        {
+          "t": "2026-11-08T20:37:06+01:00",
+          "by": "tester",
+          "msg": "verificando"
+        },
+        {
+          "t": "2026-11-08T20:37:35+01:00",
+          "by": "tester",
+          "msg": "DONE: la muestra recalibrada y su test de proporciones pasan; el único fallo es esperado (el gzip aún no está commiteado) y no hay dependencias de ficheros sin confirmar."
         }
       ],
-      "rank": 900
+      "rank": 900,
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-08T20:37:04+01:00",
+          "min": 4.7,
+          "turns": 62,
+          "tokens": 1121437,
+          "cost_usd": 0.46453150000000004,
+          "verdict": "review",
+          "summary": "muestra recalibrada al perfil real (±5 puntos), regenerada, con test nuevo y las cifras de verdad y de los tests actualizadas; tests Python en verde, tests Java sin ejecutar"
+        },
+        {
+          "agent": "tester",
+          "mode": "verify",
+          "at": "2026-11-08T20:37:35+01:00",
+          "min": 0.5,
+          "turns": 7,
+          "tokens": 66450,
+          "cost_usd": 0.06615170000000001,
+          "verdict": "done",
+          "summary": "la muestra recalibrada y su test de proporciones pasan; el único fallo es esperado (el gzip aún no está commiteado) y no hay dependencias de ficheros sin confirmar."
+        }
+      ],
+      "verify_started": "2026-11-08T20:37:06+01:00"
     },
     {
       "id": "T-011",
@@ -17531,14 +17576,14 @@
     },
     "measure": {
       "state": "working",
-      "current": "T-219",
-      "message": "desarrollador con T-219",
+      "current": "T-010",
+      "message": "tester con T-010",
       "pid": 20400,
-      "heartbeat": "2026-11-08T20:32:00+01:00",
+      "heartbeat": "2026-11-08T20:37:07+01:00",
       "enabled": true,
-      "agent": "desarrollador",
-      "started": "2026-11-08T20:32:00+01:00",
-      "live": "live-T-219-desarrollador-20261108-203200.jsonl",
+      "agent": "tester",
+      "started": "2026-11-08T20:37:07+01:00",
+      "live": "live-T-010-tester-20261108-203707.jsonl",
       "pause_reason": null
     }
   }

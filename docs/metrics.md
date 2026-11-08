@@ -45,7 +45,7 @@ Muestra sintética (`testdata/synthetic-events.csv.gz`) frente al dataset real (
 | `brand` nula (todos los tipos) | 330 filas de compra | 6.113.008 filas (14,4 %) | Sí. Es frecuente, por eso `revenue_without_brand` y `share` sobre el total son necesarios. Peso en compras: n/m. |
 | Compra sin carrito | 0 | n/m | Sí. La regla (compra implica carrito) es la prudente si abundan. Si son muchas, `cart_to_purchase` y el abandono se leen con cautela. |
 | Sesiones con más de una compra | 0 | n/m | Sí. Ticket por sesión; ya definido. |
-| Sesiones que cruzan medianoche UTC | 44 | n/m | Sí. Con 9,2 M de sesiones en 31 días habrá miles; la regla evita partirlas. |
+| Sesiones que cruzan medianoche UTC | 56 | n/m | Sí. Con 9,2 M de sesiones en 31 días habrá miles; la regla evita partirlas. |
 | Tipos de evento | view, cart, purchase | view 40.779.399, cart 926.516, purchase 742.849 (compras = 1,75 %) | Sí. No hay otros tipos. |
 
 **Conclusión:** con lo medido, ninguna regla cambia; no hay que avisar a T-029 ni a T-031. Pendiente: las filas n/m (compra sin carrito, varias compras por sesión, cruce de medianoche, compras con `price` <= 0 o `brand` nula) necesitan ampliar el perfil; se pide en una tarjeta de seguimiento. Hasta entonces, esas proporciones reales están **sin comprobar**.

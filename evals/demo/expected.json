@@ -10,23 +10,23 @@
   "top_brands_by_purchase_revenue": [
     {
       "brand": "synth-nimbora",
-      "revenue": "702942.00"
-    },
-    {
-      "brand": "synth-velkaro",
-      "revenue": "371961.23"
+      "revenue": "224812.18"
     },
     {
       "brand": "synth-ostrina",
-      "revenue": "285923.12"
+      "revenue": "72110.68"
+    },
+    {
+      "brand": "synth-velkaro",
+      "revenue": "71261.55"
     },
     {
       "brand": "synth-quorvo",
-      "revenue": "280932.97"
+      "revenue": "64018.08"
     },
     {
       "brand": "synth-lumbrel",
-      "revenue": "212114.06"
+      "revenue": "50366.85"
     }
   ]
 }

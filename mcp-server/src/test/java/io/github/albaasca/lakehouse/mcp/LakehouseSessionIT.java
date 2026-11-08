@@ -135,7 +135,7 @@ class LakehouseSessionIT {
         try (LakehouseSession session = new LakehouseSession(settings())) {
             assertThat(strings(session, "SELECT count(*) FILTER (category_code IS NULL), count(*) FILTER (brand IS NULL), "
                     + "count(*) FILTER (user_session IS NULL), count(*) FILTER (price = 0), count(*) FILTER (price < 0) FROM "
-                    + TABLE)).containsExactly("11952|5029|50|100|102");
+                    + TABLE)).containsExactly("16853|7261|50|100|101");
             assertThat(strings(session, "SELECT count(*) FROM (SELECT DISTINCT * FROM " + TABLE + ")"))
                     .containsExactly("49750");
             assertThat(strings(session, "SELECT count(*) FROM " + TABLE

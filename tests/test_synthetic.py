@@ -154,6 +154,32 @@ def test_cada_caso_sucio_aparece_tambien_en_una_muestra_pequena(tmp_path):
     assert len({tuple(r.values()) for r in small}) < 1000
 
 
+# --- Proporciones del perfil real (docs/data-profile.md, solo agregados, % fijados aquí) ---
+
+REAL_SHARE = {"view": 96.07, "cart": 2.18, "purchase": 1.75}
+REAL_NULL_PCT = {"category_code": 31.84, "brand": 14.40}
+MARGIN = 5.0
+
+
+def test_tipos_de_evento_dentro_de_5_puntos_del_perfil_real(rows):
+    counts = Counter(r["event_type"] for r in rows)
+    for event_type, real in REAL_SHARE.items():
+        assert abs(100 * counts[event_type] / len(rows) - real) <= MARGIN, event_type
+
+
+@pytest.mark.parametrize("column", sorted(REAL_NULL_PCT))
+def test_nulos_dentro_de_5_puntos_del_perfil_real(rows, column):
+    pct = 100 * sum(r[column] == "" for r in rows) / len(rows)
+    assert abs(pct - REAL_NULL_PCT[column]) <= MARGIN
+
+
+def test_precio_cero_o_negativo_y_duplicados_son_raros_como_en_el_real(rows):
+    non_positive = 100 * sum(float(r["price"]) <= 0 for r in rows) / len(rows)
+    assert abs(non_positive - 0.16) <= MARGIN
+    copies = sum(n - 1 for n in Counter(tuple(r.values()) for r in rows).values())
+    assert abs(100 * copies / len(rows) - 0.07) <= MARGIN
+
+
 # --- Caída plantada ---
 
 DROP_DAY = date(2024, 3, 10)

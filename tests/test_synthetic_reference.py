@@ -93,11 +93,11 @@ def test_git_guarda_la_muestra_sin_tocar_sus_bytes():
 # --- Cifras de casos sucios del README, una a una ---
 
 def test_casos_sucios_coinciden_con_el_readme(rows, lines):
-    assert sum(r["category_code"] == "" for r in rows) == 11952
-    assert sum(r["brand"] == "" for r in rows) == 5029
+    assert sum(r["category_code"] == "" for r in rows) == 16853
+    assert sum(r["brand"] == "" for r in rows) == 7261
     assert sum(r["user_session"] == "" for r in rows) == 50
     assert sum(cents(r["price"]) == 0 for r in rows) == 100
-    assert sum(cents(r["price"]) < 0 for r in rows) == 102
+    assert sum(cents(r["price"]) < 0 for r in rows) == 101
     assert len(set(lines[1:])) == 49750
 
 
@@ -144,11 +144,11 @@ def nimbora(r):
 
 
 def test_tabla_de_la_caida_coincide_con_el_readme(rows):
-    cases = [("purchase", nimbora, 10, 69, 104),
-             ("purchase", lambda r: not nimbora(r), 140, 130, 183),
-             ("purchase", lambda r: True, 150, 224, 263),
-             ("view", nimbora, 966, 947, 1042),
-             ("cart", nimbora, 184, 153, 196)]
+    cases = [("purchase", nimbora, 3, 21, 41),
+             ("purchase", lambda r: not nimbora(r), 47, 28, 50),
+             ("purchase", lambda r: True, 50, 53, 86),
+             ("view", nimbora, 1418, 1307, 1449),
+             ("cart", nimbora, 37, 23, 49)]
     for event_type, keep, on_drop, low, high in cases:
         counts = by_day(rows, event_type, keep)
         assert len(counts) == 14
@@ -160,7 +160,7 @@ def test_la_caida_esta_en_el_paso_de_carrito_a_compra(rows):
     # Lo que el agente debe explicar: se añade igual al carrito, pero no se paga. Ratio frente a los otros días.
     carts, purchases = by_day(rows, "cart", nimbora), by_day(rows, "purchase", nimbora)
     assert purchases[DROP_DAY] / carts[DROP_DAY] < 0.10
-    assert all(0.35 < purchases[d] / carts[d] < 0.70 for d in carts if d != DROP_DAY)
+    assert all(0.55 < purchases[d] / carts[d] <= 1.0 for d in carts if d != DROP_DAY)
 
 
 # --- Sin valores del dataset real ---

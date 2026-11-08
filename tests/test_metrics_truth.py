@@ -137,8 +137,8 @@ def test_muestra_contra_recalculo_en_crudo():
             money[f[0][:10]][f[8]] += Fraction(f[6])
             brands[f[5]] += Fraction(f[6])
     day_of = {s: min(v["t"])[:10] for s, v in sess.items()}
-    assert len(sess) == 19800  # docs/metrics.md
-    assert sum(1 for v in sess.values() if min(v["t"])[:10] != max(v["t"])[:10]) == 44  # cruzan medianoche
+    assert len(sess) == 23871 # docs/metrics.md
+    assert sum(1 for v in sess.values() if min(v["t"])[:10] != max(v["t"])[:10]) == 56  # cruzan medianoche
 
     q = json.loads(METRICS.read_text(encoding="utf-8"))
     for day, d in q["by_day"].items():
