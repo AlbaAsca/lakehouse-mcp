@@ -1,6 +1,6 @@
 # La demo: una pregunta de principio a fin
 
-> **Estado (8-nov-2026):** la demo está grabada con un cliente MCP (Claude Code), sin clave de modelo. La demo con el agente propio de Spring AI está ensayada con Gemini, pero no grabada: el cupo gratuito del modelo estaba agotado.
+> **Estado (8-nov-2026):** la demo está grabada con un agente (Claude) que decide el SQL en vivo contra el servidor MCP real. La demo con el agente propio de Spring AI está ensayada con Gemini, pero no grabada: el cupo gratuito del modelo estaba agotado.
 
 <p align="center"><img src="../media/demo-minima.gif" alt="Cliente MCP llamando a las herramientas del servidor" width="80%"></p>
 
@@ -29,20 +29,20 @@ Escribes una pregunta en lenguaje normal, un agente de IA la convierte en una co
 | Elemento | Real | Simulado |
 |---|---|---|
 | Stack, 50 000 filas y claves locales | ✅ | |
-| Llamadas a `list_tables`, `run_query` y `get_metric`, y sus respuestas | ✅ las da el servidor en cada grabación | |
-| Rechazo de la consulta que lee un fichero del disco | ✅ lo hace el validador | |
-| El agente que decide qué herramienta llamar | | 🟡 aquí es Claude Code como cliente MCP, no el agente de Spring AI |
-| Texto de la respuesta final | | 🟡 lo redacta el script a partir de las respuestas |
+| Qué herramientas se llaman y qué SQL se escribe | ✅ lo decide un agente (Claude) sin ver ningún SQL previo | |
+| Errores, reintentos y respuestas del servidor | ✅ tal cual salieron | |
+| Texto de la respuesta final | ✅ el del agente, completo y sin editar | |
+| SQL en pantalla | | 🟡 abreviado; el completo está en `docs/media/live-agent/` |
 | La animación del GIF | | 🟡 dibujada con Pillow, no es una captura de pantalla |
-| Demo con el agente Java (`./mk ask`) | ✅ ensayo del 8-nov con Gemini cuadró con la referencia | 🟥 sin grabar |
+| El agente es Claude, no el de Spring AI | | 🟡 el agente Java está ensayado con Gemini, sin grabar |
+
+## Qué se aprendió grabándolo
+
+El primer intento (`round1-before-T-213.jsonl`) fracasó a medias: el agente gastó 8 llamadas probando nombres de tabla y no dio con `lh.ecommerce.events`, así que no pudo calcular los carritos ni la anomalía. La causa era que el servidor que corría no llevaba aún el arreglo T-213 (`queryName` en `list_tables` y sugerencia en el error). Tras reconstruirlo, la segunda ronda (`round2.jsonl`) resolvió la pregunta en 8 llamadas y 1 reintento. También salió que `get_metric` ignora en silencio los argumentos inventados (T-214).
 
 ## Cómo se grabó
 
-```bash
-python scripts/demo/record_mcp_demo.py
-```
-
-Necesita el stack arriba y `MCP_ANALYST_KEY` en `.env`. No usa ningún modelo, no gasta cupo y no carga datos. Para grabar con el agente Java cuando haya cupo: `python scripts/demo/record_demo.py` (el GIF con el agente se guardaría en `docs/media/`).
+El agente usa `scripts/demo/mcp_call.py`, que apunta cada llamada en un registro, y `python scripts/demo/record_mcp_demo.py --transcript <registro> --final <respuesta>` dibuja el GIF. Para repetir una versión con el agente Java cuando haya cupo: `python scripts/demo/record_demo.py`. El modo sin agente (SQL fijo de antemano, de la batería de evals) sigue disponible quitando `--transcript`.
 
 ## Qué puede fallar
 
