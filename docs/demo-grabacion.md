@@ -20,7 +20,7 @@ Espera al menos un minuto, porque el conector guarda cada ~30 s, y luego pregunt
 
 ```
 ./mk ask Q="How many rows does the events table have?"
-./mk ask Q="Which five brands have the highest purchase revenue? Show the amounts."
+./mk ask Q="Which five brands have the highest purchase revenue? Sum the price of every purchase row as stored (no deduplication, negative prices included, ignore empty brands). Show the amounts."
 ```
 
 Compara con `evals/demo/expected.json` (T-092):

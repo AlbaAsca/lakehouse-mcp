@@ -97,7 +97,7 @@ Un modelo simulado pide un `count(*)` y la cifra que llega a la respuesta es la 
 Con un modelo de verdad, **sin probar** (T-097): con el stack levantado y la muestra cargada,
 
 ```bash
-./mk ask Q="Which five brands have the highest purchase revenue?"
+./mk ask Q="Which five brands have the highest purchase revenue? Sum the price of every purchase row as stored (no deduplication, negative prices included, ignore empty brands)."
 ```
 
 Detalles de comillas y del arranque en [Operación](../04-operacion.md#preguntar-al-agente).
