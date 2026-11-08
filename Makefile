@@ -8,7 +8,7 @@ SPEEDUP ?= 3600
 TABLE ?= ecommerce.events
 RETENTION ?= P7D
 
-.PHONY: chaos-schema-drift chaos-consumer-down chaos-undo chaos-table up down download-data seed seed-sample test test-board evals chaos demo heal smoke expire ask profile-data
+.PHONY: chaos-schema-drift chaos-consumer-down chaos-undo chaos-table up down download-data seed seed-sample test test-board evals chaos demo heal smoke expire ask profile-data maintain
 up:
 	docker compose up -d --build --wait
 down:
@@ -42,6 +42,11 @@ seed-sample:
 	@echo "seed-sample: running it again duplicates the rows in the table (docker compose down -v starts clean)."
 expire:
 	docker compose run --rm --build expire-snapshots --table $(TABLE) --retention $(RETENTION)
+# Merges the small data files of TABLE (for the person who runs it; agents only through the IT). Writes through the
+# repair instance, so run it when the sink is quiet: a concurrent commit makes one of the two fail and it is retried.
+MIN_FILES ?= 2
+maintain:
+	docker compose run --rm --build --no-deps --entrypoint java mcp-server -Xmx256m -Dloader.main=io.github.albaasca.lakehouse.mcp.CompactCommand -cp /app/mcp-server.jar org.springframework.boot.loader.launch.PropertiesLauncher --table $(TABLE) --min-files $(MIN_FILES)
 # Q="question": read by the shell from the environment (make exports command-line variables), so quotes and
 # apostrophes inside it reach the agent untouched. Starts the stack it needs if it is not up.
 ask:

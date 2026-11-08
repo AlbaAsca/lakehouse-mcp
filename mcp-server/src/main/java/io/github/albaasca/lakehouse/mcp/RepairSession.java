@@ -211,7 +211,21 @@ public final class RepairSession {
         run(LakehouseSession.startup(settings, false), template.render(values));
     }
 
-    void run(List<String> setups, String sql) throws SQLException {
+    /** Like {@link #apply}, and returns the first row the statement gives back, columns joined with {@code |} ("" if none). */
+    public String applyForResult(Template template, Map<String, ?> values) throws SQLException {
+        return run(LakehouseSession.startup(settings, false), template.render(values));
+    }
+
+    /**
+     * Merges the small data files of a table and applies its delete files. {@code min_input_files} is always explicit:
+     * by default (5) DuckDB returns {@code 0|0|0} without error when there are fewer. This extension returns three
+     * columns: rewritten_data_files, added_data_files, rewritten_bytes. The delete file stays registered afterwards.
+     */
+    public static final Template COMPACT = new Template(
+            "CALL iceberg_rewrite_data_files('{table}', min_input_files => {min_input_files})",
+            Map.of("table", Kind.TABLE, "min_input_files", Kind.LONG));
+
+    String run(List<String> setups, String sql) throws SQLException {
         ScheduledExecutorService watchdog = Executors.newSingleThreadScheduledExecutor(runnable -> {
             Thread thread = new Thread(runnable, "repair-timeout");
             thread.setDaemon(true);
@@ -235,7 +249,18 @@ public final class RepairSession {
                     }
                 }, timeout.toMillis(), TimeUnit.MILLISECONDS);
                 try {
-                    statement.execute(sql);
+                    if (statement.execute(sql)) {
+                        try (var rs = statement.getResultSet()) {
+                            if (rs.next()) {
+                                StringBuilder row = new StringBuilder();
+                                for (int i = 1; i <= rs.getMetaData().getColumnCount(); i++) {
+                                    row.append(i > 1 ? "|" : "").append(rs.getString(i));
+                                }
+                                return row.toString();
+                            }
+                        }
+                    }
+                    return "";
                 } catch (SQLException e) {
                     if (fired.get()) {
                         throw new SQLTimeoutException("Repair exceeded " + timeout, e);
