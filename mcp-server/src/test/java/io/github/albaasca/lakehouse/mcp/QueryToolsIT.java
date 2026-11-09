@@ -68,6 +68,7 @@ class QueryToolsIT {
         registry.add("lakehouse.storage.secret-key", () -> LakehouseStack.S3_SECRET_KEY);
         registry.add("lakehouse.storage.region", () -> LakehouseStack.S3_REGION);
         registry.add("lakehouse.security.analyst-key", () -> "analyst-it-key");
+        registry.add("lakehouse.security.admin-key", () -> "admin-it-key");
     }
 
     @BeforeAll
@@ -94,7 +95,7 @@ class QueryToolsIT {
     private McpSyncClient client() {
         if (client == null) {
             client = McpClient.sync(HttpClientStreamableHttpTransport.builder("http://localhost:" + port)
-                    .requestBuilder(java.net.http.HttpRequest.newBuilder().header("Authorization", "Bearer analyst-it-key")).build()).build();
+                    .requestBuilder(java.net.http.HttpRequest.newBuilder().header("Authorization", "Bearer admin-it-key")).build()).build();
             client.initialize();
         }
         return client;
@@ -420,6 +421,9 @@ class QueryToolsIT {
                 new Storage(stack.s3Endpoint(), LakehouseStack.S3_ACCESS_KEY, LakehouseStack.S3_SECRET_KEY, LakehouseStack.S3_REGION))
                 .withPoolSize(1);
 
+        org.springframework.security.core.context.SecurityContextHolder.getContext().setAuthentication(
+                org.springframework.security.authentication.UsernamePasswordAuthenticationToken.authenticated("admin", null,
+                        org.springframework.security.core.authority.AuthorityUtils.createAuthorityList("ROLE_ADMIN")));
         try (LakehouseSession session = new LakehouseSession(settings)) {
             QueryTools tools = new QueryTools(session, new CatalogReader(session));
 
@@ -436,6 +440,8 @@ class QueryToolsIT {
 
             CallToolResult current = tools.runQuery("SELECT id FROM lh." + NS + "." + table, null);
             assertThat(current.isError()).as(text(current)).isNotEqualTo(Boolean.TRUE);
+        } finally {
+            org.springframework.security.core.context.SecurityContextHolder.clearContext();
         }
     }
 }

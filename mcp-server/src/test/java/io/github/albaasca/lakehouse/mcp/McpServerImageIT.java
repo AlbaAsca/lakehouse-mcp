@@ -36,6 +36,8 @@ class McpServerImageIT {
 
     private static final String NS = "mcp_image_it";
     private static final String TABLE = "events";
+    /** The analyst cannot read the base table (T-054): it reads the masked view. */
+    private static final String VIEW = "memory.main." + NS + "__" + TABLE;
     private static final int PORT = 8090;
     private static final long MEMORY_BUDGET = 1024L * 1024 * 1024;
     /** What the root .dockerignore lets through: Testcontainers does not read it. */
@@ -127,7 +129,7 @@ class McpServerImageIT {
     @Test
     void aClientQueriesTheTableThroughTheServicesOfTheNetwork() {
         CallToolResult result = client.callTool(new CallToolRequest("run_query",
-                Map.of("sql", "SELECT count(*) AS n FROM lh." + NS + "." + TABLE)));
+                Map.of("sql", "SELECT count(*) AS n FROM " + VIEW)));
 
         String text = ((TextContent) result.content().getFirst()).text();
         assertThat(result.isError()).as(text).isNotEqualTo(Boolean.TRUE);
@@ -138,7 +140,7 @@ class McpServerImageIT {
     /** T-159: past DuckDB's memory_limit the query fails cleanly; the container (1 GB) does not die and answers again. */
     @Test
     void aHeavyQueryFailsCleanlyAndTheContainerSurvives() throws Exception {
-        String table = "lh." + NS + "." + TABLE;
+        String table = VIEW;
         CallToolResult heavy = client.callTool(new CallToolRequest("run_query", Map.of("sql",
                 "SELECT count(*) FROM (SELECT a.*, b.*, c.*, d.* FROM " + table + " a, " + table + " b, " + table
                         + " c, " + table + " d ORDER BY 1, 2, 3)")));

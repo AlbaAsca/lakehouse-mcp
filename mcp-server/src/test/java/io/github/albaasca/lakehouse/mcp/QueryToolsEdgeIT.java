@@ -67,6 +67,7 @@ class QueryToolsEdgeIT {
         registry.add("lakehouse.storage.secret-key", () -> LakehouseStack.S3_SECRET_KEY);
         registry.add("lakehouse.storage.region", () -> LakehouseStack.S3_REGION);
         registry.add("lakehouse.security.analyst-key", () -> "analyst-it-key");
+        registry.add("lakehouse.security.admin-key", () -> "admin-it-key");
     }
 
     @BeforeAll
@@ -93,7 +94,7 @@ class QueryToolsEdgeIT {
     private CallToolResult call(String tool, Map<String, Object> arguments) {
         if (client == null) {
             client = McpClient.sync(HttpClientStreamableHttpTransport.builder("http://localhost:" + port)
-                    .requestBuilder(java.net.http.HttpRequest.newBuilder().header("Authorization", "Bearer analyst-it-key")).build()).build();
+                    .requestBuilder(java.net.http.HttpRequest.newBuilder().header("Authorization", "Bearer admin-it-key")).build()).build();
             client.initialize();
         }
         return client.callTool(new CallToolRequest(tool, arguments));

@@ -179,6 +179,7 @@ services:
       S3_REGION: ${S3_REGION}
       MCP_ANALYST_KEY: ${MCP_ANALYST_KEY}
       MCP_ADMIN_KEY: ${MCP_ADMIN_KEY}
+      MASKING_SALT: ${MASKING_SALT:-}
       OPS_DB_URL: jdbc:postgresql://postgres:5432/ops
       OPS_DB_USER: polaris
       OPS_DB_PASSWORD: ${POSTGRES_PASSWORD:-change-me-postgres}

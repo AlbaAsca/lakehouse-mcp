@@ -46,6 +46,9 @@ lakehouse:
     analyst-key: ${MCP_ANALYST_KEY:}
     admin-key: ${MCP_ADMIN_KEY:}
     allowed-origins: ${MCP_ALLOWED_ORIGINS:}
+  # Salt of the user_id hash the analyst sees. Blank: random on each start (counts agree, hashes change between starts).
+  masking:
+    salt: ${MASKING_SALT:}
   # Proposals of propose_fix. Empty url: the tools propose_fix and apply_fix and /fix-proposals are not offered.
   ops:
     url: ${OPS_DB_URL:}

@@ -65,16 +65,26 @@ public class QueryTools {
     private final LakehouseSession session;
     private final CatalogReader reader;
     private final SqlGuard guard;
+    private final Masking masking;
 
-    public QueryTools(LakehouseSession session, CatalogReader reader) {
+    /** For tests: a random salt. */
+    QueryTools(LakehouseSession session, CatalogReader reader) {
+        this(session, reader, new Masking(null));
+    }
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public QueryTools(LakehouseSession session, CatalogReader reader, Masking masking) {
         this.session = session;
         this.reader = reader;
         this.guard = new SqlGuard(session::query);
+        this.masking = masking;
     }
 
     @McpTool(name = "run_query", description = "Runs one read-only SELECT on the current data. Name tables in full, as "
             + "<catalog>.<namespace>.<table> with catalog lh; list_tables gives the rest. Table functions and AT (...) are "
-            + "not allowed. The answer has columns, rows and truncated, which says there were more rows than maxRows.",
+            + "not allowed. Analysts read the masked views memory.main.<namespace>__<table> instead, where user_id is a hash "
+            + "(count and group by it, never read it). The answer has columns, rows and truncated, which says there were "
+            + "more rows than maxRows.",
             annotations = @McpAnnotations(title = "Run a query", readOnlyHint = true, destructiveHint = false,
                     idempotentHint = true, openWorldHint = false))
     public CallToolResult runQuery(
@@ -85,10 +95,27 @@ public class QueryTools {
     }
 
     private Rows runQueryChecked(String sql, int maxRows) throws SQLException {
-        List<TableName> tables = reader.listTables().stream()
-                .map(table -> new TableName(LakehouseSession.CATALOG_ALIAS, table.namespace(), table.table()))
-                .toList();
-        return explained(() -> Rows.of(guard.run(sql, tables, maxRows)));
+        if (Masking.isAdmin()) {
+            List<TableName> tables = reader.listTables().stream()
+                    .map(table -> new TableName(LakehouseSession.CATALOG_ALIAS, table.namespace(), table.table()))
+                    .toList();
+            return explained(() -> Rows.of(guard.run(sql, tables, maxRows)));
+        }
+        // The analyst reads only the masked views, never the base tables.
+        List<TableName> views = new ArrayList<>();
+        for (var table : reader.listTables()) {
+            views.add(TableName.of(masking.ensureView(session, table.namespace(), table.table())));
+        }
+        try {
+            return explained(() -> Rows.of(guard.run(sql, views, maxRows)));
+        } catch (SqlGuard.Rejected e) {
+            if (e.rule() == SqlGuard.Rule.TABLE) {
+                throw new SqlGuard.Rejected(e.rule(), e.getMessage() + ". Analysts read the views "
+                        + Masking.SCHEMA + ".<namespace>__<table>, such as " + views.stream().findFirst()
+                                .map(v -> v.catalog() + "." + v.schema() + "." + v.table()).orElse("none"));
+            }
+            throw e;
+        }
     }
 
     @McpTool(name = "time_travel", description = "Runs one read-only SELECT on a table as it was in a past snapshot. "
@@ -109,20 +136,35 @@ public class QueryTools {
         return ToolResults.of(() -> {
             int limit = rowLimit(maxRows);
             Snapshot snapshot = snapshot(namespace, table, snapshotId, instant);
-            Rows rows = explained(() -> readAt(CatalogReader.qualifiedName(namespace, table), snapshot.snapshotId(), sql, limit));
+            boolean admin = Masking.isAdmin();
+            Rows rows = explained(() -> readAt(CatalogReader.qualifiedName(namespace, table), snapshot.snapshotId(), sql, limit,
+                    admin));
             return new PastRows(snapshot.snapshotId(), snapshot.committedAt(), rows.columns(), rows.rows(), rows.truncated());
         });
     }
 
     /**
      * Validates before creating the view, and on the reserved connection, or a pool of one would wait for itself. The view
-     * is {@code SELECT *} until analyst has its own projection (T-054).
+     * is {@code SELECT *} for the admin and, for the analyst, the same hash as the masked views (a view cannot use AT).
      */
-    private Rows readAt(String qualifiedTable, long snapshotId, String sql, int maxRows) throws SQLException {
+    private Rows readAt(String qualifiedTable, long snapshotId, String sql, int maxRows, boolean admin) throws SQLException {
         return session.withConnection(reserved -> {
             String guarded = new SqlGuard(reserved::query).guarded(sql, List.of(TableName.of(AT_SNAPSHOT)), maxRows);
-            reserved.execute("CREATE OR REPLACE TEMP VIEW " + AT_SNAPSHOT + " AS SELECT * FROM " + qualifiedTable
-                    + " AT (VERSION => " + snapshotId + ")");
+            String create = "CREATE OR REPLACE TEMP VIEW " + AT_SNAPSHOT + " AS SELECT ";
+            String from = " FROM " + qualifiedTable + " AT (VERSION => " + snapshotId + ")";
+            if (admin) {
+                reserved.execute(create + "*" + from);
+            } else {
+                try {
+                    reserved.execute(create + masking.projection() + from);
+                } catch (SQLException e) {
+                    if (!Masking.lacksColumn(e)) {
+                        // The text of the statement carries the salt: it must not reach the model or the log.
+                        throw new SQLException("Could not read the snapshot");
+                    }
+                    reserved.execute(create + "*" + from);
+                }
+            }
             try {
                 return Rows.of(reserved.query(guarded, SqlGuard.limitedTo(maxRows)));
             } finally {

@@ -134,10 +134,16 @@ public class McpServerApplication {
                 new QualityTools.Drift(pipeline.namespace(), pipeline.table(), quality.subject(), registry));
     }
 
+    /** Salt of the user_id hash the analyst sees (MASKING_SALT). Blank: a random one per start, so set it for stable hashes. */
     @Bean
-    MetricTools metricTools(LakehouseSession session, PipelineProperties pipeline) {
+    Masking masking(@org.springframework.beans.factory.annotation.Value("${lakehouse.masking.salt:}") String salt) {
+        return new Masking(salt);
+    }
+
+    @Bean
+    MetricTools metricTools(LakehouseSession session, PipelineProperties pipeline, Masking masking) {
         return new MetricTools(session, io.github.albaasca.lakehouse.semantic.MetricCatalog.load(),
-                LakehouseSession.CATALOG_ALIAS + "." + pipeline.namespace() + "." + pipeline.table());
+                LakehouseSession.CATALOG_ALIAS + "." + pipeline.namespace() + "." + pipeline.table(), masking);
     }
 
     /** Postgres database {@code ops}, where proposals live. An empty url turns propose_fix and apply_fix off. */

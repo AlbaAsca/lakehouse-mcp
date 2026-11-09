@@ -34,12 +34,29 @@ public class MetricTools {
     private final LakehouseSession session;
     private final MetricCatalog catalog;
     private final String table;
+    private final Masking masking;
 
     /** @param table the events table, fully named, such as lh.ecommerce.events */
     public MetricTools(LakehouseSession session, MetricCatalog catalog, String table) {
+        this(session, catalog, table, new Masking(null));
+    }
+
+    public MetricTools(LakehouseSession session, MetricCatalog catalog, String table, Masking masking) {
         this.session = session;
         this.catalog = catalog;
         this.table = table;
+        this.masking = masking;
+    }
+
+    /** The table the metric reads: the real one for the admin, the masked view for anyone else. */
+    private String tableFor() throws java.sql.SQLException {
+        if (Masking.isAdmin()) {
+            return table;
+        }
+        String name = table.startsWith(LakehouseSession.CATALOG_ALIAS + ".")
+                ? table.substring(LakehouseSession.CATALOG_ALIAS.length() + 1) : table;
+        int dot = name.lastIndexOf('.');
+        return masking.ensureView(session, name.substring(0, dot), name.substring(dot + 1));
     }
 
     @McpTool(name = "list_metrics", description = "Lists the business metrics get_metric can compute, each with what it "
@@ -76,7 +93,9 @@ public class MetricTools {
                 if (limit != null) {
                     arguments.put("limit", limit.longValue());
                 }
-                var bound = metric.bind(table, arguments);
+                // Bound once on the real name to check the arguments, and again on the view if the caller is not the admin.
+                var checkedBound = metric.bind(table, arguments);
+                var bound = Masking.isAdmin() ? checkedBound : metric.bind(tableFor(), arguments);
                 SqlGuard.QueryResult result = session.withConnection(
                         reserved -> reserved.query(bound, SqlGuard.limitedTo(QueryTools.MAX_ROWS)));
                 List<List<Object>> rows = result.rows().stream()

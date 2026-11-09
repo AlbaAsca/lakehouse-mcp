@@ -1,6 +1,6 @@
 {
   "project": "lakehouse-mcp",
-  "updated": "2026-11-08T23:15:02+01:00",
+  "updated": "2026-11-09T19:41:28+01:00",
   "columns": [
     {
       "id": "backlog",
@@ -33,14 +33,14 @@
   ],
   "runner": {
     "enabled": true,
-    "state": "stopped",
-    "current": null,
-    "heartbeat": "2026-11-08T21:00:03+01:00",
-    "message": "Runner parado (pid muerto)",
-    "pid": null,
-    "live": "live-T-043-desarrollador-20261108-164241.jsonl",
-    "agent": "desarrollador",
-    "started": "2026-11-08T16:42:40+01:00"
+    "state": "working",
+    "current": "T-054",
+    "heartbeat": "2026-11-09T19:41:15+01:00",
+    "message": "tester con T-054",
+    "pid": 13012,
+    "live": "live-T-054-tester-20261109-194115.jsonl",
+    "agent": "tester",
+    "started": "2026-11-09T19:41:14+01:00"
   },
   "agents": [
     {
@@ -4309,10 +4309,10 @@
       "id": "T-054",
       "title": "Seguridad: enmascarar user_id para analistas",
       "owner": "desarrollador",
-      "status": "backlog",
+      "status": "blocked",
       "priority": "alta",
       "estimate_min": 35.0,
-      "actual_min": null,
+      "actual_min": 15.7,
       "auto": true,
       "manual": null,
       "desc": "El analista debe poder contar usuarios y agrupar por ellos sin ver quiénes son. Se le da acceso a través de vistas con el identificador convertido en un hash con sal y se le impide tocar la tabla base. Las vistas no permiten consultar el pasado, así que para eso el servidor aplica el mismo hash al preparar la consulta. El rol admin sigue viendo el valor original.\nCómo sabremos si funciona: el recuento de usuarios distintos es igual en ambos roles, y ninguna fila del analista contiene un user_id real, ni por run_query ni por time_travel.\n\n## Técnico\nDecisiones 12 y 21 de docs/architecture.md.\n- Vistas con CREATE VIEW memory.main.<v> en la instancia de lectura, creadas una vez por instancia; sal por .env (MASKING_SALT). Una sola expresión de hash, compartida con la proyección de time_travel.\n- SqlGuard por rol: analyst solo memory.main.<v>; en time_travel, at_snapshot. Comprobar catálogo y esquema de cada tabla.\n- La sal va en el texto de la vista: no debe salir por duckdb_views(), mensajes de error ni auditoría (T-053). get_metric también pasa por enmascarado.\n- Si T-021 dejó anotado que la vista temporal no funciona así, analyst recibe un error claro en time_travel.\n- IT comparando con los user_id de la muestra, en todas las conexiones del pool. ./mk test.",
@@ -4321,9 +4321,9 @@
         "T-019"
       ],
       "created": "2026-11-02T11:40:09+01:00",
-      "updated": "2026-11-07T18:15:41+01:00",
-      "started_at": null,
-      "finished_at": null,
+      "updated": "2026-11-09T19:41:28+01:00",
+      "started_at": "2026-11-09T19:40:52+01:00",
+      "finished_at": "2026-11-09T19:41:13+01:00",
       "log": [
         {
           "t": "2026-11-02T11:40:09+01:00",
@@ -4339,9 +4339,136 @@
           "t": "2026-11-02T18:15:24+01:00",
           "by": "consultor",
           "msg": "descripción reescrita"
+        },
+        {
+          "t": "2026-11-08T23:15:13+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-08T23:21:08+01:00",
+          "by": "consultor",
+          "msg": "Hecho: Masking (vistas memory.main.<ns>__<tabla> con sha256+sal, MASKING_SALT), run_query/get_metric del analyst por vistas, time_travel con la misma proyeccion; admin sin cambios. Tests unitarios en verde; MaskingIT (nuevo) y los IT de QueryTools pasan a clave admin: SIN EJECUTAR (requieren contenedores). Riesgo: el rol se lee de SecurityContextHolder; si el servidor MCP ejecuta la tool en otro hilo, admin vería datos enmascarados (falla cerrado) y MaskingIT lo mostraría."
+        },
+        {
+          "t": "2026-11-08T23:21:15+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: enmascarado de `user_id` para analyst en run_query, time_travel y get_metric; tests unitarios en verde, `MaskingIT` y los demás IT sin ejecutar (necesitan Docker)"
+        },
+        {
+          "t": "2026-11-08T23:21:15+01:00",
+          "by": "desarrollador",
+          "msg": "⚠ 1 comandos denegados: ls C:/Users/albaa/.m2/repository/org/springframework/ai"
+        },
+        {
+          "t": "2026-11-08T23:21:15+01:00",
+          "by": "runner",
+          "msg": "✓ permiso concedido automáticamente: ls * (solo lectura dentro del proyecto); se reintenta"
+        },
+        {
+          "t": "2026-11-08T23:21:18+01:00",
+          "by": "tester",
+          "msg": "verificando"
+        },
+        {
+          "t": "2026-11-08T23:38:57+01:00",
+          "by": "consultor",
+          "msg": "Tester: MaskingIT y MaskingTest en verde; pero McpServerImageIT (2 tests) falla por el cambio: analista bloqueado en tabla base. Ver tarjeta nueva."
+        },
+        {
+          "t": "2026-11-08T23:48:43+01:00",
+          "by": "tester",
+          "msg": "FAIL: McpServerImageIT (2 tests) falla porque el analista ya no puede leer la tabla base; reproducir con `./mk test MODULE=mcp-server`; arreglo en T-224."
+        },
+        {
+          "t": "2026-11-08T23:48:43+01:00",
+          "by": "tester",
+          "msg": "⚠ 1 comandos denegados: python board/board.py add \"Arreglar McpServerImageIT tras enmascarar user_id (T-"
+        },
+        {
+          "t": "2026-11-08T23:48:43+01:00",
+          "by": "runner",
+          "msg": "✓ permiso concedido automáticamente: python * (solo lectura dentro del proyecto); se reintenta"
+        },
+        {
+          "t": "2026-11-08T23:48:46+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-08T23:58:07+01:00",
+          "by": "desarrollador",
+          "msg": "agente cortado sin mensaje final, se reintentará"
+        },
+        {
+          "t": "2026-11-09T19:40:52+01:00",
+          "by": "runner",
+          "msg": "empieza desarrollador"
+        },
+        {
+          "t": "2026-11-09T19:41:13+01:00",
+          "by": "desarrollador",
+          "msg": "REVIEW: T-054 implementada y `McpServerImageIT` adaptado a las vistas; falta pasar `./mk test MODULE=mcp-server` porque Docker no responde."
+        },
+        {
+          "t": "2026-11-09T19:41:14+01:00",
+          "by": "tester",
+          "msg": "verificando"
+        },
+        {
+          "t": "2026-11-09T19:41:28+01:00",
+          "by": "tester",
+          "msg": "BLOCKED: Docker no está disponible (`./mk test MODULE=mcp-server` falla al conectar con el motor), así que no se pueden ejecutar MaskingIT ni McpServerImageIT. La CI de develop está en verde y ningún código depende de `scripts/analysis/t164_probe.py`."
         }
       ],
-      "rank": 900
+      "rank": 900,
+      "runs": [
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-08T23:21:15+01:00",
+          "min": 6.0,
+          "turns": 67,
+          "tokens": 2829824,
+          "cost_usd": 1.0163571999999998,
+          "verdict": "review",
+          "summary": "enmascarado de `user_id` para analyst en run_query, time_travel y get_metric; tests unitarios en verde, `MaskingIT` y los demás IT sin ejecutar (necesitan Docker)"
+        },
+        {
+          "agent": "tester",
+          "mode": "verify",
+          "at": "2026-11-08T23:48:43+01:00",
+          "min": 27.4,
+          "turns": 1,
+          "tokens": 33894,
+          "cost_usd": 0.2254161,
+          "verdict": "fail",
+          "summary": "McpServerImageIT (2 tests) falla porque el analista ya no puede leer la tabla base; reproducir con `./mk test MODULE=mcp-server`; arreglo en T-224."
+        },
+        {
+          "agent": "desarrollador",
+          "mode": "work",
+          "at": "2026-11-09T19:41:13+01:00",
+          "min": 0.3,
+          "turns": 5,
+          "tokens": 97633,
+          "cost_usd": 0.1278186,
+          "verdict": "review",
+          "summary": "T-054 implementada y `McpServerImageIT` adaptado a las vistas; falta pasar `./mk test MODULE=mcp-server` porque Docker no responde."
+        },
+        {
+          "agent": "tester",
+          "mode": "verify",
+          "at": "2026-11-09T19:41:28+01:00",
+          "min": 0.2,
+          "turns": 5,
+          "tokens": 49217,
+          "cost_usd": 0.0568307,
+          "verdict": "blocked",
+          "summary": "Docker no está disponible (`./mk test MODULE=mcp-server` falla al conectar con el motor), así que no se pueden ejecutar MaskingIT ni McpServerImageIT. La CI de develop está en verde y ningún código de"
+        }
+      ],
+      "verify_started": "2026-11-09T19:41:14+01:00"
     },
     {
       "id": "T-055",
@@ -17857,14 +17984,38 @@
           "msg": "creada"
         }
       ]
+    },
+    {
+      "id": "T-224",
+      "title": "Arreglar McpServerImageIT tras enmascarar user_id (T-054)",
+      "owner": "desarrollador",
+      "status": "backlog",
+      "priority": "alta",
+      "estimate_min": 15.0,
+      "actual_min": null,
+      "auto": true,
+      "manual": null,
+      "desc": "El test de la imagen del servidor consulta la tabla base con la clave de analista, y ahora el analista solo puede leer las vistas enmascaradas, así que falla. Hay que adaptarlo al nuevo reparto de permisos.\nCómo sabremos si funciona: McpServerImageIT pasa en verde y sigue probando una consulta real por la red.\n## Técnico\nmcp-server/src/test/java/.../McpServerImageIT.java: aClientQueriesTheTableThroughTheServicesOfTheNetwork (l.133) y aHeavyQueryFailsCleanlyAndTheContainerSurvives (l.152) fallan con 'Table not allowed: lh.mcp_image_it.events. Analysts read the views memory.main.<namespace>__<table>'. Cliente con Bearer analyst-it-key (l.75/84). Opciones: clave admin para esas consultas o consultar memory.main.mcp_image_it__events. Reproducir: ./mk test MODULE=mcp-server. Aparte: LakehouseSessionIT (esperaba 10, salió 3) y QualityToolsIT (3 fallos) también fallan en local; no usan el enmascarado, probablemente muestra sintética distinta, a revisar.",
+      "deps": [],
+      "created": "2026-11-08T23:39:01+01:00",
+      "updated": "2026-11-08T23:39:01+01:00",
+      "started_at": null,
+      "finished_at": null,
+      "log": [
+        {
+          "t": "2026-11-08T23:39:01+01:00",
+          "by": "consultor",
+          "msg": "creada"
+        }
+      ]
     }
   ],
   "runners": {
     "think": {
       "state": "stopped",
       "current": null,
-      "message": "Runner parado",
-      "pid": 13452,
+      "message": "Runner parado (pid muerto)",
+      "pid": null,
       "heartbeat": "2026-11-08T21:33:15+01:00",
       "enabled": true,
       "agent": "arquitecto",
@@ -17874,15 +18025,15 @@
       "contrib_agent": "investigador"
     },
     "measure": {
-      "state": "working",
-      "current": "T-053",
-      "message": "tester con T-053",
-      "pid": 23508,
-      "heartbeat": "2026-11-08T22:55:18+01:00",
+      "state": "stopped",
+      "current": null,
+      "message": "Runner parado (pid muerto)",
+      "pid": null,
+      "heartbeat": "2026-11-08T23:58:09+01:00",
       "enabled": true,
-      "agent": "tester",
-      "started": "2026-11-08T22:55:17+01:00",
-      "live": "live-T-053-tester-20261108-225518.jsonl",
+      "agent": "desarrollador",
+      "started": "2026-11-08T23:48:47+01:00",
+      "live": "live-T-054-desarrollador-20261108-234847.jsonl",
       "pause_reason": null
     }
   }
